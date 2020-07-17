@@ -1,0 +1,15 @@
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\TeklaPluginInOutWPF\bin\Debug\TeklaPluginInOutWPF.exe.config
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\TeklaPluginInOutWPF\bin\Debug\TeklaPluginInOutWPF.exe
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\TeklaPluginInOutWPF\bin\Debug\TeklaPluginInOutWPF.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\TeklaPluginInOutWPF\TeklaPluginInOutWPF.csprojAssemblyReference.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\TeklaPluginInOutWPF\MainWindow.g.cs
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\TeklaPluginInOutWPF\App.g.cs
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\TeklaPluginInOutWPF\TeklaPluginInOutWPF_MarkupCompile.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\TeklaPluginInOutWPF\TeklaPluginInOutWPF_MarkupCompile.lref
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\TeklaPluginInOutWPF\MainWindow.baml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\TeklaPluginInOutWPF\TeklaPluginInOutWPF.g.resources
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\TeklaPluginInOutWPF\TeklaPluginInOutWPF.Properties.Resources.resources
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\TeklaPluginInOutWPF\TeklaPluginInOutWPF.csproj.GenerateResource.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\TeklaPluginInOutWPF\TeklaPluginInOutWPF.csproj.CoreCompileInputs.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\TeklaPluginInOutWPF\TeklaPluginInOutWPF.exe
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\TeklaPluginInOutWPF\TeklaPluginInOutWPF.pdb

@@ -1,0 +1,15 @@
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaTeklaTools\bin\Debug\EmasaTeklaTools.exe.config
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaTeklaTools\bin\Debug\EmasaTeklaTools.exe
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaTeklaTools\bin\Debug\EmasaTeklaTools.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\EmasaTeklaTools\EmasaTeklaTools.csprojAssemblyReference.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\EmasaTeklaTools\MainWindow.g.cs
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\EmasaTeklaTools\App.g.cs
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\EmasaTeklaTools\EmasaTeklaTools_MarkupCompile.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\EmasaTeklaTools\EmasaTeklaTools_MarkupCompile.lref
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\EmasaTeklaTools\MainWindow.baml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\EmasaTeklaTools\EmasaTeklaTools.g.resources
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\EmasaTeklaTools\EmasaTeklaTools.Properties.Resources.resources
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\EmasaTeklaTools\EmasaTeklaTools.csproj.GenerateResource.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\EmasaTeklaTools\EmasaTeklaTools.csproj.CoreCompileInputs.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\EmasaTeklaTools\EmasaTeklaTools.exe
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\EmasaTeklaTools\EmasaTeklaTools.pdb

@@ -1,0 +1,26 @@
+D:\001 - SOURCES\EMS_S2K_Tools\S2K Solution\TeklaPluginOutput\bin\Debug\TeklaPluginInOut.dll
+D:\001 - SOURCES\EMS_S2K_Tools\S2K Solution\TeklaPluginOutput\bin\Debug\TeklaPluginInOut.pdb
+D:\001 - SOURCES\EMS_S2K_Tools\S2K Solution\ObjDir\2017i\TeklaPluginInOut\TeklaPluginInOut.TeklaInputOutputForm.resources
+D:\001 - SOURCES\EMS_S2K_Tools\S2K Solution\ObjDir\2017i\TeklaPluginInOut\TeklaPluginInOut.csproj.GenerateResource.cache
+D:\001 - SOURCES\EMS_S2K_Tools\S2K Solution\ObjDir\2017i\TeklaPluginInOut\TeklaPluginInOut.csproj.CoreCompileInputs.cache
+D:\001 - SOURCES\EMS_S2K_Tools\S2K Solution\ObjDir\2017i\TeklaPluginInOut\TeklaPluginInOut.dll
+D:\001 - SOURCES\EMS_S2K_Tools\S2K Solution\ObjDir\2017i\TeklaPluginInOut\TeklaPluginInOut.pdb
+D:\001 - SOURCES\EMS_S2K_Tools\S2K Solution\ObjDir\2017i\TeklaPluginInOut\TeklaPluginInOut.csprojAssemblyReference.cache
+C:\Users\User\Documents\0 - Codes\EMS_S2K_Tools\S2K Solution\TeklaPluginOutput\bin\Release\TeklaPluginInOut.dll
+C:\Users\User\Documents\0 - Codes\EMS_S2K_Tools\S2K Solution\TeklaPluginOutput\bin\Release\TeklaPluginInOut.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\TeklaPluginOutput\bin\Release\TeklaPluginInOut.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\TeklaPluginOutput\bin\Release\TeklaPluginInOut.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\TeklaPluginOutput\bin\Debug\TeklaPluginInOut.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\TeklaPluginOutput\bin\Debug\TeklaPluginInOut.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2017i\TeklaPluginInOut\TeklaPluginInOut.TeklaInputOutputForm.resources
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2017i\TeklaPluginInOut\TeklaPluginInOut.csproj.GenerateResource.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2017i\TeklaPluginInOut\TeklaPluginInOut.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2017i\TeklaPluginInOut\TeklaPluginInOut.pdb
+C:\Users\User\Documents\0 - Codes\EMS_S2K_Tools\S2K Solution\TeklaPluginOutput\bin\Debug\TeklaPluginInOut.dll
+C:\Users\User\Documents\0 - Codes\EMS_S2K_Tools\S2K Solution\TeklaPluginOutput\bin\Debug\TeklaPluginInOut.pdb
+C:\Users\User\Documents\0 - Codes\EMS_S2K_Tools\S2K Solution\ObjDir\2017i\TeklaPluginInOut\TeklaPluginInOut.TeklaInputOutputForm.resources
+C:\Users\User\Documents\0 - Codes\EMS_S2K_Tools\S2K Solution\ObjDir\2017i\TeklaPluginInOut\TeklaPluginInOut.csproj.GenerateResource.cache
+C:\Users\User\Documents\0 - Codes\EMS_S2K_Tools\S2K Solution\ObjDir\2017i\TeklaPluginInOut\TeklaPluginInOut.dll
+C:\Users\User\Documents\0 - Codes\EMS_S2K_Tools\S2K Solution\ObjDir\2017i\TeklaPluginInOut\TeklaPluginInOut.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2017i\TeklaPluginInOut\TeklaPluginInOut.csprojAssemblyReference.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2017i\TeklaPluginInOut\TeklaPluginInOut.csproj.CoreCompileInputs.cache

@@ -1,0 +1,20 @@
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\TeklaPluginBeamInOutWPF\bin\Debug\TeklaPluginBeamInOutWPF.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\TeklaPluginBeamInOutWPF\bin\Debug\TeklaPluginBeamInOutWPF.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\TeklaPluginBeamInOutWPF\MainWindow.baml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\TeklaPluginBeamInOutWPF\MainWindow.g.cs
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\TeklaPluginBeamInOutWPF\TeklaPluginBeamInOutWPF_MarkupCompile.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\TeklaPluginBeamInOutWPF\TeklaPluginBeamInOutWPF.g.resources
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\TeklaPluginBeamInOutWPF\TeklaPluginBeamInOutWPF.csproj.CoreCompileInputs.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\TeklaPluginBeamInOutWPF\TeklaPluginBeamInOutWPF.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\TeklaPluginBeamInOutWPF\TeklaPluginBeamInOutWPF.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\TeklaPluginBeamInOutWPF\TeklaPluginBeamInOutWPF.csprojAssemblyReference.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\TeklaPluginBeamInOutWPF\bin\Debug\TeklaPluginBeamInOutWPF.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\TeklaPluginBeamInOutWPF\bin\Debug\TeklaPluginBeamInOutWPF.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\ObjDir\2019\TeklaPluginBeamInOutWPF\MainWindow.baml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\ObjDir\2019\TeklaPluginBeamInOutWPF\MainWindow.g.cs
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\ObjDir\2019\TeklaPluginBeamInOutWPF\TeklaPluginBeamInOutWPF_MarkupCompile.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\ObjDir\2019\TeklaPluginBeamInOutWPF\TeklaPluginBeamInOutWPF.g.resources
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\ObjDir\2019\TeklaPluginBeamInOutWPF\TeklaPluginBeamInOutWPF.csproj.CoreCompileInputs.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\ObjDir\2019\TeklaPluginBeamInOutWPF\TeklaPluginBeamInOutWPF.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\ObjDir\2019\TeklaPluginBeamInOutWPF\TeklaPluginBeamInOutWPF.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\ObjDir\2019\TeklaPluginBeamInOutWPF\TeklaPluginBeamInOutWPF.csprojAssemblyReference.cache

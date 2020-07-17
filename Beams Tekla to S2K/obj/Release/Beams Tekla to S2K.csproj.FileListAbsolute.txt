@@ -1,0 +1,25 @@
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\Beams Tekla to S2K\bin\Release\Win32\librhino3dmio_native.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\Beams Tekla to S2K\bin\Release\Win64\librhino3dmio_native.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\Beams Tekla to S2K\bin\Release\librhino3dmio_native.dylib
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\Beams Tekla to S2K\bin\Release\Beams Tekla to S2K.exe.config
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\Beams Tekla to S2K\bin\Release\Beams Tekla to S2K.exe
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\Beams Tekla to S2K\bin\Release\Beams Tekla to S2K.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\Beams Tekla to S2K\bin\Release\MathNet.Numerics.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\Beams Tekla to S2K\bin\Release\MathNet.Spatial.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\Beams Tekla to S2K\bin\Release\S2KHelper.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\Beams Tekla to S2K\bin\Release\S2KHelper.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\Beams Tekla to S2K\bin\Release\S2KHelper.dll.config
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\Beams Tekla to S2K\bin\Release\MathNet.Numerics.xml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\Beams Tekla to S2K\bin\Release\MathNet.Spatial.xml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\Beams Tekla to S2K\obj\Release\Beams Tekla to S2K.csprojAssemblyReference.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\Beams Tekla to S2K\obj\Release\MainWindow.g.cs
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\Beams Tekla to S2K\obj\Release\App.g.cs
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\Beams Tekla to S2K\obj\Release\Beams Tekla to S2K_MarkupCompile.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\Beams Tekla to S2K\obj\Release\Beams Tekla to S2K_MarkupCompile.lref
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\Beams Tekla to S2K\obj\Release\MainWindow.baml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\Beams Tekla to S2K\obj\Release\Beams Tekla to S2K.g.resources
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\Beams Tekla to S2K\obj\Release\Beams_Tekla_to_S2K.Properties.Resources.resources
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\Beams Tekla to S2K\obj\Release\Beams Tekla to S2K.csproj.GenerateResource.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\Beams Tekla to S2K\obj\Release\Beams Tekla to S2K.csproj.CopyComplete
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\Beams Tekla to S2K\obj\Release\Beams Tekla to S2K.exe
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\Beams Tekla to S2K\obj\Release\Beams Tekla to S2K.pdb

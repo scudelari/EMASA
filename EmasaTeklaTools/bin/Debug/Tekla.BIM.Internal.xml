@@ -1,0 +1,773 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Tekla.BIM.Internal</name>
+    </assembly>
+    <members>
+        <member name="T:Tekla.BIM.Internal.Collections.ISynchronizedQueueReader`1">
+            <summary>
+            The <see cref="T:Tekla.BIM.Internal.Collections.ISynchronizedQueueReader`1"/> interface is the interface for the reader part of <see cref="T:Tekla.BIM.Internal.Collections.SynchronizedQueue`1"/>.
+            </summary>
+            <typeparam name="T">Specifies the type of elements in the queue.</typeparam>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Collections.ISynchronizedQueueReader`1.Dequeue">
+            <summary>
+            Removes and returns the object at the beginning of the <see cref="T:Tekla.BIM.Internal.Collections.SynchronizedQueue`1"/>.
+            The call blocks until at least one object is present in the queue.
+            </summary>
+            <returns>The object that is removed from the beginning of the <see cref="T:Tekla.BIM.Internal.Collections.SynchronizedQueue`1"/>.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Collections.ISynchronizedQueueReader`1.Release">
+            <summary>
+            Signals that the reader has released the queue.
+            </summary>
+        </member>
+        <member name="T:Tekla.BIM.Internal.Collections.ISynchronizedQueueWriter`1">
+            <summary>
+            The <see cref="T:Tekla.BIM.Internal.Collections.ISynchronizedQueueWriter`1"/> interface is the interface for the writer part of <see cref="T:Tekla.BIM.Internal.Collections.SynchronizedQueue`1"/>.
+            </summary>
+            <typeparam name="T">Specifies the type of elements in the queue.</typeparam>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Collections.ISynchronizedQueueWriter`1.Enqueue(`0)">
+            <summary>
+            Adds an object to the end of the <see cref="T:Tekla.BIM.Internal.Collections.SynchronizedQueue`1"/>.
+            </summary>
+            <param name="data">The object to add to the <see cref="T:Tekla.BIM.Internal.Collections.SynchronizedQueue`1"/>. The value can be null for reference types.</param>
+        </member>
+        <member name="T:Tekla.BIM.Internal.Collections.SynchronizedQueue`1">
+            <summary>
+            The <see cref="T:Tekla.BIM.Internal.Collections.SynchronizedQueue`1"/> class represents a synchronized first-in, first-out collection of objects.
+            </summary>
+            <typeparam name="T">Specifies the type of elements in the queue.</typeparam>
+        </member>
+        <member name="F:Tekla.BIM.Internal.Collections.SynchronizedQueue`1.queue">
+            <summary>
+            The queue. Access is synchronized by locking <see cref="F:Tekla.BIM.Internal.Collections.SynchronizedQueue`1.queueSyncRoot"/>.
+            </summary>
+        </member>
+        <member name="F:Tekla.BIM.Internal.Collections.SynchronizedQueue`1.queueSyncRoot">
+            <summary>
+            The object to lock when accessing <see cref="F:Tekla.BIM.Internal.Collections.SynchronizedQueue`1.queue"/>.
+            </summary>
+        </member>
+        <member name="F:Tekla.BIM.Internal.Collections.SynchronizedQueue`1.readerReleased">
+            <summary>
+            Indicates whether the reader released the queue.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Collections.SynchronizedQueue`1.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Tekla.BIM.Internal.Collections.SynchronizedQueue`1"/> class that is empty and has the default initial capacity.
+            </summary>
+        </member>
+        <member name="P:Tekla.BIM.Internal.Collections.SynchronizedQueue`1.Count">
+            <summary>
+            Gets the number of elements contained in the queue.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Collections.SynchronizedQueue`1.Enqueue(`0)">
+            <summary>
+            Adds an object to the end of the <see cref="T:Tekla.BIM.Internal.Collections.SynchronizedQueue`1"/>.
+            </summary>
+            <param name="data">The object to add to the <see cref="T:Tekla.BIM.Internal.Collections.SynchronizedQueue`1"/>. The value can be null for reference types.</param>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Collections.SynchronizedQueue`1.Dequeue">
+            <summary>
+            Removes and returns the object at the beginning of the <see cref="T:Tekla.BIM.Internal.Collections.SynchronizedQueue`1"/>.
+            The call blocks until at least one object is present in the queue.
+            </summary>
+            <returns>The object that is removed from the beginning of the <see cref="T:Tekla.BIM.Internal.Collections.SynchronizedQueue`1"/>.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Collections.SynchronizedQueue`1.Release">
+            <summary>
+            Signals that the reader has released the queue.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Collections.SynchronizedQueue`1.Dispose">
+            <summary>
+            Releases the reader.
+            </summary>
+        </member>
+        <member name="T:Tekla.BIM.Internal.Reflection.AppDomainSetupExtensions">
+            <summary>
+            The <see cref="T:Tekla.BIM.Internal.Reflection.AppDomainSetupExtensions"/> class provides a set of extension methods for the <see cref="T:System.AppDomainSetup"/> class.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.AppDomainSetupExtensions.GetPrivatePaths(System.AppDomainSetup,System.Boolean)">
+            <summary>
+            Reads the private paths (also known as probing paths) defined in the <see cref="P:System.AppDomainSetup.ConfigurationFile"/>.
+            </summary>
+            <param name="domainSetup">The instance to read the <see cref="P:System.AppDomainSetup.ConfigurationFile"/> property from.</param>
+            <param name="asAbsolutePaths">A value indicating whether the returned paths must be absolute or relative paths.</param>
+            <returns>An array providing the private paths defined in the configuration file.</returns>
+        </member>
+        <member name="T:Tekla.BIM.Internal.Reflection.AssemblyExtensions">
+            <summary>
+            The <see cref="T:Tekla.BIM.Internal.Reflection.AssemblyExtensions"/> class provides a set of extension methods for the <see cref="T:System.Reflection.Assembly"/> class.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.AssemblyExtensions.LoadReferencedAssemblies(System.Reflection.Assembly)">
+            <summary>
+            Loads all dependencies of the <paramref name="assembly"/>.
+            If any dependency is missing, an exception will be thrown.
+            </summary>
+            <exception cref="T:System.IO.FileNotFoundException">Thrown when a file is not found.</exception>
+            <exception cref="T:System.IO.FileLoadException">Thrown when an assembly cannot be loaded.</exception>
+            <exception cref="T:System.BadImageFormatException">Thrown when a file image is invalid.</exception>
+            <param name="assembly">The assembly to load all dependencies for.</param>
+        </member>
+        <member name="T:Tekla.BIM.Internal.Reflection.Assert">
+            <summary>
+            The <see cref="T:Tekla.BIM.Internal.Reflection.Assert"/> class provides a set of static methods supporting simple assertions.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.Assert.IsNotNull(System.Object,System.String,System.Object[])">
+            <summary>
+            Asserts that <paramref name="obj"/> is not null.
+            </summary>
+            <param name="obj">The instance to assert.</param>
+            <param name="message">The message to use in case of failure.</param>
+            <param name="args">The arguments to format <paramref name="message"/> with.</param>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.Assert.IsNotNullOrEmpty(System.String,System.String,System.Object[])">
+            <summary>
+            Asserts that <paramref name="value"/> is not null or empty.
+            </summary>
+            <param name="value">The <see cref="T:System.String"/> value to assert.</param>
+            <param name="message">The message to use in case of failure.</param>
+            <param name="args">The arguments to format <paramref name="message"/> with.</param>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.Assert.IsTrue(System.Boolean,System.String,System.Object[])">
+            <summary>
+            Asserts that <paramref name="value"/> is true.
+            </summary>
+            <param name="value">The <see cref="T:System.Boolean"/> value to assert.</param>
+            <param name="message">The message to use in case of failure.</param>
+            <param name="args">The arguments to format <paramref name="message"/> with.</param>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.Assert.IsFalse(System.Boolean,System.String,System.Object[])">
+            <summary>
+            Asserts that <paramref name="value"/> is false.
+            </summary>
+            <param name="value">The <see cref="T:System.Boolean"/> value to assert.</param>
+            <param name="message">The message to use in case of failure.</param>
+            <param name="args">The arguments to format <paramref name="message"/> with.</param>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.Assert.IsInstanceOf``1(System.Object,System.String,System.Object[])">
+            <summary>
+            Asserts that <paramref name="obj"/> is an instance of type <typeparamref name="T"/>.
+            </summary>
+            <typeparam name="T">The expected type.</typeparam>
+            <param name="obj">The instance to assert the type for, cannot be null.</param>
+            <param name="message">The message to use in case of failure.</param>
+            <param name="args">The arguments to format <paramref name="message"/> with.</param>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.Assert.GreaterOrEqual(System.Int32,System.Int32,System.String,System.Object[])">
+            <summary>
+            Asserts that <paramref name="actual"/> is greater or equal to <paramref name="expected"/>.
+            </summary>
+            <param name="actual">The value to assert.</param>
+            <param name="expected">The value to assert against.</param>
+            <param name="message">The message to use in case of failure.</param>
+            <param name="args">The arguments to format <paramref name="message"/> with.</param>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.Assert.SmallerOrEqual(System.Int32,System.Int32,System.String,System.Object[])">
+            <summary>
+            Asserts that <paramref name="actual"/> is smaller or equal to <paramref name="expected"/>.
+            </summary>
+            <param name="actual">The value to assert.</param>
+            <param name="expected">The value to assert against.</param>
+            <param name="message">The message to use in case of failure.</param>
+            <param name="args">The arguments to format <paramref name="message"/> with.</param>
+        </member>
+        <member name="T:Tekla.BIM.Internal.Reflection.AssertionException">
+            <summary>
+            The <see cref="T:Tekla.BIM.Internal.Reflection.AssertionException"/> class is the <see cref="T:System.Exception"/> thrown by the <see cref="T:Tekla.BIM.Internal.Reflection.Assert"/> class.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.AssertionException.#ctor(System.String,System.String,System.Object[])">
+            <summary>
+            Initializes a new instance of the <see cref="T:Tekla.BIM.Internal.Reflection.AssertionException"/> class.
+            </summary>
+            <param name="assertion">A <see cref="T:System.String"/> describing the failed assertion.</param>
+            <param name="message">A message further describing the error.</param>
+            <param name="args">Arguments to format <paramref name="message"/> with.</param>
+        </member>
+        <member name="P:Tekla.BIM.Internal.Reflection.AssertionException.Assertion">
+            <summary>
+            Gets a string describing the failed assertion.
+            </summary>
+        </member>
+        <member name="T:Tekla.BIM.Internal.Reflection.EventReflector">
+            <summary>
+            The <see cref="T:Tekla.BIM.Internal.Reflection.EventReflector"/> class provides a set of helper methods for accessing any events from any types and/or class instances.
+            All returned values are always asserted for validity.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.EventReflector.TryGetInvocationList(System.Reflection.EventInfo,System.Object,System.Delegate[]@)">
+            <summary>
+            Tries to get the invocation list for the event described by <paramref name="eventInfo"/>.
+            </summary>
+            <param name="eventInfo">The <see cref="T:System.Reflection.EventInfo"/> instance describing the event to get the invocation list for.</param>
+            <param name="target">The instance to get the event's invocation list from.</param>
+            <param name="invocationList">The event's invocation list.</param>
+            <returns>True if the variable holding the invocation list is found; otherwise, false.</returns>
+        </member>
+        <member name="T:Tekla.BIM.Internal.Reflection.FieldReflector">
+            <summary>
+            The <see cref="T:Tekla.BIM.Internal.Reflection.FieldReflector"/> class provides a set of helper methods for accessing any fields from any types and/or class instances.
+            All returned values are always asserted for validity.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.FieldReflector.GetInstanceField``1(System.Object,System.String,System.Boolean)">
+            <summary>
+            Returns from <paramref name="target"/>, the value of the instance field with the given <paramref name="fieldName"/>.
+            </summary>
+            <typeparam name="TField">The type of the field variable to get.</typeparam>
+            <param name="target">The instance to read the field from.</param>
+            <param name="fieldName">The name of the field to get.</param>
+            <param name="canBeNull">Indicates whether the field value can be null.</param>
+            <returns>The value of the private field named as the <paramref name="fieldName"/> string.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.FieldReflector.GetStaticField``1(System.Type,System.String,System.Boolean)">
+            <summary>
+            Returns from <paramref name="type"/>, the value of the static field with the given <paramref name="fieldName"/>.
+            </summary>
+            <typeparam name="TField">The type of the field variable to get.</typeparam>
+            <param name="type">The <see cref="T:System.Type"/> to read the field from.</param>
+            <param name="fieldName">The name of the field to get.</param>
+            <param name="canBeNull">Indicates whether the field value can be null.</param>
+            <returns>The value of the private static field named as the <paramref name="fieldName"/> string.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.FieldReflector.SetInstanceField``1(System.Object,System.String,``0)">
+            <summary>
+            Sets <paramref name="fieldValue"/> to the field with the given <paramref name="fieldName"/>,
+            as declared in the given <paramref name="target"/>.
+            </summary>
+            <typeparam name="TField">The type of field to set.</typeparam>
+            <param name="target">The instance to set the field value to.</param>
+            <param name="fieldName">The name of the field to set the value for.</param>
+            <param name="fieldValue">The value to set to the field.</param>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.FieldReflector.SetStaticField(System.Type,System.String,System.Object)">
+            <summary>
+            Sets <paramref name="fieldValue"/> to the static field with the given <paramref name="fieldName"/>,
+            as declared in the given <paramref name="type"/>.
+            </summary>
+            <param name="type">The class type to set the field to.</param>
+            <param name="fieldName">The name of the field to set the value for.</param>
+            <param name="fieldValue">The value to set to the field.</param>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.FieldReflector.TryGetValue``1(System.Reflection.FieldInfo,System.Object,``0@)">
+            <summary>
+            Tries to get the value for <paramref name="fieldInfo"/> from <paramref name="obj"/>.
+            </summary>
+            <typeparam name="TValue">The type of the value to get.</typeparam>
+            <param name="fieldInfo">The <see cref="T:System.Reflection.FieldInfo"/> describing the field to get a value for.</param>
+            <param name="obj">The instance to get the value from.</param>
+            <param name="value">The value.</param>
+            <returns>True if <paramref name="value"/> returns the actual value; otherwise the method failed and false is returned.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.FieldReflector.GetFieldInfo(System.Type,System.String,System.Boolean,System.Boolean)">
+            <summary>
+            Gets the <see cref="T:System.Reflection.FieldInfo"/> for the given <paramref name="fieldName"/> from <paramref name="type"/>.
+            </summary>
+            <param name="type">The <see cref="T:System.Type"/> to read the <see cref="T:System.Reflection.FieldInfo"/> from.</param>
+            <param name="fieldName">The name of the field to get the info for.</param>
+            <param name="instanceField">A value indicating whether the field is an instance field or a static field.</param>
+            <param name="setField">A value indicating whether the returned <see cref="T:System.Reflection.FieldInfo"/> will be used for writing to the field.</param>
+            <returns>A <see cref="T:System.Reflection.FieldInfo"/> instance for the given <paramref name="fieldName"/> from <paramref name="type"/>.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.FieldReflector.GetFieldValue``1(System.Type,System.String,System.Object,System.Boolean)">
+            <summary>
+            Returns the value of the field with the given <paramref name="fieldName"/> from the <paramref name="instance"/> of the given <paramref name="type"/>.
+            </summary>
+            <typeparam name="TField">The type of field to get.</typeparam>
+            <param name="type">The class type to get the field from.</param>
+            <param name="fieldName">The name of the field to get the value for.</param>
+            <param name="instance">The instance to read the field value from, can be null for static fields.</param>
+            <param name="canBeNull">Indicates whether the field value can be null.</param>
+            <returns>The value of the field with the given <paramref name="fieldName"/> from the <paramref name="instance"/> of the given <paramref name="type"/>.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.FieldReflector.SetFieldValue``1(System.Type,System.String,System.Object,``0)">
+            <summary>
+            Sets <paramref name="fieldValue"/> to the field with the given <paramref name="fieldName"/> of the <paramref name="instance"/> of the given <paramref name="type"/>.
+            </summary>
+            <typeparam name="TField">The type of field to set.</typeparam>
+            <param name="type">The class type to set the field to.</param>
+            <param name="fieldName">The name of the field to set the value for.</param>
+            <param name="instance">The instance to set the field value to, can be null for static fields.</param>
+            <param name="fieldValue">The value to set to the field.</param>
+        </member>
+        <member name="T:Tekla.BIM.Internal.Reflection.MemberInfoExtensions">
+            <summary>
+            The <see cref="T:Tekla.BIM.Internal.Reflection.MemberInfoExtensions"/> class provides a set of extension methods for <see cref="T:System.Reflection.MemberInfo"/>.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.MemberInfoExtensions.GetCustomAttributes``1(System.Reflection.MemberInfo,System.Boolean)">
+            <summary>
+            Returns an array of custom attributes of type <typeparamref name="T"/> applied to <paramref name="member"/>.
+            </summary>
+            <typeparam name="T">
+            The type of <see cref="T:System.Attribute"/> to search for. All attributes that are assignable to this type are returned.
+            </typeparam>
+            <param name="member">
+            The <see cref="T:System.Reflection.MemberInfo"/> to get the custom attributes from.
+            </param>
+            <param name="inherit">
+            True to search this member's inheritance chain to find the attributes; otherwise, false. 
+            This parameter is ignored for properties and events.
+            </param>
+            <returns>
+            An array of custom attributes of type <typeparamref name="T"/> applied to this member,
+            or an array with zero elements if no attributes assignable to <typeparamref name="T"/> have been applied.
+            </returns>
+        </member>
+        <member name="T:Tekla.BIM.Internal.Reflection.MethodReflector">
+            <summary>
+            The <see cref="T:Tekla.BIM.Internal.Reflection.MethodReflector"/> class provides a set of helper methods for getting delegates to any methods from any types and/or class instances.
+            All returned values are always asserted for validity.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.MethodReflector.GetInstanceMethod``1(System.Object,System.String)">
+            <summary>
+            Gets a <see cref="T:System.Delegate"/> to the method with the given <paramref name="methodName"/> from the given <paramref name="target"/>.
+            </summary>
+            <typeparam name="TMethod">The type of delegate matching the method signature.</typeparam>
+            <param name="target">The instance to get the method delegate from.</param>
+            <param name="methodName">The name of the method to get a delegate to.</param>
+            <returns>A <see cref="T:System.Delegate"/> to the method with the given <paramref name="methodName"/> from the given <paramref name="target"/>.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.MethodReflector.GetStaticMethod``1(System.Type,System.String)">
+            <summary>
+            Gets a <see cref="T:System.Delegate"/> to the static method with the given <paramref name="methodName"/>, as declared in <paramref name="type"/>.
+            </summary>
+            <typeparam name="TMethod">The type of delegate matching the method signature.</typeparam>
+            <param name="type">The class type to get the method from.</param>
+            <param name="methodName">The name of the method to get a delegate to.</param>
+            <returns>A <see cref="T:System.Delegate"/> to the static method with the given <paramref name="methodName"/>, as declared in <paramref name="type"/>.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.MethodReflector.GetMethod``1(System.Type,System.String,System.Object)">
+            <summary>
+            Gets a <see cref="T:System.Delegate"/> to the method with the given <paramref name="methodName"/>, as declared in <paramref name="type"/>.
+            If <paramref name="target"/> is not null, the returned <see cref="T:System.Delegate"/> will refer to the instance method of <paramref name="target"/>.
+            </summary>
+            <typeparam name="TMethod">The type of delegate matching the method signature.</typeparam>
+            <param name="type">The class type to get the method from.</param>
+            <param name="methodName">The name of the method to get a delegate to.</param>
+            <param name="target">The instance to get the method delegate from, can be null for static methods.</param>
+            <returns>A <see cref="T:System.Delegate"/> to the method with the given <paramref name="methodName"/> from the <paramref name="target"/> of the given <paramref name="type"/>.</returns>
+        </member>
+        <member name="T:Tekla.BIM.Internal.Reflection.PropertyReflector">
+            <summary>
+            The <see cref="T:Tekla.BIM.Internal.Reflection.PropertyReflector"/> class provides a set of helper methods for accessing any properties from any types and/or class instances.
+            All returned values are always asserted for validity.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.PropertyReflector.GetInstanceProperty``1(System.Object,System.String,System.Boolean)">
+            <summary>
+            Returns from <paramref name="target"/>, the value of the instance property with the given <paramref name="propertyName"/>.
+            </summary>
+            <typeparam name="TProperty">The type of the property variable to get.</typeparam>
+            <param name="target">The instance to read the property from.</param>
+            <param name="propertyName">The name of the property to get.</param>
+            <param name="canBeNull">Indicates whether the property value can be null.</param>
+            <returns>The value of the private property named as the <paramref name="propertyName"/> string.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.PropertyReflector.GetStaticProperty``1(System.Type,System.String,System.Boolean)">
+            <summary>
+            Returns from <paramref name="type"/>, the value of the static property with the given <paramref name="propertyName"/>.
+            </summary>
+            <typeparam name="TProperty">The type of the property variable to get.</typeparam>
+            <param name="type">The <see cref="T:System.Type"/> to read the property from.</param>
+            <param name="propertyName">The name of the property to get.</param>
+            <param name="canBeNull">Indicates whether the property value can be null.</param>
+            <returns>The value of the private static property named as the <paramref name="propertyName"/> string.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.PropertyReflector.SetInstanceProperty``1(System.Object,System.String,``0)">
+            <summary>
+            Sets <paramref name="propertyValue"/> to the property with the given <paramref name="propertyName"/>,
+            as declared in the given <paramref name="target"/>.
+            </summary>
+            <typeparam name="TProperty">The type of property to set.</typeparam>
+            <param name="target">The instance to set the property value to.</param>
+            <param name="propertyName">The name of the property to set the value for.</param>
+            <param name="propertyValue">The value to set to the property.</param>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.PropertyReflector.SetStaticProperty``1(System.Type,System.String,``0)">
+            <summary>
+            Sets <paramref name="propertyValue"/> to the static property with the given <paramref name="propertyName"/>,
+            as declared in the given <paramref name="type"/>.
+            </summary>
+            <typeparam name="TProperty">The type of property to set.</typeparam>
+            <param name="type">The class type to set the property to.</param>
+            <param name="propertyName">The name of the property to set the value for.</param>
+            <param name="propertyValue">The value to set to the property.</param>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.PropertyReflector.GetPropertyValue``1(System.Type,System.String,System.Object,System.Boolean)">
+            <summary>
+            Returns the value of the property with the given <paramref name="propertyName"/> from the <paramref name="instance"/> of the given <paramref name="type"/>.
+            </summary>
+            <typeparam name="TProperty">The type of property to get.</typeparam>
+            <param name="type">The class type to get the property from.</param>
+            <param name="propertyName">The name of the property to get the value for.</param>
+            <param name="instance">The instance to read the property value from, can be null for static properties.</param>
+            <param name="canBeNull">Indicates whether the property value can be null.</param>
+            <returns>The value of the property with the given <paramref name="propertyName"/> from the <paramref name="instance"/> of the given <paramref name="type"/>.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.PropertyReflector.SetPropertyValue``1(System.Type,System.String,System.Object,``0)">
+            <summary>
+            Sets <paramref name="propertyValue"/> to the field with the given <paramref name="propertyName"/> of the <paramref name="instance"/> of the given <paramref name="type"/>.
+            </summary>
+            <typeparam name="TField">The type of field to set.</typeparam>
+            <param name="type">The class type to set the field to.</param>
+            <param name="propertyName">The name of the field to set the value for.</param>
+            <param name="instance">The instance to set the field value to, can be null for static fields.</param>
+            <param name="propertyValue">The value to set to the field.</param>
+        </member>
+        <member name="T:Tekla.BIM.Internal.Reflection.TypeReflector">
+            <summary>
+            The <see cref="T:Tekla.BIM.Internal.Reflection.TypeReflector"/> class provides a set of helper methods for getting the class types.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.TypeReflector.GetTypes``1(System.AppDomain)">
+            <summary>
+            Gets all <see cref="T:System.Type"/>s which are assignable from the <typeparamref name="T"/> type.
+            </summary>
+            <typeparam name="T">The target type.</typeparam>
+            <param name="appDomain">The application domain.</param>
+            <returns>The list of <see cref="T:System.Type"/>s which are assignable from the <typeparamref name="T"/> type.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Reflection.TypeReflector.CreateInstance``1(System.Type)">
+            <summary>
+            Creates an instance of type <paramref name="type"/>.
+            </summary>
+            <typeparam name="T">The target type to cast into.</typeparam>
+            <param name="type">The type.</param>
+            <returns>An instance of type <paramref name="type"/>.</returns>
+        </member>
+        <member name="T:Tekla.BIM.Internal.Threading.IWorkTask">
+            <summary>
+            The <see cref="T:Tekla.BIM.Internal.Threading.IWorkTask"/> interface represents a task that can be executed from any thread.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Threading.IWorkTask.Cancel">
+            <summary>
+            Cancels the current task. This action can only be performed before the task has started.
+            </summary>
+            <returns>True if the task is canceled; otherwise false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Threading.IWorkTask.WaitOne">
+            <summary>
+            Blocks the current thread until the current task receives a signal.
+            </summary>
+            <returns>
+            True if the current instance receives a signal. If the current instance is never signaled, WaitOne never returns.
+            </returns>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Threading.IWorkTask.WaitOne(System.Int32)">
+            <summary>
+            Blocks the current thread until the current task receives a signal.
+            </summary>
+            <param name="millisecondsTimeout">
+            The number of milliseconds to wait, or <see cref="F:System.Threading.Timeout.Infinite"/> (-1) to wait indefinitely.
+            </param>
+            <returns>True if the current instance receives a signal; otherwise, false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Threading.IWorkTask.WaitOne(System.Int32,System.Boolean)">
+            <summary>
+            Blocks the current thread until the current task receives a signal.
+            </summary>
+            <param name="millisecondsTimeout">
+            The number of milliseconds to wait, or <see cref="F:System.Threading.Timeout.Infinite"/> (-1) to wait indefinitely.
+            </param>
+            <param name="exitContext">
+            True to exit the synchronization domain for the context before the wait (if in a synchronized context), and reacquire it afterwards; otherwise, false.
+            </param>
+            <returns>True if the current instance receives a signal; otherwise, false.</returns>
+        </member>
+        <member name="T:Tekla.BIM.Internal.Threading.ReaderWriterLockSlimExtensions">
+            <summary>
+            The ReaderWriterLockSlimExtensions class provides extension methods for the <see cref="T:System.Threading.ReaderWriterLockSlim"/> class.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Threading.ReaderWriterLockSlimExtensions.UseReadLock(System.Threading.ReaderWriterLockSlim)">
+            <summary>
+            Tries to enter the lock in read mode.
+            The lock is automatically released when the returned object is disposed.
+            </summary>
+            <param name="lockSlim">The affected <see cref="T:System.Threading.ReaderWriterLockSlim"/>.</param>
+            <returns>An object that, when disposed, releases the lock.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Threading.ReaderWriterLockSlimExtensions.UseUpgradeableReadLock(System.Threading.ReaderWriterLockSlim)">
+            <summary>
+            Tries to enter the lock in upgradeable mode.
+            The lock is automatically released when the returned object is disposed.
+            </summary>
+            <param name="lockSlim">The affected <see cref="T:System.Threading.ReaderWriterLockSlim"/>.</param>
+            <returns>An object that, when disposed, releases the lock.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Threading.ReaderWriterLockSlimExtensions.UseWriteLock(System.Threading.ReaderWriterLockSlim)">
+            <summary>
+            Tries to enter the lock in write mode.
+            The lock is automatically released when the returned object is disposed.
+            </summary>
+            <param name="lockSlim">The affected <see cref="T:System.Threading.ReaderWriterLockSlim"/>.</param>
+            <returns>An object that, when disposed, releases the lock.</returns>
+        </member>
+        <member name="T:Tekla.BIM.Internal.Threading.SafeWorkTask">
+            <summary>
+            The <see cref="T:Tekla.BIM.Internal.Threading.SafeWorkTask"/> class represents a task that can be executed from any thread
+            and that should not throw any exceptions while doing so.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Threading.SafeWorkTask.#ctor(System.Threading.SendOrPostCallback,System.Object)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Tekla.BIM.Internal.Threading.SafeWorkTask"/> class.
+            </summary>
+            <param name="callback">The delegate to execute.</param>
+            <param name="state">The object passed to the delegate.</param>
+        </member>
+        <member name="P:Tekla.BIM.Internal.Threading.SafeWorkTask.Exception">
+            <summary>
+            Gets the <see cref="P:Tekla.BIM.Internal.Threading.SafeWorkTask.Exception"/> thrown by the callback method, if any.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Threading.SafeWorkTask.Execute">
+            <summary>
+            Executes the task in the current thread.
+            </summary>
+        </member>
+        <member name="T:Tekla.BIM.Internal.Threading.TaskPump">
+            <summary>
+            The <see cref="T:Tekla.BIM.Internal.Threading.TaskPump"/> class executes all tasks pushed into the <see cref="T:Tekla.BIM.Internal.Threading.TaskQueue"/>
+            associated to a given <see cref="T:Tekla.BIM.Internal.Threading.ThreadSynchronizationContext"/>.
+            </summary>
+        </member>
+        <member name="F:Tekla.BIM.Internal.Threading.TaskPump.context">
+            <summary>
+            The context to pull tasks from.
+            </summary>
+        </member>
+        <member name="F:Tekla.BIM.Internal.Threading.TaskPump.stop">
+            <summary>
+            The flag indicating whether <see cref="M:Tekla.BIM.Internal.Threading.TaskPump.Start"/> should continue or not.
+            If set, <see cref="M:Tekla.BIM.Internal.Threading.TaskPump.Start"/> quits its loop.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Threading.TaskPump.#ctor(Tekla.BIM.Internal.Threading.ThreadSynchronizationContext)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Tekla.BIM.Internal.Threading.TaskPump"/> class.
+            </summary>
+            <param name="context">The <see cref="T:Tekla.BIM.Internal.Threading.ThreadSynchronizationContext"/> to pull and execute tasks from.</param>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Threading.TaskPump.Start">
+            <summary>
+            Executes all pending tasks.
+            Blocks until <see cref="M:Tekla.BIM.Internal.Threading.TaskPump.Stop"/> is called.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Threading.TaskPump.Stop">
+            <summary>
+            Stops the current task pump.
+            </summary>
+        </member>
+        <member name="T:Tekla.BIM.Internal.Threading.TaskQueue">
+            <summary>
+            The <see cref="T:Tekla.BIM.Internal.Threading.TaskQueue"/> class represents a queue through which tasks can be moved from one thread to another.
+            </summary>
+        </member>
+        <member name="F:Tekla.BIM.Internal.Threading.TaskQueue.queue">
+            <summary>
+            The task queue.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Threading.TaskQueue.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Tekla.BIM.Internal.Threading.TaskQueue"/> class.
+            </summary>
+        </member>
+        <member name="P:Tekla.BIM.Internal.Threading.TaskQueue.HasWork">
+            <summary>
+            Gets a value indicating whether any tasks are enqueued.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Threading.TaskQueue.Dispose">
+            <summary>
+            Cancels all pending tasks while emptying the queue.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Threading.TaskQueue.ExecuteNext">
+            <summary>
+            Executes the next task in the current threading context.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Threading.TaskQueue.Push(Tekla.BIM.Internal.Threading.WorkTask)">
+            <summary>
+            Pushes the given task into the queue.
+            </summary>
+            <param name="task">The task to move to another thread.</param>
+        </member>
+        <member name="T:Tekla.BIM.Internal.Threading.ThreadSynchronizationContext">
+            <summary>
+            The <see cref="T:Tekla.BIM.Internal.Threading.ThreadSynchronizationContext"/> class provides a synchronization context for any thread.
+            </summary>
+        </member>
+        <member name="F:Tekla.BIM.Internal.Threading.ThreadSynchronizationContext.taskQueue">
+            <summary>
+            The queue through which tasks are moved from one thread to another.
+            </summary>
+        </member>
+        <member name="F:Tekla.BIM.Internal.Threading.ThreadSynchronizationContext.pump">
+            <summary>
+            The instance executing tasks from <see cref="F:Tekla.BIM.Internal.Threading.ThreadSynchronizationContext.taskQueue"/>.
+            Can be null if the instance creator specified so.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Threading.ThreadSynchronizationContext.#ctor(System.Boolean)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Tekla.BIM.Internal.Threading.ThreadSynchronizationContext"/> class.
+            </summary>
+            <param name="createTaskPump">
+             True if a new worker thread should be created to execute all work; otherwise, false.
+            </param>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Threading.ThreadSynchronizationContext.#ctor(System.Threading.ApartmentState)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Tekla.BIM.Internal.Threading.ThreadSynchronizationContext"/> class
+            which executes all tasks on a newly created thread.
+            </summary>
+            <param name="apartmentState">
+            Specifies the apartment state of the thread which will be executing the tasks.
+            <see cref="F:System.Threading.ApartmentState.STA"/> is used by default if <see cref="F:System.Threading.ApartmentState.Unknown"/> is specified.
+            </param>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Threading.ThreadSynchronizationContext.#ctor(System.Boolean,System.Threading.ApartmentState)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Tekla.BIM.Internal.Threading.ThreadSynchronizationContext"/> class
+            which optionally creates a new thread for executing all tasks.
+            </summary>
+            <param name="createTaskPump">
+            True if a new worker thread should be created to execute all work; otherwise, false.
+            </param>
+            <param name="apartmentState">
+            Specifies the apartment state of the thread which will be executing the tasks.
+            <see cref="F:System.Threading.ApartmentState.STA"/> is used by default if <see cref="F:System.Threading.ApartmentState.Unknown"/> is specified.
+            </param>
+        </member>
+        <member name="P:Tekla.BIM.Internal.Threading.ThreadSynchronizationContext.TaskQueue">
+            <summary>
+            Gets the queue containing all pending tasks.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Threading.ThreadSynchronizationContext.Dispose">
+            <summary>
+            Disposes the current synchronization context.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Threading.ThreadSynchronizationContext.Send(System.Threading.SendOrPostCallback,System.Object)">
+            <summary>
+            Invokes the callback in the synchronization context synchronously.
+            </summary>
+            <param name="callback">The delegate to call.</param>
+            <param name="state">The object passed to the delegate.</param>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Threading.ThreadSynchronizationContext.Post(System.Threading.SendOrPostCallback,System.Object)">
+            <summary>
+            Invokes the callback in the synchronization context asynchronously.
+            </summary>
+            <remarks>
+            Caution! Any unhandled exceptions will be executed in the target thread.
+            </remarks>
+            <param name="callback">The delegate to call.</param>
+            <param name="state">The object passed to the delegate.</param>
+        </member>
+        <member name="T:Tekla.BIM.Internal.Threading.WorkTask">
+            <summary>
+            The <see cref="T:Tekla.BIM.Internal.Threading.WorkTask"/> class represents a task that can be executed from any thread.
+            </summary>
+        </member>
+        <member name="F:Tekla.BIM.Internal.Threading.WorkTask.callbackStateObject">
+            <summary>
+            The object passed to the delegate.
+            </summary>
+        </member>
+        <member name="F:Tekla.BIM.Internal.Threading.WorkTask.callback">
+            <summary>
+            The delegate to execute.
+            </summary>
+        </member>
+        <member name="F:Tekla.BIM.Internal.Threading.WorkTask.completed">
+            <summary>
+            The handle which is set after <see cref="F:Tekla.BIM.Internal.Threading.WorkTask.callback"/> has executed.
+            </summary>
+        </member>
+        <member name="F:Tekla.BIM.Internal.Threading.WorkTask.stateSyncRoot">
+            <summary>
+            Lock for synchronized access to <see cref="F:Tekla.BIM.Internal.Threading.WorkTask.executing"/>, <see cref="F:Tekla.BIM.Internal.Threading.WorkTask.completed"/>, and <see cref="F:Tekla.BIM.Internal.Threading.WorkTask.canceled"/>.
+            </summary>
+        </member>
+        <member name="F:Tekla.BIM.Internal.Threading.WorkTask.canceled">
+            <summary>
+            Indicates whether the task is executed or canceled.
+            </summary>
+        </member>
+        <member name="F:Tekla.BIM.Internal.Threading.WorkTask.executing">
+            <summary>
+            The flag which is set true right before <see cref="F:Tekla.BIM.Internal.Threading.WorkTask.callback"/> is executed.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Threading.WorkTask.#ctor(System.Threading.SendOrPostCallback,System.Object)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Tekla.BIM.Internal.Threading.WorkTask"/> class.
+            </summary>
+            <param name="callback">The delegate to execute.</param>
+            <param name="state">The object passed to the delegate.</param>
+        </member>
+        <member name="P:Tekla.BIM.Internal.Threading.WorkTask.Canceled">
+            <summary>
+            Gets a value indicating whether the task is canceled.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Threading.WorkTask.Cancel">
+            <summary>
+            Cancels the current task. This action can only be performed before the task has started.
+            </summary>
+            <returns>True if the task is canceled; otherwise false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Threading.WorkTask.WaitOne">
+            <summary>
+            Blocks the current thread until the current task receives a signal indicating execution ended.
+            </summary>
+            <returns>
+            True if the current instance receives a signal. If the current instance is never signaled, WaitOne never returns.
+            </returns>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Threading.WorkTask.WaitOne(System.Int32)">
+            <summary>
+            Blocks the current thread until the current task receives a signal indicating execution ended.
+            </summary>
+            <param name="millisecondsTimeout">
+            The number of milliseconds to wait, or <see cref="F:System.Threading.Timeout.Infinite"/> (-1) to wait indefinitely.
+            </param>
+            <returns>True if the current instance receives a signal; otherwise, false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Threading.WorkTask.WaitOne(System.Int32,System.Boolean)">
+            <summary>
+            Blocks the current thread until the current task receives a signal indicating execution ended.
+            </summary>
+            <param name="millisecondsTimeout">
+            The number of milliseconds to wait, or <see cref="F:System.Threading.Timeout.Infinite"/> (-1) to wait indefinitely.
+            </param>
+            <param name="exitContext">
+            True to exit the synchronization domain for the context before the wait (if in a synchronized context), and reacquire it afterwards; otherwise, false.
+            </param>
+            <returns>True if the current instance receives a signal; otherwise, false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Internal.Threading.WorkTask.Execute">
+            <summary>
+            Executes the task in the current thread.
+            </summary>
+        </member>
+    </members>
+</doc>

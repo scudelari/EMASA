@@ -1,0 +1,50 @@
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\WpfApp1\bin\Debug\WpfApp1.exe.config
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\WpfApp1\bin\Debug\WpfApp1.exe
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\WpfApp1\bin\Debug\WpfApp1.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\WpfApp1\bin\Debug\EmasaWPFLibrary.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\WpfApp1\bin\Debug\Prism.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\WpfApp1\bin\Debug\System.ValueTuple.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\WpfApp1\bin\Debug\EmasaWPFLibrary.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\WpfApp1\bin\Debug\Prism.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\WpfApp1\bin\Debug\Prism.xml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\WpfApp1\bin\Debug\System.ValueTuple.xml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\WpfApp1\obj\Debug\WpfApp1.csprojAssemblyReference.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\WpfApp1\obj\Debug\MainWindow.baml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\WpfApp1\obj\Debug\App.baml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\WpfApp1\obj\Debug\MainWindow.g.cs
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\WpfApp1\obj\Debug\App.g.cs
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\WpfApp1\obj\Debug\WpfApp1_MarkupCompile.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\WpfApp1\obj\Debug\WpfApp1.g.resources
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\WpfApp1\obj\Debug\WpfApp1.Properties.Resources.resources
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\WpfApp1\obj\Debug\WpfApp1.csproj.GenerateResource.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\WpfApp1\obj\Debug\WpfApp1.csproj.CoreCompileInputs.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\WpfApp1\obj\Debug\WpfApp1.csproj.CopyComplete
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\WpfApp1\obj\Debug\WpfApp1.exe
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\WpfApp1\obj\Debug\WpfApp1.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\bin\Debug\WpfApp1.exe.config
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\bin\Debug\WpfApp1.exe
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\bin\Debug\WpfApp1.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\bin\Debug\BaseWPFLibrary.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\bin\Debug\LibOptimization.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\bin\Debug\Prism.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\bin\Debug\System.ValueTuple.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\bin\Debug\BaseWPFLibrary.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\bin\Debug\BaseWPFLibrary.dll.config
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\bin\Debug\LibOptimization.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\bin\Debug\LibOptimization.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\bin\Debug\Prism.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\bin\Debug\Prism.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\bin\Debug\System.ValueTuple.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Debug\WpfApp1.csprojAssemblyReference.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Debug\MainWindow.baml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Debug\App.baml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Debug\MainWindow.g.cs
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Debug\App.g.cs
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Debug\WpfApp1_MarkupCompile.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Debug\WpfApp1.g.resources
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Debug\WpfApp1.Properties.Resources.resources
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Debug\WpfApp1.csproj.GenerateResource.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Debug\WpfApp1.csproj.CoreCompileInputs.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Debug\WpfApp1.csproj.CopyComplete
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Debug\WpfApp1.exe
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Debug\WpfApp1.pdb

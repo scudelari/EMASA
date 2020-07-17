@@ -1,0 +1,118 @@
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\obj\Debug\EmasaSapTools.csprojAssemblyReference.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\obj\Debug\MainWindow.baml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\obj\Debug\App.baml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\obj\Debug\MainWindow.g.cs
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\obj\Debug\App.g.cs
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\obj\Debug\EmasaSapTools_MarkupCompile.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\obj\Debug\EmasaSapTools.g.resources
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\obj\Debug\EmasaSapTools.Properties.Resources.resources
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\obj\Debug\EmasaSapTools.csproj.GenerateResource.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\obj\Debug\EmasaSapTools.csproj.CoreCompileInputs.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\Win32\librhino3dmio_native.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\Win64\librhino3dmio_native.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\librhino3dmio_native.dylib
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\EmasaSapTools.exe.config
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\EmasaSapTools.exe
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\EmasaSapTools.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\Castle.Core.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\CommonServiceLocator.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\EmasaWPFLibrary.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\EMSRhinoInterface.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\ExcelDataReader.DataSet.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\ExcelDataReader.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\LibOptimization.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\MathNet.Numerics.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\MathNet.Spatial.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\MoreLinq.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\Newtonsoft.Json.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\Prism.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\Prism.Wpf.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\S2KHelper.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\System.Data.SQLite.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\System.Data.SQLite.Linq.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\System.ValueTuple.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\System.Windows.Interactivity.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\EmasaWPFLibrary.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\S2KHelper.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\S2KHelper.dll.config
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\Castle.Core.xml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\EMSRhinoInterface.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\ExcelDataReader.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\ExcelDataReader.xml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\ExcelDataReader.DataSet.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\ExcelDataReader.DataSet.xml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\MathNet.Numerics.xml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\MathNet.Spatial.xml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\MoreLinq.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\MoreLinq.xml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\Newtonsoft.Json.xml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\Prism.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\Prism.xml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\Prism.Wpf.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\Prism.Wpf.xml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\System.Data.SQLite.xml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\System.Data.SQLite.dll.config
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\bin\Debug\System.ValueTuple.xml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\obj\Debug\EmasaSapTools.csproj.CopyComplete
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\obj\Debug\EmasaSapTools.exe
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaSapTools\obj\Debug\EmasaSapTools.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\Win32\librhino3dmio_native.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\Win64\librhino3dmio_native.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\librhino3dmio_native.dylib
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\EmasaSapTools.exe.config
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\EmasaSapTools.exe
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\EmasaSapTools.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\BaseWPFLibrary.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\Castle.Core.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\CommonServiceLocator.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\ExcelDataReader.DataSet.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\ExcelDataReader.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\LibOptimization.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\MathNet.Numerics.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\MathNet.Spatial.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\MoreLinq.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\Newtonsoft.Json.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\Prism.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\Prism.Wpf.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\RhinoInterfaceLibrary.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\Sap2000Library.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\System.Data.SQLite.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\System.Data.SQLite.Linq.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\System.ValueTuple.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\System.Windows.Interactivity.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\Rhino3dmIO.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\BaseWPFLibrary.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\BaseWPFLibrary.dll.config
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\RhinoInterfaceLibrary.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\Sap2000Library.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\Sap2000Library.dll.config
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\Castle.Core.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\ExcelDataReader.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\ExcelDataReader.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\ExcelDataReader.DataSet.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\ExcelDataReader.DataSet.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\MathNet.Numerics.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\MathNet.Spatial.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\MoreLinq.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\MoreLinq.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\Newtonsoft.Json.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\Prism.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\Prism.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\Prism.Wpf.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\Prism.Wpf.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\System.Data.SQLite.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\System.Data.SQLite.dll.config
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\System.ValueTuple.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Debug\EmasaSapTools.csprojAssemblyReference.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Debug\MainWindow.baml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Debug\App.baml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Debug\MainWindow.g.cs
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Debug\App.g.cs
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Debug\EmasaSapTools_MarkupCompile.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Debug\EmasaSapTools.g.resources
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Debug\EmasaSapTools.Properties.Resources.resources
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Debug\EmasaSapTools.csproj.GenerateResource.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Debug\EmasaSapTools.csproj.CoreCompileInputs.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Debug\EmasaSapTools.csproj.CopyComplete
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Debug\EmasaSapTools.exe
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Debug\EmasaSapTools.pdb

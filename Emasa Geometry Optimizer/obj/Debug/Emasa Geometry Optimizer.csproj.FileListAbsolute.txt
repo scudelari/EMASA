@@ -1,0 +1,54 @@
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\obj\Debug\Emasa Geometry Optimizer.csprojAssemblyReference.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\obj\Debug\MainWindow.g.cs
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\obj\Debug\App.g.cs
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\obj\Debug\Emasa Geometry Optimizer_MarkupCompile.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\obj\Debug\Emasa Geometry Optimizer_MarkupCompile.lref
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Win32\librhino3dmio_native.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Win64\librhino3dmio_native.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\librhino3dmio_native.dylib
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Accord.dll.config
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Emasa Geometry Optimizer.exe.config
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Emasa Geometry Optimizer.exe
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Emasa Geometry Optimizer.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Accord.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Accord.Math.Core.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Accord.Math.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\AccordHelper.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\BaseWPFLibrary.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\LibOptimization.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Prism.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Rhino3dmIO.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\RhinoInterfaceLibrary.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\System.Data.SQLite.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\System.ValueTuple.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Accord.Genetic.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Sap2000Library.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\MathNet.Spatial.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\AccordHelper.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\AccordHelper.dll.config
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\BaseWPFLibrary.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\BaseWPFLibrary.dll.config
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\RhinoInterfaceLibrary.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\LibOptimization.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\LibOptimization.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Prism.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Prism.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\System.Data.SQLite.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\System.Data.SQLite.dll.config
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\System.ValueTuple.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Sap2000Library.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Sap2000Library.dll.config
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\MathNet.Spatial.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\obj\Debug\App.baml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\obj\Debug\MainWindow.baml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\obj\Debug\Emasa Geometry Optimizer.g.resources
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\obj\Debug\Emasa_Geometry_Optimizer.Properties.Resources.resources
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\obj\Debug\Emasa Geometry Optimizer.csproj.GenerateResource.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\obj\Debug\Emasa Geometry Optimizer.csproj.CoreCompileInputs.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\obj\Debug\Emasa Geometry Optimizer.csproj.CopyComplete
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\obj\Debug\Emasa Geometry Optimizer.exe
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\obj\Debug\Emasa Geometry Optimizer.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Accord.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Accord.Genetic.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Accord.Math.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Accord.Math.Core.pdb

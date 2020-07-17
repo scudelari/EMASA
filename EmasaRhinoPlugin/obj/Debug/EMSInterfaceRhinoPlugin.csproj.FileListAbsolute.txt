@@ -1,0 +1,4 @@
+C:\Users\EngRafaelSMacedo\source\repos\EMSRhinoHelper2\EMSInterfaceRhinoPlugin\EMSInterfaceRhinoPlugin\bin\Debug\EMSInterfaceRhinoPlugin.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMSRhinoHelper2\EMSInterfaceRhinoPlugin\EMSInterfaceRhinoPlugin\bin\Debug\EMSInterfaceRhinoPlugin.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMSRhinoHelper2\EMSInterfaceRhinoPlugin\EMSInterfaceRhinoPlugin\obj\Debug\EMSInterfaceRhinoPlugin.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMSRhinoHelper2\EMSInterfaceRhinoPlugin\EMSInterfaceRhinoPlugin\obj\Debug\EMSInterfaceRhinoPlugin.pdb

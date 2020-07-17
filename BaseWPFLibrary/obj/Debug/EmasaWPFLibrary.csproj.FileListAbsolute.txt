@@ -1,0 +1,67 @@
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\bin\Debug\EmasaWPFLibrary.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\bin\Debug\EmasaWPFLibrary.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\bin\Debug\CommonServiceLocator.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\bin\Debug\Prism.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\bin\Debug\Prism.Wpf.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\bin\Debug\System.ValueTuple.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\bin\Debug\System.Windows.Interactivity.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\bin\Debug\Prism.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\bin\Debug\Prism.xml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\bin\Debug\Prism.Wpf.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\bin\Debug\Prism.Wpf.xml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\bin\Debug\System.ValueTuple.xml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\obj\Debug\Forms\BusyForm.baml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\obj\Debug\Forms\CancelOpForm.baml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\obj\Debug\Forms\ExceptionViewer.baml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\obj\Debug\MessageOverlay.baml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\obj\Debug\BusyOverlay.g.cs
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\obj\Debug\Forms\BusyForm.g.cs
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\obj\Debug\Forms\CancelOpForm.g.cs
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\obj\Debug\Forms\ExceptionViewer.g.cs
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\obj\Debug\MessageOverlay.g.cs
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\obj\Debug\GeneratedInternalTypeHelper.g.cs
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\obj\Debug\EmasaWPFLibrary_MarkupCompile.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\obj\Debug\EmasaWPFLibrary_MarkupCompile.lref
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\obj\Debug\BusyOverlay.baml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\obj\Debug\ResourceDictionary.baml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\obj\Debug\EmasaWPFLibrary.g.resources
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\obj\Debug\EmasaWPFLibrary.Properties.Resources.resources
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\obj\Debug\EmasaWPFLibrary.csproj.GenerateResource.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\obj\Debug\EmasaWPFLibrary.csproj.CoreCompileInputs.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\obj\Debug\EmasaWPFLibrary.csproj.CopyComplete
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\obj\Debug\EmasaWPFLibrary.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\obj\Debug\EmasaWPFLibrary.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\EmasaWPFLibrary\obj\Debug\EmasaWPFLibrary.csprojAssemblyReference.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\bin\Debug\EmasaWPFLibrary.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\bin\Debug\EmasaWPFLibrary.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\bin\Debug\CommonServiceLocator.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\bin\Debug\Prism.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\bin\Debug\Prism.Wpf.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\bin\Debug\System.ValueTuple.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\bin\Debug\System.Windows.Interactivity.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\bin\Debug\Prism.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\bin\Debug\Prism.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\bin\Debug\Prism.Wpf.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\bin\Debug\Prism.Wpf.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\bin\Debug\System.ValueTuple.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\obj\Debug\Forms\BusyForm.baml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\obj\Debug\Forms\CancelOpForm.baml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\obj\Debug\Forms\ExceptionViewer.baml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\obj\Debug\MessageOverlay.baml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\obj\Debug\BusyOverlay.g.cs
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\obj\Debug\Forms\BusyForm.g.cs
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\obj\Debug\Forms\CancelOpForm.g.cs
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\obj\Debug\Forms\ExceptionViewer.g.cs
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\obj\Debug\MessageOverlay.g.cs
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\obj\Debug\GeneratedInternalTypeHelper.g.cs
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\obj\Debug\EmasaWPFLibrary_MarkupCompile.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\obj\Debug\EmasaWPFLibrary_MarkupCompile.lref
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\obj\Debug\BusyOverlay.baml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\obj\Debug\ResourceDictionary.baml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\obj\Debug\EmasaWPFLibrary.g.resources
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\obj\Debug\EmasaWPFLibrary.Properties.Resources.resources
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\obj\Debug\EmasaWPFLibrary.csproj.GenerateResource.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\obj\Debug\EmasaWPFLibrary.csproj.CoreCompileInputs.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\obj\Debug\EmasaWPFLibrary.csproj.CopyComplete
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\obj\Debug\EmasaWPFLibrary.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaWPFLibrary\obj\Debug\EmasaWPFLibrary.pdb

@@ -1,0 +1,27 @@
+﻿<Application
+    x:Class="Emasa_Geometry_Optimizer.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:Emasa_Geometry_Optimizer"
+    Exit="Application_Exit"
+    StartupUri="MainWindow.xaml">
+    <Application.Resources>
+
+        <ResourceDictionary>
+
+            <Style x:Key="ProblemSelectorText" TargetType="TextBlock">
+                <Style.Triggers>
+                    <Trigger Property="Tag" Value="true">
+                        <Setter Property="Foreground" Value="Gray" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/BaseWPFLibrary;component/ResourceDictionary.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+
+    </Application.Resources>
+
+</Application>

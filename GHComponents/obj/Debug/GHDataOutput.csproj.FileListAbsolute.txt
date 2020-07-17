@@ -1,0 +1,14 @@
+C:\Users\EngRafaelSMacedo\source\repos\RhinoAnsys\GHDataOutput\bin\GHDataOutput.dll
+C:\Users\EngRafaelSMacedo\source\repos\RhinoAnsys\GHDataOutput\bin\GHDataOutput.pdb
+C:\Users\EngRafaelSMacedo\source\repos\RhinoAnsys\GHDataOutput\obj\Debug\GHDataOutput.csprojAssemblyReference.cache
+C:\Users\EngRafaelSMacedo\source\repos\RhinoAnsys\GHDataOutput\obj\Debug\GHDataOutput.csproj.CoreCompileInputs.cache
+C:\Users\EngRafaelSMacedo\source\repos\RhinoAnsys\GHDataOutput\obj\Debug\GHDataOutput.dll
+C:\Users\EngRafaelSMacedo\source\repos\RhinoAnsys\GHDataOutput\obj\Debug\GHDataOutput.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\RhinoAnsys-Git\GHDataOutput\bin\GHDataOutput.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\RhinoAnsys-Git\GHDataOutput\bin\GHDataOutput.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\RhinoAnsys-Git\GHDataOutput\obj\Debug\GHDataOutput.csprojAssemblyReference.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\RhinoAnsys-Git\GHDataOutput\obj\Debug\GHDataOutput.csproj.CoreCompileInputs.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\RhinoAnsys-Git\GHDataOutput\obj\Debug\GHDataOutput.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\RhinoAnsys-Git\GHDataOutput\obj\Debug\GHDataOutput.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\RhinoAnsys-Git\GHDataOutput\obj\Debug\GHDataOutput.Properties.Resources.resources
+C:\Users\EngRafaelSMacedo\Source\Repos\RhinoAnsys-Git\GHDataOutput\obj\Debug\GHDataOutput.csproj.GenerateResource.cache

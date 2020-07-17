@@ -1,0 +1,50 @@
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\S2KHelper\bin\Debug\Win32\librhino3dmio_native.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\S2KHelper\bin\Debug\Win64\librhino3dmio_native.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\S2KHelper\bin\Debug\librhino3dmio_native.dylib
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\S2KHelper\bin\Debug\S2KHelper.dll.config
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\S2KHelper\bin\Debug\S2KHelper.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\S2KHelper\bin\Debug\S2KHelper.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\S2KHelper\bin\Debug\Castle.Core.xml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\S2KHelper\bin\Debug\ExcelDataReader.xml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\S2KHelper\bin\Debug\ExcelDataReader.DataSet.xml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\S2KHelper\bin\Debug\FlaUI.Core.xml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\S2KHelper\bin\Debug\FlaUI.UIA3.xml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\S2KHelper\bin\Debug\MathNet.Numerics.xml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\S2KHelper\bin\Debug\MathNet.Spatial.xml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\S2KHelper\bin\Debug\MoreLinq.xml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\S2KHelper\bin\Debug\System.ValueTuple.xml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\S2KHelper\bin\Debug\TestStack.White.xml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\S2KHelper\bin\Debug\Prism.xml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\S2KHelper\obj\Debug\S2KHelper.csprojAssemblyReference.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\S2KHelper\obj\Debug\S2KHelper.Properties.Resources.resources
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\S2KHelper\obj\Debug\S2KHelper.csproj.GenerateResource.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\S2KHelper\obj\Debug\S2KHelper.csproj.CoreCompileInputs.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\S2KHelper\obj\Debug\S2KHelper.csproj.Fody.CopyLocal.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\S2KHelper\obj\Debug\S2KHelper.csproj.CopyComplete
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\S2KHelper\obj\Debug\S2KHelper.dll
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\S2KHelper\obj\Debug\S2KHelper.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\S2KHelper\bin\Debug\Win32\librhino3dmio_native.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\S2KHelper\bin\Debug\Win64\librhino3dmio_native.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\S2KHelper\bin\Debug\librhino3dmio_native.dylib
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\S2KHelper\bin\Debug\S2KHelper.dll.config
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\S2KHelper\bin\Debug\S2KHelper.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\S2KHelper\bin\Debug\S2KHelper.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\S2KHelper\bin\Debug\Castle.Core.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\S2KHelper\bin\Debug\ExcelDataReader.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\S2KHelper\bin\Debug\ExcelDataReader.DataSet.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\S2KHelper\bin\Debug\FlaUI.Core.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\S2KHelper\bin\Debug\FlaUI.UIA3.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\S2KHelper\bin\Debug\MathNet.Numerics.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\S2KHelper\bin\Debug\MathNet.Spatial.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\S2KHelper\bin\Debug\MoreLinq.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\S2KHelper\bin\Debug\Prism.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\S2KHelper\bin\Debug\System.ValueTuple.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\S2KHelper\bin\Debug\TestStack.White.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\S2KHelper\obj\Debug\S2KHelper.csprojAssemblyReference.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\S2KHelper\obj\Debug\S2KHelper.Properties.Resources.resources
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\S2KHelper\obj\Debug\S2KHelper.csproj.GenerateResource.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\S2KHelper\obj\Debug\S2KHelper.csproj.CoreCompileInputs.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\S2KHelper\obj\Debug\S2KHelper.csproj.Fody.CopyLocal.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\S2KHelper\obj\Debug\S2KHelper.csproj.CopyComplete
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\S2KHelper\obj\Debug\S2KHelper.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\S2KHelper\obj\Debug\S2KHelper.pdb

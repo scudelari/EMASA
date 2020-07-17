@@ -1,0 +1,8 @@
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\3DSMax Staged Construction\obj\Debug\3DSMax Staged Construction.csprojAssemblyReference.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\3DSMax Staged Construction\obj\Debug\Staged3DSMaxWindow.g.cs
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\3DSMax Staged Construction\obj\Debug\3DSMax Staged Construction_MarkupCompile.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\3DSMax Staged Construction\obj\Debug\3DSMax Staged Construction_MarkupCompile.lref
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\3DSMax Staged Construction\obj\Debug\3DSMax Staged Construction.csprojAssemblyReference.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\3DSMax Staged Construction\obj\Debug\Staged3DSMaxWindow.g.cs
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\3DSMax Staged Construction\obj\Debug\3DSMax Staged Construction_MarkupCompile.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\3DSMax Staged Construction\obj\Debug\3DSMax Staged Construction_MarkupCompile.lref

@@ -1,0 +1,11 @@
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaRhinoPlugin\bin\Debug\EmasaRhinoPlugin.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaRhinoPlugin\bin\Debug\EmasaRhinoPlugin.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaRhinoPlugin\bin\Debug\MathNet.Numerics.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaRhinoPlugin\bin\Debug\MathNet.Spatial.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaRhinoPlugin\bin\Debug\MathNet.Numerics.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaRhinoPlugin\bin\Debug\MathNet.Spatial.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaRhinoPlugin\obj\Debug\EmasaRhinoPlugin.csproj.CoreCompileInputs.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaRhinoPlugin\obj\Debug\EmasaRhinoPlugin.csproj.CopyComplete
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaRhinoPlugin\obj\Debug\EmasaRhinoPlugin.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaRhinoPlugin\obj\Debug\EmasaRhinoPlugin.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaRhinoPlugin\obj\Debug\EmasaRhinoPlugin.csprojAssemblyReference.cache
