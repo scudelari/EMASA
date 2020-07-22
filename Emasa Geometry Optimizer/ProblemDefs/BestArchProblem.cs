@@ -2,9 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using AccordHelper.FEA;
 using AccordHelper.Opt;
 using AccordHelper.Opt.ParamDefinitions;
+using MathNet.Numerics.Statistics;
 using RhinoInterfaceLibrary;
 using Line = r3dm::Rhino.Geometry.Line;
 using Point3d = r3dm::Rhino.Geometry.Point3d;
@@ -16,13 +18,9 @@ namespace Emasa_Geometry_Optimizer.ProblemDefs
     {
         public override string ProblemFriendlyName => "Finds the best arch";
 
-        public override List<FeaSoftwareEnum> SupportedFeaSoftwares { get; } = new List<FeaSoftwareEnum>()
-            {
-            FeaSoftwareEnum.Ansys
-            };
-
         public BestArchProblem() : base(new TestArchObjectiveFunction())
         {
+            AddSupportedFeaSoftware(FeaSoftwareEnum.Ansys);
         }
     }
 
@@ -41,13 +39,25 @@ namespace Emasa_Geometry_Optimizer.ProblemDefs
             IntermediateDefs.Add(new PointList_Output_ParamDef("SlidingSupportJoint"));
 
             // Sets the output variables
-            FinalDefs.Add(new Double_Output_ParamDef("MaximumVonMisesStress",
+            FinalDefs.Add(new Double_Output_ParamDef("MaximumStrainEnergy",
                 inTargetValue: 0d,
-                inExpectedScale: new DoubleValueRange(0,400)
+                inExpectedScale: new DoubleValueRange(1e-3,5e-2)
                 ));
+
+            // Sets the output variables
+            FinalDefs.Add(new Double_Output_ParamDef("AverageStrainEnergy",
+                inTargetValue: 0d,
+                inExpectedScale: new DoubleValueRange(1e-3, 5e-2)
+            ));
+
+            // Sets the output variables
+            FinalDefs.Add(new Double_Output_ParamDef("StDevStrainEnergy",
+                inTargetValue: 0d,
+                inExpectedScale: new DoubleValueRange(1e-3, 5e-2)
+            ));
         }
 
-        public override double Function_Override(double[] inValues)
+        public override double Function_Override(double[] inVariables)
         {
             // Writes the points to Grasshopper
             CurrentSolution.WritePointToGrasshopper(RhinoStaticMethods.GH_Auto_InputVariableFolder(RhinoModel.RM.GrasshopperFullFileName));
@@ -78,10 +88,27 @@ namespace Emasa_Geometry_Optimizer.ProblemDefs
             FeModel.AddPoint3dToGroups(archLines.GetAllPoints(), new List<string>() {"apnts"});
             FeModel.AddRestraint("apnts", new bool[] { false, true, false, false, false, false });
 
-            FeModel.WriteModelData();
+            FeModel.WriteModelToSoftware();
             FeModel.RunAnalysis();
 
-            return 10;
+            FeModel.GetResult_FillNodalReactions();
+            FeModel.GetResult_FillElementStrainEnergy();
+
+            double averageStrainEnergy = (from a in FeModel.MeshBeamElements select a.Value.ElementStrainEnergy.StrainEnergy).Average();
+            double maxStrainEnergy = (from a in FeModel.MeshBeamElements select a.Value.ElementStrainEnergy.StrainEnergy).Max();
+            double StDevStrainEnergy = (from a in FeModel.MeshBeamElements select a.Value.ElementStrainEnergy.StrainEnergy).StandardDeviation();
+
+            CurrentSolution.SetFinalValueByName("MaximumStrainEnergy", maxStrainEnergy);
+
+            CurrentSolution.Eval = CurrentSolution.GetSquareSumOfList(new[]
+                {
+                // Stores the solution result values
+
+                CurrentSolution.SetFinalValueByName("AverageStrainEnergy", averageStrainEnergy),
+                CurrentSolution.SetFinalValueByName("StDevStrainEnergy", StDevStrainEnergy),
+                });
+
+            return CurrentSolution.Eval;
         }
     }
 }

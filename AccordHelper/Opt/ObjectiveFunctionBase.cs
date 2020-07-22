@@ -2,11 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Security.RightsManagement;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Documents;
 using Accord.Genetic;
@@ -30,6 +32,16 @@ namespace AccordHelper.Opt
         {
             get => Problem.FeModel;
         }
+
+        private void CleanUpFeModel()
+        {
+            if (FeModel != null)
+            {
+                FeModel.ResetSoftwareData();
+                FeModel.ResetClassData();
+            }
+        }
+
         protected ObjectiveFunctionBase()
         {
             // Initializes the lists
@@ -251,7 +263,6 @@ namespace AccordHelper.Opt
             }
         }
 
-
         private int _functionHitCount;
         public int FunctionHitCount
         {
@@ -260,9 +271,9 @@ namespace AccordHelper.Opt
             {
                 _functionHitCount = value;
                 OnPropertyChanged();
+                OnPropertyChanged("TotalHitCount");
             }
         }
-
         private int _gradientHitCount;
         public int GradientHitCount
         {
@@ -271,7 +282,12 @@ namespace AccordHelper.Opt
             {
                 _gradientHitCount = value;
                 OnPropertyChanged();
+                OnPropertyChanged("TotalHitCount");
             }
+        }
+        public int TotalHitCount
+        {
+            get => _functionHitCount + _gradientHitCount;
         }
 
         private int? _autoNumber = null;
@@ -293,67 +309,165 @@ namespace AccordHelper.Opt
             }
         }
 
-        private double _currentEval = double.MaxValue;
+        private double _currentEvalElapsedSeconds = 0;
+        public double CurrentEvalElapsedSeconds
+        {
+            get => _currentEvalElapsedSeconds;
+            set
+            {
+                _currentEvalElapsedSeconds = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private double _currentEval = double.NaN;
         public double CurrentEval
         {
             get => _currentEval;
             set
             {
+                // Saves the previous value
+                PreviousEval = _currentEval;
                 _currentEval = value;
                 OnPropertyChanged();
             }
         }
 
-        private double Function_Wrapper(double[] inValues)
+        private double _previousEval = double.NaN;
+        public double PreviousEval
         {
+            get => _previousEval;
+            set
+            {
+                _previousEval = value;
+                OnPropertyChanged();
+            }
+        }
+        private int _noProgressCounter;
+        public int NoProgressCounter
+        {
+            get => _noProgressCounter;
+            set
+            {
+                _noProgressCounter = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private void CheckSolverStatus()
+        {
+            // The Genetic solver is different as the controls are made in the ProblemBase.Solve function
+            if (Problem.SolverType != SolverType.Genetic)
+            {
+                if (TotalHitCount >= Problem.MaxIterations) throw new SolverEndException(SolverStatus.MaxEvaluations, CurrentEval);
+
+                // Can break on residual?
+                if (Problem.ShouldTargetResidual)
+                {
+                    // Success: Finished on target residual
+                    if (CurrentEval <= Problem.TargetResidual) throw new SolverEndException(SolverStatus.Finished, CurrentEval);
+                }
+
+                if (Problem.ShouldLimitChange)
+                {
+                    // Not the first iteration
+                    if (!double.IsNaN(_previousEval))
+                    {
+                        double percentChange = (CurrentEval - PreviousEval) / CurrentEval;
+                        
+                        if (percentChange <= Problem.MinResidualPercentChange) NoProgressCounter++;
+                        else NoProgressCounter = 0;
+
+                        if (NoProgressCounter >= 5) throw new SolverEndException(SolverStatus.NoProgress, CurrentEval);
+                    }
+                }
+            }
+        }
+
+        private double Function_Wrapper(double[] inVariables)
+        {
+            Stopwatch sw = Stopwatch.StartNew();
+
             FunctionHitCount++;
 
             // Creates a new possible solution
-            CurrentSolution = new PossibleSolution(inValues, this, FunctionOrGradientEval.Function);
+            CurrentSolution = new PossibleSolution(inVariables, this, FunctionOrGradientEval.Function);
 
             // Adds it to the problems' possible solutions
             Problem.PossibleSolutions.Add(CurrentSolution);
 
-            double fEval = Function_Override(inValues);
-            
-            if (Problem.SolverType != SolverType.Genetic)
-                if (fEval <= Problem.TargetResidual) throw new SolverSuccessException(fEval);
-
-            // Stores the value and signals the interface
-            CurrentEval = fEval;
-
-            return fEval;
-        }
-        private double Function_WrapperForGradient(double[] inValues)
-        {
-            GradientHitCount++;
-
-            // Creates a new possible solution
-            CurrentSolution = new PossibleSolution(inValues, this, FunctionOrGradientEval.Gradient);
-
-            // Adds it to the problems' possible solutions
-            Problem.PossibleSolutions.Add(CurrentSolution);
+            CleanUpFeModel();
 
             try
             {
-                return Function_Override(inValues);
+                CurrentEval = Function_Override(inVariables);
+            }
+            catch (Exception e) // If there was an error in the objective function, increases the previous value by 25%
+            {
+                CurrentEval = double.MaxValue;
+            }
+
+            //CheckSolverStatus();
+
+            sw.Stop();
+            CurrentEvalElapsedSeconds = sw.Elapsed.TotalSeconds;
+
+            return CurrentEval;
+        }
+        private double Function_WrapperForGradient(double[] inVariables)
+        {
+            Stopwatch sw = Stopwatch.StartNew();
+
+            GradientHitCount++;
+
+            // Creates a new possible solution
+            CurrentSolution = new PossibleSolution(inVariables, this, FunctionOrGradientEval.Gradient);
+
+            // Adds it to the problems' possible solutions
+            Problem.PossibleSolutions.Add(CurrentSolution);
+
+            CleanUpFeModel();
+
+            try
+            {
+                double retValue = Function_Override(inVariables);
+
+                sw.Stop();
+                CurrentEvalElapsedSeconds = sw.Elapsed.TotalSeconds;
+
+                return retValue;
             }
             catch (Exception e)
             {
                 throw new InvalidOperationException("Problem in the Function_WrapperForGradient.", e);
             }
         }
-        public abstract double Function_Override(double[] inValues);
+        public double Function_NLOptFunctionWrapper(double[] inVariables, double[] inGradient = null)
+        {
+            // Should we cancel the execution?
+            if (Problem.CancelSource.IsCancellationRequested)
+            {
+                Problem.NLOptMethod.ForceStop();
+            }
+
+            if (inGradient != null)
+            {
+                inGradient = Gradient_Override(inVariables);
+            }
+
+            return Function_Wrapper(inVariables);
+        }
+        public abstract double Function_Override(double[] inVariables);
 
         /// <summary>
         /// The default implementation is to make an approximation using Finite Differences
         /// </summary>
-        /// <param name="inValues">The points at which the function's Gradient is required.</param>
+        /// <param name="inVariables">The points at which the function's Gradient is required.</param>
         /// <returns>The Gradient at the given point.</returns>
-        public virtual double[] Gradient_Override(double[] inValues)
+        public virtual double[] Gradient_Override(double[] inVariables)
         {
-            FiniteDifferences finDiff = new FiniteDifferences(NumberOfVariables, Function_WrapperForGradient);
-            return finDiff.Gradient(inValues);
+            FiniteDifferences finDiff = new FiniteDifferences(NumberOfVariables, Function_WrapperForGradient,1, 0.001d);
+            return finDiff.Gradient(inVariables);
         }
 
         public double Evaluate(IChromosome inChromosome)
@@ -371,6 +485,16 @@ namespace AccordHelper.Opt
              */
 
             return 1d / Function_Wrapper(bldArray.Value);
+        }
+
+        public void Reset()
+        {
+            FunctionHitCount = 0;
+            GradientHitCount = 0;
+            CurrentSolution = null;
+            CurrentEval = double.NaN;
+            PreviousEval = double.NaN;
+            NoProgressCounter = 0;
         }
 
         #region Helpers
@@ -392,70 +516,6 @@ namespace AccordHelper.Opt
         }
         #endregion
 
-        #region Deprecated
-        /// <summary>
-        /// Gets the index in the *linearized* list of doubles that come from InputDefs of the given parameter name.
-        /// </summary>
-        /// <param name="inParamName">Parameter name to find the index.</param>
-        /// <param name="inPositionOffset">An offset, useful for Points (X=0, Y=1, Z=2)</param>
-        /// <returns></returns>
-        public int GetInputIndexByName(string inParamName, int inPositionOffset = 0)
-        {
-            int varCount = 0;
-            foreach (Input_ParamDefBase requiredGhInput in InputDefs)
-            {
-                switch (requiredGhInput)
-                {
-                    case Integer_Input_ParamDef _:
-                        if (requiredGhInput.Name == inParamName) return varCount;
-                        varCount += requiredGhInput.VarCount;
-                        break;
-                    case Double_Input_ParamDef _:
-                        if (requiredGhInput.Name == inParamName) return varCount;
-                        varCount += requiredGhInput.VarCount;
-                        break;
-                    case Point_Input_ParamDef _:
-                        if (requiredGhInput.Name == inParamName) return varCount + inPositionOffset;
-                        varCount += 3;
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-            throw new Exception($"Could not find parameter called {inParamName} in the list of InputDefs.");
-        }
-        /// <summary>
-        /// Gets the index in the *linearized* list of doubles that come from InputDefs of the given parameter.
-        /// </summary>
-        /// <param name="inParamName">Parameter name to find the index.</param>
-        /// <param name="inPositionOffset">An offset, useful for Points (X=0, Y=1, Z=2)</param>
-        /// <returns></returns>
-        public int GetInputIndexByParam(Input_ParamDefBase inParam, int inPositionOffset = 0)
-        {
-            int varCount = 0;
-            foreach (Input_ParamDefBase requiredGhInput in InputDefs)
-            {
-                switch (requiredGhInput)
-                {
-                    case Integer_Input_ParamDef _:
-                        if (requiredGhInput == inParam) return varCount;
-                        varCount += requiredGhInput.VarCount;
-                        break;
-                    case Double_Input_ParamDef _:
-                        if (requiredGhInput == inParam) return varCount;
-                        varCount += requiredGhInput.VarCount;
-                        break;
-                    case Point_Input_ParamDef _:
-                        if (requiredGhInput == inParam) return varCount + inPositionOffset;
-                        varCount += 3;
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-            throw new Exception($"Could not find parameter {inParam} in the list of InputDefs.");
-        } 
-        #endregion
 
         public event PropertyChangedEventHandler PropertyChanged;
         [NotifyPropertyChangedInvocator]

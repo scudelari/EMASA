@@ -287,30 +287,7 @@ namespace AccordHelper.Opt
 
             return SquareSum;
         }
-        public double GetFinalValueOfParameterToSquareSum(Output_ParamDefBase inParam)
-        {
-            if (inParam is Double_Output_ParamDef dOutParamDef)
-            {
-                return dOutParamDef.GetValueForSquareSum((double)FinalValues[inParam]);
-            }
-
-            throw new ArgumentOutOfRangeException();
-        }
-        public double GetFinalValueOfParameterToSquareSum(string inParamName)
-        {
-            KeyValuePair<Output_ParamDefBase, object> outparam_kvp;
-            try
-            {
-                outparam_kvp = FinalValues.FirstOrDefault(a => a.Key.Name == "inParamName");
-            }
-            catch (Exception)
-            {
-                throw new Exception($"Could not find the Final parameter called {inParamName}.");
-            }
-
-            return GetFinalValueOfParameterToSquareSum(outparam_kvp.Key);
-        }
-
+        
         public string FriendlyName
         {
             get

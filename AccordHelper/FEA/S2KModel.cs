@@ -23,7 +23,7 @@ namespace AccordHelper.FEA
 
         }
 
-        public override void InitializeModelAndSoftware()
+        public override void InitializeSoftware()
         {
             // Starts a new SAP2000 instance if it isn't available in the Singleton
             Sap2000Library.S2KModel.InitSingleton_RunningOrNew(UnitsEnum.N_m_C);
@@ -31,12 +31,18 @@ namespace AccordHelper.FEA
             // Opens a new Blank Model
             Sap2000Library.S2KModel.SM.NewModelBlank(inModelUnits: UnitsEnum.N_m_C);
         }
+
+        public override void ResetSoftwareData()
+        {
+            throw new NotImplementedException();
+        }
+
         public override void CloseApplication()
         {
             throw new NotImplementedException();
         }
 
-        public override void WriteModelData()
+        public override void WriteModelToSoftware()
         {
             // Sends the materials to SAP2000
             foreach (FeMaterial feMaterial in Materials)
@@ -55,41 +61,41 @@ namespace AccordHelper.FEA
             }
 
             // Sends the Points to SAP2000
-            foreach (FeJoint feJoint in Joints)
+            foreach (KeyValuePair<int, FeJoint> feJoint in Joints)
             {
-                string sAssignedName = Sap2000Library.S2KModel.SM.PointMan.AddByCoord(feJoint.Point.X, feJoint.Point.Y, feJoint.Point.Z, feJoint.Id.ToString());
+                string sAssignedName = Sap2000Library.S2KModel.SM.PointMan.AddByCoord(feJoint.Value.Point.X, feJoint.Value.Point.Y, feJoint.Value.Point.Z, feJoint.Value.Id.ToString());
                 
-                if (sAssignedName != feJoint.Id.ToString()) throw new Exception($"SAP2000 assigned the name {sAssignedName} to joint {feJoint.Id.ToString()}");
+                if (sAssignedName != feJoint.Value.Id.ToString()) throw new Exception($"SAP2000 assigned the name {sAssignedName} to joint {feJoint.Value.Id.ToString()}");
             }
 
             // Sends the Frames to SAP2000
-            foreach (FeFrame feFrame in Frames)
+            foreach (KeyValuePair<int, FeFrame> feFrame in Frames)
             {
-                string sAssignedName = Sap2000Library.S2KModel.SM.FrameMan.AddByPoint(feFrame.IJoint.Id.ToString(), feFrame.JJoint.Id.ToString(), feFrame.Section.Name, feFrame.Id.ToString());
-                if (sAssignedName != feFrame.Id.ToString()) throw new Exception($"SAP2000 assigned the name {sAssignedName} to frame {feFrame.Id.ToString()}");
+                string sAssignedName = Sap2000Library.S2KModel.SM.FrameMan.AddByPoint(feFrame.Value.IJoint.Id.ToString(), feFrame.Value.JJoint.Id.ToString(), feFrame.Value.Section.Name, feFrame.Value.Id.ToString());
+                if (sAssignedName != feFrame.Value.Id.ToString()) throw new Exception($"SAP2000 assigned the name {sAssignedName} to frame {feFrame.Value.Id.ToString()}");
             }
 
             // Groups the elements
-            foreach (FeGroup feGroup in Groups)
+            foreach (KeyValuePair<string, FeGroup> feGroup in Groups)
             {
                 // Adds the group
-                Sap2000Library.S2KModel.SM.GroupMan.AddGroup(feGroup.Name);
+                Sap2000Library.S2KModel.SM.GroupMan.AddGroup(feGroup.Value.Name);
 
-                foreach (FeJoint feGroupJoint in feGroup.Joints)
+                foreach (FeJoint feGroupJoint in feGroup.Value.Joints)
                 {
-                    Sap2000Library.S2KModel.SM.GroupMan.AddPointToGroup(feGroup.Name, feGroupJoint.Id.ToString());
+                    Sap2000Library.S2KModel.SM.GroupMan.AddPointToGroup(feGroup.Value.Name, feGroupJoint.Id.ToString());
 
                     // There is a restraint in the joint
-                    if (feGroup.Restraint == null) continue;
+                    if (feGroup.Value.Restraint == null) continue;
 
                     // Gets the SAP point
                     SapPoint sPnt = Sap2000Library.S2KModel.SM.PointMan.GetByName(feGroupJoint.Id.ToString());
                     // Sets the restraints to the point
-                    sPnt.Restraints = new PointRestraintDef(feGroup.Restraint.DoF);
+                    sPnt.Restraints = new PointRestraintDef(feGroup.Value.Restraint.DoF);
                 }
-                foreach (FeFrame feGroupFrame in feGroup.Frames)
+                foreach (FeFrame feGroupFrame in feGroup.Value.Frames)
                 {
-                    Sap2000Library.S2KModel.SM.GroupMan.AddFrameToGroup(feGroup.Name, feGroupFrame.Id.ToString());
+                    Sap2000Library.S2KModel.SM.GroupMan.AddFrameToGroup(feGroup.Value.Name, feGroupFrame.Id.ToString());
                 }
             }
 
@@ -110,9 +116,6 @@ namespace AccordHelper.FEA
             throw new NotImplementedException();
         }
 
-        public override T GetResult<T>(string inResultName)
-        {
-            throw new NotImplementedException();
-        }
+
     }
 }

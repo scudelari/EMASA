@@ -396,7 +396,6 @@
                     <GroupBox
                         DockPanel.Dock="Top"
                         Header="Solver Options"
-                        IsEnabled="{Binding}"
                         Style="{DynamicResource Blue_GroupBox}">
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -408,32 +407,71 @@
                                     <ColumnDefinition />
                                     <ColumnDefinition />
                                     <ColumnDefinition />
-                                    <ColumnDefinition />
                                 </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
                                 <GroupBox Grid.Column="0" Header="Solver Type">
                                     <ComboBox
                                         DisplayMemberPath="Value"
-                                        ItemsSource="{Binding SolverTypeListWithCaptions}"
-                                        SelectedValue="{Binding SolverOptions_SelectedSolverType}"
+                                        ItemsSource="{Binding CurrentProblem.SolverTypeListWithCaptions}"
+                                        SelectedValue="{Binding CurrentProblem.SolverType}"
                                         SelectedValuePath="Key" />
                                 </GroupBox>
                                 <GroupBox Grid.Column="1" Header="Start Position">
                                     <ComboBox
                                         DisplayMemberPath="Value"
-                                        ItemsSource="{Binding StartPositionTypeListWithCaptions}"
-                                        SelectedValue="{Binding SolverOptions_SelectedStartPositionType}"
+                                        ItemsSource="{Binding CurrentProblem.StartPositionTypeListWithCaptions}"
+                                        SelectedValue="{Binding CurrentProblem.SolverOptions_SelectedStartPositionType}"
                                         SelectedValuePath="Key" />
                                 </GroupBox>
                                 <GroupBox Grid.Column="2" Header="Fea Solver">
                                     <ComboBox
                                         DisplayMemberPath="Value"
-                                        IsEnabled="{Binding SolverOptions_FeaSoftwareIsEnabled}"
-                                        ItemsSource="{Binding FeaSoftwareListWithCaptions}"
-                                        SelectedValue="{Binding SolverOptions_SelectedFeaSoftware}"
+                                        IsEnabled="{Binding CurrentProblem.SolverOptions_FeaSoftwareIsEnabled}"
+                                        ItemsSource="{Binding CurrentProblem.FeaSoftwareListWithCaptions}"
+                                        SelectedValue="{Binding CurrentProblem.SolverOptions_SelectedFeaSoftware}"
                                         SelectedValuePath="Key" />
                                 </GroupBox>
-                                <GroupBox Grid.Column="3" Header="Target Residual">
-                                    <TextBox Text="{Binding TargetResidual, StringFormat={}{0:E3}}" />
+                                <GroupBox
+                                    Grid.Row="1"
+                                    Grid.Column="0"
+                                    Grid.ColumnSpan="3"
+                                    Header="Stop Controls"
+                                    Style="{DynamicResource CenterHeader_GroupBox}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="1.4*" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <GroupBox
+                                            Grid.Column="0"
+                                            Margin="2,0"
+                                            ToolTip="{Binding CurrentProblem.TargetResidualToolTip}">
+                                            <GroupBox.Header>
+                                                <CheckBox Content="{Binding CurrentProblem.TargetResidualText}" IsChecked="{Binding CurrentProblem.ShouldTargetResidual}" />
+                                            </GroupBox.Header>
+                                            <TextBox IsEnabled="{Binding CurrentProblem.ShouldTargetResidual}" Text="{Binding CurrentProblem.TargetResidual, StringFormat={}{0:E3}}" />
+                                        </GroupBox>
+                                        <GroupBox
+                                            Grid.Column="1"
+                                            Margin="2,0"
+                                            ToolTip="{Binding CurrentProblem.MinimumResidualChangeToolTip}">
+                                            <GroupBox.Header>
+                                                <CheckBox Content="{Binding CurrentProblem.MinimumResidualChangeText}" IsChecked="{Binding CurrentProblem.ShouldLimitChange}" />
+                                            </GroupBox.Header>
+                                            <TextBox IsEnabled="{Binding CurrentProblem.ShouldLimitChange}" Text="{Binding CurrentProblem.MinResidualPercentChange, StringFormat={}{0:P3}}" />
+                                        </GroupBox>
+                                        <GroupBox
+                                            Grid.Column="2"
+                                            Margin="2,0"
+                                            Header="{Binding CurrentProblem.MaximumIterationsText}"
+                                            ToolTip="{Binding CurrentProblem.MaximumIterationsToolTip}">
+                                            <TextBox Text="{Binding CurrentProblem.MaxIterations}" />
+                                        </GroupBox>
+                                    </Grid>
                                 </GroupBox>
                             </Grid>
                             <Button
@@ -455,7 +493,7 @@
                             Style="{DynamicResource Blue_GroupBox}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width=".7*" />
+                                    <ColumnDefinition Width=".4*" />
                                     <ColumnDefinition />
                                 </Grid.ColumnDefinitions>
                                 <GroupBox Grid.Column="0" Header="Objective Function Hit Count">
@@ -463,15 +501,36 @@
                                         <Grid.RowDefinitions>
                                             <RowDefinition />
                                             <RowDefinition />
+                                            <RowDefinition />
                                         </Grid.RowDefinitions>
                                         <TextBlock Grid.Row="0">
                                             <Run>Function:</Run>
-                                            <Run Text="{Binding CurrentProblem.ObjectiveFunction.FunctionHitCount}" />
+                                            <Run Text="{Binding CurrentProblem.ObjectiveFunction.FunctionHitCount, Mode=OneWay}" />
                                         </TextBlock>
                                         <TextBlock Grid.Row="1">
                                             <Run>Gradient:</Run>
-                                            <Run Text="{Binding CurrentProblem.ObjectiveFunction.GradientHitCount}" />
+                                            <Run Text="{Binding CurrentProblem.ObjectiveFunction.GradientHitCount, Mode=OneWay}" />
                                         </TextBlock>
+                                        <Border
+                                            Grid.Row="2"
+                                            BorderBrush="{DynamicResource EmsFaintBlueSolidBrush}"
+                                            BorderThickness="0,1,0,0"
+                                            Visibility="{Binding CurrentProblem.IsOther}">
+                                            <TextBlock>
+                                                <Run>Total:</Run>
+                                                <Run Text="{Binding CurrentProblem.ObjectiveFunction.TotalHitCount, Mode=OneWay}" />
+                                            </TextBlock>
+                                        </Border>
+                                        <Border
+                                            Grid.Row="2"
+                                            BorderBrush="{DynamicResource EmsFaintBlueSolidBrush}"
+                                            BorderThickness="0,1,0,0"
+                                            Visibility="{Binding CurrentProblem.IsGenetic}">
+                                            <TextBlock>
+                                                <Run>Epochs:</Run>
+                                                <Run Text="{Binding CurrentProblem.GeneticEpochCount, Mode=OneWay}" />
+                                            </TextBlock>
+                                        </Border>
                                     </Grid>
                                 </GroupBox>
                                 <GroupBox Grid.Column="1" Header="Run Status">
@@ -487,9 +546,8 @@
                                             Text="{Binding CurrentProblem.StatusText, Mode=OneWay}" />
                                         <TextBlock
                                             Grid.Row="1"
-                                            HorizontalAlignment="Center"
-                                            FontFamily="Courier New"
-                                            Text="{Binding CurrentProblem.StatusTextMessage, Mode=OneWay}" />
+                                            Text="{Binding CurrentProblem.StatusTextMessage, Mode=OneWay}"
+                                            TextWrapping="Wrap" />
                                     </Grid>
                                 </GroupBox>
                             </Grid>
@@ -592,10 +650,13 @@
             ContentMargin="10"
             ContentVerticalAlignment="Top"
             CurrentResidual="{Binding ElementName=MainGrid, Path=DataContext.CurrentProblem.ObjectiveFunction.CurrentEval, Mode=OneWay}"
-            TargetResidual="{Binding ElementName=MainGrid, Path=DataContext.TargetResidual, Mode=OneWay}"
+            TargetResidual="{Binding ElementName=MainGrid, Path=DataContext.CurrentProblem.TargetResidual, Mode=OneWay}"
             Visibility="Collapsed">
             <e:CustomOverlay.AdditionalContent>
-                <Button Click="CancelSolveButton_Click" Content="Stop Solver" />
+                <Button
+                    Margin="10"
+                    Click="CancelSolveButton_Click"
+                    Content="Stop Solver" />
             </e:CustomOverlay.AdditionalContent>
         </e:CustomOverlay>
         <e:MessageOverlay x:Name="MessageOverlay" Visibility="Collapsed" />

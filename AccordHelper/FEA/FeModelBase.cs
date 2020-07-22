@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Accord;
 using AccordHelper.FEA.Items;
+using AccordHelper.FEA.Results;
 using r3dm::Rhino.DocObjects;
 using r3dm::Rhino.Geometry;
 
@@ -57,13 +58,15 @@ namespace AccordHelper.FEA
 
         public string ModelName { get; set; } = "EMSRhinoAuto";
 
-        public readonly HashSet<FeFrame> Frames = new HashSet<FeFrame>();
-        public readonly HashSet<FeJoint> Joints = new HashSet<FeJoint>();
-        public readonly HashSet<FeGroup> Groups = new HashSet<FeGroup>();
+        public Dictionary<int, FeFrame> Frames { get; private set; } = new Dictionary<int, FeFrame>();
+        public Dictionary<int, FeJoint> Joints { get; private set; } = new Dictionary<int, FeJoint>();
+        public Dictionary<string, FeGroup> Groups { get; private set; } = new Dictionary<string, FeGroup>();
+        public Dictionary<int, FeMeshNode> MeshNodes { get; private set; } = new Dictionary<int, FeMeshNode>();
+        public Dictionary<int, FeMeshBeamElement> MeshBeamElements { get; private set; } = new Dictionary<int, FeMeshBeamElement>();
 
         public HashSet<FeSection> Sections
         {
-            get => Frames.Select(a => a.Section).Distinct().ToHashSet();
+            get => Frames.Select(a => a.Value.Section).Distinct().ToHashSet();
         }
         public HashSet<FeMaterial> Materials
         {
@@ -76,11 +79,10 @@ namespace AccordHelper.FEA
             inPoint = RoundPoint3d(inPoint);
 
             // Already exists in the list?
-            FeJoint existing = Joints.FirstOrDefault(a => a.Point == inPoint);
-            if (existing != null) return existing;
+            if (Joints.Any(a => a.Value.Point == inPoint)) return Joints.First(a => a.Value.Point == inPoint).Value;
 
             FeJoint newJoint = new FeJoint(PointCount, inPoint);
-            if (!Joints.Add(newJoint)) throw new Exception($"The joint called {newJoint.Id} at {newJoint.Point} already existed in the list.");
+            Joints.Add(newJoint.Id, newJoint);
             PointCount++;
             return newJoint;
         }
@@ -89,9 +91,10 @@ namespace AccordHelper.FEA
             if (string.IsNullOrWhiteSpace(inGroupName)) throw new ArgumentException("inGroupName cannot be empty or null.");
 
             FeGroup newGroup = new FeGroup(inGroupName);
-            if (Groups.Add(newGroup)) return newGroup;
-            
-            return Groups.First(a => a.Name == inGroupName);
+
+            if (!Groups.ContainsKey(newGroup.Name)) Groups.Add(newGroup.Name, newGroup);
+
+            return Groups[newGroup.Name];
         }
 
         public void AddPoint3dToGroups(List<Point3d> inPoints, List<string> inGroupNames)
@@ -161,13 +164,13 @@ namespace AccordHelper.FEA
             FeFrame newFrame = new FeFrame(FrameCount, section, iJoint, jJoint);
 
             // We already have this Frame?
-            if (Frames.Any(a => (a.IJoint == newFrame.IJoint && a.JJoint == newFrame.JJoint) ||
-                                (a.IJoint == newFrame.JJoint && a.JJoint == newFrame.IJoint)))
+            if (Frames.Any(a => (a.Value.IJoint == newFrame.IJoint && a.Value.JJoint == newFrame.JJoint) ||
+                                (a.Value.IJoint == newFrame.JJoint && a.Value.JJoint == newFrame.IJoint)))
             {
                 throw new Exception($"A Frame linking joint {newFrame.IJoint} to {newFrame.JJoint} already exists.");
             }
 
-            if (!Frames.Add(newFrame)) throw new Exception($"A Frame linking joint {newFrame.IJoint} to {newFrame.JJoint} already exists.");
+            Frames.Add(newFrame.Id, newFrame);
 
             // Also adds the frame to the groups?
             if (inGroupNames != null && inGroupNames.Count > 0)
@@ -190,16 +193,36 @@ namespace AccordHelper.FEA
             grp.Restraint = new FeRestraint(inDoF);
         }
 
-        private readonly Dictionary<string, object> ModelResults = new Dictionary<string, object>();
+        public abstract void InitializeSoftware();
 
-        public abstract void InitializeModelAndSoftware();
-        public abstract void WriteModelData();
+        public abstract void ResetSoftwareData();
+        public virtual void ResetClassData()
+        {
+            PointCount = 1;
+            FrameCount = 1;
+            Frames = new Dictionary<int, FeFrame>();
+            Joints = new Dictionary<int, FeJoint>();
+            Groups = new Dictionary<string, FeGroup>();
+            MeshNodes = new Dictionary<int, FeMeshNode>();
+            MeshBeamElements = new Dictionary<int, FeMeshBeamElement>();
+        }
+
+        public abstract void WriteModelToSoftware();
         public abstract void RunAnalysis();
         public abstract void SaveDataAs(string inFilePath);
         public abstract void CloseApplication();
 
+        public virtual void GetResult_FillElementStrainEnergy() { throw new NotImplementedException(); }
 
-        public abstract T GetResult<T>(string inResultName);
+        public virtual void GetResult_FillNodalReactions() { throw new NotImplementedException(); }
+        public virtual void GetResult_FillNodalDisplacements() { throw new NotImplementedException(); }
+
+        public virtual void GetResult_FillElementNodalBendingStrain() { throw new NotImplementedException(); }
+        public virtual void GetResult_FillElementNodalStress() { throw new NotImplementedException(); }
+        public virtual void GetResult_FillElementNodalForces() { throw new NotImplementedException(); }
+        public virtual void GetResult_FillElementNodalStrains() { throw new NotImplementedException(); }
+
+        public virtual void GetResult_FillNodalSectionPointStressStrain() { throw new NotImplementedException(); }
     }
 
     public enum FeaSoftwareEnum
@@ -208,4 +231,6 @@ namespace AccordHelper.FEA
         Sap2000,
         NoFea
     }
+
+
 }

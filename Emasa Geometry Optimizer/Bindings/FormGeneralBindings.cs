@@ -158,121 +158,10 @@ namespace Emasa_Geometry_Optimizer.Bindings
         public ProblemBase CurrentProblem
         {
             get => _currentProblem;
-            set
-            {
-                SetProperty(ref _currentProblem, value);
-
-                // Sets the solver control variables 
-                SolverOptions_SelectedSolverType = _currentProblem.SolverType;
-                SolverOptions_SelectedStartPositionType = _currentProblem.StartPositionType;
-
-                Dictionary<FeaSoftwareEnum, string> tempFeaSoftwareList = new Dictionary<FeaSoftwareEnum, string>();
-                foreach (FeaSoftwareEnum supportedFeaSoftware in _currentProblem.SupportedFeaSoftwares)
-                {
-                    switch (supportedFeaSoftware)
-                    {
-                        case FeaSoftwareEnum.Ansys:
-                            tempFeaSoftwareList.Add(FeaSoftwareEnum.Ansys, "Ansys");
-                            break;
-
-                        case FeaSoftwareEnum.Sap2000:
-                            tempFeaSoftwareList.Add(FeaSoftwareEnum.Sap2000, "Sap2000");
-                            break;
-
-                        case FeaSoftwareEnum.NoFea:
-                            tempFeaSoftwareList.Add(FeaSoftwareEnum.NoFea, "No Fea");
-                            break;
-
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                }
-                FeaSoftwareListWithCaptions = tempFeaSoftwareList;
-
-                ChangeLimit = _currentProblem.ChangeLimit;
-            }
+            set => SetProperty(ref _currentProblem, value);
         }
 
-
-
-        #region Solver Options - Display!
-        public Dictionary<SolverType, string> SolverTypeListWithCaptions { get; } = new Dictionary<SolverType, string>()
-            {
-                {SolverType.Cobyla, "Cobyla"},
-                {SolverType.BoundedBroydenFletcherGoldfarbShanno, "B-BFGS"},
-                {SolverType.AugmentedLagrangian, "Aug. Lagrangian"},
-                {SolverType.Genetic, "Genetic"},
-                {SolverType.ConjugateGradient_FletcherReeves, "Conj. Gradient - Fletcher Reeves"},
-                {SolverType.ConjugateGradient_PolakRibiere, "Conj. Gradient - Polak Ribiere"},
-                {SolverType.ConjugateGradient_PositivePolakRibiere, "Conj. Gradient - [+] Polak Ribiere"},
-                {SolverType.NelderMead, "Nelder Mead"},
-                {SolverType.ResilientBackpropagation, "Resilient Backpropagation"},
-            };
-        private SolverType _solverOptions_SelectedSolverType = SolverType.Cobyla;
-        public SolverType SolverOptions_SelectedSolverType
-        {
-            get => _solverOptions_SelectedSolverType;
-            set => SetProperty(ref _solverOptions_SelectedSolverType, value);
-        }
-
-        public Dictionary<StartPositionType, string> StartPositionTypeListWithCaptions { get; } = new Dictionary<StartPositionType, string>()
-            {
-                {StartPositionType.Random, "Random"},
-                {StartPositionType.CenterOfRange, "Center of Input"},
-                {StartPositionType.TenPercentRandomFromCenter, "10% from Center"},
-            };
-        private StartPositionType _solverOptions_SelectedStartPositionType = StartPositionType.CenterOfRange;
-        public StartPositionType SolverOptions_SelectedStartPositionType
-        {
-            get => _solverOptions_SelectedStartPositionType;
-            set => SetProperty(ref _solverOptions_SelectedStartPositionType, value);
-        }
-
-
-        private Dictionary<FeaSoftwareEnum, string> _feaSoftwareListWithCaptions = new Dictionary<FeaSoftwareEnum, string>();
-        public Dictionary<FeaSoftwareEnum, string> FeaSoftwareListWithCaptions
-        {
-            get => _feaSoftwareListWithCaptions;
-            set
-            {
-                SetProperty(ref _feaSoftwareListWithCaptions, value);
-
-                if (_feaSoftwareListWithCaptions.Count > 0)
-                {
-                    SolverOptions_SelectedFeaSoftware = _feaSoftwareListWithCaptions.First().Key;
-                    if (_feaSoftwareListWithCaptions.Count == 1) SolverOptions_FeaSoftwareIsEnabled = false;
-                    else SolverOptions_FeaSoftwareIsEnabled = true;
-                }
-                else SolverOptions_FeaSoftwareIsEnabled = false;
-            }
-        }
-        private FeaSoftwareEnum _solverOptions_SelectedFeaSoftware = FeaSoftwareEnum.NoFea;
-        public FeaSoftwareEnum SolverOptions_SelectedFeaSoftware
-        {
-            get => _solverOptions_SelectedFeaSoftware;
-            set => SetProperty(ref _solverOptions_SelectedFeaSoftware, value);
-        }
-        private bool _solverOptions_FeaSoftwareIsEnabled = false;
-        public bool SolverOptions_FeaSoftwareIsEnabled
-        {
-            get => _solverOptions_FeaSoftwareIsEnabled;
-            set => SetProperty(ref _solverOptions_FeaSoftwareIsEnabled, value);
-        }
-
-
-        private double _changeLimit;
-        public double ChangeLimit
-        {
-            get => _changeLimit;
-            set => SetProperty(ref _changeLimit, value);
-        }
-
-        private double _targetResidual = 1e-3d;
-        public double TargetResidual
-        {
-            get => _targetResidual;
-            set => SetProperty(ref _targetResidual, value);
-        }
+         #region Display Variables
 
         private bool _isEnabledForm = true;
         public bool IsEnabled_Form
@@ -355,23 +244,16 @@ namespace Emasa_Geometry_Optimizer.Bindings
                 {
                     IsEnabled_SolveManagement = false;
                     
-                    if (CurrentProblem.Status == SolverStatus.NotInitialized) {
+                    if (CurrentProblem.Status == SolverStatus.NotStarted) {
                         // Set a Title to the Busy Overlay
                         CustomOverlayBindings.I.Title = "Initializing the Solver.";
 
-                        // Sets the selected variables
-                        CurrentProblem.TargetResidual = TargetResidual;
-                        CurrentProblem.ChangeLimit = ChangeLimit;
-                        CurrentProblem.FeaType = SolverOptions_SelectedFeaSoftware;
-                        CurrentProblem.StartPositionType = SolverOptions_SelectedStartPositionType;
-                        CurrentProblem.SolverType = SolverOptions_SelectedSolverType;
-
-                        CurrentProblem.ResetSolver();
+                        CurrentProblem.SetSolverManager();
                     }
 
                     // Set a Title to the Busy Overlay
                     CustomOverlayBindings.I.Title = "Solving the Problem.";
-                    CustomOverlayBindings.I.MessageText = $"Solving the problem {CurrentProblem.ProblemFriendlyName} using the {SolverTypeListWithCaptions[SolverOptions_SelectedSolverType]}";
+                    CustomOverlayBindings.I.MessageText = $"Solving the problem {CurrentProblem.ProblemFriendlyName} using the {CurrentProblem.SolverTypeListWithCaptions[CurrentProblem.SolverType]}";
 
                     CurrentProblem.Solve();
                 }
@@ -400,6 +282,14 @@ namespace Emasa_Geometry_Optimizer.Bindings
         public async void ExecuteNewSolverCommand()
         {
             StringBuilder endMessages = new StringBuilder();
+            
+            // Asks for confirmation depending on the solve status
+            if (CurrentProblem.Status != SolverStatus.NotStarted)
+            {
+                MessageBoxResult r = MessageBox.Show("This will delete the current data. Are you sure you want to proceed?", "Please confirm", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (r == MessageBoxResult.No) return;
+            }
+
             try
             {
                 OnBeginCommand();
@@ -410,7 +300,7 @@ namespace Emasa_Geometry_Optimizer.Bindings
                     CustomOverlayBindings.I.Title = "Resetting the problem.";
 
                     // Cleans-up the solver
-                    CurrentProblem.CleanUpSolver();
+                    CurrentProblem.CleanUpSolver_NewSolve();
 
                     IsEnabled_SolveManagement = true;
                 }

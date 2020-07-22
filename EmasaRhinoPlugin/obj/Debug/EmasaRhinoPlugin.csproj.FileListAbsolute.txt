@@ -8,4 +8,3 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaRhinoPlugin\obj\Debug\EmasaRhi
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaRhinoPlugin\obj\Debug\EmasaRhinoPlugin.csproj.CopyComplete
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaRhinoPlugin\obj\Debug\EmasaRhinoPlugin.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaRhinoPlugin\obj\Debug\EmasaRhinoPlugin.pdb
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaRhinoPlugin\obj\Debug\EmasaRhinoPlugin.csprojAssemblyReference.cache

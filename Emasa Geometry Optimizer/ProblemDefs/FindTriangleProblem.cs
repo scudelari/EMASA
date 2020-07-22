@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using AccordHelper.FEA;
 using AccordHelper.Opt;
 using AccordHelper.Opt.ParamDefinitions;
 using RhinoInterfaceLibrary;
@@ -19,7 +20,7 @@ namespace Emasa_Geometry_Optimizer.ProblemDefs
 
         public FindTriangleProblem() : base(new TestTriangleObjectiveFunction())
         {
-            
+            AddSupportedFeaSoftware(FeaSoftwareEnum.NoFea);
         }
     }
 
@@ -67,7 +68,7 @@ namespace Emasa_Geometry_Optimizer.ProblemDefs
 
         }
 
-        public override double Function_Override(double[] inValues)
+        public override double Function_Override(double[] inVariables)
         {
             // Writes the points to Grasshopper
             CurrentSolution.WritePointToGrasshopper(RhinoStaticMethods.GH_Auto_InputVariableFolder(RhinoModel.RM.GrasshopperFullFileName));
@@ -108,7 +109,6 @@ namespace Emasa_Geometry_Optimizer.ProblemDefs
                 CurrentSolution.SetFinalValueByName("P2 Height", P2Height),
                 CurrentSolution.SetFinalValueByName("P3 Height", P3Height),
             });
-
 
             return CurrentSolution.Eval;
         }

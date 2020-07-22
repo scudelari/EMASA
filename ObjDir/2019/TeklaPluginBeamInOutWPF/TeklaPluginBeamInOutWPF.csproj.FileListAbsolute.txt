@@ -17,4 +17,3 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\ObjDir\2019\TeklaPluginBeamInOutWPF
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\ObjDir\2019\TeklaPluginBeamInOutWPF\TeklaPluginBeamInOutWPF.csproj.CoreCompileInputs.cache
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\ObjDir\2019\TeklaPluginBeamInOutWPF\TeklaPluginBeamInOutWPF.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\ObjDir\2019\TeklaPluginBeamInOutWPF\TeklaPluginBeamInOutWPF.pdb
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\ObjDir\2019\TeklaPluginBeamInOutWPF\TeklaPluginBeamInOutWPF.csprojAssemblyReference.cache

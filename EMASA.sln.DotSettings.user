@@ -3,4 +3,5 @@
   &lt;Assembly Path="C:\Program Files\Rhino 6\Plug-ins\Grasshopper\Grasshopper.dll" /&gt;&#xD;
   &lt;Assembly Path="C:\Program Files\Rhino 6\System\rhinocommon.dll" /&gt;&#xD;
   &lt;Assembly Path="C:\Users\EngRafaelSMacedo\source\repos\EMASA\packages\RhinoCommon.6.27.20176.5001\lib\net45\RhinoCommon.dll" /&gt;&#xD;
+  &lt;Assembly Path="C:\Users\EngRafaelSMacedo\source\repos\EMASA\packages\NLoptNet.1.2.0\lib\net45\NLoptNet.dll" /&gt;&#xD;
 &lt;/AssemblyExplorer&gt;</s:String></wpf:ResourceDictionary>

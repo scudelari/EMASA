@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -9,6 +10,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Data;
 using Accord;
 using Accord.Collections;
@@ -17,6 +19,7 @@ using Accord.IO;
 using Accord.Math.Optimization;
 using AccordHelper.FEA;
 using BaseWPFLibrary.Others;
+using NLoptNet;
 using Prism.Mvvm;
 using RhinoInterfaceLibrary;
 
@@ -26,6 +29,7 @@ namespace AccordHelper.Opt
     public abstract class ProblemBase : BindableBase
     {
         private FeaSoftwareEnum? _feaType = null;
+
         public FeaSoftwareEnum? FeaType
         {
             get => _feaType;
@@ -55,7 +59,9 @@ namespace AccordHelper.Opt
                 SetProperty(ref _feaType, value);
             }
         }
+
         private FeModelBase _feModel = null;
+
         public FeModelBase FeModel
         {
             get => _feModel;
@@ -67,24 +73,42 @@ namespace AccordHelper.Opt
             get => _objectiveFunction;
         }
 
-        private BaseOptimizationMethod _optMethod = null;
-        public BaseOptimizationMethod OptMethod
+        // Accord Optimization Solvers
+        private BaseOptimizationMethod _accordOptMethod = null;
+        public BaseOptimizationMethod AccordOptMethod
         {
-            get => _optMethod;
+            get => _accordOptMethod;
             set
             {
-                _optMethod = value;
-                _optMethod.Token = CancelSource.Token;
+                _accordOptMethod = value;
+                _accordOptMethod.Token = CancelSource.Token;
             }
         }
 
+        // NLOpt Solvers
+        private NLoptSolver _nLOptMethod;
+        public NLoptSolver NLOptMethod
+        {
+            get => _nLOptMethod;
+            set => SetProperty(ref _nLOptMethod, value);
+        }
+
+
+        // Accord Genetic Algorithm Solvers
         private Population _genAlgPopulation = null;
         public Population GenAlgPopulation
         {
             get => _genAlgPopulation;
             set => _genAlgPopulation = value;
         }
-        
+
+        private int _geneticEpochCount = 0;
+        public int GeneticEpochCount
+        {
+            get => _geneticEpochCount;
+            set => SetProperty(ref _geneticEpochCount, value);
+        }
+
         private int _maxIterations = 10000;
         public int MaxIterations
         {
@@ -92,34 +116,60 @@ namespace AccordHelper.Opt
             set => SetProperty(ref _maxIterations, value);
         }
 
-        private int _iterationCount = 0;
-        public int IterationCount
-        {
-            get => _iterationCount;
-            set => SetProperty(ref _iterationCount, value);
-        }
-
-        private SolverStatus _status = SolverStatus.NotInitialized;
+        private SolverStatus _status;
         public SolverStatus Status
         {
             get => _status;
             private set
             {
                 SetProperty(ref _status, value);
+
+                if (_status == SolverStatus.NotStarted) CanChangeInputs = true;
+                else CanChangeInputs = false;
+
+                // Gives a default message
+                switch (_status)
+                {
+                    case SolverStatus.NotStarted:
+                        StatusTextMessage = "Solver not Started.";
+                        break;
+
+                    case SolverStatus.Running:
+                        StatusTextMessage = "Solver is Running.";
+                        break;
+
+                    case SolverStatus.NoProgress:
+                        StatusTextMessage = "Solver can't proceed further.";
+                        break;
+
+                    case SolverStatus.MaxEvaluations:
+                        StatusTextMessage = "Solver reached maximum evaluations.";
+                        break;
+
+                    case SolverStatus.Finished:
+                        StatusTextMessage = "Solver finished successfully (target residual reached).";
+                        break;
+
+                    case SolverStatus.Cancelled:
+                        StatusTextMessage = "Solver has been cancelled.";
+                        break;
+
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+
                 RaisePropertyChanged("StatusText");
             }
         }
+
         public string StatusText
         {
             get
             {
                 switch (Status)
                 {
-                    case SolverStatus.NotInitialized:
-                        return "Not Initialized";
-
-                    case SolverStatus.Initialized:
-                        return "Initialized";
+                    case SolverStatus.NotStarted:
+                        return "Not Started";
 
                     case SolverStatus.Running:
                         return "Running";
@@ -141,18 +191,41 @@ namespace AccordHelper.Opt
                 }
             }
         }
-        private string _statusTextMessage;
+        private string _statusTextMessage = "Solver Not Started";
+
         public string StatusTextMessage
         {
             get => _statusTextMessage;
             private set => SetProperty(ref _statusTextMessage, value);
         }
+        private bool _canChangeInputs = true;
+
+        public bool CanChangeInputs
+        {
+            get => _canChangeInputs;
+            set => SetProperty(ref _canChangeInputs, value);
+        }
+
 
         private SolverType _solverType = SolverType.BoundedBroydenFletcherGoldfarbShanno;
         public SolverType SolverType
         {
             get => _solverType;
-            set => SetProperty(ref _solverType, value);
+            set
+            {
+                SetProperty(ref _solverType, value);
+                RaisePropertyChanged("TargetResidualText");
+                RaisePropertyChanged("TargetResidualToolTip");
+
+                RaisePropertyChanged("MinimumResidualChangeText");
+                RaisePropertyChanged("MinimumResidualChangeToolTip");
+
+                RaisePropertyChanged("MaximumIterationsText");
+                RaisePropertyChanged("MaximumIterationsToolTip");
+
+                RaisePropertyChanged("IsGenetic");
+                RaisePropertyChanged("IsOther");
+            }
         }
 
         private StartPositionType _startPositionType = StartPositionType.Random;
@@ -164,8 +237,7 @@ namespace AccordHelper.Opt
 
         protected ProblemBase(ObjectiveFunctionBase inObjectiveFunction)
         {
-            // Sets the default value of the FEA solver
-            FeaType = SupportedFeaSoftwares.First();
+            Status = SolverStatus.NotStarted;
 
             // Stores the function given
             _objectiveFunction = inObjectiveFunction;
@@ -187,17 +259,19 @@ namespace AccordHelper.Opt
 
             AllPossibleSolutions_ViewItems = CollectionViewSource.GetDefaultView(_possibleSolutions);
         }
-
-        private double _changeLimit = 1e-2;
-        /// <summary>
-        /// This is the criterion that will stop the iterations. It is a percentage limit of how much the Fitness function can change between iterations.
-        /// </summary>
-        public double ChangeLimit
+        private double _minResidualPercentChange = 0.01d;
+        public double MinResidualPercentChange
         {
-            get => _changeLimit;
-            set => SetProperty(ref _changeLimit, value);
+            get => _minResidualPercentChange;
+            set => SetProperty(ref _minResidualPercentChange, value);
         }
-        private double? LastBestEvalValue = null;
+        private bool _shouldLimitChange = true;
+        public bool ShouldLimitChange
+        {
+            get => _shouldLimitChange;
+            set => SetProperty(ref _shouldLimitChange, value);
+        }
+
 
         private double _targetResidual = 1e-5;
         public double TargetResidual
@@ -209,6 +283,13 @@ namespace AccordHelper.Opt
                 SetProperty(ref _targetResidual, value);
             }
         }
+        private bool _shouldTargetResidual = true;
+        public bool ShouldTargetResidual
+        {
+            get => _shouldTargetResidual;
+            set => SetProperty(ref _shouldTargetResidual, value);
+        }
+
 
         private CancellationTokenSource _cancelSource = new CancellationTokenSource();
         public CancellationTokenSource CancelSource
@@ -222,71 +303,79 @@ namespace AccordHelper.Opt
                     _cancelSource = value;
 
                     // Also updates the listeners of the cancellation token source.
-                    if (OptMethod != null) OptMethod.Token = _cancelSource.Token;
+                    if (AccordOptMethod != null) AccordOptMethod.Token = _cancelSource.Token;
+
                     // The Genetic Algorithm already uses the token directly from the Source.
                 }
             }
         }
 
-        public void CleanUpSolver()
+
+        private double _totalSolveSeconds = 0d;
+
+        public double TotalSolveSeconds
+        {
+            get => _totalSolveSeconds;
+            set { SetProperty(ref _totalSolveSeconds, value); }
+        }
+
+        public void CleanUpSolver_NewSolve()
         {
             // Cleans all the important state variables
-            FeaType = SupportedFeaSoftwares.First();
-
-            LastBestEvalValue = null;
             PossibleSolutions.Clear();
-            IterationCount = 0;
-            ObjectiveFunction.FunctionHitCount = 0;
-            ObjectiveFunction.GradientHitCount = 0;
-            ObjectiveFunction.CurrentSolution = null;
+            GeneticEpochCount = 0;
+            ObjectiveFunction.Reset();
+            AccordOptMethod = null;
+            if (NLOptMethod != null)
+            {
+                NLOptMethod.Dispose();
+                NLOptMethod = null;
+            }
 
             CancelSource = new CancellationTokenSource();
 
-            Status = SolverStatus.NotInitialized;
-            StatusTextMessage = "Not Initialized";
+            Status = SolverStatus.NotStarted;
         }
-        public void ResetSolver()
+        public void SetSolverManager()
         {
-            Status = SolverStatus.Initialized;
-            StatusTextMessage = "Initialized";
+            Status = SolverStatus.NotStarted;
 
             // Initializes each solver, depending on what they need
             switch (SolverType)
             {
                 case SolverType.AugmentedLagrangian:
-                    {
-                        List<NonlinearConstraint> allConstraints = ObjectiveFunction.GetAllConstraints();
-                        if (allConstraints == null) throw new Exception("Augmented Lagrangian requires constraints.");
+                {
+                    List<NonlinearConstraint> allConstraints = ObjectiveFunction.GetAllConstraints();
+                    if (allConstraints == null) throw new Exception("Augmented Lagrangian requires constraints.");
 
-                        AugmentedLagrangian alSolver = new AugmentedLagrangian(ObjectiveFunction, allConstraints);
-                        alSolver.MaxEvaluations = MaxIterations;
-                        OptMethod = alSolver;
-                    }
+                    AugmentedLagrangian alSolver = new AugmentedLagrangian(ObjectiveFunction, allConstraints);
+                    alSolver.MaxEvaluations = MaxIterations;
+                    AccordOptMethod = alSolver;
+                }
                     break;
 
                 case SolverType.Cobyla:
-                    {
-                        List<NonlinearConstraint> allConstraints = ObjectiveFunction.GetAllConstraints();
-                        Cobyla cobSolver = allConstraints == null ? new Cobyla(ObjectiveFunction) : new Cobyla(ObjectiveFunction, allConstraints);
-
-                        cobSolver.MaxIterations = MaxIterations;
-                        OptMethod = cobSolver;
-                    }
+                {
+                    List<NonlinearConstraint> allConstraints = ObjectiveFunction.GetAllConstraints();
+                    Cobyla cobSolver = allConstraints == null ? new Cobyla(ObjectiveFunction) : new Cobyla(ObjectiveFunction, allConstraints);
+                    cobSolver.MaxIterations = MaxIterations;
+                    AccordOptMethod = cobSolver;
+                }
                     break;
 
                 case SolverType.BoundedBroydenFletcherGoldfarbShanno:
-                    {
-                        if (ObjectiveFunction.LowerBounds == null || ObjectiveFunction.UpperBounds == null) throw new Exception("Bounded Broyden Fletcher Goldfarb Shanno requires boundaries.");
-                        BoundedBroydenFletcherGoldfarbShanno bbSolver = new BoundedBroydenFletcherGoldfarbShanno(
-                            ObjectiveFunction.NumberOfVariables, ObjectiveFunction.Function, ObjectiveFunction.Gradient);
-                        bbSolver.MaxIterations = MaxIterations;
-                        bbSolver.LowerBounds = ObjectiveFunction.LowerBounds;
-                        bbSolver.UpperBounds = ObjectiveFunction.UpperBounds;
+                {
+                    if (ObjectiveFunction.LowerBounds == null || ObjectiveFunction.UpperBounds == null) throw new Exception("Bounded Broyden Fletcher Goldfarb Shanno requires boundaries.");
+                    BoundedBroydenFletcherGoldfarbShanno bbSolver = new BoundedBroydenFletcherGoldfarbShanno(
+                        ObjectiveFunction.NumberOfVariables, ObjectiveFunction.Function, ObjectiveFunction.Gradient);
+                    bbSolver.MaxIterations = MaxIterations;
+                    bbSolver.LowerBounds = ObjectiveFunction.LowerBounds;
+                    bbSolver.UpperBounds = ObjectiveFunction.UpperBounds;
 
-                        bbSolver.FunctionTolerance = 1e9;
+                    bbSolver.FunctionTolerance = 1e9;
 
-                        OptMethod = bbSolver;
-                    }
+                    AccordOptMethod = bbSolver;
+                }
                     break;
 
                 case SolverType.ConjugateGradient_FletcherReeves:
@@ -297,9 +386,10 @@ namespace AccordHelper.Opt
                     cgSolver.MaxIterations = MaxIterations;
                     cgSolver.Method = ConjugateGradientMethod.FletcherReeves;
 
-                    OptMethod = cgSolver;
+                    AccordOptMethod = cgSolver;
                 }
                     break;
+
                 case SolverType.ConjugateGradient_PolakRibiere:
                 {
                     if (ObjectiveFunction.LowerBounds == null || ObjectiveFunction.UpperBounds == null) throw new Exception("Conjugate Gradient requires boundaries.");
@@ -308,9 +398,10 @@ namespace AccordHelper.Opt
                     cgSolver.MaxIterations = MaxIterations;
                     cgSolver.Method = ConjugateGradientMethod.PolakRibiere;
 
-                    OptMethod = cgSolver;
+                    AccordOptMethod = cgSolver;
                 }
                     break;
+
                 case SolverType.ConjugateGradient_PositivePolakRibiere:
                 {
                     if (ObjectiveFunction.LowerBounds == null || ObjectiveFunction.UpperBounds == null) throw new Exception("Conjugate Gradient requires boundaries.");
@@ -319,7 +410,7 @@ namespace AccordHelper.Opt
                     cgSolver.MaxIterations = MaxIterations;
                     cgSolver.Method = ConjugateGradientMethod.PositivePolakRibiere;
 
-                    OptMethod = cgSolver;
+                    AccordOptMethod = cgSolver;
                 }
                     break;
 
@@ -332,7 +423,7 @@ namespace AccordHelper.Opt
                     //ndSolver.LowerBounds = ObjectiveFunction.LowerBounds;
                     //ndSolver.UpperBounds = ObjectiveFunction.UpperBounds;
 
-                    OptMethod = ndSolver;
+                    AccordOptMethod = ndSolver;
                 }
                     break;
 
@@ -343,12 +434,24 @@ namespace AccordHelper.Opt
                         ObjectiveFunction.NumberOfVariables, ObjectiveFunction.Function, ObjectiveFunction.Gradient);
                     rbSolver.Iterations = MaxIterations;
 
-                    OptMethod = rbSolver;
+                    AccordOptMethod = rbSolver;
                 }
                     break;
 
                 case SolverType.Genetic:
-                    {
+                {
+                }
+                    break;
+
+                case SolverType.NLOpt_Cobyla:
+                {
+                    if (ObjectiveFunction.LowerBounds == null || ObjectiveFunction.UpperBounds == null) throw new Exception("NLOpt Cobyla solver requires boundaries.");
+
+                    NLOptMethod = new NLoptSolver(NLoptAlgorithm.LN_COBYLA, (uint)ObjectiveFunction.NumberOfVariables);
+                    NLOptMethod.SetLowerBounds(ObjectiveFunction.LowerBounds);
+                    NLOptMethod.SetUpperBounds(ObjectiveFunction.UpperBounds);
+                    NLOptMethod.SetMinObjective(ObjectiveFunction.Function_NLOptFunctionWrapper);
+
 
                     }
                     break;
@@ -356,30 +459,30 @@ namespace AccordHelper.Opt
                 default:
                     throw new ArgumentOutOfRangeException(nameof(_solverType), _solverType, null);
             }
-        }
 
-        /// <summary>
-        /// Returns true if finished.
-        /// </summary>
-        /// <returns></returns>
+            // Sets the FEA type
+            FeaType = SolverOptions_SelectedFeaSoftware;
+        }
         public void Solve()
         {
-            if (Status == SolverStatus.NotInitialized) throw new Exception("Please initialize the solver before trying to solve.");
+            Stopwatch sw = Stopwatch.StartNew();
+
             if (Status == SolverStatus.Finished) throw new Exception("The solver has already finished.");
             if (Status == SolverStatus.NoProgress) throw new Exception("The solver can't progress the solution further.");
             if (Status == SolverStatus.MaxEvaluations) throw new Exception("The solver reached the maximum number of evaluations.");
 
-            // Terminates the solver process
+            // Starts the solver process
             if (FeModel != null)
             {
-                FeModel.InitializeModelAndSoftware();
+                FeModel.InitializeSoftware();
             }
 
             #region Genetic Algorithm
+
             // For the Genetic Algorithm
             if (SolverType == SolverType.Genetic)
             {
-                //if (_genAlgPopulation == null) throw new Exception("You did not start the solver. Please use the ResetSolver function for this.");
+                //if (_genAlgPopulation == null) throw new Exception("You did not start the solver. Please use the SetSolverManager function for this.");
 
                 Population pop = new Population(20,
                     ObjectiveFunction.GetStartGrasshopperChromosome(StartPositionType),
@@ -394,7 +497,7 @@ namespace AccordHelper.Opt
                     GenAlgPopulation.RunEpoch();
 
                     // Increases the counters
-                    IterationCount++;
+                    GeneticEpochCount++;
 
                     // The solution has been found *
                     if (GenAlgPopulation.BestChromosome.Fitness <= TargetResidual)
@@ -404,39 +507,39 @@ namespace AccordHelper.Opt
                         return;
                     }
 
-                    // This was the first iteration - we don't have anything to compare
-                    if (Status == SolverStatus.Initialized)
-                    {
-                        LastBestEvalValue = GenAlgPopulation.BestChromosome.Fitness;
-                        Status = SolverStatus.Running;
-                    }
-                    else // Wasn't the first
-                    {
-                        double effectiveChangeLimit = Math.Abs(GenAlgPopulation.BestChromosome.Fitness * ChangeLimit);
-                        double delta = Math.Abs(GenAlgPopulation.BestChromosome.Fitness - LastBestEvalValue.Value);
+                    //// This was the first iteration - we don't have anything to compare
+                    //if (Status == SolverStatus.Initialized)
+                    //{
+                    //    LastBestEvalValue = GenAlgPopulation.BestChromosome.Fitness;
+                    //    Status = SolverStatus.Running;
+                    //}
+                    //else // Wasn't the first
+                    //{
+                    //    double effectiveChangeLimit = Math.Abs(GenAlgPopulation.BestChromosome.Fitness * ChangeLimit);
+                    //    double delta = Math.Abs(GenAlgPopulation.BestChromosome.Fitness - LastBestEvalValue.Value);
 
-                        if (delta < effectiveChangeLimit) // Reached the change limit
-                        {
-                            //Status = SolverStatus.NoProgress;
-                            //StatusTextMessage = "Maximum Progress - Reached relative change limit";
-                            //return;
-                        }
-                        else // Did not reach the change limit
-                        {
-                            // Just saves the value for the next iteration
-                            LastBestEvalValue = GenAlgPopulation.BestChromosome.Fitness;
-                        }
-                    }
+                    //    if (delta < effectiveChangeLimit) // Reached the change limit
+                    //    {
+                    //        //Status = SolverStatus.NoProgress;
+                    //        //StatusTextMessage = "Maximum Progress - Reached relative change limit";
+                    //        //return;
+                    //    }
+                    //    else // Did not reach the change limit
+                    //    {
+                    //        // Just saves the value for the next iteration
+                    //        LastBestEvalValue = GenAlgPopulation.BestChromosome.Fitness;
+                    //    }
+                    //}
 
                     // Did we reach the maximum number of iterations?
-                    if (IterationCount >= MaxIterations)
+                    if (GeneticEpochCount >= MaxIterations)
                     {
                         Status = SolverStatus.MaxEvaluations;
                         StatusTextMessage = "Maximum Evaluations - Reached maximum number of genetic epochs";
                         return;
                     }
 
-                    // Was the cancellation toke requested?
+                    // Was the cancellation token requested?
                     if (CancelSource.Token.IsCancellationRequested)
                     {
                         Status = SolverStatus.Cancelled;
@@ -445,278 +548,387 @@ namespace AccordHelper.Opt
                     }
                 }
             }
+
             #endregion
 
-
-            #region Optimizations
-            else {
-                if (_optMethod == null) throw new Exception("You did not start the solver. Please use the ResetSolver function for this.");
+            #region Accord Optimizations
+            else if (SolverType == SolverType.Cobyla ||
+                     SolverType == SolverType.AugmentedLagrangian ||
+                     SolverType == SolverType.BoundedBroydenFletcherGoldfarbShanno ||
+                     SolverType == SolverType.ConjugateGradient_FletcherReeves ||
+                     SolverType == SolverType.ConjugateGradient_PositivePolakRibiere ||
+                     SolverType == SolverType.NelderMead ||
+                     SolverType == SolverType.ResilientBackpropagation ||
+                     SolverType == SolverType.ConjugateGradient_PolakRibiere)
+            {
+                if (_accordOptMethod == null) throw new Exception("You did not start the solver. Please use the SetSolverManager function for this.");
 
                 // This is the first time we are running this solver
-                double[] vector = Status == SolverStatus.Initialized ? ObjectiveFunction.GetStartPosition(StartPositionType) : null;
-
-                BoundedBroydenFletcherGoldfarbShannoStatus? bbSolverStatus = null;
-                AugmentedLagrangianStatus? agSolverStatus = null;
-                CobylaStatus? cobSolverStatus = null;
-                ConjugateGradientCode? conjgradSolverStatus = null;
-                NelderMeadStatus? nedSolverStatus = null;
-                ResilientBackpropagationStatus? relSolverStatus = null;
+                double[] vector = Status == SolverStatus.NotStarted ? ObjectiveFunction.GetStartPosition(StartPositionType) : null;
 
                 try
                 {
                     bool minResult;
-                    minResult = vector != null ? OptMethod.Minimize(vector) : OptMethod.Minimize();
 
-                    // Saves the value of the iteration
-                    LastBestEvalValue = OptMethod.Value;
+                    // Effectively runs the solve algorithm
+                    minResult = vector != null ? AccordOptMethod.Minimize(vector) : AccordOptMethod.Minimize();
 
-                    // Saves the status
-                    if (OptMethod is BoundedBroydenFletcherGoldfarbShanno bbSolver) bbSolverStatus = bbSolver.Status;
-                    if (OptMethod is AugmentedLagrangian agSolver) agSolverStatus = agSolver.Status;
-                    if (OptMethod is Cobyla cobSolver) cobSolverStatus = cobSolver.Status;
-                    if (OptMethod is ConjugateGradient conjGradSolver) conjgradSolverStatus = conjGradSolver.Status;
-                    if (OptMethod is NelderMead nedSolver) nedSolverStatus = nedSolver.Status;
-                    if (OptMethod is ResilientBackpropagation relSolver) relSolverStatus = relSolver.Status;
-                }
-                catch (SolverSuccessException e)
-                {
-                    LastBestEvalValue = e.FinalValue;
-
-                    // Forces the status to be Success
-                    if (OptMethod is BoundedBroydenFletcherGoldfarbShanno) bbSolverStatus = BoundedBroydenFletcherGoldfarbShannoStatus.FunctionConvergence;
-                    if (OptMethod is AugmentedLagrangian) agSolverStatus = AugmentedLagrangianStatus.Converged;
-                    if (OptMethod is Cobyla) cobSolverStatus = CobylaStatus.Success;
-                    if (OptMethod is ConjugateGradient) conjgradSolverStatus = ConjugateGradientCode.Success;
-                }
-
-                // Now it depends on the type of the solver
-                if (bbSolverStatus.HasValue)
-                {
-                    switch (bbSolverStatus.Value)
+                    // The solver terminated internally - not from our own control
+                    if (AccordOptMethod is BoundedBroydenFletcherGoldfarbShanno bbSolver)
                     {
-                        case BoundedBroydenFletcherGoldfarbShannoStatus.Stop:
-                            if (CancelSource.Token.IsCancellationRequested)
-                            {
+                        switch (bbSolver.Status)
+                        {
+                            case BoundedBroydenFletcherGoldfarbShannoStatus.Stop:
+                                if (CancelSource.Token.IsCancellationRequested)
+                                {
+                                    Status = SolverStatus.Cancelled;
+                                    StatusTextMessage = "Cancelled by User - Resume possible";
+                                    break;
+                                }
+                                else
+                                {
+                                    Status = SolverStatus.MaxEvaluations;
+                                    StatusTextMessage = "The B-BFGS solver is in stop state";
+                                    break;
+                                }
+
+                            case BoundedBroydenFletcherGoldfarbShannoStatus.MaximumIterations:
+                                Status = SolverStatus.MaxEvaluations;
+                                StatusTextMessage = "Maximum Evaluations - Reached maximum number of iterations";
+                                break;
+
+                            case BoundedBroydenFletcherGoldfarbShannoStatus.FunctionConvergence:
+                                Status = SolverStatus.Finished;
+                                StatusTextMessage = "Finish - Reached B-BFGS function convergence";
+                                break;
+
+                            case BoundedBroydenFletcherGoldfarbShannoStatus.GradientConvergence:
+                                Status = SolverStatus.Finished;
+                                StatusTextMessage = "Finish - Reached B-BFGS gradient convergence";
+                                break;
+
+                            case BoundedBroydenFletcherGoldfarbShannoStatus.LineSearchFailed:
+                                Status = SolverStatus.MaxEvaluations;
+                                StatusTextMessage = "The B-BFGS had a Line Search Failure (Gradient Function Issue)";
+                                break;
+
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+                    }
+                    else if (AccordOptMethod is AugmentedLagrangian agSolver)
+                    {
+                        switch (agSolver.Status)
+                        {
+                            case AugmentedLagrangianStatus.Converged:
+                                Status = SolverStatus.Finished;
+                                StatusTextMessage = "Finish - Converged";
+                                break;
+
+                            case AugmentedLagrangianStatus.NoProgress:
+                                Status = SolverStatus.NoProgress;
+                                StatusTextMessage = "Finish - Maximum Progress Reached";
+                                break;
+
+                            case AugmentedLagrangianStatus.MaxEvaluations:
+                                Status = SolverStatus.MaxEvaluations;
+                                StatusTextMessage = "Maximum Evaluations - Reached maximum number of evaluations";
+                                break;
+
+                            case AugmentedLagrangianStatus.Cancelled:
                                 Status = SolverStatus.Cancelled;
                                 StatusTextMessage = "Cancelled by User - Resume possible";
-                                return;
-                            }
-                            else
-                            {
+                                break;
+
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+                    }
+                    else if (AccordOptMethod is Cobyla cobSolver)
+                    {
+                        switch (cobSolver.Status)
+                        {
+                            case CobylaStatus.Success:
+                                Status = SolverStatus.Finished;
+                                StatusTextMessage = "Finish - Success";
+                                break;
+
+                            case CobylaStatus.MaxIterationsReached:
                                 Status = SolverStatus.MaxEvaluations;
-                                StatusTextMessage = "The B-BFGS solver is in stop state";
-                                return;
-                            }
+                                StatusTextMessage = "Maximum Evaluations - Reached maximum number of iterations";
+                                break;
 
-                        case BoundedBroydenFletcherGoldfarbShannoStatus.MaximumIterations:
+                            case CobylaStatus.DivergingRoundingErrors:
+                                Status = SolverStatus.NoProgress;
+                                StatusTextMessage = "Finish - Maximum Progress (Diverging rounding errors)";
+                                break;
+
+                            case CobylaStatus.NoPossibleSolution:
+                                Status = SolverStatus.NoProgress;
+                                StatusTextMessage = "Finish - Maximum Progress (No possible solution)";
+                                break;
+
+                            case CobylaStatus.Cancelled:
+                                Status = SolverStatus.Cancelled;
+                                StatusTextMessage = "Cancelled by User - Resume possible";
+                                break;
+
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+                    }
+                    else if (AccordOptMethod is ConjugateGradient conjGradSolver)
+                    {
+                        switch (conjGradSolver.Status)
+                        {
+                            case ConjugateGradientCode.Success:
+                                Status = SolverStatus.Finished;
+                                StatusTextMessage = "Finish - Success";
+                                break;
+
+                            case ConjugateGradientCode.StepSize:
+                                Status = SolverStatus.NoProgress;
+                                StatusTextMessage = "Finish - Invalid Step Size";
+                                break;
+
+                            case ConjugateGradientCode.DescentNotObtained:
+                                Status = SolverStatus.NoProgress;
+                                StatusTextMessage = "Finish - Descent Direction Not Obtained";
+                                break;
+
+                            case ConjugateGradientCode.RoundingErrors:
+                                Status = SolverStatus.NoProgress;
+                                StatusTextMessage = "Finish - Rounding errors prevent further progress";
+                                break;
+
+                            case ConjugateGradientCode.StepHigh:
+                                Status = SolverStatus.NoProgress;
+                                StatusTextMessage = "Finish - The step size has reached the upper bound";
+                                break;
+
+                            case ConjugateGradientCode.StepLow:
+                                Status = SolverStatus.NoProgress;
+                                StatusTextMessage = "Finish - The step size has reached the lower bound";
+                                break;
+
+                            case ConjugateGradientCode.MaximumEvaluations:
+                                Status = SolverStatus.MaxEvaluations;
+                                StatusTextMessage = "Maximum Evaluations - Reached maximum number of iterations";
+                                break;
+
+                            case ConjugateGradientCode.Precision:
+                                Status = SolverStatus.NoProgress;
+                                StatusTextMessage = "Finish - Relative width of the interval of uncertainty is at machine precision";
+                                break;
+
+                            case ConjugateGradientCode.Cancelled:
+                                Status = SolverStatus.Cancelled;
+                                StatusTextMessage = "Cancelled by User - Resume possible";
+                                break;
+
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+                    }
+                    else if (AccordOptMethod is NelderMead nedSolver)
+                    {
+                        switch (nedSolver.Status)
+                        {
+                            case NelderMeadStatus.ForcedStop:
+                                Status = SolverStatus.Cancelled;
+                                StatusTextMessage = "Cancelled by User - Resume possible";
+                                break;
+
+                            case NelderMeadStatus.Success:
+                                Status = SolverStatus.Finished;
+                                StatusTextMessage = "Finish - Success";
+                                break;
+
+                            case NelderMeadStatus.MaximumTimeReached:
+                                Status = SolverStatus.Finished;
+                                StatusTextMessage = "Finish - The execution time exceeded the established limit";
+                                break;
+
+                            case NelderMeadStatus.MinimumAllowedValueReached:
+                                Status = SolverStatus.NoProgress;
+                                StatusTextMessage = "Finish - The minimum desired value has been reached";
+                                break;
+
+                            case NelderMeadStatus.MaximumEvaluationsReached:
+                                Status = SolverStatus.MaxEvaluations;
+                                StatusTextMessage = "Maximum Evaluations - Reached maximum number of iterations";
+                                break;
+
+                            case NelderMeadStatus.Failure:
+                                Status = SolverStatus.NoProgress;
+                                StatusTextMessage = "Finish - The algorithm failed internally";
+                                break;
+
+                            case NelderMeadStatus.FunctionToleranceReached:
+                                Status = SolverStatus.Finished;
+                                StatusTextMessage = "Finish - The desired output tolerance (minimum change in the function output between two consecutive iterations) has been reached";
+                                break;
+
+                            case NelderMeadStatus.SolutionToleranceReached:
+                                Status = SolverStatus.Finished;
+                                StatusTextMessage = "Finish - The desired parameter tolerance (minimum change in the solution vector between two iterations) has been reached";
+                                break;
+
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+                    }
+                    else if (AccordOptMethod is ResilientBackpropagation relSolver)
+                    {
+                        switch (relSolver.Status)
+                        {
+                            case ResilientBackpropagationStatus.Finished:
+                                Status = SolverStatus.Finished;
+                                StatusTextMessage = "Finish - Success";
+                                break;
+
+                            case ResilientBackpropagationStatus.MaxIterations:
+                                Status = SolverStatus.MaxEvaluations;
+                                StatusTextMessage = "Maximum Evaluations - Reached maximum number of iterations";
+                                break;
+
+                            case ResilientBackpropagationStatus.Cancelled:
+                                Status = SolverStatus.Cancelled;
+                                StatusTextMessage = "Cancelled by User - Resume possible";
+                                break;
+
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+                    }
+                }
+                catch (SolverEndException e)
+                {
+                    // We sent the message! Interprets the message that was received
+                    switch (e.FinishStatus)
+                    {
+                        case SolverStatus.NoProgress:
+                            Status = SolverStatus.NoProgress;
+                            StatusTextMessage = "No Progress - The solver cannot iterate faster than the required minimum change limit.";
+                            break;
+
+                        case SolverStatus.MaxEvaluations:
                             Status = SolverStatus.MaxEvaluations;
                             StatusTextMessage = "Maximum Evaluations - Reached maximum number of iterations";
-                            return;
+                            break;
 
-                        case BoundedBroydenFletcherGoldfarbShannoStatus.FunctionConvergence:
+                        case SolverStatus.Finished:
                             Status = SolverStatus.Finished;
-                            StatusTextMessage = "Finish - Reached B-BFGS function convergence";
-                            return;
-
-                        case BoundedBroydenFletcherGoldfarbShannoStatus.GradientConvergence:
-                            Status = SolverStatus.Finished;
-                            StatusTextMessage = "Finish - Reached B-BFGS gradient convergence";
-                            return;
-
-                        case BoundedBroydenFletcherGoldfarbShannoStatus.LineSearchFailed:
-                            Status = SolverStatus.MaxEvaluations;
-                            StatusTextMessage = "The B-BFGS had a Line Search Failure (Gradient Function Issue)";
-                            return;
+                            StatusTextMessage = "Converged - The solver reached the desired residual value.";
+                            break;
 
                         default:
-                            throw new ArgumentOutOfRangeException();
+                            throw new ArgumentOutOfRangeException($"The SolverEndException got an unexpected result!");
                     }
                 }
-                else if (agSolverStatus.HasValue)
+            }
+            #endregion
+
+            #region NLOpt Optimizations
+            else if (SolverType == SolverType.NLOpt_Cobyla)
+            {
+                if (_nLOptMethod == null) throw new Exception("You did not start the solver. Please use the SetSolverManager function for this.");
+                
+                // This is the first time we are running this solver
+                double[] vector = Status == SolverStatus.NotStarted ? ObjectiveFunction.GetStartPosition(StartPositionType) : BestSolutionSoFar.InputValuesAsDouble;
+
+                NloptResult result = NloptResult.FAILURE;
+                try
                 {
-                    switch (agSolverStatus.Value)
+                    double? finalScore;
+                    result = NLOptMethod.Optimize(vector, out finalScore);
+
+                    switch (result)
                     {
-                        case AugmentedLagrangianStatus.Converged:
-                            Status = SolverStatus.Finished;
-                            StatusTextMessage = "Finish - Converged";
-                            return;
+                        case NloptResult.FAILURE:
+                            Status = SolverStatus.Failed;
+                            StatusTextMessage = "Generic failure code.";
+                            break;
 
-                        case AugmentedLagrangianStatus.NoProgress:
-                            Status = SolverStatus.NoProgress;
-                            StatusTextMessage = "Finish - Maximum Progress Reached";
-                            return;
+                        case NloptResult.INVALID_ARGS:
+                            Status = SolverStatus.Failed;
+                            StatusTextMessage = "Invalid arguments (e.g. lower bounds are bigger than upper bounds, an unknown algorithm was specified, etcetera).";
+                            break;
 
-                        case AugmentedLagrangianStatus.MaxEvaluations:
-                            Status = SolverStatus.MaxEvaluations;
-                            StatusTextMessage = "Maximum Evaluations - Reached maximum number of evaluations";
-                            return;
+                        case NloptResult.OUT_OF_MEMORY:
+                            Status = SolverStatus.Failed;
+                            StatusTextMessage = "Ran out of memory.";
+                            break;
 
-                        case AugmentedLagrangianStatus.Cancelled:
+                        case NloptResult.ROUNDOFF_LIMITED:
+                            Status = SolverStatus.Failed;
+                            StatusTextMessage = "Halted because roundoff errors limited progress. (In this case, the optimization still typically returns a useful result.).";
+                            break;
+
+                        case NloptResult.FORCED_STOP:
                             Status = SolverStatus.Cancelled;
                             StatusTextMessage = "Cancelled by User - Resume possible";
-                            return;
+                            break;
+
+                        case NloptResult.SUCCESS:
+                            Status = SolverStatus.Finished;
+                            StatusTextMessage = "Generic success return value.";
+                            break;
+
+                        case NloptResult.STOPVAL_REACHED:
+                            Status = SolverStatus.Finished;
+                            StatusTextMessage = "Optimization stopped because stopval (above) was reached.";
+                            break;
+
+                        case NloptResult.FTOL_REACHED:
+                            Status = SolverStatus.Finished;
+                            StatusTextMessage = "Optimization stopped because ftol_rel or ftol_abs (above) was reached.";
+                            break;
+
+                        case NloptResult.XTOL_REACHED:
+                            Status = SolverStatus.Finished;
+                            StatusTextMessage = "Optimization stopped because xtol_rel or xtol_abs (above) was reached.";
+                            break;
+
+                        case NloptResult.MAXEVAL_REACHED:
+                            Status = SolverStatus.MaxEvaluations;
+                            StatusTextMessage = "Optimization stopped because maxeval (above) was reached.";
+                            break;
+
+                        case NloptResult.MAXTIME_REACHED:
+                            Status = SolverStatus.MaxEvaluations;
+                            StatusTextMessage = "Optimization stopped because maxtime (above) was reached.";
+                            break;
 
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
                 }
-                else if (cobSolverStatus.HasValue)
+                catch (SolverEndException e)
                 {
-                    switch (cobSolverStatus.Value)
+                    // We sent the message! Interprets the message that was received
+                    switch (e.FinishStatus)
                     {
-                        case CobylaStatus.Success:
-                            Status = SolverStatus.Finished;
-                            StatusTextMessage = "Finish - Success";
-                            return;
+                        case SolverStatus.NoProgress:
+                            Status = SolverStatus.NoProgress;
+                            StatusTextMessage = "No Progress - The solver cannot iterate faster than the required minimum change limit.";
+                            break;
 
-                        case CobylaStatus.MaxIterationsReached:
+                        case SolverStatus.MaxEvaluations:
                             Status = SolverStatus.MaxEvaluations;
                             StatusTextMessage = "Maximum Evaluations - Reached maximum number of iterations";
-                            return;
+                            break;
 
-                        case CobylaStatus.DivergingRoundingErrors:
-                            Status = SolverStatus.NoProgress;
-                            StatusTextMessage = "Finish - Maximum Progress (Diverging rounding errors)";
-                            return;
-
-                        case CobylaStatus.NoPossibleSolution:
-                            Status = SolverStatus.NoProgress;
-                            StatusTextMessage = "Finish - Maximum Progress (No possible solution)";
-                            return;
-
-                        case CobylaStatus.Cancelled:
-                            Status = SolverStatus.Cancelled;
-                            StatusTextMessage = "Cancelled by User - Resume possible";
-                            return;
+                        case SolverStatus.Finished:
+                            Status = SolverStatus.Finished;
+                            StatusTextMessage = "Converged - The solver reached the desired residual value.";
+                            break;
 
                         default:
-                            throw new ArgumentOutOfRangeException();
+                            throw new ArgumentOutOfRangeException($"The SolverEndException got an unexpected result!");
                     }
                 }
-                else if (conjgradSolverStatus.HasValue)
-                {
-                    switch (conjgradSolverStatus.Value)
-                    {
-                        case ConjugateGradientCode.Success:
-                            Status = SolverStatus.Finished;
-                            StatusTextMessage = "Finish - Success";
-                            return;
 
-                        case ConjugateGradientCode.StepSize:
-                            Status = SolverStatus.NoProgress;
-                            StatusTextMessage = "Finish - Invalid Step Size";
-                            return;
-
-                        case ConjugateGradientCode.DescentNotObtained:
-                            Status = SolverStatus.NoProgress;
-                            StatusTextMessage = "Finish - Descent Direction Not Obtained";
-                            return;
-
-                        case ConjugateGradientCode.RoundingErrors:
-                            Status = SolverStatus.NoProgress;
-                            StatusTextMessage = "Finish - Rounding errors prevent further progress";
-                            return;
-
-                        case ConjugateGradientCode.StepHigh:
-                            Status = SolverStatus.NoProgress;
-                            StatusTextMessage = "Finish - The step size has reached the upper bound";
-                            return;
-
-                        case ConjugateGradientCode.StepLow:
-                            Status = SolverStatus.NoProgress;
-                            StatusTextMessage = "Finish - The step size has reached the lower bound";
-                            return;
-
-                        case ConjugateGradientCode.MaximumEvaluations:
-                            Status = SolverStatus.MaxEvaluations;
-                            StatusTextMessage = "Maximum Evaluations - Reached maximum number of iterations";
-                            return;
-
-                        case ConjugateGradientCode.Precision:
-                            Status = SolverStatus.NoProgress;
-                            StatusTextMessage = "Finish - Relative width of the interval of uncertainty is at machine precision";
-                            return;
-
-                        case ConjugateGradientCode.Cancelled:
-                            Status = SolverStatus.Cancelled;
-                            StatusTextMessage = "Cancelled by User - Resume possible";
-                            return;
-
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                }
-                else if (nedSolverStatus.HasValue)
-                {
-                    switch (nedSolverStatus.Value)
-                    {
-                        case NelderMeadStatus.ForcedStop:
-                            Status = SolverStatus.Cancelled;
-                            StatusTextMessage = "Cancelled by User - Resume possible";
-                            return;
-
-                        case NelderMeadStatus.Success:
-                            Status = SolverStatus.Finished;
-                            StatusTextMessage = "Finish - Success";
-                            return;
-
-                        case NelderMeadStatus.MaximumTimeReached:
-                            Status = SolverStatus.Finished;
-                            StatusTextMessage = "Finish - The execution time exceeded the established limit";
-                            return;
-
-                        case NelderMeadStatus.MinimumAllowedValueReached:
-                            Status = SolverStatus.NoProgress;
-                            StatusTextMessage = "Finish - The minimum desired value has been reached";
-                            return;
-
-                        case NelderMeadStatus.MaximumEvaluationsReached:
-                            Status = SolverStatus.MaxEvaluations;
-                            StatusTextMessage = "Maximum Evaluations - Reached maximum number of iterations";
-                            return;
-
-                        case NelderMeadStatus.Failure:
-                            Status = SolverStatus.NoProgress;
-                            StatusTextMessage = "Finish - The algorithm failed internally";
-                            return;
-
-                        case NelderMeadStatus.FunctionToleranceReached:
-                            Status = SolverStatus.Finished;
-                            StatusTextMessage = "Finish - The desired output tolerance (minimum change in the function output between two consecutive iterations) has been reached";
-                            return;
-
-                        case NelderMeadStatus.SolutionToleranceReached:
-                            Status = SolverStatus.Finished;
-                            StatusTextMessage = "Finish - The desired parameter tolerance (minimum change in the solution vector between two iterations) has been reached";
-                            return;
-
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                }
-                else if (relSolverStatus.HasValue)
-                {
-                    switch (relSolverStatus.Value)
-                    {
-                        case ResilientBackpropagationStatus.Finished:
-                            Status = SolverStatus.Finished;
-                            StatusTextMessage = "Finish - Success";
-                            return;
-
-                        case ResilientBackpropagationStatus.MaxIterations:
-                            Status = SolverStatus.MaxEvaluations;
-                            StatusTextMessage = "Maximum Evaluations - Reached maximum number of iterations";
-                            return;
-
-                        case ResilientBackpropagationStatus.Cancelled:
-                            Status = SolverStatus.Cancelled;
-                            StatusTextMessage = "Cancelled by User - Resume possible";
-                            return;
-
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                }
             }
             #endregion
 
@@ -725,15 +937,21 @@ namespace AccordHelper.Opt
             {
                 FeModel.CloseApplication();
             }
+
+            sw.Stop();
+            TotalSolveSeconds = sw.Elapsed.TotalSeconds;
         }
 
         #region Problem Variable Definition
+
         public ICollectionView InputDefs_ViewItems { get; set; }
         public ICollectionView IntermediateDefs_ViewItems { get; set; }
         public ICollectionView FinalDefs_ViewItems { get; set; }
+
         #endregion
 
         public ICollectionView FunctionSolutions_ViewItems { get; set; }
+
         private bool FunctionSolutions_ViewItems_Filter(object inObj)
         {
             if (!(inObj is PossibleSolution inSol)) throw new InvalidCastException($"The FunctionSolutions_ViewItems contains something other than a PossibleSolution object.");
@@ -741,6 +959,7 @@ namespace AccordHelper.Opt
         }
 
         public ICollectionView GradientSolutions_ViewItems { get; set; }
+
         private bool GradientSolutions_ViewItems_Filter(object inObj)
         {
             if (!(inObj is PossibleSolution inSol)) throw new InvalidCastException($"The FunctionSolutions_ViewItems contains something other than a PossibleSolution object.");
@@ -749,6 +968,7 @@ namespace AccordHelper.Opt
 
         public ICollectionView AllPossibleSolutions_ViewItems { get; set; }
         protected FastObservableCollection<PossibleSolution> _possibleSolutions = new FastObservableCollection<PossibleSolution>();
+
         public FastObservableCollection<PossibleSolution> PossibleSolutions
         {
             get => _possibleSolutions;
@@ -759,7 +979,6 @@ namespace AccordHelper.Opt
             get => _selectedPossibleSolution;
             set => SetProperty(ref _selectedPossibleSolution, value);
         }
-
         public PossibleSolution CurrentSolverSolution
         {
             get => ObjectiveFunction.CurrentSolution;
@@ -770,6 +989,7 @@ namespace AccordHelper.Opt
         }
 
         #region Client UI Helpers
+
         public bool SolvesCurrentGHFile { get; set; }
         public virtual string ProblemFriendlyName
         {
@@ -780,7 +1000,92 @@ namespace AccordHelper.Opt
             get => this.GetType().Name;
         }
 
-        public virtual List<FeaSoftwareEnum> SupportedFeaSoftwares { get; } = new List<FeaSoftwareEnum>() { FeaSoftwareEnum.NoFea };
+
+        public Dictionary<SolverType, string> SolverTypeListWithCaptions { get; } = new Dictionary<SolverType, string>()
+            {
+                {SolverType.AugmentedLagrangian, "Aug. Lagrangian"},
+                {SolverType.BoundedBroydenFletcherGoldfarbShanno, "B-BFGS"},
+                {SolverType.Cobyla, "Cobyla"},
+                {SolverType.ConjugateGradient_FletcherReeves, "Conj. Gradient - Fletcher Reeves"},
+                {SolverType.ConjugateGradient_PolakRibiere, "Conj. Gradient - Polak Ribiere"},
+                {SolverType.ConjugateGradient_PositivePolakRibiere, "Conj. Gradient - [+] Polak Ribiere"},
+                {SolverType.Genetic, "Genetic"},
+                {SolverType.NelderMead, "Nelder Mead"},
+                {SolverType.ResilientBackpropagation, "Resilient Backpropagation"},
+                {SolverType.NLOpt_Cobyla, "NLOpt Cobyla"}
+            };
+        public Dictionary<StartPositionType, string> StartPositionTypeListWithCaptions { get; } = new Dictionary<StartPositionType, string>()
+            {
+                {StartPositionType.TenPercentRandomFromCenter, "10% from Center"},
+                {StartPositionType.CenterOfRange, "Center of Input"},
+                {StartPositionType.Random, "Random"},
+            };
+        private StartPositionType _solverOptions_SelectedStartPositionType = StartPositionType.CenterOfRange;
+        public StartPositionType SolverOptions_SelectedStartPositionType
+        {
+            get => _solverOptions_SelectedStartPositionType;
+            set => SetProperty(ref _solverOptions_SelectedStartPositionType, value);
+        }
+
+        private Dictionary<FeaSoftwareEnum, string> _feaSoftwareListWithCaptions = new Dictionary<FeaSoftwareEnum, string>();
+        public Dictionary<FeaSoftwareEnum, string> FeaSoftwareListWithCaptions
+        {
+            get => _feaSoftwareListWithCaptions;
+        }
+        public void AddSupportedFeaSoftware(FeaSoftwareEnum inFeaSoftware)
+        {
+            if (inFeaSoftware == FeaSoftwareEnum.NoFea)
+            {
+                if (FeaSoftwareListWithCaptions.Count != 0) throw new Exception($"The NoFea Option must be exclusive.");
+            }
+            else
+            {
+                if (FeaSoftwareListWithCaptions.ContainsKey(FeaSoftwareEnum.NoFea)) throw new Exception($"The NoFea Option must be exclusive.");
+            }
+
+            switch (inFeaSoftware)
+            {
+                case FeaSoftwareEnum.Ansys:
+                    FeaSoftwareListWithCaptions.Add(FeaSoftwareEnum.Ansys, "Ansys");
+                    break;
+
+                case FeaSoftwareEnum.Sap2000:
+                    FeaSoftwareListWithCaptions.Add(FeaSoftwareEnum.Sap2000, "Sap2000");
+                    break;
+
+                case FeaSoftwareEnum.NoFea:
+                    FeaSoftwareListWithCaptions.Add(FeaSoftwareEnum.NoFea, "No Fea");
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            // Automatically select and disables the interface, if needed
+            if (FeaSoftwareListWithCaptions.Count > 0)
+            {
+                SolverOptions_SelectedFeaSoftware = _feaSoftwareListWithCaptions.First().Key;
+                if (_feaSoftwareListWithCaptions.Count == 1) SolverOptions_FeaSoftwareIsEnabled = false;
+                else SolverOptions_FeaSoftwareIsEnabled = true;
+            }
+            else SolverOptions_FeaSoftwareIsEnabled = false;
+
+
+            RaisePropertyChanged("FeaSoftwareListWithCaptions");
+        }
+        private FeaSoftwareEnum _solverOptions_SelectedFeaSoftware = FeaSoftwareEnum.NoFea;
+        public FeaSoftwareEnum SolverOptions_SelectedFeaSoftware
+        {
+            get => _solverOptions_SelectedFeaSoftware;
+            set => SetProperty(ref _solverOptions_SelectedFeaSoftware, value);
+        }
+        private bool _solverOptions_FeaSoftwareIsEnabled = false;
+        public bool SolverOptions_FeaSoftwareIsEnabled
+        {
+            get => _solverOptions_FeaSoftwareIsEnabled;
+            set => SetProperty(ref _solverOptions_FeaSoftwareIsEnabled, value);
+        }
+
         #endregion
     }
 
@@ -794,17 +1099,19 @@ namespace AccordHelper.Opt
         ConjugateGradient_PolakRibiere,
         ConjugateGradient_PositivePolakRibiere,
         NelderMead,
-        ResilientBackpropagation
+        ResilientBackpropagation,
+        NLOpt_Cobyla,
+        NLOptBobyqa
     }
 
     public enum SolverStatus
     {
-        NotInitialized,
-        Initialized,
+        NotStarted,
         Running,
         NoProgress,
         MaxEvaluations,
         Finished,
-        Cancelled
+        Cancelled,
+        Failed
     }
 }

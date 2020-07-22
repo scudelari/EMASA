@@ -77,5 +77,7 @@ namespace AccordHelper.FEA.Items
         {
             return $"{Id}<{Section}>: From [{IJoint}] To [{JJoint}]";
         }
+
+        public List<FeMeshBeamElement> MeshElements { get; private set; } = new List<FeMeshBeamElement>();
     }
 }

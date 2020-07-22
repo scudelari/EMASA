@@ -1,13 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Management;
 using System.Runtime.CompilerServices;
+using System.Runtime.Remoting.Lifetime;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
+using Accord.Genetic;
 using AccordHelper.FEA.Items;
+using AccordHelper.FEA.Results;
+using CsvHelper;
+using CsvHelper.Configuration;
 
 namespace AccordHelper.FEA
 {
@@ -15,6 +23,7 @@ namespace AccordHelper.FEA
     {
         public override string SubDir { get; } = "Ansys";
         private string ansysExeLocation = @"C:\Program Files\ANSYS Inc\v201\ansys\bin\winx64\ANSYS201.exe";
+
 
         private bool IsInitialized => _commandLineProcess != null;
 
@@ -24,18 +33,58 @@ namespace AccordHelper.FEA
         /// Defines an Ansys Model.
         /// </summary>
         /// <param name="inModelFolder">The target folder for the analysis</param>
-        public AnsysModel(string inModelFolder) : base(inModelFolder, "ansys.dat")
+        public AnsysModel(string inModelFolder) : base(inModelFolder, "input_file.dat")
         {
         }
 
-        public override void InitializeModelAndSoftware()
+        public override void InitializeSoftware()
         {
+            // Cleans-up the model folder
+            if (Directory.Exists(ModelFolder)) Directory.Delete(ModelFolder, true);
+            Directory.CreateDirectory(ModelFolder);
+            
+            string jobEaterString = $@"! JOB EATER
+! -------------------------------------
+! Sets the directory
+/CWD,'{ModelFolder}'
+
+:BEGIN
+
+/CLEAR   ! Clears the current problem
+
+! Waits for the start signal
+start_exists = 0
+end_exists = 0
+
+/WAIT,0.050 ! Waits on the iteration
+
+/INQUIRE,start_exists,EXIST,'start_signal','control'       ! Gets the file exist info
+/INQUIRE,end_exists,EXIST,'end_signal','control'           ! Gets the file exist info
+
+*IF,start_exists,EQ,1,THEN ! Start signal received
+	/DELETE,'start_signal','control'                       ! Deletes the signal file
+	/INPUT,'input_file','dat',,,1                               ! Reads the new iteration file
+	
+    SAVE,ALL               ! Saves the database
+    FINISH                 ! Closes the data
+
+	! Writes a file to signal that the iteration has finished
+	/OUTPUT,'iteration_finish','control'
+	/OUTPUT
+*ENDIF
+
+*IF,end_exists,EQ,0,:BEGIN                                 ! If the end signal file does not exist, jumps to the beginning
+/DELETE,'end_signal','control'                             ! Deletes the signal file";
+            string jobEaterFileName = Path.Combine(ModelFolder, "Job_Eater.dat");
+
+            File.WriteAllText(jobEaterFileName, jobEaterString);
+
             _commandLineProcess = new Process();
             _commandLineProcess.StartInfo.FileName = "cmd.exe";
             _commandLineProcess.StartInfo.RedirectStandardInput = true;
             _commandLineProcess.StartInfo.RedirectStandardOutput = true;
             _commandLineProcess.StartInfo.RedirectStandardError = true;
-            //_commandLineProcess.StartInfo.WorkingDirectory = ModelFolder;
+            _commandLineProcess.StartInfo.WorkingDirectory = ModelFolder;
             _commandLineProcess.StartInfo.CreateNoWindow = true;
             _commandLineProcess.StartInfo.UseShellExecute = false;
             _commandLineProcess.Start();
@@ -49,32 +98,39 @@ namespace AccordHelper.FEA
             _commandLineProcess.StandardInput.WriteLine("SET ANS_CONSEC=YES");
             _commandLineProcess.StandardInput.Flush();
 
-            // Consumes and clears all output
-            string s = ReadToEnd_NoLock(_commandLineProcess.StandardOutput);
+            // Launches the Ansys process that will keep consuming the iterations
+            string cmdString = $"\"{ansysExeLocation}\" -s noread -b -i \"{jobEaterFileName}\" -o \"{jobEaterFileName + "_out"}\"";
+
+            // Issues the Ansys command
+            _commandLineProcess.StandardInput.WriteLine(cmdString);
+            _commandLineProcess.StandardInput.Flush();
+        }
+
+        public override void ResetSoftwareData()
+        {
         }
 
         public override void CloseApplication()
         {
+            // Writes the termination signal file
+            string endSignalPath = Path.Combine(ModelFolder, "end_signal.control");
+            if (File.Exists(endSignalPath)) File.Delete(endSignalPath);
+            File.WriteAllText(endSignalPath, " ");
+
             _commandLineProcess.StandardInput.Close();
             _commandLineProcess.WaitForExit();
 
             _commandLineProcess = null;
         }
 
-        public override void WriteModelData()
+        public override void WriteModelToSoftware()
         {
-            if (Directory.Exists(ModelFolder)) Directory.Delete(ModelFolder, true);
-            Directory.CreateDirectory(ModelFolder);
-
             if (Frames.Count == 0) throw new Exception("The model must have defined frames!");
-            if (Groups.Count == 0 || Groups.Count(a => a.Restraint != null) == 0) throw new Exception("The model must have defined restraints!");
+            if (Groups.Count == 0 || Groups.Count(a => a.Value.Restraint != null) == 0) throw new Exception("The model must have defined restraints!");
 
             StringBuilder sb = new StringBuilder();
 
             sb.AppendLine("! Model generated using EMASA's Rhino Automator.");
-            sb.AppendLine();
-            sb.AppendLine("! Changes the Working Directory");
-            sb.AppendLine($"/CWD,'{ModelFolder}'");
             sb.AppendLine();
             sb.AppendLine($"/title, '{ModelName}'");
             sb.AppendLine($"/UIS,MSGPOP,3 ! Sets the pop-up messages to appear only if they are errors");
@@ -106,17 +162,17 @@ namespace AccordHelper.FEA
             sb.AppendLine().AppendLine();
 
             sb.AppendLine("! Adding the ORDERED Joints");
-            foreach (FeJoint feJoint in Joints.OrderBy(a => a.Id))
+            foreach (var feJoint in Joints.OrderBy(a => a.Key))
             {
-                sb.AppendLine($"K,{feJoint.Id},{feJoint.Point.X},{feJoint.Point.Y},{feJoint.Point.Z} ! CSharp Joint ID: {feJoint.Id}");
+                sb.AppendLine($"K,{feJoint.Value.Id},{feJoint.Value.Point.X},{feJoint.Value.Point.Y},{feJoint.Value.Point.Z} ! CSharp Joint ID: {feJoint.Key}");
             }
 
             sb.AppendLine().AppendLine();
 
             sb.AppendLine("! Adding the ORDERED Lines");
-            foreach (FeFrame feFrame in Frames.OrderBy(a => a.Id))
+            foreach (var feFrame in Frames.OrderBy(a => a.Key))
             {
-                sb.AppendLine($"L,{feFrame.IJoint.Id},{feFrame.JJoint.Id} ! CSharp Line ID: {feFrame.Id}");
+                sb.AppendLine($"L,{feFrame.Value.IJoint.Id},{feFrame.Value.JJoint.Id} ! CSharp Line ID: {feFrame.Value.Id}");
             }
 
             sb.AppendLine().AppendLine();
@@ -129,9 +185,9 @@ namespace AccordHelper.FEA
                 sb.AppendLine(feSection.AnsysSecDataLine);
 
                 sb.AppendLine("LSEL,NONE ! Clearing line selection");
-                foreach (FeFrame feFrame in Frames.Where(a => a.Section == feSection))
+                foreach (var feFrame in Frames.Where(a => a.Value.Section == feSection))
                 {
-                    sb.AppendLine($"LSEL,A,LINE,,{feFrame.Id}");
+                    sb.AppendLine($"LSEL,A,LINE,,{feFrame.Value.Id}");
                 }
                 sb.AppendLine($"LATT,{feSection.Material.Id}, ,beam_element_type, , , ,{feSection.Id} ! Sets the #1 Material; #3 ElementType, #7 Section for all selected lines");
             }
@@ -139,28 +195,28 @@ namespace AccordHelper.FEA
             sb.AppendLine().AppendLine();
 
             sb.AppendLine("! Defining the Groups");
-            foreach (FeGroup feGroup in Groups)
+            foreach (var feGroup in Groups)
             {
-                sb.AppendLine().AppendLine($"! GroupName: {feGroup.Name}");
+                sb.AppendLine().AppendLine($"! GroupName: {feGroup.Value.Name}");
                 // Selects the joints
                 sb.AppendLine("KSEL,NONE ! Clearing KP selection");
-                foreach (FeJoint feJoint in feGroup.Joints)
+                foreach (FeJoint feJoint in feGroup.Value.Joints)
                 {
                     sb.AppendLine($"KSEL,A,KP,,{feJoint.Id}");
                 }
 
                 // Selects the frames
                 sb.AppendLine("LSEL,NONE ! Clearing Line selection");
-                foreach (FeFrame feFrame in feGroup.Frames)
+                foreach (FeFrame feFrame in feGroup.Value.Frames)
                 {
                     sb.AppendLine($"LSEL,A,LINE,,{feFrame.Id}");
                 }
 
                 // Adds them to the components
-                sb.AppendLine($"CM,{feGroup.Name}_J,KP ! The component that has the Joints of Group {feGroup.Name}");
-                sb.AppendLine($"CM,{feGroup.Name}_L,LINE ! The component that has the Lines of Group {feGroup.Name}");
+                sb.AppendLine($"CM,{feGroup.Value.Name}_J,KP ! The component that has the Joints of Group {feGroup.Value.Name}");
+                sb.AppendLine($"CM,{feGroup.Value.Name}_L,LINE ! The component that has the Lines of Group {feGroup.Value.Name}");
 
-                sb.AppendLine($"CMGRP,{feGroup.Name},{feGroup.Name}_J,{feGroup.Name}_L ! Putting the joint and line components into same assembly {feGroup.Name}");
+                sb.AppendLine($"CMGRP,{feGroup.Value.Name},{feGroup.Value.Name}_J,{feGroup.Value.Name}_L ! Putting the joint and line components into same assembly {feGroup.Value.Name}");
                 sb.AppendLine();
             }
 
@@ -180,39 +236,39 @@ namespace AccordHelper.FEA
             sb.AppendLine().AppendLine();
 
             sb.AppendLine("! Defining the Restraints");
-            foreach (FeGroup feGroup in Groups.Where(a => a.Restraint != null))
+            foreach (var feGroup in Groups.Where(a => a.Value.Restraint != null))
             {
                 sb.AppendLine("KSEL,NONE ! Clearing KP selection");
 
-                sb.AppendLine($"CMSEL,A,{feGroup.Name},KP ! Selecting the Joints that are in the assembly.");
+                sb.AppendLine($"CMSEL,A,{feGroup.Value.Name},KP ! Selecting the Joints that are in the assembly.");
 
-                if (feGroup.Restraint.IsAll)
+                if (feGroup.Value.Restraint.IsAll)
                 {
                     sb.AppendLine($"DK,ALL,ALL,0 ! Sets all locked for given component");
                 }
                 else
                 {
-                    if (feGroup.Restraint.DoF[0])
+                    if (feGroup.Value.Restraint.DoF[0])
                     {
                         sb.AppendLine($"DK,ALL,UX,0 ! Sets UX for previously selected joints");
                     }
-                    if (feGroup.Restraint.DoF[1])
+                    if (feGroup.Value.Restraint.DoF[1])
                     {
                         sb.AppendLine($"DK,ALL,UY,0 ! Sets UY for previously selected joints");
                     }
-                    if (feGroup.Restraint.DoF[2])
+                    if (feGroup.Value.Restraint.DoF[2])
                     {
                         sb.AppendLine($"DK,ALL,UZ,0 ! Sets UZ for previously selected joints");
                     }
-                    if (feGroup.Restraint.DoF[3])
+                    if (feGroup.Value.Restraint.DoF[3])
                     {
                         sb.AppendLine($"DK,ALL,ROTX,0 ! Sets ROTX for previously selected joints");
                     }
-                    if (feGroup.Restraint.DoF[4])
+                    if (feGroup.Value.Restraint.DoF[4])
                     {
                         sb.AppendLine($"DK,ALL,ROTY,0 ! Sets ROTY for previously selected joints");
                     }
-                    if (feGroup.Restraint.DoF[5])
+                    if (feGroup.Value.Restraint.DoF[5])
                     {
                         sb.AppendLine($"DK,ALL,ROTZ,0 ! Sets ROTZ for previously selected joints");
                     }
@@ -244,67 +300,98 @@ namespace AccordHelper.FEA
             sb.AppendLine().AppendLine().AppendLine(PrintNodalResults);
             sb.AppendLine().AppendLine().AppendLine(PrintElementResults);
 
-            sb.AppendLine().AppendLine().AppendLine(PrintFinishSignal);
-
             // Writes the file
             if (File.Exists(FullFileName)) File.Delete(FullFileName);
             File.WriteAllText(FullFileName, sb.ToString());
         }
-
         public override void RunAnalysis()
         {
             if (_commandLineProcess == null) throw new InvalidOperationException($"You must first initialize the analysis.");
 
             if (!File.Exists(FullFileName)) throw new InvalidOperationException($"The Ansys model {FullFileName} could not be found.");
 
-            string cmdString = $"\"{ansysExeLocation}\" -s noread -b -i \"{FullFileName}\" -o \"{FullFileName + "_out"}\"";
+            // Sends a signal to start the analysis
+            string startSignalPath = Path.Combine(ModelFolder, "start_signal.control");
+            if (File.Exists(startSignalPath)) File.Delete(startSignalPath);
+            File.WriteAllText(startSignalPath, " ");
 
-            // Issues the Ansys command
-            _commandLineProcess.StandardInput.WriteLine(cmdString);
-            _commandLineProcess.StandardInput.Flush();
-
-            // Locks until result comes back from the output
+            // Pools for the existence of the finish file
+            string finishFile = Path.Combine(ModelFolder, "iteration_finish.control");
             while (true)
             {
-                if (ReadToEnd_NoLock(_commandLineProcess.StandardOutput).Contains(FileName)) break;
+                if (File.Exists(finishFile)) break;
+                Thread.Sleep(50);
             }
+            File.Delete(finishFile);
 
-            // Writes a file - will be done after the solve
-            string signalFilename = Path.Combine(ModelFolder, "finish.signal");
-
-            _commandLineProcess.StandardInput.WriteLine($"fsdafsa 1> \"{signalFilename}\" 2>&1");
-            _commandLineProcess.StandardInput.Flush();
-            
-            // Deletes the file
-            File.Delete(signalFilename);
-
-            // DEBUG
-            // Copies the original file
-            string newName = FullFileName + "NEW";
-            File.Copy(FullFileName, newName);
-
-            string newCmd = $"\"{ansysExeLocation}\" -s noread -b -i \"{newName}\" -o \"{newName + "_out"}\"";
-
-            _commandLineProcess.StandardInput.WriteLine(cmdString);
-            _commandLineProcess.StandardInput.Flush();
-
-            _commandLineProcess.StandardInput.WriteLine($"fsdafsa 1> \"{signalFilename}\" 2>&1");
-            _commandLineProcess.StandardInput.Flush();
-
-            using (FileSystemWatcher fw = new FileSystemWatcher())
+            #region Fills the Basic Mesh Data from the model
+            // Reading the mesh joint coordinates
             {
-                fw.Path = Path.Combine(ModelFolder, "finish.signal");
-                fw.NotifyFilter = NotifyFilters.FileName;
-                WaitForChangedResult result = fw.WaitForChanged(WatcherChangeTypes.All, 100000000);
+                string line = null;
+                Regex lineRegex = new Regex(@"^(?<NODE>\s+[\-\.\dE]+)(?<X>\s+[\-\.\dE]+)(?<Y>\s+[\-\.\dE]+)(?<Z>\s+[\-\.\dE]+)(?<THXY>\s+[\-\.\dE]+)(?<THYZ>\s+[\-\.\dE]+)(?<THZX>\s+[\-\.\dE]+)\s*$");
+                
+                if (!File.Exists(Path.Combine(ModelFolder, "nodes_locations.ems"))) throw new IOException($"The Nodal Location file was not created by Ansys!");
+                
+                using (StreamReader reader = new StreamReader(Path.Combine(ModelFolder, "nodes_locations.ems")))
+                {
+                    try
+                    {
+                        while ((line = reader.ReadLine()) != null)
+                        {
+                            Match m = lineRegex.Match(line);
+                            if (!m.Success) continue;
+
+                            int nodeId = int.Parse(m.Groups["NODE"].Value);
+
+                            MeshNodes.Add(nodeId,
+                                new FeMeshNode(nodeId,
+                                    double.Parse(m.Groups["X"].Value),
+                                    double.Parse(m.Groups["Y"].Value),
+                                    double.Parse(m.Groups["Z"].Value)));
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        throw new Exception($"Could not parse the line {line} into a FeMeshNode while reading the results.");
+                    } 
+                }
+
             }
 
-            // Deletes the file
-            File.Delete(signalFilename);
-        }
 
-        private void FwOnCreated(object inSender, FileSystemEventArgs inE)
-        {
-            throw new NotImplementedException();
+            using (StreamReader reader = new StreamReader(Path.Combine(ModelFolder, "line_element_data.ems")))
+            {
+                using (CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+                {
+                    csv.Configuration.TrimOptions = TrimOptions.Trim;
+
+                    var line_element_data_def = new
+                    {
+                        LINE = default(int),
+                        ELEM = default(int),
+                        INODE = default(int),
+                        JNODE = default(int),
+                        KNODE = default(int),
+                    };
+                    var records = csv.GetRecords(line_element_data_def);
+
+                    // Saves all the elements in the element list for quick queries down the line
+                    HashSet<int> addedList = new HashSet<int>();
+                    foreach (var r in records)
+                    {
+                        if (addedList.Add(r.ELEM)) MeshBeamElements.Add(r.ELEM, new FeMeshBeamElement(r.ELEM, MeshNodes[r.INODE], MeshNodes[r.JNODE], MeshNodes[r.KNODE]));
+                    }
+
+                    // Links them to the frames
+                    foreach (var r in records)
+                    {
+                        FeFrame frame = Frames[r.LINE];
+                        frame.MeshElements.Add(MeshBeamElements[r.ELEM]);
+                    }
+                }
+            } 
+            #endregion
+
         }
 
         public override void SaveDataAs(string inFilePath)
@@ -312,33 +399,6 @@ namespace AccordHelper.FEA
             throw new NotImplementedException();
         }
 
-        public override T GetResult<T>(string inResultName)
-        {
-            throw new NotImplementedException();
-        }
-
-        private string ReadToEnd_NoLock(StreamReader inStreamReader)
-        {
-            // Consumes all output until end
-            List<char> buffer = new List<char>();
-            while (true)
-            {
-                int peekResult = _commandLineProcess.StandardOutput.Peek();
-                if (peekResult == -1) break;
-
-                int readVal = _commandLineProcess.StandardOutput.Read();
-                buffer.Add((char)readVal);
-            }
-            return new string(buffer.ToArray());
-        }
-
-        private const string PrintNodalBasicData = @"! Printing - Nodal data
-NSEL,ALL
-/OUTPUT,'nodes_locations','ems'
-NLIST
-
-/OUTPUT,'nodes_reactions','ems'
-PRRSOL";
         private const string PrintLinesWithElements = @"! #################################
 ! GETS LIST OF LINES WITH ELEMENTS AND NODES I,J,K
 
@@ -402,76 +462,73 @@ elemindex = 1 ! The element index in the array
 ESEL,ALL
 
 ! First, acquires the tables
-ETABLE, i_Fx, SMISC, 1
-ETABLE, i_My, SMISC, 2
-ETABLE, i_Mz, SMISC, 3
-ETABLE, i_Tq, SMISC, 4  ! Torsional Moment
-ETABLE, i_SFz, SMISC, 5  ! Shear Force Z
-ETABLE, i_SFy, SMISC, 6  ! Shear Force Z
+ETABLE, iFx, SMISC, 1
+ETABLE, iMy, SMISC, 2
+ETABLE, iMz, SMISC, 3
+ETABLE, iTq, SMISC, 4  ! Torsional Moment
+ETABLE, iSFz, SMISC, 5  ! Shear Force Z
+ETABLE, iSFy, SMISC, 6  ! Shear Force Z
 
-ETABLE, i_Ex, SMISC, 7  ! Axial Strain
-ETABLE, i_Ky, SMISC, 8  ! Curvature Y
-ETABLE, i_Kz, SMISC, 9  ! Curvature Z
-ETABLE, i_SEz, SMISC, 11  ! Strain Z
-ETABLE, i_SEy, SMISC, 12  ! Strain Y
+ETABLE, iEx, SMISC, 7  ! Axial Strain
+ETABLE, iKy, SMISC, 8  ! Curvature Y
+ETABLE, iKz, SMISC, 9  ! Curvature Z
+ETABLE, iSEz, SMISC, 11  ! Strain Z
+ETABLE, iSEy, SMISC, 12  ! Strain Y
 
-ETABLE, i_SDIR, SMISC, 31 ! Axial Direct Stress
-ETABLE, i_SByT, SMISC, 32 ! Bending stress on the element +Y side of the beam
-ETABLE, i_SByB, SMISC, 33 ! Bending stress on the element -Y side of the beam
-ETABLE, i_SBzT, SMISC, 34 ! Bending stress on the element +Z side of the beam
-ETABLE, i_SBzB, SMISC, 35 ! Bending stress on the element -Z side of the beam
+ETABLE, iSDIR, SMISC, 31 ! Axial Direct Stress
+ETABLE, iSByT, SMISC, 32 ! Bending stress on the element +Y side of the beam
+ETABLE, iSByB, SMISC, 33 ! Bending stress on the element -Y side of the beam
+ETABLE, iSBzT, SMISC, 34 ! Bending stress on the element +Z side of the beam
+ETABLE, iSBzB, SMISC, 35 ! Bending stress on the element -Z side of the beam
 
-ETABLE, i_EPELDIR, SMISC, 41 ! Axial strain at the end
-ETABLE, i_EPELByT, SMISC, 42 ! Bending strain on the element +Y side of the beam.
-ETABLE, i_EPELByB, SMISC, 43 ! Bending strain on the element -Y side of the beam.
-ETABLE, i_EPELBzT, SMISC, 44 ! Bending strain on the element +Z side of the beam.
-ETABLE, i_EPELBzB, SMISC, 45 ! Bending strain on the element -Z side of the beam.
+ETABLE, iEPELDIR, SMISC, 41 ! Axial strain at the end
+ETABLE, iEPELByT, SMISC, 42 ! Bending strain on the element +Y side of the beam.
+ETABLE, iEPELByB, SMISC, 43 ! Bending strain on the element -Y side of the beam.
+ETABLE, iEPELBzT, SMISC, 44 ! Bending strain on the element +Z side of the beam.
+ETABLE, iEPELBzB, SMISC, 45 ! Bending strain on the element -Z side of the beam.
 
-ETABLE, j_Fx, SMISC, 14
-ETABLE, j_My, SMISC, 15
-ETABLE, j_Mz, SMISC, 16
-ETABLE, j_Tq, SMISC, 17 ! Torsional Moment
-ETABLE, j_SFz, SMISC, 18  ! Shear Force Z
-ETABLE, j_SFy, SMISC, 19  ! Shear Force Z
-ETABLE, j_Ex, SMISC, 20  ! Axial Strain
-ETABLE, j_Ky, SMISC, 21  ! Curvature Y
-ETABLE, j_Kz, SMISC, 22  ! Curvature Z
-ETABLE, j_SEz, SMISC, 24  ! Strain Z
-ETABLE, j_SEy, SMISC, 25  ! Strain Y
+ETABLE, jFx, SMISC, 14
+ETABLE, jMy, SMISC, 15
+ETABLE, jMz, SMISC, 16
+ETABLE, jTq, SMISC, 17 ! Torsional Moment
+ETABLE, jSFz, SMISC, 18  ! Shear Force Z
+ETABLE, jSFy, SMISC, 19  ! Shear Force Z
+ETABLE, jEx, SMISC, 20  ! Axial Strain
+ETABLE, jKy, SMISC, 21  ! Curvature Y
+ETABLE, jKz, SMISC, 22  ! Curvature Z
+ETABLE, jSEz, SMISC, 24  ! Strain Z
+ETABLE, jSEy, SMISC, 25  ! Strain Y
 
-ETABLE, j_SDIR, SMISC, 36 ! Axial Direct Stress
-ETABLE, j_SByT, SMISC, 37 ! Bending stress on the element +Y side of the beam
-ETABLE, j_SByB, SMISC, 38 ! Bending stress on the element -Y side of the beam
-ETABLE, j_SBzT, SMISC, 39 ! Bending stress on the element +Z side of the beam
-ETABLE, j_SBzB, SMISC, 40 ! Bending stress on the element -Z side of the beam
+ETABLE, jSDIR, SMISC, 36 ! Axial Direct Stress
+ETABLE, jSByT, SMISC, 37 ! Bending stress on the element +Y side of the beam
+ETABLE, jSByB, SMISC, 38 ! Bending stress on the element -Y side of the beam
+ETABLE, jSBzT, SMISC, 39 ! Bending stress on the element +Z side of the beam
+ETABLE, jSBzB, SMISC, 40 ! Bending stress on the element -Z side of the beam
 
-ETABLE, j_EPELDIR, SMISC, 46 ! Axial strain at the end
-ETABLE, j_EPELByT, SMISC, 47 ! Bending strain on the element +Y side of the beam.
-ETABLE, j_EPELByB, SMISC, 48 ! Bending strain on the element -Y side of the beam.
-ETABLE, j_EPELBzT, SMISC, 49 ! Bending strain on the element +Z side of the beam.
-ETABLE, j_EPELBzB, SMISC, 50 ! Bending strain on the element -Z side of the beam.
+ETABLE, jEPELDIR, SMISC, 46 ! Axial strain at the end
+ETABLE, jEPELByT, SMISC, 47 ! Bending strain on the element +Y side of the beam.
+ETABLE, jEPELByB, SMISC, 48 ! Bending strain on the element -Y side of the beam.
+ETABLE, jEPELBzT, SMISC, 49 ! Bending strain on the element +Z side of the beam.
+ETABLE, jEPELBzB, SMISC, 50 ! Bending strain on the element -Z side of the beam.
 
 ! Gets the ELEMENTAL data
 ETABLE, e_StrEn, SENE
 
-
-
-
 ! WRITE: I NODE BASIC FORCE DATA
 *DIM,ibasicf,ARRAY,total_element_count,6
-*VGET,ibasicf(1,1),ELEM,1,ETAB,i_Fx
-*VGET,ibasicf(1,2),ELEM,1,ETAB,i_My
-*VGET,ibasicf(1,3),ELEM,1,ETAB,i_Mz
-*VGET,ibasicf(1,4),ELEM,1,ETAB,i_Tq
-*VGET,ibasicf(1,5),ELEM,1,ETAB,i_SFz
-*VGET,ibasicf(1,6),ELEM,1,ETAB,i_SFy
+*VGET,ibasicf(1,1),ELEM,1,ETAB,iFx
+*VGET,ibasicf(1,2),ELEM,1,ETAB,iMy
+*VGET,ibasicf(1,3),ELEM,1,ETAB,iMz
+*VGET,ibasicf(1,4),ELEM,1,ETAB,iTq
+*VGET,ibasicf(1,5),ELEM,1,ETAB,iSFz
+*VGET,ibasicf(1,6),ELEM,1,ETAB,iSFy
 
 ! Writes the data to file
 *CFOPEN,'result_element_inode_basic_forces','ems' ! Opens the file
 
 ! Writes the header
-*VWRITE,'ELEMENT', ',' ,'i_Fx', ',' , 'i_My' , ',' , 'i_Mz', ',' , 'i_Tq', ',' , 'i_SFz', ',' , 'i_SFy'
-(A8,A1,A8,A1,A8,A1,A8,A1,A8,A1,A8,A1,A8)
+*VWRITE,'ELEMENT', ',' ,'iFx', ',' , 'iMy' , ',' , 'iMz', ',' , 'iTq', ',' , 'iSFz', ',' , 'iSFy'
+(A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12)
 
 ! Writes the data
 *VWRITE,SEQU, ',' ,ibasicf(1,1), ',' , ibasicf(1,2) , ',' , ibasicf(1,3), ',' , ibasicf(1,4), ',' , ibasicf(1,5), ',' , ibasicf(1,6)
@@ -482,18 +539,18 @@ ETABLE, e_StrEn, SENE
 
 ! WRITE: I NODE BASIC STRAIN DATA
 *DIM,ibasics,ARRAY,total_element_count,5
-*VGET,ibasics(1,1),ELEM,1,ETAB,i_Ex
-*VGET,ibasics(1,2),ELEM,1,ETAB,i_Ky
-*VGET,ibasics(1,3),ELEM,1,ETAB,i_Kz
-*VGET,ibasics(1,4),ELEM,1,ETAB,i_SEz
-*VGET,ibasics(1,5),ELEM,1,ETAB,i_SEy
+*VGET,ibasics(1,1),ELEM,1,ETAB,iEx
+*VGET,ibasics(1,2),ELEM,1,ETAB,iKy
+*VGET,ibasics(1,3),ELEM,1,ETAB,iKz
+*VGET,ibasics(1,4),ELEM,1,ETAB,iSEz
+*VGET,ibasics(1,5),ELEM,1,ETAB,iSEy
 
 ! Writes the data to file
 *CFOPEN,'result_element_inode_basic_strains','ems' ! Opens the file
 
 ! Writes the header
-*VWRITE,'ELEMENT', ',' ,'i_Ex', ',' , 'i_Ky' , ',' , 'i_Kz', ',' , 'i_SEz', ',' , 'i_SEy'
-(A8,A1,A8,A1,A8,A1,A8,A1,A8,A1,A8)
+*VWRITE,'ELEMENT', ',' ,'iEx', ',' , 'iKy' , ',' , 'iKz', ',' , 'iSEz', ',' , 'iSEy'
+(A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12)
 
 ! Writes the data
 *VWRITE,SEQU, ',' ,ibasics(1,1), ',' , ibasics(1,2) , ',' , ibasics(1,3), ',' , ibasics(1,4), ',' , ibasics(1,5)
@@ -504,18 +561,18 @@ ETABLE, e_StrEn, SENE
 
 ! WRITE: I NODE BASIC DIRECTIONAL STRESS
 *DIM,ibasic_dirstress,ARRAY,total_element_count,5
-*VGET,ibasic_dirstress(1,1),ELEM,1,ETAB,i_SDIR
-*VGET,ibasic_dirstress(1,2),ELEM,1,ETAB,i_SByT
-*VGET,ibasic_dirstress(1,3),ELEM,1,ETAB,i_SByB
-*VGET,ibasic_dirstress(1,4),ELEM,1,ETAB,i_SBzT
-*VGET,ibasic_dirstress(1,5),ELEM,1,ETAB,i_SBzB
+*VGET,ibasic_dirstress(1,1),ELEM,1,ETAB,iSDIR
+*VGET,ibasic_dirstress(1,2),ELEM,1,ETAB,iSByT
+*VGET,ibasic_dirstress(1,3),ELEM,1,ETAB,iSByB
+*VGET,ibasic_dirstress(1,4),ELEM,1,ETAB,iSBzT
+*VGET,ibasic_dirstress(1,5),ELEM,1,ETAB,iSBzB
 
 ! Writes the data to file
 *CFOPEN,'result_element_inode_basic_dirstress','ems' ! Opens the file
 
 ! Writes the header
-*VWRITE,'ELEMENT', ',' ,'i_SDIR', ',' , 'i_SByT' , ',' , 'i_SByB', ',' , 'i_SBzT', ',' , 'i_SBzB'
-(A8,A1,A8,A1,A8,A1,A8,A1,A8,A1,A8)
+*VWRITE,'ELEMENT', ',' ,'iSDIR', ',' , 'iSByT' , ',' , 'iSByB', ',' , 'iSBzT', ',' , 'iSBzB'
+(A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12)
 
 ! Writes the data
 *VWRITE,SEQU, ',' ,ibasic_dirstress(1,1), ',' , ibasic_dirstress(1,2) , ',' , ibasic_dirstress(1,3), ',' , ibasic_dirstress(1,4), ',' , ibasic_dirstress(1,5)
@@ -526,18 +583,18 @@ ETABLE, e_StrEn, SENE
 
 ! WRITE: I NODE BASIC DIRECTIONAL STRAIN
 *DIM,ibasic_dirstrain,ARRAY,total_element_count,5
-*VGET,ibasic_dirstrain(1,1),ELEM,1,ETAB,i_EPELDIR
-*VGET,ibasic_dirstrain(1,2),ELEM,1,ETAB,i_EPELByT
-*VGET,ibasic_dirstrain(1,3),ELEM,1,ETAB,i_EPELByB
-*VGET,ibasic_dirstrain(1,4),ELEM,1,ETAB,i_EPELBzT
-*VGET,ibasic_dirstrain(1,5),ELEM,1,ETAB,i_EPELBzB
+*VGET,ibasic_dirstrain(1,1),ELEM,1,ETAB,iEPELDIR
+*VGET,ibasic_dirstrain(1,2),ELEM,1,ETAB,iEPELByT
+*VGET,ibasic_dirstrain(1,3),ELEM,1,ETAB,iEPELByB
+*VGET,ibasic_dirstrain(1,4),ELEM,1,ETAB,iEPELBzT
+*VGET,ibasic_dirstrain(1,5),ELEM,1,ETAB,iEPELBzB
 
 ! Writes the data to file
 *CFOPEN,'result_element_inode_basic_dirstrain','ems' ! Opens the file
 
 ! Writes the header
-*VWRITE,'ELEMENT', ',' ,'i_EPELDIR', ',' , 'i_EPELByT' , ',' , 'i_EPELByB', ',' , 'i_EPELBzT', ',' , 'i_EPELBzB'
-(A8,A1,A8,A1,A8,A1,A8,A1,A8,A1,A8)
+*VWRITE,'ELEMENT', ',' ,'iEPELDIR', ',' , 'iEPELByT' , ',' , 'iEPELByB', ',' , 'iEPELBzT', ',' , 'iEPELBzB'
+(A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12)
 
 ! Writes the data
 *VWRITE,SEQU, ',' ,ibasic_dirstrain(1,1), ',' , ibasic_dirstrain(1,2) , ',' , ibasic_dirstrain(1,3), ',' , ibasic_dirstrain(1,4), ',' , ibasic_dirstrain(1,5)
@@ -552,19 +609,19 @@ ETABLE, e_StrEn, SENE
 
 ! WRITE: J NODE BASIC FORCE DATA
 *DIM,jbasicf,ARRAY,total_element_count,6
-*VGET,jbasicf(1,1),ELEM,1,ETAB,j_Fx
-*VGET,jbasicf(1,2),ELEM,1,ETAB,j_My
-*VGET,jbasicf(1,3),ELEM,1,ETAB,j_Mz
-*VGET,jbasicf(1,4),ELEM,1,ETAB,j_Tq
-*VGET,jbasicf(1,5),ELEM,1,ETAB,j_SFz
-*VGET,jbasicf(1,6),ELEM,1,ETAB,j_SFy
+*VGET,jbasicf(1,1),ELEM,1,ETAB,jFx
+*VGET,jbasicf(1,2),ELEM,1,ETAB,jMy
+*VGET,jbasicf(1,3),ELEM,1,ETAB,jMz
+*VGET,jbasicf(1,4),ELEM,1,ETAB,jTq
+*VGET,jbasicf(1,5),ELEM,1,ETAB,jSFz
+*VGET,jbasicf(1,6),ELEM,1,ETAB,jSFy
 
 ! Writes the data to file
 *CFOPEN,'result_element_jnode_basic_forces','ems' ! Opens the file
 
 ! Writes the header
-*VWRITE,'ELEMENT', ',' ,'j_Fx', ',' , 'j_My' , ',' , 'j_Mz', ',' , 'j_Tq', ',' , 'j_SFz', ',' , 'j_SFy'
-(A8,A1,A8,A1,A8,A1,A8,A1,A8,A1,A8,A1,A8)
+*VWRITE,'ELEMENT', ',' ,'jFx', ',' , 'jMy' , ',' , 'jMz', ',' , 'jTq', ',' , 'jSFz', ',' , 'jSFy'
+(A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12)
 
 ! Writes the data
 *VWRITE,SEQU, ',' ,jbasicf(1,1), ',' , jbasicf(1,2) , ',' , jbasicf(1,3), ',' , jbasicf(1,4), ',' , jbasicf(1,5), ',' , jbasicf(1,6)
@@ -575,18 +632,18 @@ ETABLE, e_StrEn, SENE
 
 ! WRITE: J NODE BASIC STRAIN DATA
 *DIM,jbasics,ARRAY,total_element_count,5
-*VGET,jbasics(1,1),ELEM,1,ETAB,j_Ex
-*VGET,jbasics(1,2),ELEM,1,ETAB,j_Ky
-*VGET,jbasics(1,3),ELEM,1,ETAB,j_Kz
-*VGET,jbasics(1,4),ELEM,1,ETAB,j_SEz
-*VGET,jbasics(1,5),ELEM,1,ETAB,j_SEy
+*VGET,jbasics(1,1),ELEM,1,ETAB,jEx
+*VGET,jbasics(1,2),ELEM,1,ETAB,jKy
+*VGET,jbasics(1,3),ELEM,1,ETAB,jKz
+*VGET,jbasics(1,4),ELEM,1,ETAB,jSEz
+*VGET,jbasics(1,5),ELEM,1,ETAB,jSEy
 
 ! Writes the data to file
 *CFOPEN,'result_element_jnode_basic_strains','ems' ! Opens the file
 
 ! Writes the header
-*VWRITE,'ELEMENT', ',' ,'j_Ex', ',' , 'j_Ky' , ',' , 'j_Kz', ',' , 'j_SEz', ',' , 'j_SEy'
-(A8,A1,A8,A1,A8,A1,A8,A1,A8,A1,A8)
+*VWRITE,'ELEMENT', ',' ,'jEx', ',' , 'jKy' , ',' , 'jKz', ',' , 'jSEz', ',' , 'jSEy'
+(A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12)
 
 ! Writes the data
 *VWRITE,SEQU, ',' ,jbasics(1,1), ',' , jbasics(1,2) , ',' , jbasics(1,3), ',' , jbasics(1,4), ',' , jbasics(1,5)
@@ -597,18 +654,18 @@ ETABLE, e_StrEn, SENE
 
 ! WRITE: J NODE BASIC DIRECTIONAL STRESS
 *DIM,jbasic_dirstress,ARRAY,total_element_count,5
-*VGET,jbasic_dirstress(1,1),ELEM,1,ETAB,j_SDIR
-*VGET,jbasic_dirstress(1,2),ELEM,1,ETAB,j_SByT
-*VGET,jbasic_dirstress(1,3),ELEM,1,ETAB,j_SByB
-*VGET,jbasic_dirstress(1,4),ELEM,1,ETAB,j_SBzT
-*VGET,jbasic_dirstress(1,5),ELEM,1,ETAB,j_SBzB
+*VGET,jbasic_dirstress(1,1),ELEM,1,ETAB,jSDIR
+*VGET,jbasic_dirstress(1,2),ELEM,1,ETAB,jSByT
+*VGET,jbasic_dirstress(1,3),ELEM,1,ETAB,jSByB
+*VGET,jbasic_dirstress(1,4),ELEM,1,ETAB,jSBzT
+*VGET,jbasic_dirstress(1,5),ELEM,1,ETAB,jSBzB
 
 ! Writes the data to file
 *CFOPEN,'result_element_jnode_basic_dirstress','ems' ! Opens the file
 
 ! Writes the header
-*VWRITE,'ELEMENT', ',' ,'j_SDIR', ',' , 'j_SByT' , ',' , 'j_SByB', ',' , 'j_SBzT', ',' , 'j_SBzB'
-(A8,A1,A8,A1,A8,A1,A8,A1,A8,A1,A8)
+*VWRITE,'ELEMENT', ',' ,'jSDIR', ',' , 'jSByT' , ',' , 'jSByB', ',' , 'jSBzT', ',' , 'jSBzB'
+(A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12)
 
 ! Writes the data
 *VWRITE,SEQU, ',' ,jbasic_dirstress(1,1), ',' , jbasic_dirstress(1,2) , ',' , jbasic_dirstress(1,3), ',' , jbasic_dirstress(1,4), ',' , jbasic_dirstress(1,5)
@@ -619,18 +676,18 @@ ETABLE, e_StrEn, SENE
 
 ! WRITE: J NODE BASIC DIRECTIONAL STRAIN
 *DIM,jbasic_dirstrain,ARRAY,total_element_count,5
-*VGET,jbasic_dirstrain(1,1),ELEM,1,ETAB,j_EPELDIR
-*VGET,jbasic_dirstrain(1,2),ELEM,1,ETAB,j_EPELByT
-*VGET,jbasic_dirstrain(1,3),ELEM,1,ETAB,j_EPELByB
-*VGET,jbasic_dirstrain(1,4),ELEM,1,ETAB,j_EPELBzT
-*VGET,jbasic_dirstrain(1,5),ELEM,1,ETAB,j_EPELBzB
+*VGET,jbasic_dirstrain(1,1),ELEM,1,ETAB,jEPELDIR
+*VGET,jbasic_dirstrain(1,2),ELEM,1,ETAB,jEPELByT
+*VGET,jbasic_dirstrain(1,3),ELEM,1,ETAB,jEPELByB
+*VGET,jbasic_dirstrain(1,4),ELEM,1,ETAB,jEPELBzT
+*VGET,jbasic_dirstrain(1,5),ELEM,1,ETAB,jEPELBzB
 
 ! Writes the data to file
 *CFOPEN,'result_element_jnode_basic_dirstrain','ems' ! Opens the file
 
 ! Writes the header
-*VWRITE,'ELEMENT', ',' ,'j_EPELDIR', ',' , 'j_EPELByT' , ',' , 'j_EPELByB', ',' , 'j_EPELBzT', ',' , 'j_EPELBzB'
-(A8,A1,A8,A1,A8,A1,A8,A1,A8,A1,A8)
+*VWRITE,'ELEMENT', ',' ,'jEPELDIR', ',' , 'jEPELByT' , ',' , 'jEPELByB', ',' , 'jEPELBzT', ',' , 'jEPELBzB'
+(A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12)
 
 ! Writes the data
 *VWRITE,SEQU, ',' ,jbasic_dirstrain(1,1), ',' , jbasic_dirstrain(1,2) , ',' , jbasic_dirstrain(1,3), ',' , jbasic_dirstrain(1,4), ',' , jbasic_dirstrain(1,5)
@@ -649,7 +706,7 @@ ETABLE, e_StrEn, SENE
 
 ! Writes the header
 *VWRITE,'ELEMENT', ',' ,'e_StrEn'
-(A8,A1,A8)
+(A12,A1,A12)
 
 ! Writes the data
 *VWRITE,SEQU, ',' ,elem_strain_enery(1,1)
@@ -658,20 +715,9 @@ ETABLE, e_StrEn, SENE
 *CFCLOSE";
         private const string PrintNodalResults = @"! SELECTS ALL NODES
 NSEL,ALL
+*GET,total_node_count,NODE,0,COUNT ! Gets count of all elements
 
-! GETS THE NODAL RESULTS
-*VGET,n_stress(1,1),NODE,1,S,1  ! Stress Principal 1
-*VGET,n_stress(1,2),NODE,1,S,2  ! Stress Principal 1
-*VGET,n_stress(1,3),NODE,1,S,3  ! Stress Principal 1
-*VGET,n_stress(1,4),NODE,1,S,INT  ! Stress Intensity
-*VGET,n_stress(1,5),NODE,1,S,EQV  ! Stress Von Mises
-
-*VGET,n_totalstrain(1,1),NODE,1,EPTO,1  ! TOTAL Strain Principal 1
-*VGET,n_totalstrain(1,2),NODE,1,EPTO,2  ! TOTAL Strain Principal 1
-*VGET,n_totalstrain(1,3),NODE,1,EPTO,3  ! TOTAL Strain Principal 1
-*VGET,n_totalstrain(1,4),NODE,1,EPTO,INT  ! TOTAL Strain Intensity
-*VGET,n_totalstrain(1,5),NODE,1,EPTO,EQV  ! TOTAL Strain Von Mises
-
+*DIM,n_dof,ARRAY,total_node_count,6
 *VGET,n_dof(1,1),NODE,1,U,X  ! Displacement X
 *VGET,n_dof(1,2),NODE,1,U,Y  ! Displacement Y
 *VGET,n_dof(1,3),NODE,1,U,Z  ! Displacement Z
@@ -684,8 +730,8 @@ NSEL,ALL
 *CFOPEN,'result_nodal_displacements','ems' ! Opens the file
 
 ! Writes the header
-*VWRITE,'ELEMENT', ',' ,'UX', ',' , 'UY' , ',' , 'UZ', ',' , 'RX', ',' , 'RY', ',' , 'RZ'
-(A8,A1,A8,A1,A8,A1,A8,A1,A8,A1,A8,A1,A8)
+*VWRITE,'NODE', ',' ,'UX', ',' , 'UY' , ',' , 'UZ', ',' , 'RX', ',' , 'RY', ',' , 'RZ'
+(A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12)
 
 ! Writes the data
 *VWRITE,SEQU, ',' ,n_dof(1,1), ',' , n_dof(1,2) , ',' , n_dof(1,3), ',' , n_dof(1,4), ',' , n_dof(1,5), ',' , n_dof(1,6)
@@ -693,36 +739,632 @@ NSEL,ALL
 
 *CFCLOSE
 
+! Fixing the formats
+/HEADER,OFF,OFF,OFF,OFF,ON,OFF
+/PAGE,,,-100000000,240,0
+/FORMAT,10,G,20,6,,,
 
-! Writes the data to file
-*CFOPEN,'result_nodal_stress','ems' ! Opens the file
+! Printing - Nodal Stresses
+ALLSEL,ALL
+/OUTPUT,'nodes_stresses','ems'
+PRESOL,S,PRIN
+/OUTPUT
 
-! Writes the header
-*VWRITE,'ELEMENT', ',' ,'Stress1', ',' , 'Stress2' , ',' , 'Stress3', ',' , 'StressINT', ',' , 'StressEQV'
-(A8,A1,A8,A1,A8,A1,A8,A1,A8,A1,A8)
+! Printing - Nodal Strains
+ALLSEL,ALL
+/OUTPUT,'nodes_strains','ems'
+PRESOL,EPTT,PRIN
+/OUTPUT";
+        private const string PrintNodalBasicData = @"
+! Fixing the formats
+/HEADER,OFF,OFF,OFF,OFF,ON,OFF
+/PAGE,,,-100000000,240,0
+/FORMAT,10,G,20,6,,,
 
-! Writes the data
-*VWRITE,SEQU, ',' ,n_stress(1,1), ',' , n_stress(1,2) , ',' , n_stress(1,3), ',' , n_stress(1,4), ',' , n_stress(1,5)
-%I%C%30.6G%C%30.6G%C%30.6G%C%30.6G%C%30.6G
 
-*CFCLOSE
+! Printing - Nodal data
+NSEL,ALL
+/OUTPUT,'nodes_locations','ems'
+NLIST
+/OUTPUT
 
-
-! Writes the data to file
-*CFOPEN,'result_nodal_strain','ems' ! Opens the file
-
-! Writes the header
-*VWRITE,'ELEMENT', ',' ,'Strain1', ',' , 'Strain2' , ',' , 'Strain3', ',' , 'StrainINT', ',' , 'StrainEQV'
-(A8,A1,A8,A1,A8,A1,A8,A1,A8,A1,A8)
-
-! Writes the data
-*VWRITE,SEQU, ',' ,n_totalstrain(1,1), ',' , n_totalstrain(1,2) , ',' , n_totalstrain(1,3), ',' , n_totalstrain(1,4), ',' , n_totalstrain(1,5)
-%I%C%30.6G%C%30.6G%C%30.6G%C%30.6G%C%30.6G
-
-*CFCLOSE";
-
-        private const string PrintFinishSignal = @"/OUTPUT,'FINISH','ems'
+/OUTPUT,'nodes_reactions','ems'
+PRRSOL
 /OUTPUT";
 
+        public override void GetResult_FillElementStrainEnergy()
+        {
+            string resultFile = Path.Combine(ModelFolder, "result_element_senergy.ems");
+            if (!File.Exists(resultFile)) throw new Exception($"Could not find the file {resultFile} that contains the elemental strain energy data.");
+
+            using (StreamReader reader = new StreamReader(resultFile))
+            {
+                using (CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+                {
+                    csv.Configuration.TrimOptions = TrimOptions.Trim;
+
+                    var anonymousTypeDef = new
+                    {
+                        ELEMENT = default(int),
+                        e_StrEn = default(double),
+                    };
+                    var records = csv.GetRecords(anonymousTypeDef);
+
+                    foreach (var r in records)
+                    {
+                        FeMeshBeamElement element = MeshBeamElements[r.ELEMENT];
+                        element.ElementStrainEnergy = new FeResult_ElementStrainEnergy(r.e_StrEn);
+                    }
+                }
+            }
+
+        }
+
+        public override void GetResult_FillNodalReactions()
+        {
+            string nodalResultFilename = Path.Combine(ModelFolder, "nodes_reactions.ems");
+            if (!File.Exists(nodalResultFilename)) throw new Exception($"Could not find the file {nodalResultFilename} that contains the nodal reaction data.");
+
+            using (StreamReader reader = new StreamReader(nodalResultFilename))
+            {
+                try
+                {
+                    string line = null;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        int? nodeId = null;
+                        FeResult_NodalReactions react = new FeResult_NodalReactions();
+                        try
+                        {
+                            int start = 1;
+                            nodeId = int.Parse(line.Substring(start, 10));
+                            start += 10;
+
+                            // Fx
+                            string dataChunk = line.Substring(start, 20);
+                            if (!string.IsNullOrWhiteSpace(dataChunk)) react.FX = double.Parse(dataChunk);
+                            start += 20;
+
+                            // Fy
+                            dataChunk = line.Substring(start, 20);
+                            if (!string.IsNullOrWhiteSpace(dataChunk)) react.FY = double.Parse(dataChunk);
+                            start += 20;
+
+                            // Fz
+                            dataChunk = line.Substring(start, 20);
+                            if (!string.IsNullOrWhiteSpace(dataChunk)) react.FZ = double.Parse(dataChunk);
+                            start += 20;
+
+
+                            dataChunk = line.Substring(start, 20);
+                            if (!string.IsNullOrWhiteSpace(dataChunk)) react.MX = double.Parse(dataChunk);
+                            start += 20;
+
+
+                            dataChunk = line.Substring(start, 20);
+                            if (!string.IsNullOrWhiteSpace(dataChunk)) react.MY = double.Parse(dataChunk);
+                            start += 20;
+
+                            dataChunk = line.Substring(start, 20);
+                            if (!string.IsNullOrWhiteSpace(dataChunk)) react.MZ = double.Parse(dataChunk);
+
+                        }
+                        catch
+                        {
+                            if (nodeId.HasValue && react.ContainsAnyValue)
+                            {
+                                MeshNodes[nodeId.Value].Result_NodalReactions = react;
+                            }
+                            continue;
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    throw new Exception($"Could not parse file {nodalResultFilename} to read the Nodal Results.");
+                }
+            }
+
+        }
+
+        public override void GetResult_FillElementNodalBendingStrain()
+        {
+            string iNodeResultFileName = Path.Combine(ModelFolder, "result_element_inode_basic_dirstrain.ems");
+            if (!File.Exists(iNodeResultFileName)) throw new Exception($"Could not find the file {iNodeResultFileName} that contains the I nodal bending strain data.");
+
+            string jNodeResultFileName = Path.Combine(ModelFolder, "result_element_jnode_basic_dirstrain.ems");
+            if (!File.Exists(jNodeResultFileName)) throw new Exception($"Could not find the file {jNodeResultFileName} that contains the J nodal bending strain data.");
+
+            using (StreamReader reader = new StreamReader(iNodeResultFileName))
+            {
+                using (CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+                {
+                    csv.Configuration.TrimOptions = TrimOptions.Trim;
+
+                    var anonymousTypeDef = new
+                        {
+                        ELEMENT = default(int),
+                        iEPELDIR = default(double),
+                        iEPELByT = default(double),
+                        iEPELByB = default(double),
+                        iEPELBzT = default(double),
+                        iEPELBzB = default(double)
+                        };
+                    var records = csv.GetRecords(anonymousTypeDef);
+
+                    foreach (var r in records)
+                    {
+                        FeMeshBeamElement element = MeshBeamElements[r.ELEMENT];
+                        element.INode.Result_ElementNodalBendingStrains = new FeResult_ElementNodalBendingStrain()
+                            {
+                            EPELDIR = r.iEPELDIR,
+                            EPELByT = r.iEPELByT,
+                            EPELByB = r.iEPELByB,
+                            EPELBzT = r.iEPELBzT,
+                            EPELBzB = r.iEPELBzB
+                            };
+                    }
+                }
+            }
+
+            using (StreamReader reader = new StreamReader(jNodeResultFileName))
+            {
+                using (CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+                {
+                    csv.Configuration.TrimOptions = TrimOptions.Trim;
+
+                    var anonymousTypeDef = new
+                        {
+                        ELEMENT = default(int),
+                        jEPELDIR = default(double),
+                        jEPELByT = default(double),
+                        jEPELByB = default(double),
+                        jEPELBzT = default(double),
+                        jEPELBzB = default(double)
+                        };
+                    var records = csv.GetRecords(anonymousTypeDef);
+
+                    foreach (var r in records)
+                    {
+                        FeMeshBeamElement element = MeshBeamElements[r.ELEMENT];
+                        element.JNode.Result_ElementNodalBendingStrains = new FeResult_ElementNodalBendingStrain()
+                            {
+                            EPELDIR = r.jEPELDIR,
+                            EPELByT = r.jEPELByT,
+                            EPELByB = r.jEPELByB,
+                            EPELBzT = r.jEPELBzT,
+                            EPELBzB = r.jEPELBzB
+                            };
+                    }
+                }
+            }
+        }
+        public override void GetResult_FillElementNodalStress()
+        {
+            string iNodeResultFileName = Path.Combine(ModelFolder, "result_element_inode_basic_dirstress.ems");
+            if (!File.Exists(iNodeResultFileName)) throw new Exception($"Could not find the file {iNodeResultFileName} that contains the I nodal stress data.");
+
+            string jNodeResultFileName = Path.Combine(ModelFolder, "result_element_jnode_basic_dirstress.ems");
+            if (!File.Exists(jNodeResultFileName)) throw new Exception($"Could not find the file {jNodeResultFileName} that contains the J nodal stress data.");
+
+            using (StreamReader reader = new StreamReader(iNodeResultFileName))
+            {
+                using (CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+                {
+                    csv.Configuration.TrimOptions = TrimOptions.Trim;
+
+                    var anonymousTypeDef = new
+                    {
+                        ELEMENT = default(int),
+                        iSDIR = default(double),
+                        iSByT = default(double),
+                        iSByB = default(double),
+                        iSBzT = default(double),
+                        iSBzB = default(double)
+                    };
+                    var records = csv.GetRecords(anonymousTypeDef);
+
+                    foreach (var r in records)
+                    {
+                        FeMeshBeamElement element = MeshBeamElements[r.ELEMENT];
+                        element.INode.Result_ElementNodalStress = new FeResult_ElementNodalStress()
+                        {
+                            SDIR = r.iSDIR,
+                            SByB = r.iSByB,
+                            SByT = r.iSByT,
+                            SBzB = r.iSBzB,
+                            SBzT = r.iSBzT
+                        };
+                    }
+                }
+            }
+
+            using (StreamReader reader = new StreamReader(jNodeResultFileName))
+            {
+                using (CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+                {
+                    csv.Configuration.TrimOptions = TrimOptions.Trim;
+
+                    var anonymousTypeDef = new
+                        {
+                        ELEMENT = default(int),
+                        jSDIR = default(double),
+                        jSByT = default(double),
+                        jSByB = default(double),
+                        jSBzT = default(double),
+                        jSBzB = default(double)
+                        };
+                    var records = csv.GetRecords(anonymousTypeDef);
+
+                    foreach (var r in records)
+                    {
+                        FeMeshBeamElement element = MeshBeamElements[r.ELEMENT];
+                        element.JNode.Result_ElementNodalStress = new FeResult_ElementNodalStress()
+                            {
+                            SDIR = r.jSDIR,
+                            SByB = r.jSByB,
+                            SByT = r.jSByT,
+                            SBzB = r.jSBzB,
+                            SBzT = r.jSBzT
+                            };
+                    }
+                }
+            }
+        }
+        public override void GetResult_FillElementNodalForces()
+        {
+            string iNodeResultFileName = Path.Combine(ModelFolder, "result_element_inode_basic_forces.ems");
+            if (!File.Exists(iNodeResultFileName)) throw new Exception($"Could not find the file {iNodeResultFileName} that contains the I nodal force data.");
+
+            string jNodeResultFileName = Path.Combine(ModelFolder, "result_element_jnode_basic_forces.ems");
+            if (!File.Exists(jNodeResultFileName)) throw new Exception($"Could not find the file {jNodeResultFileName} that contains the J nodal force data.");
+
+            using (StreamReader reader = new StreamReader(iNodeResultFileName))
+            {
+                using (CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+                {
+                    csv.Configuration.TrimOptions = TrimOptions.Trim;
+
+                    var anonymousTypeDef = new
+                    {
+                        ELEMENT = default(int),
+                        iFx = default(double),
+                        iMy = default(double),
+                        iMz = default(double),
+                        iTq = default(double),
+                        iSFz = default(double),
+                        iSFy = default(double)
+                    };
+                    var records = csv.GetRecords(anonymousTypeDef);
+
+                    foreach (var r in records)
+                    {
+                        FeMeshBeamElement element = MeshBeamElements[r.ELEMENT];
+                        element.INode.Result_ElementNodalForces = new FeResult_ElementNodalForces()
+                        {
+                            Fx = r.iFx,
+                            My = r.iMy,
+                            Mz = r.iMz,
+                            Tq = r.iTq,
+                            SFy = r.iSFy,
+                            SFz = r.iSFz
+                        };
+                    }
+                }
+            }
+
+            using (StreamReader reader = new StreamReader(jNodeResultFileName))
+            {
+                using (CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+                {
+                    csv.Configuration.TrimOptions = TrimOptions.Trim;
+
+                    var anonymousTypeDef = new
+                    {
+                        ELEMENT = default(int),
+                        jFx = default(double),
+                        jMy = default(double),
+                        jMz = default(double),
+                        jTq = default(double),
+                        jSFz = default(double),
+                        jSFy = default(double)
+                    };
+                    var records = csv.GetRecords(anonymousTypeDef);
+
+                    foreach (var r in records)
+                    {
+                        FeMeshBeamElement element = MeshBeamElements[r.ELEMENT];
+                        element.JNode.Result_ElementNodalForces = new FeResult_ElementNodalForces()
+                        {
+                            Fx = r.jFx,
+                            My = r.jMy,
+                            Mz = r.jMz,
+                            Tq = r.jTq,
+                            SFy = r.jSFy,
+                            SFz = r.jSFz
+                        };
+                    }
+                }
+            }
+
+        }
+        public override void GetResult_FillElementNodalStrains()
+        {
+            string iNodeResultFileName = Path.Combine(ModelFolder, "result_element_inode_basic_strains.ems");
+            if (!File.Exists(iNodeResultFileName)) throw new Exception($"Could not find the file {iNodeResultFileName} that contains the I nodal strain data.");
+
+            string jNodeResultFileName = Path.Combine(ModelFolder, "result_element_jnode_basic_strains.ems");
+            if (!File.Exists(jNodeResultFileName)) throw new Exception($"Could not find the file {jNodeResultFileName} that contains the J nodal strain data.");
+
+            using (StreamReader reader = new StreamReader(iNodeResultFileName))
+            {
+                using (CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+                {
+                    csv.Configuration.TrimOptions = TrimOptions.Trim;
+
+                    var anonymousTypeDef = new
+                    {
+                        ELEMENT = default(int),
+                        iEx = default(double),
+                        iKy = default(double),
+                        iKz = default(double),
+                        iSEz = default(double),
+                        iSEy = default(double),
+                    };
+                    var records = csv.GetRecords(anonymousTypeDef);
+
+                    foreach (var r in records)
+                    {
+                        FeMeshBeamElement element = MeshBeamElements[r.ELEMENT];
+                        element.INode.Result_ElementNodalStrains = new FeResult_ElementNodalStrain()
+                        {
+                            Ex = r.iEx,
+                            Ky = r.iKy,
+                            Kz = r.iKz,
+                            SEy = r.iSEy,
+                            SEz = r.iSEz,
+                        };
+                    }
+                }
+            }
+
+            using (StreamReader reader = new StreamReader(jNodeResultFileName))
+            {
+                using (CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+                {
+                    csv.Configuration.TrimOptions = TrimOptions.Trim;
+
+                    var anonymousTypeDef = new
+                        {
+                        ELEMENT = default(int),
+                        jEx = default(double),
+                        jKy = default(double),
+                        jKz = default(double),
+                        jSEz = default(double),
+                        jSEy = default(double),
+                        };
+                    var records = csv.GetRecords(anonymousTypeDef);
+
+                    foreach (var r in records)
+                    {
+                        FeMeshBeamElement element = MeshBeamElements[r.ELEMENT];
+                        element.JNode.Result_ElementNodalStrains = new FeResult_ElementNodalStrain()
+                            {
+                            Ex = r.jEx,
+                            Ky = r.jKy,
+                            Kz = r.jKz,
+                            SEy = r.jSEy,
+                            SEz = r.jSEz,
+                            };
+                    }
+                }
+            }
+        }
+
+        public override void GetResult_FillNodalDisplacements()
+        {
+            string nodeResultFileName = Path.Combine(ModelFolder, "result_nodal_displacements.ems");
+            if (!File.Exists(nodeResultFileName)) throw new Exception($"Could not find the file {nodeResultFileName} that contains the nodal displacement data.");
+
+            using (StreamReader reader = new StreamReader(nodeResultFileName))
+            {
+                using (CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+                {
+                    csv.Configuration.TrimOptions = TrimOptions.Trim;
+
+                    var anonymousTypeDef = new
+                    {
+                        NODE = default(int),
+                        UX = default(double),
+                        UY = default(double),
+                        UZ = default(double),
+                        RX = default(double),
+                        RY = default(double),
+                        RZ = default(double)
+                    };
+                    var records = csv.GetRecords(anonymousTypeDef);
+
+                    foreach (var r in records)
+                    {
+                        FeMeshNode node = MeshNodes[r.NODE];
+                        node.Result_NodalDisplacements = new FeResult_NodalDisplacements()
+                        {
+                            UX = r.UX,
+                            UY = r.UY,
+                            UZ = r.UZ,
+                            RX = r.RX,
+                            RY = r.RY,
+                            RZ = r.RZ
+                        };
+                    }
+                }
+            }
+        }
+        public override void GetResult_FillNodalSectionPointStressStrain()
+        {
+            string stressResultFile = Path.Combine(ModelFolder, "nodes_stresses.ems");
+            if (!File.Exists(stressResultFile)) throw new Exception($"Could not find the file {stressResultFile} that contains the nodal stresses per section point data.");
+
+            string strainResultFile = Path.Combine(ModelFolder, "nodes_strains.ems");
+            if (!File.Exists(strainResultFile)) throw new Exception($"Could not find the file {strainResultFile} that contains the nodal strains per section point data.");
+
+            Regex dataRegex = new Regex(@"^(?<SECNODE>\s+[\d]+)(?<D1>\s+[\-\.\dE]+)(?<D2>\s+[\-\.\dE]+)(?<D3>\s+[\-\.\dE]+)(?<D4>\s+[\-\.\dE]+)(?<D5>\s+[\-\.\dE]+)");
+            Regex elementIdRegex = new Regex(@"^\s*ELEMENT\s*=\s*(?<ID>\d*)\s*SECTION");
+            Regex nodeIdRegex = new Regex(@"^\s*ELEMENT NODE =\s*(?<ID>\d*)");
+
+            using (StreamReader reader = new StreamReader(stressResultFile))
+            {
+                try
+                {
+                    string line = null;
+                    int currentElementId = -1;
+                    int currentNodeId = -1;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        Match elementIdMatch = elementIdRegex.Match(line);
+                        if (elementIdMatch.Success)
+                        {
+                            currentElementId = int.Parse(elementIdMatch.Groups["ID"].Value);
+                            continue;
+                        }
+
+                        Match nodeIdMatch = nodeIdRegex.Match(line);
+                        if (nodeIdMatch.Success)
+                        {
+                            currentNodeId = int.Parse(nodeIdMatch.Groups["ID"].Value);
+                            continue;
+                        }
+
+                        Match dataMatch = dataRegex.Match(line);
+                        if (dataMatch.Success)
+                        {
+                            int secNodeId = int.Parse(dataMatch.Groups["SECNODE"].Value);
+                            double d1 = double.Parse(dataMatch.Groups["D1"].Value);
+                            double d2 = double.Parse(dataMatch.Groups["D2"].Value);
+                            double d3 = double.Parse(dataMatch.Groups["D3"].Value);
+                            double d4 = double.Parse(dataMatch.Groups["D4"].Value);
+                            double d5 = double.Parse(dataMatch.Groups["D5"].Value);
+
+                            FeMeshNode targetNode = MeshBeamElements[currentElementId].GetNodeById(currentNodeId);
+
+                            // The section node data was already created
+                            if (targetNode.Result_SectionNodes.ContainsKey(secNodeId))
+                            {
+                                FeResult_SectionNode secNode = targetNode.Result_SectionNodes[secNodeId];
+
+                                // Saving the values
+                                if (!secNode.S1.HasValue) secNode.S1 = d1;
+                                else if (secNode.S1.Value != d1) throw new Exception($"The section point stress <Principal 1> values do not match! NodeId: {targetNode.Id}, Section Point: {secNode.SectionNodeId}, {d1} != {secNode.S1}");
+
+                                if (!secNode.S2.HasValue) secNode.S2 = d2;
+                                else if (secNode.S2.Value != d2) throw new Exception($"The section point stress <Principal 2> values do not match! NodeId: {targetNode.Id}, Section Point: {secNode.SectionNodeId}, {d2} != {secNode.S2}");
+
+                                if (!secNode.S3.HasValue) secNode.S3 = d3;
+                                else if (secNode.S3.Value != d3) throw new Exception($"The section point stress <Principal 3> values do not match! NodeId: {targetNode.Id}, Section Point: {secNode.SectionNodeId}, {d3} != {secNode.S3}");
+
+                                if (!secNode.SINT.HasValue) secNode.SINT = d4;
+                                else if (secNode.SINT.Value != d4) throw new Exception($"The section point stress <Intensity> values do not match! NodeId: {targetNode.Id}, Section Point: {secNode.SectionNodeId}, {d4} != {secNode.SINT}");
+
+                                if (!secNode.SEQV.HasValue) secNode.SEQV = d5;
+                                else if (secNode.SEQV.Value != d5) throw new Exception($"The section point stress <Equivalent> values do not match! NodeId: {targetNode.Id}, Section Point: {secNode.SectionNodeId}, {d5} != {secNode.SEQV}");
+                            }
+                            else
+                            {
+                                targetNode.Result_SectionNodes.Add(secNodeId, new FeResult_SectionNode()
+                                    {
+                                    SectionNodeId = secNodeId,
+                                    S1 = d1,
+                                    S2 = d2,
+                                    S3 = d3,
+                                    SINT = d4,
+                                    SEQV = d5
+                                });
+                            }
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    throw new Exception($"Could not parse file {stressResultFile} to read the Nodal Stress Results by Section Point.");
+                }
+            }
+
+            using (StreamReader reader = new StreamReader(strainResultFile))
+            {
+                try
+                {
+                    string line = null;
+                    int currentElementId = -1;
+                    int currentNodeId = -1;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        Match elementIdMatch = elementIdRegex.Match(line);
+                        if (elementIdMatch.Success)
+                        {
+                            currentElementId = int.Parse(elementIdMatch.Groups["ID"].Value);
+                            continue;
+                        }
+
+                        Match nodeIdMatch = nodeIdRegex.Match(line);
+                        if (nodeIdMatch.Success)
+                        {
+                            currentNodeId = int.Parse(nodeIdMatch.Groups["ID"].Value);
+                            continue;
+                        }
+
+                        Match dataMatch = dataRegex.Match(line);
+                        if (dataMatch.Success)
+                        {
+                            int secNodeId = int.Parse(dataMatch.Groups["SECNODE"].Value);
+                            double d1 = double.Parse(dataMatch.Groups["D1"].Value);
+                            double d2 = double.Parse(dataMatch.Groups["D2"].Value);
+                            double d3 = double.Parse(dataMatch.Groups["D3"].Value);
+                            double d4 = double.Parse(dataMatch.Groups["D4"].Value);
+                            double d5 = double.Parse(dataMatch.Groups["D5"].Value);
+
+                            FeMeshNode targetNode = MeshBeamElements[currentElementId].GetNodeById(currentNodeId);
+
+                            // The section node data was already created
+                            if (targetNode.Result_SectionNodes.ContainsKey(secNodeId))
+                            {
+                                FeResult_SectionNode secNode = targetNode.Result_SectionNodes[secNodeId];
+
+                                // Saving the values
+                                if (!secNode.EPTT1.HasValue) secNode.EPTT1 = d1;
+                                else if (secNode.EPTT1.Value != d1) throw new Exception($"The section point strain <Principal 1> values do not match! NodeId: {targetNode.Id}, Section Point: {secNode.SectionNodeId}, {d1} != {secNode.EPTT1}");
+
+                                if (!secNode.EPTT2.HasValue) secNode.EPTT2 = d2;
+                                else if (secNode.EPTT2.Value != d2) throw new Exception($"The section point strain <Principal 2> values do not match! NodeId: {targetNode.Id}, Section Point: {secNode.SectionNodeId}, {d2} != {secNode.EPTT2}");
+
+                                if (!secNode.EPTT3.HasValue) secNode.EPTT3 = d3;
+                                else if (secNode.EPTT3.Value != d3) throw new Exception($"The section point strain <Principal 3> values do not match! NodeId: {targetNode.Id}, Section Point: {secNode.SectionNodeId}, {d3} != {secNode.EPTT3}");
+
+                                if (!secNode.EPTTINT.HasValue) secNode.EPTTINT = d4;
+                                else if (secNode.EPTTINT.Value != d4) throw new Exception($"The section point strain <Intensity> values do not match! NodeId: {targetNode.Id}, Section Point: {secNode.SectionNodeId}, {d4} != {secNode.EPTTINT}");
+
+                                if (!secNode.EPTTEQV.HasValue) secNode.EPTTEQV = d5;
+                                else if (secNode.EPTTEQV.Value != d5) throw new Exception($"The section point strain <Equivalent> values do not match! NodeId: {targetNode.Id}, Section Point: {secNode.SectionNodeId}, {d5} != {secNode.EPTTEQV}");
+                            }
+                            else
+                            {
+                                targetNode.Result_SectionNodes.Add(secNodeId, new FeResult_SectionNode()
+                                {
+                                    SectionNodeId = secNodeId,
+                                    S1 = d1,
+                                    S2 = d2,
+                                    S3 = d3,
+                                    SINT = d4,
+                                    SEQV = d5
+                                });
+                            }
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    throw new Exception($"Could not parse file {stressResultFile} to read the Nodal Strain Results by Section Point.");
+                }
+            }
+        }
     }
 }
