@@ -2865,9 +2865,7 @@
                             <ColumnDefinition />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <GroupBox
-                            Header="Results"
-                            Style="{DynamicResource Blue_GroupBox}">
+                        <GroupBox Header="Results" Style="{DynamicResource Blue_GroupBox}">
                             <StackPanel Orientation="Vertical">
                                 <GroupBox Margin="3,0,3,3" Header="Displacements">
                                     <Grid>
@@ -2885,7 +2883,7 @@
                                         <TextBlock
                                             Grid.Row="0"
                                             Grid.ColumnSpan="100"
-                                            Foreground="DimGray"
+                                            Style="{DynamicResource Explanation_TextBlock}"
                                             TextWrapping="Wrap">
                                             <Run Text="Will output the displacements of the selected groups and the selected cases. Results will be for the last step." />
                                             <LineBreak />
@@ -2931,8 +2929,11 @@
                                             BorderThickness="1,1,1,1"
                                             CornerRadius="5">
                                             <StackPanel Orientation="Vertical">
-                                                <TextBlock Margin="5" TextWrapping="Wrap">
-                                                    <Run Foreground="DarkSlateBlue">Duplicate lines for joints whose names may be split by the separator. It will create a new line for each split joint name and remove the merged line.</Run>
+                                                <TextBlock
+                                                    Margin="5"
+                                                    Style="{DynamicResource Explanation_TextBlock}"
+                                                    TextWrapping="Wrap">
+                                                    <Run>Duplicate lines for joints whose names may be split by the separator. It will create a new line for each split joint name and remove the merged line.</Run>
                                                 </TextBlock>
                                                 <Grid Margin="5,0,5,5">
                                                     <Grid.ColumnDefinitions>
@@ -2960,6 +2961,18 @@
                                             Command="{Binding GetResultDisplacementCommand}"
                                             Content="Get Results" />
                                     </Grid>
+                                </GroupBox>
+                                <GroupBox Margin="3,0,3,3" Header="Support Falls">
+                                    <StackPanel>
+                                        <TextBlock
+                                            Margin="5"
+                                            Style="{DynamicResource Explanation_TextBlock}"
+                                            Text="Gets the amount that each support falls when removed." />
+                                        <Button
+                                            Margin="50,0,50,5"
+                                            Command="{Binding GetResultDisplacementSupportFall}"
+                                            Content="Get Support Falls" />
+                                    </StackPanel>
                                 </GroupBox>
                             </StackPanel>
                         </GroupBox>

@@ -8,7 +8,12 @@ using Rhino;
 using Rhino.DocObjects;
 using Rhino.Geometry;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Windows.Forms;
 using System.Xml;
+using Rhino.Commands;
+using Rhino.Display;
 
 namespace EmasaRhinoPlugin
 {
@@ -75,8 +80,8 @@ namespace EmasaRhinoPlugin
         }
         public void MakeSingleView()
         {
-            ActiveDoc.Views.ActiveView.ActiveViewport.ZoomExtents();
             ActiveDoc.Views.ActiveView.Maximized = true;
+            ActiveDoc.Views.ActiveView.ActiveViewport.ZoomExtents();
             ActiveDoc.Views.ActiveView.ActiveViewport.SetViewProjection(new ViewportInfo(), false);
         }
 
@@ -231,6 +236,39 @@ namespace EmasaRhinoPlugin
             if (Grasshopper.Instances.ActiveCanvas.Document == null) return null;
 
             return Grasshopper.Instances.ActiveCanvas.Document.FilePath;
+        }
+        #endregion
+
+        #region ImageGeneration
+        public string SaveScreenShot(string inFullFilename, int inViewNumber)
+        {
+            // Check the possible results
+            RhinoView[] views = ActiveDoc.Views.GetViewList(true, false);
+            if (inViewNumber > views.Count()) return "The Rhino view index is out or range.";
+
+            try
+            {
+                // Makes the selected view active
+                if (inViewNumber != -1) ActiveDoc.Views.ActiveView = views[inViewNumber];
+
+                // Sends the selected view to the clipboard
+                bool r = RhinoApp.RunScript($"_-ScreenCaptureToFile \"{inFullFilename}\" _Enter", true);
+
+                return null;
+            }
+            catch (Exception e)
+            {
+                return $"Exception: {e.Message}{Environment.NewLine}{e.StackTrace}";
+            }
+        }
+
+        public void SetActiveViewPort(int inViewPortNumber)
+        {
+            // Check the possible results
+            RhinoView[] views = ActiveDoc.Views.GetViewList(true, false);
+            if (inViewPortNumber > views.Count()) throw new Exception("The Rhino view index is out or range.");
+
+            if (inViewPortNumber != -1) ActiveDoc.Views.ActiveView = views[inViewPortNumber];
         }
         #endregion
     }

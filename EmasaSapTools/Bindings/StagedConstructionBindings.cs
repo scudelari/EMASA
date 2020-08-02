@@ -1387,8 +1387,6 @@ namespace EmasaSapTools.Bindings
                     }
 
                     #endregion
-
-                    // TODO: Add things to the StringBuilder for the messages.
                 }
 
                 // Runs the job async

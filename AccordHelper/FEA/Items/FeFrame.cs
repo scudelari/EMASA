@@ -27,6 +27,13 @@ namespace AccordHelper.FEA.Items
             set => _section = value;
         }
 
+        private List<string> _possibleSections;
+        public List<string> PossibleSections
+        {
+            get => _possibleSections;
+            set => _possibleSections = value;
+        }
+
         private FeJoint _iJoint;
         public FeJoint IJoint
         {

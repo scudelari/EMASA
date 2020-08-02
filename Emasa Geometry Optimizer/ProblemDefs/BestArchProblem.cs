@@ -3,7 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Sockets;
 using AccordHelper.FEA;
+using AccordHelper.FEA.Items;
 using AccordHelper.Opt;
 using AccordHelper.Opt.ParamDefinitions;
 using MathNet.Numerics.Statistics;
@@ -17,6 +19,20 @@ namespace Emasa_Geometry_Optimizer.ProblemDefs
     public class BestArchProblem : ProblemBase
     {
         public override string ProblemFriendlyName => "Finds the best arch";
+
+        public override void SetDefaultScreenShots()
+        {
+            DesiredScreenShots.Add(new DesiredScreenShotDefinition(ScreenShotType.AxialDiagramOutput, "Axial Force Plot", ImageCaptureViewDirection.Front_Towards_YPos));
+            
+            DesiredScreenShots.Add(new DesiredScreenShotDefinition(ScreenShotType.EquivalentVonMisesStressOutput, "Von-Mises Stress - Front", ImageCaptureViewDirection.Front_Towards_YPos) {LegendAutoScale = false, LegendScale_Min = 0d, LegendScale_Max = FeMaterial.GetMaterialByName("S355").Fy});
+            DesiredScreenShots.Add(new DesiredScreenShotDefinition(ScreenShotType.EquivalentVonMisesStressOutput, "Von-Mises Stress - Top Front Right Corner", ImageCaptureViewDirection.Perspective_TFR_Corner) { LegendAutoScale = false, LegendScale_Min = 0d, LegendScale_Max = FeMaterial.GetMaterialByName("S355").Fy });
+            
+            DesiredScreenShots.Add(new DesiredScreenShotDefinition(ScreenShotType.TotalDisplacementPlot, "Total Displacement - Front", ImageCaptureViewDirection.Front_Towards_YPos));
+            DesiredScreenShots.Add(new DesiredScreenShotDefinition(ScreenShotType.TotalDisplacementPlot, "Total Displacement - Top Front Right Corner", ImageCaptureViewDirection.Perspective_TFR_Corner));
+
+            // Gets the basic Rhino Screenshots
+            base.SetDefaultScreenShots();
+        }
 
         public BestArchProblem() : base(new TestArchObjectiveFunction())
         {
@@ -59,14 +75,7 @@ namespace Emasa_Geometry_Optimizer.ProblemDefs
 
         public override double Function_Override(double[] inVariables)
         {
-            // Writes the points to Grasshopper
-            CurrentSolution.WritePointToGrasshopper(RhinoStaticMethods.GH_Auto_InputVariableFolder(RhinoModel.RM.GrasshopperFullFileName));
-
-            // Runs Grasshopper
-            RhinoModel.RM.SolveGrasshopper();
-
-            // Reads the output variables from Grasshopper
-            CurrentSolution.ReadResultsFromGrasshopper(RhinoStaticMethods.GH_Auto_OutputVariableFolder(RhinoModel.RM.GrasshopperFullFileName));
+            Rhino_SendInputAndGetOutput();
 
             // Gets the input vars in the right cast
             List<Line> archLines = CurrentSolution.GetIntermediateValueByName<List<Line>>("ArchLines");
@@ -76,10 +85,12 @@ namespace Emasa_Geometry_Optimizer.ProblemDefs
 
             // Makes a new Ansys document
 
-            FeModel.SlendernessLimit = 120d;
-            FeModel.AddFrameList(archLines, inGroupNames: new List<string>() {"Arch"});
-
-            FeModel.AddPoint3dToGroups(fixedSupport, new List<string>() { "pin" });
+            FeModel.SlendernessLimit = 50d;
+            FeModel.AddGravityLoad();
+            FeModel.AddFrameList(archLines, inGroupNames: new List<string>() {"Arch"}, inPossibleSections: (from a in FeSectionPipe.GetAllSections()
+                where a.Dimensions["OuterDiameter"] == 0.508
+                select a).ToList());
+        FeModel.AddPoint3dToGroups(fixedSupport, new List<string>() { "pin" });
             FeModel.AddRestraint("pin", new bool[] { true, true, true, false, false, false });
 
             FeModel.AddPoint3dToGroups(slidingSupport, new List<string>() {"slide"});
@@ -88,11 +99,15 @@ namespace Emasa_Geometry_Optimizer.ProblemDefs
             FeModel.AddPoint3dToGroups(archLines.GetAllPoints(), new List<string>() {"apnts"});
             FeModel.AddRestraint("apnts", new bool[] { false, true, false, false, false, false });
 
-            FeModel.WriteModelToSoftware();
-            FeModel.RunAnalysis();
+            //FeModel.FindBestSections();
 
-            FeModel.GetResult_FillNodalReactions();
-            FeModel.GetResult_FillElementStrainEnergy();
+            FeModel.RunAnalysisAndGetResults(new List<ResultOutput>()
+                {
+                ResultOutput.Element_StrainEnergy,
+                ResultOutput.SectionNode_Stress,
+                });
+
+            CurrentSolution.FillScreenShotData();
 
             double averageStrainEnergy = (from a in FeModel.MeshBeamElements select a.Value.ElementStrainEnergy.StrainEnergy).Average();
             double maxStrainEnergy = (from a in FeModel.MeshBeamElements select a.Value.ElementStrainEnergy.StrainEnergy).Max();

@@ -89,3 +89,4 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\obj\Debug\EmasaTekl
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\obj\Debug\EmasaTeklaTools.csproj.CopyComplete
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\obj\Debug\EmasaTeklaTools.exe
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\obj\Debug\EmasaTeklaTools.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\obj\Debug\EmasaTeklaTools.csprojAssemblyReference.cache

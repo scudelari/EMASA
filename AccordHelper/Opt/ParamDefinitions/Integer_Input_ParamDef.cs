@@ -44,25 +44,25 @@ namespace AccordHelper.Opt.ParamDefinitions
 
         public override int VarCount => 1;
 
-        public override List<NonlinearConstraint> ConstraintDefinitions(ObjectiveFunctionBase inFunction)
-        {
-            return new List<NonlinearConstraint>()
-                {
-                    new NonlinearConstraint(inFunction, SingleValueConstraintFunction, ConstraintType.GreaterThanOrEqualTo, (double)SearchRangeTyped.Range.Min, SingleValueConstraintGradient),
-                    new NonlinearConstraint(inFunction, SingleValueConstraintFunction, ConstraintType.LesserThanOrEqualTo, (double)SearchRangeTyped.Range.Max, SingleValueConstraintGradient)
-                };
-        }
-        public double SingleValueConstraintFunction(double[] inInputs)
-        {
-            // Assumes the input variable to be an integer
-            return inInputs[IndexInDoubleArray];
-        }
-        public double[] SingleValueConstraintGradient(double[] inInputs)
-        {
-            double[] retArray = Enumerable.Repeat(0d, inInputs.Length).ToArray();
-            retArray[IndexInDoubleArray] = 1d;
-            return retArray;
-        }
+        //public override List<NonlinearConstraint> ConstraintDefinitions(ObjectiveFunctionBase inFunction)
+        //{
+        //    return new List<NonlinearConstraint>()
+        //        {
+        //            new NonlinearConstraint(inFunction, SingleValueConstraintFunction, ConstraintType.GreaterThanOrEqualTo, (double)SearchRangeTyped.Range.Min, SingleValueConstraintGradient),
+        //            new NonlinearConstraint(inFunction, SingleValueConstraintFunction, ConstraintType.LesserThanOrEqualTo, (double)SearchRangeTyped.Range.Max, SingleValueConstraintGradient)
+        //        };
+        //}
+        //public double SingleValueConstraintFunction(double[] inInputs)
+        //{
+        //    // Assumes the input variable to be an integer
+        //    return inInputs[IndexInDoubleArray];
+        //}
+        //public double[] SingleValueConstraintGradient(double[] inInputs)
+        //{
+        //    double[] retArray = Enumerable.Repeat(0d, inInputs.Length).ToArray();
+        //    retArray[IndexInDoubleArray] = 1d;
+        //    return retArray;
+        //}
 
         public override string TypeName => "Integer";
 

@@ -1,10 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.Design;
 using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
@@ -17,9 +22,13 @@ using Accord.Collections;
 using Accord.Genetic;
 using Accord.IO;
 using Accord.Math.Optimization;
+using AccordHelper.Annotations;
 using AccordHelper.FEA;
+using AccordHelper.FEA.Items;
+using AccordHelper.Opt.ParamDefinitions;
 using BaseWPFLibrary.Others;
 using NLoptNet;
+using Prism.Commands;
 using Prism.Mvvm;
 using RhinoInterfaceLibrary;
 
@@ -29,7 +38,6 @@ namespace AccordHelper.Opt
     public abstract class ProblemBase : BindableBase
     {
         private FeaSoftwareEnum? _feaType = null;
-
         public FeaSoftwareEnum? FeaType
         {
             get => _feaType;
@@ -41,11 +49,12 @@ namespace AccordHelper.Opt
                 switch (value)
                 {
                     case FeaSoftwareEnum.Ansys:
-                        _feModel = new AnsysModel(modelDir);
+                        _feModel = new AnsysModel(modelDir, this);
+                        _feModel.ModelName = ProblemFriendlyName;
                         break;
 
                     case FeaSoftwareEnum.Sap2000:
-                        _feModel = new S2KModel(modelDir);
+                        _feModel = new S2KModel(modelDir, this);
                         break;
 
                     case FeaSoftwareEnum.NoFea:
@@ -59,9 +68,7 @@ namespace AccordHelper.Opt
                 SetProperty(ref _feaType, value);
             }
         }
-
         private FeModelBase _feModel = null;
-
         public FeModelBase FeModel
         {
             get => _feModel;
@@ -73,47 +80,12 @@ namespace AccordHelper.Opt
             get => _objectiveFunction;
         }
 
-        // Accord Optimization Solvers
-        private BaseOptimizationMethod _accordOptMethod = null;
-        public BaseOptimizationMethod AccordOptMethod
-        {
-            get => _accordOptMethod;
-            set
-            {
-                _accordOptMethod = value;
-                _accordOptMethod.Token = CancelSource.Token;
-            }
-        }
-
         // NLOpt Solvers
         private NLoptSolver _nLOptMethod;
         public NLoptSolver NLOptMethod
         {
             get => _nLOptMethod;
             set => SetProperty(ref _nLOptMethod, value);
-        }
-
-
-        // Accord Genetic Algorithm Solvers
-        private Population _genAlgPopulation = null;
-        public Population GenAlgPopulation
-        {
-            get => _genAlgPopulation;
-            set => _genAlgPopulation = value;
-        }
-
-        private int _geneticEpochCount = 0;
-        public int GeneticEpochCount
-        {
-            get => _geneticEpochCount;
-            set => SetProperty(ref _geneticEpochCount, value);
-        }
-
-        private int _maxIterations = 10000;
-        public int MaxIterations
-        {
-            get => _maxIterations;
-            set => SetProperty(ref _maxIterations, value);
         }
 
         private SolverStatus _status;
@@ -206,25 +178,18 @@ namespace AccordHelper.Opt
             set => SetProperty(ref _canChangeInputs, value);
         }
 
-
-        private SolverType _solverType = SolverType.BoundedBroydenFletcherGoldfarbShanno;
-        public SolverType SolverType
+        private NLoptAlgorithm _solverType = NLoptAlgorithm.LN_COBYLA;
+        public NLoptAlgorithm SolverType
         {
             get => _solverType;
             set
             {
                 SetProperty(ref _solverType, value);
-                RaisePropertyChanged("TargetResidualText");
-                RaisePropertyChanged("TargetResidualToolTip");
 
-                RaisePropertyChanged("MinimumResidualChangeText");
-                RaisePropertyChanged("MinimumResidualChangeToolTip");
+                IsOn_PopulationSize = false;
 
-                RaisePropertyChanged("MaximumIterationsText");
-                RaisePropertyChanged("MaximumIterationsToolTip");
-
-                RaisePropertyChanged("IsGenetic");
-                RaisePropertyChanged("IsOther");
+                // Flags the other properties as updated
+                RaisePropertyChanged("SolverNeedsPopulationSize");
             }
         }
 
@@ -249,6 +214,10 @@ namespace AccordHelper.Opt
             IntermediateDefs_ViewItems = CollectionViewSource.GetDefaultView(_objectiveFunction.IntermediateDefs);
             FinalDefs_ViewItems = CollectionViewSource.GetDefaultView(_objectiveFunction.FinalDefs);
 
+            CollectionViewSource ghLineDefs_ViewSource = new CollectionViewSource() {Source = _objectiveFunction.IntermediateDefs };
+            GrasshopperLineListDefs_ViewItems = ghLineDefs_ViewSource.View;
+            GrasshopperLineListDefs_ViewItems.Filter = GrasshopperLineListDefs_ViewItems_Filter;
+
             CollectionViewSource functionSolutions_ViewSource = new CollectionViewSource {Source = _possibleSolutions};
             FunctionSolutions_ViewItems = functionSolutions_ViewSource.View;
             FunctionSolutions_ViewItems.Filter = FunctionSolutions_ViewItems_Filter;
@@ -258,38 +227,188 @@ namespace AccordHelper.Opt
             GradientSolutions_ViewItems.Filter = GradientSolutions_ViewItems_Filter;
 
             AllPossibleSolutions_ViewItems = CollectionViewSource.GetDefaultView(_possibleSolutions);
-        }
-        private double _minResidualPercentChange = 0.01d;
-        public double MinResidualPercentChange
-        {
-            get => _minResidualPercentChange;
-            set => SetProperty(ref _minResidualPercentChange, value);
-        }
-        private bool _shouldLimitChange = true;
-        public bool ShouldLimitChange
-        {
-            get => _shouldLimitChange;
-            set => SetProperty(ref _shouldLimitChange, value);
+
+            CollectionViewSource allPossibleSections_ViewSource = new CollectionViewSource {Source = FeSectionPipe.GetAllSections()};
+            allPossibleSections_ViewSource.SortDescriptions.Add(new SortDescription("OuterDiameter", ListSortDirection.Ascending));
+            AllPossibleSections_ViewItems = allPossibleSections_ViewSource.View;
+
+            // Fills the parameters
+            AbsoluteToleranceOnParameterValue.ReplaceItemsIfNew(DefaultParameterAbsoluteTolerance);
+
+            SetDefaultStoppingCriteria();
+
+            SetDefaultScreenShots();
         }
 
-
-        private double _targetResidual = 1e-5;
-        public double TargetResidual
+        #region Stopping Criteria
+        public void SetDefaultStoppingCriteria()
         {
-            get => _targetResidual;
+            StopValueOnObjectiveFunction = 1e-6;
+            IsOn_StopValueOnObjectiveFunction = true;
+
+            RelativeToleranceOnFunctionValue = 0.001d;
+            IsOn_RelativeToleranceOnFunctionValue = true;
+
+            AbsoluteToleranceOnFunctionValue = 1e-6;
+            IsOn_AbsoluteToleranceOnFunctionValue = false;
+
+            RelativeToleranceOnParameterValue = 0.001d;
+            IsOn_RelativeToleranceOnParameterValue = true;
+
+            AbsoluteToleranceOnParameterValue.ReplaceItemsIfNew(DefaultParameterAbsoluteTolerance);
+            IsOn_AbsoluteToleranceOnParameterValue = false;
+
+            MaximumIterations = 10000;
+
+            // 6 hours
+            MaximumRunTime = 60 * 60 * 6;
+            IsOn_MaximumRunTime = false;
+        }
+
+        private double _stopValueOnObjectiveFunction;
+        /// <summary>
+        /// Stop when an objective value of at least stopval is found: stop minimizing when an objective value ≤ stopval is found, or stop maximizing a value ≥ stopval is found. (Setting stopval to -HUGE_VAL for minimizing or +HUGE_VAL for maximizing disables this stopping criterion.)
+        /// </summary>
+        public double StopValueOnObjectiveFunction
+        {
+            get => _stopValueOnObjectiveFunction;
+            set => SetProperty(ref _stopValueOnObjectiveFunction, value);
+        }
+        private bool _isOn_StopValueOnObjectiveFunction;
+        public bool IsOn_StopValueOnObjectiveFunction
+        {
+            get => _isOn_StopValueOnObjectiveFunction;
+            set => SetProperty(ref _isOn_StopValueOnObjectiveFunction, value);
+        }
+
+        private double _relativeToleranceOnFunctionValue;
+        /// <summary>
+        /// Set relative tolerance on function value: stop when an optimization step (or an estimate of the optimum) changes the objective function value by less than tol multiplied by the absolute value of the function value. (If there is any chance that your optimum function value is close to zero, you might want to set an absolute tolerance with nlopt_set_ftol_abs as well.) Criterion is disabled if tol is non-positive.
+        /// </summary>
+        public double RelativeToleranceOnFunctionValue
+        {
+            get => _relativeToleranceOnFunctionValue;
+            set => SetProperty(ref _relativeToleranceOnFunctionValue, value);
+        }
+        private bool _isOnRelativeToleranceOnFunctionValue = true;
+        public bool IsOn_RelativeToleranceOnFunctionValue
+        {
+            get => _isOnRelativeToleranceOnFunctionValue;
             set
             {
-                if (value <= 0d) throw new InvalidOperationException($"The target residual must be larger than 0.");
-                SetProperty(ref _targetResidual, value);
+                SetProperty(ref _isOnRelativeToleranceOnFunctionValue, value);
+                if (!_isOnRelativeToleranceOnFunctionValue) RelativeToleranceOnFunctionValue = -1d;
             }
         }
-        private bool _shouldTargetResidual = true;
-        public bool ShouldTargetResidual
+
+        private double _absoluteToleranceOnFunctionValue;
+        /// <summary>
+        /// Set absolute tolerance on function value: stop when an optimization step (or an estimate of the optimum) changes the function value by less than tol. Criterion is disabled if tol is non-positive.
+        /// </summary>
+        public double AbsoluteToleranceOnFunctionValue
         {
-            get => _shouldTargetResidual;
-            set => SetProperty(ref _shouldTargetResidual, value);
+            get => _absoluteToleranceOnFunctionValue;
+            set => SetProperty(ref _absoluteToleranceOnFunctionValue, value);
+        }
+        private bool _isOn_AbsoluteToleranceOnFunctionValue;
+        public bool IsOn_AbsoluteToleranceOnFunctionValue
+        {
+            get => _isOn_AbsoluteToleranceOnFunctionValue;
+            set => SetProperty(ref _isOn_AbsoluteToleranceOnFunctionValue, value);
         }
 
+        private double _relativeToleranceOnParameterValue;
+        /// <summary>
+        /// Set relative tolerance on optimization parameters: stop when an optimization step (or an estimate of the optimum) causes a relative change the parameters x by less than tol
+        /// </summary>
+        public double RelativeToleranceOnParameterValue
+        {
+            get => _relativeToleranceOnParameterValue;
+            set => SetProperty(ref _relativeToleranceOnParameterValue, value);
+        }
+        private bool _isOn_RelativeToleranceOnParameterValue;
+        public bool IsOn_RelativeToleranceOnParameterValue
+        {
+            get => _isOn_RelativeToleranceOnParameterValue;
+            set => SetProperty(ref _isOn_RelativeToleranceOnParameterValue, value);
+        }
+
+        private FastObservableCollection<AbsoluteToleranceOnParameterValue_NameValuePair> _absoluteToleranceOnParameterValue = new FastObservableCollection<AbsoluteToleranceOnParameterValue_NameValuePair>();
+        /// <summary>
+        /// Set absolute tolerances on optimization parameters. tol is a pointer to an array of length n (the dimension from nlopt_create) giving the tolerances: stop when an optimization step (or an estimate of the optimum) changes every parameter x[i] by less than tol[i]. (Note that nlopt_set_xtol_abs makes a copy of the tol array, so subsequent changes to the caller's tol have no effect on opt.) In nlopt_get_xtol_abs, tol must be an array of length n, which upon successful return contains a copy of the current tolerances. For convenience, the nlopt_set_xtol_abs1 may be used to set the absolute tolerances in all n optimization parameters to the same value. Criterion is disabled if tol is non-positive.
+        /// </summary>
+        public FastObservableCollection<AbsoluteToleranceOnParameterValue_NameValuePair> AbsoluteToleranceOnParameterValue
+        {
+            get => _absoluteToleranceOnParameterValue;
+        }
+        private bool _isOnAbsoluteToleranceOnParameterValue;
+        public bool IsOn_AbsoluteToleranceOnParameterValue
+        {
+            get => _isOnAbsoluteToleranceOnParameterValue;
+            set => SetProperty(ref _isOnAbsoluteToleranceOnParameterValue, value);
+        }
+        
+        private int _maximumIterations;
+        public int MaximumIterations
+        {
+            get => _maximumIterations;
+            set => SetProperty(ref _maximumIterations, value);
+        }
+        private bool _isOn_MaximumIterations;
+        public bool IsOn_MaximumIterations
+        {
+            get => _isOn_MaximumIterations;
+            set => SetProperty(ref _isOn_MaximumIterations, value);
+        }
+
+        private double _maximumRunTime;
+        /// <summary>
+        /// Stop when the optimization time (in seconds) exceeds maxtime. (This is not a strict maximum: the time may exceed maxtime slightly, depending upon the algorithm and on how slow your function evaluation is.) Criterion is disabled if maxtime is non-positive.
+        /// </summary>
+        public double MaximumRunTime
+        {
+            get => _maximumRunTime;
+            set => SetProperty(ref _maximumRunTime, value);
+        }
+        private bool _isOn_MaximumRunTime;
+        public bool IsOn_MaximumRunTime
+        {
+            get => _isOn_MaximumRunTime;
+            set => SetProperty(ref _isOn_MaximumRunTime, value);
+        }
+        #endregion
+
+        #region Additional Parameters
+        public Visibility SolverNeedsPopulationSize
+        {
+            get
+            {
+                switch (SolverType)
+                {
+                    case NLoptAlgorithm.G_MLSL:
+                    case NLoptAlgorithm.G_MLSL_LDS:
+                    case NLoptAlgorithm.GN_CRS2_LM:
+                    case NLoptAlgorithm.GN_ISRES:
+                        return Visibility.Visible;
+
+                    default:
+                        return Visibility.Collapsed;
+                }
+            }
+        }
+        private int _populationSize;
+        public int PopulationSize
+        {
+            get => _populationSize;
+            set => SetProperty(ref _populationSize, value);
+        }
+        private bool _isOn_PopulationSize;
+        public bool IsOn_PopulationSize
+        {
+            get => _isOn_PopulationSize;
+            set => SetProperty(ref _isOn_PopulationSize, value);
+        }
+        #endregion
 
         private CancellationTokenSource _cancelSource = new CancellationTokenSource();
         public CancellationTokenSource CancelSource
@@ -301,18 +420,11 @@ namespace AccordHelper.Opt
                 else
                 {
                     _cancelSource = value;
-
-                    // Also updates the listeners of the cancellation token source.
-                    if (AccordOptMethod != null) AccordOptMethod.Token = _cancelSource.Token;
-
-                    // The Genetic Algorithm already uses the token directly from the Source.
                 }
             }
         }
 
-
         private double _totalSolveSeconds = 0d;
-
         public double TotalSolveSeconds
         {
             get => _totalSolveSeconds;
@@ -323,9 +435,11 @@ namespace AccordHelper.Opt
         {
             // Cleans all the important state variables
             PossibleSolutions.Clear();
-            GeneticEpochCount = 0;
             ObjectiveFunction.Reset();
-            AccordOptMethod = null;
+
+            // Resets the Solver Stop Options
+            SetDefaultStoppingCriteria();
+
             if (NLOptMethod != null)
             {
                 NLOptMethod.Dispose();
@@ -338,127 +452,49 @@ namespace AccordHelper.Opt
         }
         public void SetSolverManager()
         {
-            Status = SolverStatus.NotStarted;
+            // Validates the input
+            if (ObjectiveFunction.LowerBounds == null || ObjectiveFunction.UpperBounds == null) throw new Exception("The selected solver requires boundaries.");
 
-            // Initializes each solver, depending on what they need
-            switch (SolverType)
+            // Validates the solver limits
+            if (IsOn_MaximumIterations && MaximumIterations <= 0) throw new InvalidOperationException("When active, the number of maximum iterations must be larger than 0.");
+            if (IsOn_MaximumRunTime && MaximumRunTime <= 0) throw new InvalidOperationException("When active, the maximum runtime must be larger than 0.");
+            if (IsOn_StopValueOnObjectiveFunction && StopValueOnObjectiveFunction <= 0) throw new InvalidOperationException("When active, the stop value of the objective function must be larger than 0.");
+            if (IsOn_RelativeToleranceOnFunctionValue && RelativeToleranceOnFunctionValue <= 0) throw new InvalidOperationException("When active, the relative tolerance on the function value must be larger than 0.");
+            if (IsOn_AbsoluteToleranceOnFunctionValue && AbsoluteToleranceOnFunctionValue <= 0) throw new InvalidOperationException("When active, the absolute tolerance on the function value must be larger than 0.");
+            if (IsOn_RelativeToleranceOnParameterValue && RelativeToleranceOnParameterValue <= 0) throw new InvalidOperationException("When active, the relative tolerance on the input value must be larger than 0.");
+            if (IsOn_AbsoluteToleranceOnParameterValue && AbsoluteToleranceOnParameterValue.All(a => a.ParameterTolerance <= 0)) throw new InvalidOperationException("When active, the at least one absolute tolerance on the input value must be larger than 0.");
+
+            if (SolverNeedsPopulationSize == Visibility.Visible && IsOn_PopulationSize && PopulationSize <= 0) throw new InvalidOperationException("When active, the population size must be larger than 0.");
+
+            if (!IsOn_MaximumIterations && 
+                !IsOn_MaximumRunTime && 
+                !IsOn_StopValueOnObjectiveFunction &&
+                !IsOn_RelativeToleranceOnFunctionValue &&
+                !IsOn_AbsoluteToleranceOnFunctionValue &&
+                !IsOn_RelativeToleranceOnParameterValue &&
+                !IsOn_AbsoluteToleranceOnParameterValue) throw new InvalidOperationException("At least one stop control must be set.");
+
+            // Initializes the solver and also sets SOME of the stop limits
+            NLOptMethod = new NLoptSolver(SolverType, (uint)ObjectiveFunction.NumberOfVariables,
+                IsOn_RelativeToleranceOnFunctionValue ? RelativeToleranceOnFunctionValue : -1d,
+                IsOn_MaximumIterations ? MaximumIterations : -1
+                );
+
+            // Setting the rest of the stop limits
+            if (IsOn_AbsoluteToleranceOnFunctionValue) NLOptMethod.SetAbsoluteToleranceOnFunctionValue(AbsoluteToleranceOnFunctionValue);
+            if (IsOn_RelativeToleranceOnParameterValue) NLOptMethod.SetRelativeToleranceOnOptimizationParameter(RelativeToleranceOnParameterValue);
+            if (IsOn_AbsoluteToleranceOnParameterValue)
             {
-                case SolverType.AugmentedLagrangian:
-                {
-                    List<NonlinearConstraint> allConstraints = ObjectiveFunction.GetAllConstraints();
-                    if (allConstraints == null) throw new Exception("Augmented Lagrangian requires constraints.");
-
-                    AugmentedLagrangian alSolver = new AugmentedLagrangian(ObjectiveFunction, allConstraints);
-                    alSolver.MaxEvaluations = MaxIterations;
-                    AccordOptMethod = alSolver;
-                }
-                    break;
-
-                case SolverType.Cobyla:
-                {
-                    List<NonlinearConstraint> allConstraints = ObjectiveFunction.GetAllConstraints();
-                    Cobyla cobSolver = allConstraints == null ? new Cobyla(ObjectiveFunction) : new Cobyla(ObjectiveFunction, allConstraints);
-                    cobSolver.MaxIterations = MaxIterations;
-                    AccordOptMethod = cobSolver;
-                }
-                    break;
-
-                case SolverType.BoundedBroydenFletcherGoldfarbShanno:
-                {
-                    if (ObjectiveFunction.LowerBounds == null || ObjectiveFunction.UpperBounds == null) throw new Exception("Bounded Broyden Fletcher Goldfarb Shanno requires boundaries.");
-                    BoundedBroydenFletcherGoldfarbShanno bbSolver = new BoundedBroydenFletcherGoldfarbShanno(
-                        ObjectiveFunction.NumberOfVariables, ObjectiveFunction.Function, ObjectiveFunction.Gradient);
-                    bbSolver.MaxIterations = MaxIterations;
-                    bbSolver.LowerBounds = ObjectiveFunction.LowerBounds;
-                    bbSolver.UpperBounds = ObjectiveFunction.UpperBounds;
-
-                    bbSolver.FunctionTolerance = 1e9;
-
-                    AccordOptMethod = bbSolver;
-                }
-                    break;
-
-                case SolverType.ConjugateGradient_FletcherReeves:
-                {
-                    if (ObjectiveFunction.LowerBounds == null || ObjectiveFunction.UpperBounds == null) throw new Exception("Conjugate Gradient requires boundaries.");
-                    ConjugateGradient cgSolver = new ConjugateGradient(
-                        ObjectiveFunction.NumberOfVariables, ObjectiveFunction.Function, ObjectiveFunction.Gradient);
-                    cgSolver.MaxIterations = MaxIterations;
-                    cgSolver.Method = ConjugateGradientMethod.FletcherReeves;
-
-                    AccordOptMethod = cgSolver;
-                }
-                    break;
-
-                case SolverType.ConjugateGradient_PolakRibiere:
-                {
-                    if (ObjectiveFunction.LowerBounds == null || ObjectiveFunction.UpperBounds == null) throw new Exception("Conjugate Gradient requires boundaries.");
-                    ConjugateGradient cgSolver = new ConjugateGradient(
-                        ObjectiveFunction.NumberOfVariables, ObjectiveFunction.Function, ObjectiveFunction.Gradient);
-                    cgSolver.MaxIterations = MaxIterations;
-                    cgSolver.Method = ConjugateGradientMethod.PolakRibiere;
-
-                    AccordOptMethod = cgSolver;
-                }
-                    break;
-
-                case SolverType.ConjugateGradient_PositivePolakRibiere:
-                {
-                    if (ObjectiveFunction.LowerBounds == null || ObjectiveFunction.UpperBounds == null) throw new Exception("Conjugate Gradient requires boundaries.");
-                    ConjugateGradient cgSolver = new ConjugateGradient(
-                        ObjectiveFunction.NumberOfVariables, ObjectiveFunction.Function, ObjectiveFunction.Gradient);
-                    cgSolver.MaxIterations = MaxIterations;
-                    cgSolver.Method = ConjugateGradientMethod.PositivePolakRibiere;
-
-                    AccordOptMethod = cgSolver;
-                }
-                    break;
-
-                case SolverType.NelderMead:
-                {
-                    if (ObjectiveFunction.LowerBounds == null || ObjectiveFunction.UpperBounds == null) throw new Exception("Nelder Mead requires boundaries.");
-                    NelderMead ndSolver = new NelderMead(
-                        ObjectiveFunction.NumberOfVariables, ObjectiveFunction.Function);
-                    //ndSolver.MaxIterations = MaxIterations;
-                    //ndSolver.LowerBounds = ObjectiveFunction.LowerBounds;
-                    //ndSolver.UpperBounds = ObjectiveFunction.UpperBounds;
-
-                    AccordOptMethod = ndSolver;
-                }
-                    break;
-
-                case SolverType.ResilientBackpropagation:
-                {
-                    if (ObjectiveFunction.LowerBounds == null || ObjectiveFunction.UpperBounds == null) throw new Exception("Resilient Backpropagation requires boundaries.");
-                    ResilientBackpropagation rbSolver = new ResilientBackpropagation(
-                        ObjectiveFunction.NumberOfVariables, ObjectiveFunction.Function, ObjectiveFunction.Gradient);
-                    rbSolver.Iterations = MaxIterations;
-
-                    AccordOptMethod = rbSolver;
-                }
-                    break;
-
-                case SolverType.Genetic:
-                {
-                }
-                    break;
-
-                case SolverType.NLOpt_Cobyla:
-                {
-                    if (ObjectiveFunction.LowerBounds == null || ObjectiveFunction.UpperBounds == null) throw new Exception("NLOpt Cobyla solver requires boundaries.");
-
-                    NLOptMethod = new NLoptSolver(NLoptAlgorithm.LN_COBYLA, (uint)ObjectiveFunction.NumberOfVariables);
-                    NLOptMethod.SetLowerBounds(ObjectiveFunction.LowerBounds);
-                    NLOptMethod.SetUpperBounds(ObjectiveFunction.UpperBounds);
-                    NLOptMethod.SetMinObjective(ObjectiveFunction.Function_NLOptFunctionWrapper);
-
-
-                    }
-                    break;
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(_solverType), _solverType, null);
+                double[] tols = (from a in AbsoluteToleranceOnParameterValue select a.ParameterTolerance).ToArray();
+                NLOptMethod.SetAbsoluteToleranceOnOptimizationParameter(tols);
             }
+            if (IsOn_MaximumRunTime) NLOptMethod.SetStopOnMaximumTime(MaximumRunTime);
+            if (IsOn_StopValueOnObjectiveFunction) NLOptMethod.SetStopOnFunctionValue(StopValueOnObjectiveFunction);
+            if (SolverNeedsPopulationSize == Visibility.Visible && IsOn_PopulationSize) NLOptMethod.SetPopulationSize((uint)PopulationSize);
+
+            NLOptMethod.SetLowerBounds(ObjectiveFunction.LowerBounds);
+            NLOptMethod.SetUpperBounds(ObjectiveFunction.UpperBounds);
+            NLOptMethod.SetMinObjective(ObjectiveFunction.Function_NLOptFunctionWrapper);
 
             // Sets the FEA type
             FeaType = SolverOptions_SelectedFeaSoftware;
@@ -477,361 +513,8 @@ namespace AccordHelper.Opt
                 FeModel.InitializeSoftware();
             }
 
-            #region Genetic Algorithm
-
-            // For the Genetic Algorithm
-            if (SolverType == SolverType.Genetic)
-            {
-                //if (_genAlgPopulation == null) throw new Exception("You did not start the solver. Please use the SetSolverManager function for this.");
-
-                Population pop = new Population(20,
-                    ObjectiveFunction.GetStartGrasshopperChromosome(StartPositionType),
-                    ObjectiveFunction,
-                    new EliteSelection());
-                GenAlgPopulation = pop;
-
-                // Does the requested iterations
-                while (true)
-                {
-                    // Runs one epoch
-                    GenAlgPopulation.RunEpoch();
-
-                    // Increases the counters
-                    GeneticEpochCount++;
-
-                    // The solution has been found *
-                    if (GenAlgPopulation.BestChromosome.Fitness <= TargetResidual)
-                    {
-                        Status = SolverStatus.Finished;
-                        StatusTextMessage = "Finish - Reached Target Residual";
-                        return;
-                    }
-
-                    //// This was the first iteration - we don't have anything to compare
-                    //if (Status == SolverStatus.Initialized)
-                    //{
-                    //    LastBestEvalValue = GenAlgPopulation.BestChromosome.Fitness;
-                    //    Status = SolverStatus.Running;
-                    //}
-                    //else // Wasn't the first
-                    //{
-                    //    double effectiveChangeLimit = Math.Abs(GenAlgPopulation.BestChromosome.Fitness * ChangeLimit);
-                    //    double delta = Math.Abs(GenAlgPopulation.BestChromosome.Fitness - LastBestEvalValue.Value);
-
-                    //    if (delta < effectiveChangeLimit) // Reached the change limit
-                    //    {
-                    //        //Status = SolverStatus.NoProgress;
-                    //        //StatusTextMessage = "Maximum Progress - Reached relative change limit";
-                    //        //return;
-                    //    }
-                    //    else // Did not reach the change limit
-                    //    {
-                    //        // Just saves the value for the next iteration
-                    //        LastBestEvalValue = GenAlgPopulation.BestChromosome.Fitness;
-                    //    }
-                    //}
-
-                    // Did we reach the maximum number of iterations?
-                    if (GeneticEpochCount >= MaxIterations)
-                    {
-                        Status = SolverStatus.MaxEvaluations;
-                        StatusTextMessage = "Maximum Evaluations - Reached maximum number of genetic epochs";
-                        return;
-                    }
-
-                    // Was the cancellation token requested?
-                    if (CancelSource.Token.IsCancellationRequested)
-                    {
-                        Status = SolverStatus.Cancelled;
-                        StatusTextMessage = "Cancelled by User - Resume possible";
-                        return;
-                    }
-                }
-            }
-
-            #endregion
-
-            #region Accord Optimizations
-            else if (SolverType == SolverType.Cobyla ||
-                     SolverType == SolverType.AugmentedLagrangian ||
-                     SolverType == SolverType.BoundedBroydenFletcherGoldfarbShanno ||
-                     SolverType == SolverType.ConjugateGradient_FletcherReeves ||
-                     SolverType == SolverType.ConjugateGradient_PositivePolakRibiere ||
-                     SolverType == SolverType.NelderMead ||
-                     SolverType == SolverType.ResilientBackpropagation ||
-                     SolverType == SolverType.ConjugateGradient_PolakRibiere)
-            {
-                if (_accordOptMethod == null) throw new Exception("You did not start the solver. Please use the SetSolverManager function for this.");
-
-                // This is the first time we are running this solver
-                double[] vector = Status == SolverStatus.NotStarted ? ObjectiveFunction.GetStartPosition(StartPositionType) : null;
-
-                try
-                {
-                    bool minResult;
-
-                    // Effectively runs the solve algorithm
-                    minResult = vector != null ? AccordOptMethod.Minimize(vector) : AccordOptMethod.Minimize();
-
-                    // The solver terminated internally - not from our own control
-                    if (AccordOptMethod is BoundedBroydenFletcherGoldfarbShanno bbSolver)
-                    {
-                        switch (bbSolver.Status)
-                        {
-                            case BoundedBroydenFletcherGoldfarbShannoStatus.Stop:
-                                if (CancelSource.Token.IsCancellationRequested)
-                                {
-                                    Status = SolverStatus.Cancelled;
-                                    StatusTextMessage = "Cancelled by User - Resume possible";
-                                    break;
-                                }
-                                else
-                                {
-                                    Status = SolverStatus.MaxEvaluations;
-                                    StatusTextMessage = "The B-BFGS solver is in stop state";
-                                    break;
-                                }
-
-                            case BoundedBroydenFletcherGoldfarbShannoStatus.MaximumIterations:
-                                Status = SolverStatus.MaxEvaluations;
-                                StatusTextMessage = "Maximum Evaluations - Reached maximum number of iterations";
-                                break;
-
-                            case BoundedBroydenFletcherGoldfarbShannoStatus.FunctionConvergence:
-                                Status = SolverStatus.Finished;
-                                StatusTextMessage = "Finish - Reached B-BFGS function convergence";
-                                break;
-
-                            case BoundedBroydenFletcherGoldfarbShannoStatus.GradientConvergence:
-                                Status = SolverStatus.Finished;
-                                StatusTextMessage = "Finish - Reached B-BFGS gradient convergence";
-                                break;
-
-                            case BoundedBroydenFletcherGoldfarbShannoStatus.LineSearchFailed:
-                                Status = SolverStatus.MaxEvaluations;
-                                StatusTextMessage = "The B-BFGS had a Line Search Failure (Gradient Function Issue)";
-                                break;
-
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
-                    }
-                    else if (AccordOptMethod is AugmentedLagrangian agSolver)
-                    {
-                        switch (agSolver.Status)
-                        {
-                            case AugmentedLagrangianStatus.Converged:
-                                Status = SolverStatus.Finished;
-                                StatusTextMessage = "Finish - Converged";
-                                break;
-
-                            case AugmentedLagrangianStatus.NoProgress:
-                                Status = SolverStatus.NoProgress;
-                                StatusTextMessage = "Finish - Maximum Progress Reached";
-                                break;
-
-                            case AugmentedLagrangianStatus.MaxEvaluations:
-                                Status = SolverStatus.MaxEvaluations;
-                                StatusTextMessage = "Maximum Evaluations - Reached maximum number of evaluations";
-                                break;
-
-                            case AugmentedLagrangianStatus.Cancelled:
-                                Status = SolverStatus.Cancelled;
-                                StatusTextMessage = "Cancelled by User - Resume possible";
-                                break;
-
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
-                    }
-                    else if (AccordOptMethod is Cobyla cobSolver)
-                    {
-                        switch (cobSolver.Status)
-                        {
-                            case CobylaStatus.Success:
-                                Status = SolverStatus.Finished;
-                                StatusTextMessage = "Finish - Success";
-                                break;
-
-                            case CobylaStatus.MaxIterationsReached:
-                                Status = SolverStatus.MaxEvaluations;
-                                StatusTextMessage = "Maximum Evaluations - Reached maximum number of iterations";
-                                break;
-
-                            case CobylaStatus.DivergingRoundingErrors:
-                                Status = SolverStatus.NoProgress;
-                                StatusTextMessage = "Finish - Maximum Progress (Diverging rounding errors)";
-                                break;
-
-                            case CobylaStatus.NoPossibleSolution:
-                                Status = SolverStatus.NoProgress;
-                                StatusTextMessage = "Finish - Maximum Progress (No possible solution)";
-                                break;
-
-                            case CobylaStatus.Cancelled:
-                                Status = SolverStatus.Cancelled;
-                                StatusTextMessage = "Cancelled by User - Resume possible";
-                                break;
-
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
-                    }
-                    else if (AccordOptMethod is ConjugateGradient conjGradSolver)
-                    {
-                        switch (conjGradSolver.Status)
-                        {
-                            case ConjugateGradientCode.Success:
-                                Status = SolverStatus.Finished;
-                                StatusTextMessage = "Finish - Success";
-                                break;
-
-                            case ConjugateGradientCode.StepSize:
-                                Status = SolverStatus.NoProgress;
-                                StatusTextMessage = "Finish - Invalid Step Size";
-                                break;
-
-                            case ConjugateGradientCode.DescentNotObtained:
-                                Status = SolverStatus.NoProgress;
-                                StatusTextMessage = "Finish - Descent Direction Not Obtained";
-                                break;
-
-                            case ConjugateGradientCode.RoundingErrors:
-                                Status = SolverStatus.NoProgress;
-                                StatusTextMessage = "Finish - Rounding errors prevent further progress";
-                                break;
-
-                            case ConjugateGradientCode.StepHigh:
-                                Status = SolverStatus.NoProgress;
-                                StatusTextMessage = "Finish - The step size has reached the upper bound";
-                                break;
-
-                            case ConjugateGradientCode.StepLow:
-                                Status = SolverStatus.NoProgress;
-                                StatusTextMessage = "Finish - The step size has reached the lower bound";
-                                break;
-
-                            case ConjugateGradientCode.MaximumEvaluations:
-                                Status = SolverStatus.MaxEvaluations;
-                                StatusTextMessage = "Maximum Evaluations - Reached maximum number of iterations";
-                                break;
-
-                            case ConjugateGradientCode.Precision:
-                                Status = SolverStatus.NoProgress;
-                                StatusTextMessage = "Finish - Relative width of the interval of uncertainty is at machine precision";
-                                break;
-
-                            case ConjugateGradientCode.Cancelled:
-                                Status = SolverStatus.Cancelled;
-                                StatusTextMessage = "Cancelled by User - Resume possible";
-                                break;
-
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
-                    }
-                    else if (AccordOptMethod is NelderMead nedSolver)
-                    {
-                        switch (nedSolver.Status)
-                        {
-                            case NelderMeadStatus.ForcedStop:
-                                Status = SolverStatus.Cancelled;
-                                StatusTextMessage = "Cancelled by User - Resume possible";
-                                break;
-
-                            case NelderMeadStatus.Success:
-                                Status = SolverStatus.Finished;
-                                StatusTextMessage = "Finish - Success";
-                                break;
-
-                            case NelderMeadStatus.MaximumTimeReached:
-                                Status = SolverStatus.Finished;
-                                StatusTextMessage = "Finish - The execution time exceeded the established limit";
-                                break;
-
-                            case NelderMeadStatus.MinimumAllowedValueReached:
-                                Status = SolverStatus.NoProgress;
-                                StatusTextMessage = "Finish - The minimum desired value has been reached";
-                                break;
-
-                            case NelderMeadStatus.MaximumEvaluationsReached:
-                                Status = SolverStatus.MaxEvaluations;
-                                StatusTextMessage = "Maximum Evaluations - Reached maximum number of iterations";
-                                break;
-
-                            case NelderMeadStatus.Failure:
-                                Status = SolverStatus.NoProgress;
-                                StatusTextMessage = "Finish - The algorithm failed internally";
-                                break;
-
-                            case NelderMeadStatus.FunctionToleranceReached:
-                                Status = SolverStatus.Finished;
-                                StatusTextMessage = "Finish - The desired output tolerance (minimum change in the function output between two consecutive iterations) has been reached";
-                                break;
-
-                            case NelderMeadStatus.SolutionToleranceReached:
-                                Status = SolverStatus.Finished;
-                                StatusTextMessage = "Finish - The desired parameter tolerance (minimum change in the solution vector between two iterations) has been reached";
-                                break;
-
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
-                    }
-                    else if (AccordOptMethod is ResilientBackpropagation relSolver)
-                    {
-                        switch (relSolver.Status)
-                        {
-                            case ResilientBackpropagationStatus.Finished:
-                                Status = SolverStatus.Finished;
-                                StatusTextMessage = "Finish - Success";
-                                break;
-
-                            case ResilientBackpropagationStatus.MaxIterations:
-                                Status = SolverStatus.MaxEvaluations;
-                                StatusTextMessage = "Maximum Evaluations - Reached maximum number of iterations";
-                                break;
-
-                            case ResilientBackpropagationStatus.Cancelled:
-                                Status = SolverStatus.Cancelled;
-                                StatusTextMessage = "Cancelled by User - Resume possible";
-                                break;
-
-                            default:
-                                throw new ArgumentOutOfRangeException();
-                        }
-                    }
-                }
-                catch (SolverEndException e)
-                {
-                    // We sent the message! Interprets the message that was received
-                    switch (e.FinishStatus)
-                    {
-                        case SolverStatus.NoProgress:
-                            Status = SolverStatus.NoProgress;
-                            StatusTextMessage = "No Progress - The solver cannot iterate faster than the required minimum change limit.";
-                            break;
-
-                        case SolverStatus.MaxEvaluations:
-                            Status = SolverStatus.MaxEvaluations;
-                            StatusTextMessage = "Maximum Evaluations - Reached maximum number of iterations";
-                            break;
-
-                        case SolverStatus.Finished:
-                            Status = SolverStatus.Finished;
-                            StatusTextMessage = "Converged - The solver reached the desired residual value.";
-                            break;
-
-                        default:
-                            throw new ArgumentOutOfRangeException($"The SolverEndException got an unexpected result!");
-                    }
-                }
-            }
-            #endregion
-
             #region NLOpt Optimizations
-            else if (SolverType == SolverType.NLOpt_Cobyla)
-            {
+
                 if (_nLOptMethod == null) throw new Exception("You did not start the solver. Please use the SetSolverManager function for this.");
                 
                 // This is the first time we are running this solver
@@ -852,7 +535,7 @@ namespace AccordHelper.Opt
 
                         case NloptResult.INVALID_ARGS:
                             Status = SolverStatus.Failed;
-                            StatusTextMessage = "Invalid arguments (e.g. lower bounds are bigger than upper bounds, an unknown algorithm was specified, etcetera).";
+                            StatusTextMessage = "Invalid arguments (e.g. lower bounds are bigger than upper bounds, an unknown algorithm was specified, etc).";
                             break;
 
                         case NloptResult.OUT_OF_MEMORY:
@@ -867,7 +550,7 @@ namespace AccordHelper.Opt
 
                         case NloptResult.FORCED_STOP:
                             Status = SolverStatus.Cancelled;
-                            StatusTextMessage = "Cancelled by User - Resume possible";
+                            StatusTextMessage = "Halted by the user.";
                             break;
 
                         case NloptResult.SUCCESS:
@@ -877,27 +560,27 @@ namespace AccordHelper.Opt
 
                         case NloptResult.STOPVAL_REACHED:
                             Status = SolverStatus.Finished;
-                            StatusTextMessage = "Optimization stopped because stopval (above) was reached.";
+                            StatusTextMessage = "Optimization stopped because the \"stop value on objective function\" was reached.";
                             break;
 
                         case NloptResult.FTOL_REACHED:
                             Status = SolverStatus.Finished;
-                            StatusTextMessage = "Optimization stopped because ftol_rel or ftol_abs (above) was reached.";
+                            StatusTextMessage = "Optimization stopped because either the \"relative tolerance on function value\" or \"absolute tolerance on function value\" was reached.";
                             break;
 
                         case NloptResult.XTOL_REACHED:
                             Status = SolverStatus.Finished;
-                            StatusTextMessage = "Optimization stopped because xtol_rel or xtol_abs (above) was reached.";
+                            StatusTextMessage = "Optimization stopped because either the \"relative tolerance on parameter value\" or \"one of the absolute tolerance on parameter value\" was reached.";
                             break;
 
                         case NloptResult.MAXEVAL_REACHED:
                             Status = SolverStatus.MaxEvaluations;
-                            StatusTextMessage = "Optimization stopped because maxeval (above) was reached.";
+                            StatusTextMessage = "Optimization stopped because the maximum number of iterations was reached.";
                             break;
 
                         case NloptResult.MAXTIME_REACHED:
                             Status = SolverStatus.MaxEvaluations;
-                            StatusTextMessage = "Optimization stopped because maxtime (above) was reached.";
+                            StatusTextMessage = "Optimization stopped because the maximum elapsed time was reached.";
                             break;
 
                         default:
@@ -928,8 +611,6 @@ namespace AccordHelper.Opt
                             throw new ArgumentOutOfRangeException($"The SolverEndException got an unexpected result!");
                     }
                 }
-
-            }
             #endregion
 
             // Terminates the solver process
@@ -947,11 +628,9 @@ namespace AccordHelper.Opt
         public ICollectionView InputDefs_ViewItems { get; set; }
         public ICollectionView IntermediateDefs_ViewItems { get; set; }
         public ICollectionView FinalDefs_ViewItems { get; set; }
-
         #endregion
 
         public ICollectionView FunctionSolutions_ViewItems { get; set; }
-
         private bool FunctionSolutions_ViewItems_Filter(object inObj)
         {
             if (!(inObj is PossibleSolution inSol)) throw new InvalidCastException($"The FunctionSolutions_ViewItems contains something other than a PossibleSolution object.");
@@ -959,7 +638,6 @@ namespace AccordHelper.Opt
         }
 
         public ICollectionView GradientSolutions_ViewItems { get; set; }
-
         private bool GradientSolutions_ViewItems_Filter(object inObj)
         {
             if (!(inObj is PossibleSolution inSol)) throw new InvalidCastException($"The FunctionSolutions_ViewItems contains something other than a PossibleSolution object.");
@@ -968,7 +646,6 @@ namespace AccordHelper.Opt
 
         public ICollectionView AllPossibleSolutions_ViewItems { get; set; }
         protected FastObservableCollection<PossibleSolution> _possibleSolutions = new FastObservableCollection<PossibleSolution>();
-
         public FastObservableCollection<PossibleSolution> PossibleSolutions
         {
             get => _possibleSolutions;
@@ -990,6 +667,38 @@ namespace AccordHelper.Opt
 
         #region Client UI Helpers
 
+        public List<AbsoluteToleranceOnParameterValue_NameValuePair> DefaultParameterAbsoluteTolerance
+        {
+            get
+            {
+                List<AbsoluteToleranceOnParameterValue_NameValuePair> toRet = new List<AbsoluteToleranceOnParameterValue_NameValuePair>();
+                foreach (Input_ParamDefBase inputParam in ObjectiveFunction.InputDefs.OrderBy(a => a.IndexInDoubleArray))
+                {
+                    switch (inputParam)
+                    {
+                        case Double_Input_ParamDef double_Input_ParamDef:
+                            toRet.Add(new AbsoluteToleranceOnParameterValue_NameValuePair(double_Input_ParamDef.Name, -1d));
+                            break;
+
+                        case Integer_Input_ParamDef integer_Input_ParamDef:
+                            toRet.Add(new AbsoluteToleranceOnParameterValue_NameValuePair(integer_Input_ParamDef.Name, -1d));
+                            break;
+
+                        case Point_Input_ParamDef point_Input_ParamDef:
+                            toRet.Add(new AbsoluteToleranceOnParameterValue_NameValuePair(point_Input_ParamDef.Name + " - X", -1d));
+                            toRet.Add(new AbsoluteToleranceOnParameterValue_NameValuePair(point_Input_ParamDef.Name + " - Y", -1d));
+                            toRet.Add(new AbsoluteToleranceOnParameterValue_NameValuePair(point_Input_ParamDef.Name + " - Z", -1d));
+                            break;
+
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(inputParam));
+                    }
+                }
+
+                return toRet;
+            }
+        }
+
         public bool SolvesCurrentGHFile { get; set; }
         public virtual string ProblemFriendlyName
         {
@@ -1001,18 +710,18 @@ namespace AccordHelper.Opt
         }
 
 
-        public Dictionary<SolverType, string> SolverTypeListWithCaptions { get; } = new Dictionary<SolverType, string>()
+        public Dictionary<NLoptAlgorithm, string> SolverTypeListWithCaptions { get; } = new Dictionary<NLoptAlgorithm, string>()
             {
-                {SolverType.AugmentedLagrangian, "Aug. Lagrangian"},
-                {SolverType.BoundedBroydenFletcherGoldfarbShanno, "B-BFGS"},
-                {SolverType.Cobyla, "Cobyla"},
-                {SolverType.ConjugateGradient_FletcherReeves, "Conj. Gradient - Fletcher Reeves"},
-                {SolverType.ConjugateGradient_PolakRibiere, "Conj. Gradient - Polak Ribiere"},
-                {SolverType.ConjugateGradient_PositivePolakRibiere, "Conj. Gradient - [+] Polak Ribiere"},
-                {SolverType.Genetic, "Genetic"},
-                {SolverType.NelderMead, "Nelder Mead"},
-                {SolverType.ResilientBackpropagation, "Resilient Backpropagation"},
-                {SolverType.NLOpt_Cobyla, "NLOpt Cobyla"}
+                {NLoptAlgorithm.LN_COBYLA, "Cobyla [LN]"},
+                {NLoptAlgorithm.LN_BOBYQA, "Bobyqa [LN]"},
+                {NLoptAlgorithm.GN_DIRECT, "Dividing Rectangles [GN]"},
+                {NLoptAlgorithm.GN_DIRECT_L, "Dividing Rectangles - Locally Biased [GN]"},
+                {NLoptAlgorithm.GN_DIRECT_L_RAND, "Dividing Rectangles - Locally Biased With Some Randomization [GN]"},
+                {NLoptAlgorithm.GN_CRS2_LM, "Controlled Random Search With Local Mutation [GN]"},
+                {NLoptAlgorithm.GD_STOGO, "StoGo [GD]"},
+                {NLoptAlgorithm.GD_STOGO_RAND, "StoGo - Randomized [GD]"},
+                {NLoptAlgorithm.GN_ISRES, "Improved Stochastic Ranking Evolution Strategy [GN]"},
+                {NLoptAlgorithm.GN_ESCH, "ESCH (evolutionary algorithm) [GN]"},
             };
         public Dictionary<StartPositionType, string> StartPositionTypeListWithCaptions { get; } = new Dictionary<StartPositionType, string>()
             {
@@ -1070,8 +779,9 @@ namespace AccordHelper.Opt
             }
             else SolverOptions_FeaSoftwareIsEnabled = false;
 
-
             RaisePropertyChanged("FeaSoftwareListWithCaptions");
+
+            IsFeaProblem = !FeaSoftwareListWithCaptions.ContainsKey(FeaSoftwareEnum.NoFea);
         }
         private FeaSoftwareEnum _solverOptions_SelectedFeaSoftware = FeaSoftwareEnum.NoFea;
         public FeaSoftwareEnum SolverOptions_SelectedFeaSoftware
@@ -1085,23 +795,150 @@ namespace AccordHelper.Opt
             get => _solverOptions_FeaSoftwareIsEnabled;
             set => SetProperty(ref _solverOptions_FeaSoftwareIsEnabled, value);
         }
+        private bool _isFeaProblem;
+        public bool IsFeaProblem
+        {
+            get => _isFeaProblem;
+            set
+            {
+                SetProperty(ref _isFeaProblem, value);
+
+                if (_isFeaProblem)
+                {
+                    PossibleScreenShotList = new Dictionary<ScreenShotType, string>()
+                        {
+                            {ScreenShotType.RhinoShot, "Rhino"},
+
+                            {ScreenShotType.EquivalentVonMisesStressOutput, "Von-Mises Stress"},
+                            {ScreenShotType.EquivalentStrainOutput, "Equivalent Strain"},
+                            {ScreenShotType.StrainEnergyOutput, "Strain Energy"},
+
+                            {ScreenShotType.AxialDiagramOutput, "Axial Force"},
+                            {ScreenShotType.VYDiagramOutput, "Shear Force Y"},
+                            {ScreenShotType.VZDiagramOutput, "Shear Force Z"},
+                            {ScreenShotType.TorsionDiagramOutput, "Torsion"},
+                            {ScreenShotType.MYDiagramOutput, "Moment Y"},
+                            {ScreenShotType.MZDiagramOutput, "Moment Z"},
+
+                            {ScreenShotType.TotalDisplacementPlot, "Displacement Total"},
+                            {ScreenShotType.XDisplacementPlot, "Displacement X"},
+                            {ScreenShotType.YDisplacementPlot, "Displacement Y"},
+                            {ScreenShotType.ZDisplacementPlot, "Displacement Z"},
+                        };
+                }
+                else
+                {
+                    PossibleScreenShotList = new Dictionary<ScreenShotType, string>()
+                        {
+                            {ScreenShotType.RhinoShot, "Rhino"},
+                        };
+                }
+            }
+        }
 
         #endregion
-    }
+        
+        #region DesiredScreenShotDefinition
+        public Dictionary<ScreenShotType, string> PossibleScreenShotList { get; private set; }
+        private ScreenShotType _addComboBox_SelectedScreenShotType;
+        public ScreenShotType AddComboBox_SelectedScreenShotType
+        {
+            get => _addComboBox_SelectedScreenShotType;
+            set => SetProperty(ref _addComboBox_SelectedScreenShotType, value);
+        }
 
-    public enum SolverType
-    {
-        AugmentedLagrangian,
-        Cobyla,
-        BoundedBroydenFletcherGoldfarbShanno,
-        Genetic,
-        ConjugateGradient_FletcherReeves,
-        ConjugateGradient_PolakRibiere,
-        ConjugateGradient_PositivePolakRibiere,
-        NelderMead,
-        ResilientBackpropagation,
-        NLOpt_Cobyla,
-        NLOptBobyqa
+        public FastObservableCollection<DesiredScreenShotDefinition> DesiredScreenShots { get; } = new FastObservableCollection<DesiredScreenShotDefinition>();
+        private DesiredScreenShotDefinition _options_SelectedDesiredScreenShotDefinition;
+        public DesiredScreenShotDefinition Options_SelectedDesiredScreenShotDefinition
+        {
+            get => _options_SelectedDesiredScreenShotDefinition;
+            set => SetProperty(ref _options_SelectedDesiredScreenShotDefinition, value);
+        }
+
+        private DelegateCommand _addDesiredScreenShotCommand;
+        public DelegateCommand AddDesiredScreenShotCommand =>
+            _addDesiredScreenShotCommand ?? (_addDesiredScreenShotCommand = new DelegateCommand(ExecuteAddDesiredScreenShotCommand));
+        async void ExecuteAddDesiredScreenShotCommand()
+        {
+            DesiredScreenShotDefinition shotDefinition = new DesiredScreenShotDefinition(AddComboBox_SelectedScreenShotType);
+            DesiredScreenShots.Add(shotDefinition);
+            Options_SelectedDesiredScreenShotDefinition = shotDefinition;
+        }
+
+        private DelegateCommand _removeDesiredScreenShotCommand;
+        public DelegateCommand RemoveDesiredScreenShotCommand =>
+            _removeDesiredScreenShotCommand ?? (_removeDesiredScreenShotCommand = new DelegateCommand(ExecuteRemoveDesiredScreenShotCommand));
+        async void ExecuteRemoveDesiredScreenShotCommand()
+        {
+            DesiredScreenShots.Remove(Options_SelectedDesiredScreenShotDefinition);
+        }
+
+        public Dictionary<ImageCaptureViewDirection, string> PossibleImageDirectionList { get; } = new Dictionary<ImageCaptureViewDirection, string>()
+            {
+
+                {ImageCaptureViewDirection.Top_Towards_ZNeg, ImageCaptureViewDirection.Top_Towards_ZNeg.ToString().Replace('_',' ')},
+                {ImageCaptureViewDirection.Front_Towards_YPos, ImageCaptureViewDirection.Front_Towards_YPos.ToString().Replace('_',' ')},
+                {ImageCaptureViewDirection.Back_Towards_YNeg, ImageCaptureViewDirection.Back_Towards_YNeg.ToString().Replace('_',' ')},
+                {ImageCaptureViewDirection.Right_Towards_XNeg, ImageCaptureViewDirection.Right_Towards_XNeg.ToString().Replace('_',' ')},
+                {ImageCaptureViewDirection. Left_Towards_XPos, ImageCaptureViewDirection.Left_Towards_XPos.ToString().Replace('_',' ')},
+
+                {ImageCaptureViewDirection.Perspective_Top_Front_Edge, ImageCaptureViewDirection.Perspective_Top_Front_Edge.ToString().Replace('_',' ')},
+                {ImageCaptureViewDirection.Perspective_Top_Back_Edge, ImageCaptureViewDirection.Perspective_Top_Back_Edge.ToString().Replace('_',' ')},
+                {ImageCaptureViewDirection.Perspective_Top_Right_Edge, ImageCaptureViewDirection.Perspective_Top_Right_Edge.ToString().Replace('_',' ')},
+                {ImageCaptureViewDirection.Perspective_Top_Left_Edge, ImageCaptureViewDirection.Perspective_Top_Left_Edge.ToString().Replace('_',' ')},
+
+                {ImageCaptureViewDirection.Perspective_TFR_Corner, ImageCaptureViewDirection.Perspective_TFR_Corner.ToString().Replace('_',' ')},
+                {ImageCaptureViewDirection.Perspective_TFL_Corner, ImageCaptureViewDirection.Perspective_TFL_Corner.ToString().Replace('_',' ')},
+                {ImageCaptureViewDirection.Perspective_TBR_Corner, ImageCaptureViewDirection.Perspective_TBR_Corner.ToString().Replace('_',' ')},
+                {ImageCaptureViewDirection.Perspective_TBL_Corner, ImageCaptureViewDirection.Perspective_TBL_Corner.ToString().Replace('_',' ')},
+
+                {ImageCaptureViewDirection.Perspective_Custom, ImageCaptureViewDirection.Perspective_Custom.ToString().Replace('_',' ')},
+            };
+
+        public void SaveSolutionImages()
+        {
+            // Creates the folders for the images
+            foreach (DesiredScreenShotDefinition desiredScreenShot in DesiredScreenShots)
+            {
+                string screenShotDir = Path.Combine(RhinoStaticMethods.GH_Auto_ScreenShotFolder(RhinoModel.RM.GrasshopperFullFileName), desiredScreenShot.FriendlyName);
+                if (Directory.Exists(screenShotDir)) Directory.Delete(screenShotDir, true);
+                Directory.CreateDirectory(screenShotDir);
+            }
+
+            foreach (PossibleSolution possibleSolution in PossibleSolutions.Where(a => a.EvalType == FunctionOrGradientEval.Function))
+            {
+                foreach (KeyValuePair<string, Image> possibleSolutionScreenShot in possibleSolution.ScreenShots)
+                {
+                    string imageFilePath = Path.Combine(RhinoStaticMethods.GH_Auto_ScreenShotFolder(RhinoModel.RM.GrasshopperFullFileName), possibleSolutionScreenShot.Key, $"Iteration {possibleSolution.FunctionHitCount:000000}.png");
+                    using (FileStream fs = new FileStream(imageFilePath, FileMode.Create))
+                    {
+                        possibleSolutionScreenShot.Value.Save(fs, ImageFormat.Png);
+                    }
+                }
+            }
+        }
+
+        public virtual void SetDefaultScreenShots()
+        {
+            DesiredScreenShots.Add(new DesiredScreenShotDefinition(ScreenShotType.RhinoShot, "Rhino - 0"));
+            DesiredScreenShots.Add(new DesiredScreenShotDefinition(ScreenShotType.RhinoShot, "Rhino - 1"));
+            DesiredScreenShots.Add(new DesiredScreenShotDefinition(ScreenShotType.RhinoShot, "Rhino - 2"));
+            DesiredScreenShots.Add(new DesiredScreenShotDefinition(ScreenShotType.RhinoShot, "Rhino - 3"));
+        }
+        #endregion
+
+        #region Frame Section Management
+        public ICollectionView GrasshopperLineListDefs_ViewItems { get; set; }
+        private bool GrasshopperLineListDefs_ViewItems_Filter(object inObj)
+        {
+            if (!(inObj is Output_ParamDefBase interParam)) throw new InvalidCastException("The GrasshopperLineListDefs_ViewItems contains something other than a Output_ParamDefBase object.");
+            if (interParam is LineList_Output_ParamDef) return true;
+            return false;
+        }
+
+        public ICollectionView AllPossibleSections_ViewItems { get; set; }
+        public FeSection GrasshopperLineList_Selected { get; set; }
+        #endregion
     }
 
     public enum SolverStatus
@@ -1114,4 +951,283 @@ namespace AccordHelper.Opt
         Cancelled,
         Failed
     }
+
+    public enum ImageCaptureViewDirection
+    {
+        Top_Towards_ZNeg,
+        Front_Towards_YPos,
+        Back_Towards_YNeg,
+        Right_Towards_XNeg,
+        Left_Towards_XPos,
+
+        Perspective_Top_Front_Edge,
+        Perspective_Top_Back_Edge,
+        Perspective_Top_Right_Edge,
+        Perspective_Top_Left_Edge,
+
+        Perspective_TFR_Corner,
+        Perspective_TFL_Corner,
+        Perspective_TBR_Corner,
+        Perspective_TBL_Corner,
+
+        Perspective_Custom,
+    }
+    public enum ScreenShotType
+    {
+        // FEA
+        EquivalentVonMisesStressOutput,
+
+        EquivalentStrainOutput,
+
+        StrainEnergyOutput,
+
+        // Forces
+        AxialDiagramOutput,
+        MYDiagramOutput,
+        MZDiagramOutput,
+        TorsionDiagramOutput,
+        VYDiagramOutput,
+        VZDiagramOutput,
+
+
+        // Displacement
+        TotalDisplacementPlot,
+        XDisplacementPlot,
+        YDisplacementPlot,
+        ZDisplacementPlot,
+
+        // Rhino
+        RhinoShot,
+    }
+
+    public class DesiredScreenShotDefinition : BindableBase
+    {
+        public DesiredScreenShotDefinition(ScreenShotType inShotType, string inFriendlyName = null, ImageCaptureViewDirection inDirection = ImageCaptureViewDirection.Perspective_TFL_Corner)
+        {
+            _friendlyName = string.IsNullOrWhiteSpace(inFriendlyName) ? $"{inShotType.ToString()}_{Sap2000Library.S2KStaticMethods.UniqueName(5)}" : inFriendlyName;
+
+            _shotType = inShotType;
+            Direction = inDirection;
+        }
+
+        public string Name => $"{ShotType}_{Direction}";
+        public string DirectionFriendlyString
+        {
+            get
+            {
+                if (ShotType == ScreenShotType.RhinoShot) return "ViewPort";
+                if (Direction != ImageCaptureViewDirection.Perspective_Custom) return Direction.ToString().Replace('_', ' ');
+                return $"C {CustomDirX:F2} , {CustomDirY:F2} , {CustomDirZ:F2}";
+            }
+        }
+
+        private string _friendlyName;
+        public string FriendlyName
+        {
+            get => _friendlyName;
+            set => SetProperty(ref _friendlyName, value);
+        }
+
+        private Image _image;
+        public Image Image
+        {
+            get => _image;
+            set => SetProperty(ref _image, value);
+        }
+
+        private ImageCaptureViewDirection _direction;
+        public ImageCaptureViewDirection Direction
+        {
+            get => _direction;
+            set
+            {
+                SetProperty(ref _direction, value);
+
+                // Sets the Directions
+                RotateToAlign = Double.NaN;
+                switch (Direction)
+                {
+                    case ImageCaptureViewDirection.Top_Towards_ZNeg:
+                        CustomDirX = 0d;
+                        CustomDirY = 0d;
+                        CustomDirZ = 1d;
+                        RotateToAlign = -90d;
+                        break;
+
+                    case ImageCaptureViewDirection.Front_Towards_YPos:
+                        CustomDirX = 0d;
+                        CustomDirY = -1d;
+                        CustomDirZ = 0d;
+                        break;
+
+                    case ImageCaptureViewDirection.Back_Towards_YNeg:
+                        CustomDirX = 0d;
+                        CustomDirY = 1d;
+                        CustomDirZ = 0d;
+                        break;
+
+                    case ImageCaptureViewDirection.Right_Towards_XNeg:
+                        CustomDirX = 1d;
+                        CustomDirY = 0d;
+                        CustomDirZ = 0d;
+                        break;
+
+                    case ImageCaptureViewDirection.Left_Towards_XPos:
+                        CustomDirX = -1d;
+                        CustomDirY = 0d;
+                        CustomDirZ = 0d;
+                        break;
+
+                    case ImageCaptureViewDirection.Perspective_Top_Front_Edge:
+                        CustomDirX = 0.2d;
+                        CustomDirY = -1d;
+                        CustomDirZ = 1d;
+                        break;
+
+                    case ImageCaptureViewDirection.Perspective_Top_Back_Edge:
+                        CustomDirX = 0.2d;
+                        CustomDirY = 1d;
+                        CustomDirZ = 1d;
+                        break;
+
+                    case ImageCaptureViewDirection.Perspective_Top_Right_Edge:
+                        CustomDirX = 1d;
+                        CustomDirY = 0.2d;
+                        CustomDirZ = 1d;
+                        break;
+
+                    case ImageCaptureViewDirection.Perspective_Top_Left_Edge:
+                        CustomDirX = -1d;
+                        CustomDirY = 0.2d;
+                        CustomDirZ = 1d;
+                        break;
+
+
+                    case ImageCaptureViewDirection.Perspective_TFR_Corner:
+                        CustomDirX = 1d;
+                        CustomDirY = -1d;
+                        CustomDirZ = 1d;
+                        break;
+
+                    case ImageCaptureViewDirection.Perspective_TFL_Corner:
+                        CustomDirX = -1d;
+                        CustomDirY = -1d;
+                        CustomDirZ = 1d;
+                        break;
+
+                    case ImageCaptureViewDirection.Perspective_TBR_Corner:
+                        CustomDirX = 1d;
+                        CustomDirY = 1d;
+                        CustomDirZ = 1d;
+                        break;
+
+                    case ImageCaptureViewDirection.Perspective_TBL_Corner:
+                        CustomDirX = -1d;
+                        CustomDirY = 1d;
+                        CustomDirZ = 1d;
+                        break;
+
+                    case ImageCaptureViewDirection.Perspective_Custom:
+                        break;
+
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(Direction), Direction, null);
+                }
+
+                RaisePropertyChanged("IsCustomDirection");
+            }
+        }
+        public bool IsCustomDirection => Direction == ImageCaptureViewDirection.Perspective_Custom;
+
+        private double _customDirX;
+        public double CustomDirX
+        {
+            get => _customDirX;
+            set => SetProperty(ref _customDirX, value);
+        }
+        private double _customDirY;
+        public double CustomDirY
+        {
+            get => _customDirY;
+            set => SetProperty(ref _customDirY, value);
+        }
+        private double _customDirZ;
+        public double CustomDirZ
+        {
+            get => _customDirZ;
+            set => SetProperty(ref _customDirZ, value);
+        }
+
+        public double RotateToAlign = double.NaN;
+
+        private ScreenShotType _shotType;
+        public ScreenShotType ShotType
+        {
+            get => _shotType;
+            set => SetProperty(ref _shotType, value);
+        }
+
+        private bool _legendAutoScale = true;
+        public bool LegendAutoScale
+        {
+            get => _legendAutoScale;
+            set
+            {
+                SetProperty(ref _legendAutoScale, value);
+
+                if (_legendAutoScale)
+                {
+                    LegendScale_Min = double.NaN;
+                    LegendScale_Max = double.NaN;
+                }
+                else
+                {
+                    LegendScale_Min = 0d;
+                    LegendScale_Max = 100d;
+                }
+
+                RaisePropertyChanged("LegendRangeEnabled");
+            }
+        }
+        public bool LegendRangeEnabled => !LegendAutoScale;
+
+        private double _legendScale_Min = double.NaN;
+        public double LegendScale_Min
+        {
+            get => _legendScale_Min;
+            set => SetProperty(ref _legendScale_Min, value);
+        }
+
+        private double _legendScale_Max = double.NaN;
+        public double LegendScale_Max
+        {
+            get => _legendScale_Max;
+            set => SetProperty(ref _legendScale_Max, value);
+        }
+
+        public bool IsNotRhino => ShotType != ScreenShotType.RhinoShot;
+    }
+
+    public class AbsoluteToleranceOnParameterValue_NameValuePair : BindableBase
+    {
+        public AbsoluteToleranceOnParameterValue_NameValuePair(string inParameterName, double inParameterTolerance)
+        {
+            _parameterName = inParameterName;
+            _parameterTolerance = inParameterTolerance;
+        }
+
+        private string _parameterName;
+        public string ParameterName
+        {
+            get => _parameterName;
+            set => SetProperty(ref _parameterName, value);
+        }
+        private double _parameterTolerance;
+        public double ParameterTolerance
+        {
+            get => _parameterTolerance;
+            set => SetProperty(ref _parameterTolerance, value);
+        }
+    }
+    
 }

@@ -71,6 +71,26 @@ namespace RhinoInterfaceLibrary
             }
         }
 
+        public static string GH_Auto_ScreenShotFolder(string inGrasshopperFullFileName)
+        {
+            try
+            {
+                // Gets the document
+                string projectFolder = Path.GetDirectoryName(inGrasshopperFullFileName);
+                string ghFilename = Path.GetFileName(inGrasshopperFullFileName);
+
+                string targetDir = Path.Combine(projectFolder, ghFilename + "_data", "ScreenShots");
+
+                if (!Directory.Exists(targetDir)) Directory.CreateDirectory(targetDir);
+
+                return targetDir;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
         public static string GH_Auto_SavedStateFileFull()
         {
             return Path.Combine(

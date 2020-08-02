@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
+using System.Windows.Forms;
 using Grasshopper;
 
 namespace RhinoInterfaceLibrary
@@ -332,6 +333,19 @@ namespace RhinoInterfaceLibrary
         public MN.Point3D[] GetPointListAlongArc(MN.Point3D startJoint, MN.Point3D midJoint, MN.Point3D endJoint, int numberSegments)
         {
             throw new NotImplementedException();
+        }
+
+        public void SaveScreenShot(string inFullFilename, int inViewNumber)
+        {
+            string rhinoReturn = _emsPluginReference.SaveScreenShot(inFullFilename, inViewNumber);
+            if (rhinoReturn != null) throw new Exception($"Rhino was not able to return the byte array that expresses the image. Message: {rhinoReturn}");
+
+            if (!File.Exists(inFullFilename)) throw new IOException($"The target file does not exist!");
+        }
+        
+        public void SetActiveViewport(int inViewNumber)
+        {
+            _emsPluginReference.SetActiveViewPort(inViewNumber);
         }
         #endregion
 

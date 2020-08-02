@@ -3,12 +3,19 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows.Controls;
+using AccordHelper.FEA;
 using AccordHelper.Opt.ParamDefinitions;
+using BaseWPFLibrary.Others;
 using Prism.Mvvm;
 using r3dm::Rhino.Geometry;
 using RhinoInterfaceLibrary;
+using Image = System.Drawing.Image;
+
 
 namespace AccordHelper.Opt
 {
@@ -140,7 +147,7 @@ namespace AccordHelper.Opt
             set => SetProperty(ref _eval, value);
         }
 
-        public void WritePointToGrasshopper(string inInputFolder)
+        public void WriteInputToGrasshopper(string inInputFolder)
         {
             //// First, clears the folder
             //foreach (string file in Directory.GetFiles(inInputFolder))
@@ -170,7 +177,7 @@ namespace AccordHelper.Opt
                 }
             }
         }
-        public void ReadResultsFromGrasshopper(string inOutputFolder)
+        public void ReadOutputFromGrasshopper(string inOutputFolder)
         {
             for (int i = 0; i < IntermediateValues.Count; i++)
             {
@@ -295,7 +302,6 @@ namespace AccordHelper.Opt
                 return $"{FunctionHitCount,-8} : {Eval,-10:F4}";
             }
         }
-
         public string FriendlyReport
         {
             get
@@ -422,6 +428,52 @@ namespace AccordHelper.Opt
         {
             return $"{inLine.FromX.ToString(inNumberFormat)},{inLine.FromY.ToString(inNumberFormat)},{inLine.FromZ.ToString(inNumberFormat)} {(char) 187} {inLine.ToX.ToString(inNumberFormat)},{inLine.ToY.ToString(inNumberFormat)},{inLine.ToZ.ToString(inNumberFormat)}";
         }
+
+        public void FillScreenShotData()
+        {
+            if (EvalType == FunctionOrGradientEval.Gradient) return;
+
+            Regex rhinoViewPortRegex = new Regex(@"Rhino - (?<vp>\d*)");
+            foreach (DesiredScreenShotDefinition problemDesiredScreenShot in Problem.DesiredScreenShots)
+            {
+                if (problemDesiredScreenShot.ShotType == ScreenShotType.RhinoShot)
+                {
+                    // For Rhino, the viewport to capture is set by the Rhino - <VP>. Normally it is from 0 to 3. Otherwise, it will capture the active Viewport
+                    int rhinoViewportNum = -1;
+                    Match m = rhinoViewPortRegex.Match(problemDesiredScreenShot.FriendlyName);
+                    if (m.Success)
+                    {
+                        if (int.TryParse(m.Groups["vp"].Value, out int val)) rhinoViewportNum = val;
+                    }
+
+                    string tempRhinoImagePath = Path.Combine(RhinoStaticMethods.GH_Auto_ScreenShotFolder(RhinoModel.RM.GrasshopperFullFileName), "rhinotemp.png");
+
+                    // Tells Rhino to save the screen shotDefinition to a file
+                    RhinoModel.RM.SetActiveViewport(rhinoViewportNum);
+
+                    // Saves the screen shotDefinition to a file
+                    RhinoModel.RM.SendRhinoCommand($"_-ScreenCaptureToFile \"{tempRhinoImagePath}\" _Enter", 1);
+
+                    // Reads the target file
+                    Image img;
+                    using (FileStream fs = new FileStream(tempRhinoImagePath, FileMode.Open))
+                    {
+                        img = Image.FromStream(fs);
+                    }
+                    File.Delete(tempRhinoImagePath);
+
+                    // Stores the rhino screen shotDefinition into memory
+                    ScreenShots.Add(problemDesiredScreenShot.FriendlyName, img);
+                }
+                else ScreenShots.Add(problemDesiredScreenShot.FriendlyName, problemDesiredScreenShot.Image);
+            }
+        }
+        private Dictionary<string,Image> _screenShots = new Dictionary<string, Image>();
+        public Dictionary<string, Image> ScreenShots
+        {
+            get => _screenShots;
+            private set => SetProperty(ref _screenShots, value);
+        }
     }
 
     public enum FunctionOrGradientEval
@@ -429,4 +481,5 @@ namespace AccordHelper.Opt
         Function,
         Gradient
     }
+
 }

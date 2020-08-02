@@ -32,6 +32,7 @@ namespace AccordHelper.FEA.Items
         public FeResult_ElementNodalStrain Result_ElementNodalStrains { get; set; } = null;
         public FeResult_NodalDisplacements Result_NodalDisplacements { get; set; } = null;
         public Dictionary<int, FeResult_SectionNode> Result_SectionNodes { get; private set; } = new Dictionary<int, FeResult_SectionNode>();
+        public FeResult_ElementNodalCodeCheck Result_ElementNodalCodeCheck { get; set; } = null;
 
         public double Result_SectionNodes_AverageEqvStress()
         {

@@ -48,55 +48,54 @@ namespace AccordHelper.Opt.ParamDefinitions
 
         public override int VarCount => 3;
 
-        public override List<NonlinearConstraint> ConstraintDefinitions(ObjectiveFunctionBase inFunction)
-        {
-            return new List<NonlinearConstraint>()
-                {
-                new NonlinearConstraint(inFunction, PointXValueConstraintFunction, ConstraintType.GreaterThanOrEqualTo, SearchRangeTyped.RangeX.Min, PointXValueConstraintGradient),
-                new NonlinearConstraint(inFunction, PointYValueConstraintFunction, ConstraintType.GreaterThanOrEqualTo, SearchRangeTyped.RangeY.Min, PointYValueConstraintGradient),
-                new NonlinearConstraint(inFunction, PointZValueConstraintFunction, ConstraintType.GreaterThanOrEqualTo, SearchRangeTyped.RangeZ.Min, PointZValueConstraintGradient),
+        //public override List<NonlinearConstraint> ConstraintDefinitions(ObjectiveFunctionBase inFunction)
+        //{
+        //    return new List<NonlinearConstraint>()
+        //        {
+        //        new NonlinearConstraint(inFunction, PointXValueConstraintFunction, ConstraintType.GreaterThanOrEqualTo, SearchRangeTyped.RangeX.Min, PointXValueConstraintGradient),
+        //        new NonlinearConstraint(inFunction, PointYValueConstraintFunction, ConstraintType.GreaterThanOrEqualTo, SearchRangeTyped.RangeY.Min, PointYValueConstraintGradient),
+        //        new NonlinearConstraint(inFunction, PointZValueConstraintFunction, ConstraintType.GreaterThanOrEqualTo, SearchRangeTyped.RangeZ.Min, PointZValueConstraintGradient),
 
-                new NonlinearConstraint(inFunction, PointXValueConstraintFunction, ConstraintType.LesserThanOrEqualTo, SearchRangeTyped.RangeX.Max, PointXValueConstraintGradient),
-                new NonlinearConstraint(inFunction, PointYValueConstraintFunction, ConstraintType.LesserThanOrEqualTo, SearchRangeTyped.RangeY.Max, PointYValueConstraintGradient),
-                new NonlinearConstraint(inFunction, PointZValueConstraintFunction, ConstraintType.LesserThanOrEqualTo, SearchRangeTyped.RangeZ.Max, PointZValueConstraintGradient)
-                };
-        }
-        public double PointXValueConstraintFunction(double[] inInputs)
-        {
-            // Assumes the input variable to be an integer
-            return inInputs[IndexInDoubleArray + 0];
-        }
-        public double PointYValueConstraintFunction(double[] inInputs)
-        {
-            // Assumes the input variable to be an integer
-            return inInputs[IndexInDoubleArray + 1];
-        }
-        public double PointZValueConstraintFunction(double[] inInputs)
-        {
-            // Assumes the input variable to be an integer
-            return inInputs[IndexInDoubleArray + 2];
-        }
-        public double[] PointXValueConstraintGradient(double[] inInputs)
-        {
-            double[] retArray = Enumerable.Repeat(0d, inInputs.Length).ToArray();
-            retArray[IndexInDoubleArray + 0] = 1d;
-            return retArray;
-        }
-        public double[] PointYValueConstraintGradient(double[] inInputs)
-        {
-            double[] retArray = Enumerable.Repeat(0d, inInputs.Length).ToArray();
-            retArray[IndexInDoubleArray + 1] = 1d;
-            return retArray;
-        }
-        public double[] PointZValueConstraintGradient(double[] inInputs)
-        {
-            double[] retArray = Enumerable.Repeat(0d, inInputs.Length).ToArray();
-            retArray[IndexInDoubleArray + 2] = 1d;
-            return retArray;
-        }
+        //        new NonlinearConstraint(inFunction, PointXValueConstraintFunction, ConstraintType.LesserThanOrEqualTo, SearchRangeTyped.RangeX.Max, PointXValueConstraintGradient),
+        //        new NonlinearConstraint(inFunction, PointYValueConstraintFunction, ConstraintType.LesserThanOrEqualTo, SearchRangeTyped.RangeY.Max, PointYValueConstraintGradient),
+        //        new NonlinearConstraint(inFunction, PointZValueConstraintFunction, ConstraintType.LesserThanOrEqualTo, SearchRangeTyped.RangeZ.Max, PointZValueConstraintGradient)
+        //        };
+        //}
+        //public double PointXValueConstraintFunction(double[] inInputs)
+        //{
+        //    // Assumes the input variable to be an integer
+        //    return inInputs[IndexInDoubleArray + 0];
+        //}
+        //public double PointYValueConstraintFunction(double[] inInputs)
+        //{
+        //    // Assumes the input variable to be an integer
+        //    return inInputs[IndexInDoubleArray + 1];
+        //}
+        //public double PointZValueConstraintFunction(double[] inInputs)
+        //{
+        //    // Assumes the input variable to be an integer
+        //    return inInputs[IndexInDoubleArray + 2];
+        //}
+        //public double[] PointXValueConstraintGradient(double[] inInputs)
+        //{
+        //    double[] retArray = Enumerable.Repeat(0d, inInputs.Length).ToArray();
+        //    retArray[IndexInDoubleArray + 0] = 1d;
+        //    return retArray;
+        //}
+        //public double[] PointYValueConstraintGradient(double[] inInputs)
+        //{
+        //    double[] retArray = Enumerable.Repeat(0d, inInputs.Length).ToArray();
+        //    retArray[IndexInDoubleArray + 1] = 1d;
+        //    return retArray;
+        //}
+        //public double[] PointZValueConstraintGradient(double[] inInputs)
+        //{
+        //    double[] retArray = Enumerable.Repeat(0d, inInputs.Length).ToArray();
+        //    retArray[IndexInDoubleArray + 2] = 1d;
+        //    return retArray;
+        //}
 
         public override string TypeName => "Point";
-
 
         #region UI Helpers
         public override void UpdateInputParameter(string inStartString, string inMinBoundString, string inMaxBoundString)

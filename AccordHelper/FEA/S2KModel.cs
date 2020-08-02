@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AccordHelper.FEA.Items;
+using AccordHelper.Opt;
 using Sap2000Library;
 using Sap2000Library.DataClasses;
 using Sap2000Library.SapObjects;
@@ -18,7 +19,7 @@ namespace AccordHelper.FEA
         /// Defines a Sap2000 Model.
         /// </summary>
         /// <param name="inModelFolder">The target folder for the analysis</param>
-        public S2KModel(string inModelFolder) : base(inModelFolder, "model.s2k")
+        public S2KModel(string inModelFolder, ProblemBase inProblem) : base(inModelFolder, "model.s2k", inProblem)
         {
 
         }
@@ -42,80 +43,18 @@ namespace AccordHelper.FEA
             throw new NotImplementedException();
         }
 
-        public override void WriteModelToSoftware()
+        public override void InitialPassForSectionAssignment()
         {
-            // Sends the materials to SAP2000
-            foreach (FeMaterial feMaterial in Materials)
-            {
-                string sAssignedName = Sap2000Library.S2KModel.SM.MaterialMan.SetMaterial(MatTypeEnum.Steel, feMaterial.Name);
-                if (sAssignedName != feMaterial.Name) throw new Exception($"SAP2000 assigned the name {sAssignedName} to material {feMaterial.Name}");
-
-                Sap2000Library.S2KModel.SM.MaterialMan.SetIsotropicMaterialProperties(feMaterial.Name, feMaterial.YoungModulus, feMaterial.Poisson, feMaterial.ThermalCoefficient);
-                Sap2000Library.S2KModel.SM.MaterialMan.SetOtherSteelMaterialProperties(feMaterial.Name, feMaterial.Fy, feMaterial.Fu, feMaterial.Fy, feMaterial.Fu);
-            }
-
-            // Sends the sections to SAP2000
-            foreach (FeSection feSection in Sections)
-            {
-                Sap2000Library.S2KModel.SM.FrameSecMan.SetOrAddPipe(feSection.Name, feSection.Material.Name, feSection.Dimensions["OuterDiameter"], feSection.Dimensions["Thickness"]);
-            }
-
-            // Sends the Points to SAP2000
-            foreach (KeyValuePair<int, FeJoint> feJoint in Joints)
-            {
-                string sAssignedName = Sap2000Library.S2KModel.SM.PointMan.AddByCoord(feJoint.Value.Point.X, feJoint.Value.Point.Y, feJoint.Value.Point.Z, feJoint.Value.Id.ToString());
-                
-                if (sAssignedName != feJoint.Value.Id.ToString()) throw new Exception($"SAP2000 assigned the name {sAssignedName} to joint {feJoint.Value.Id.ToString()}");
-            }
-
-            // Sends the Frames to SAP2000
-            foreach (KeyValuePair<int, FeFrame> feFrame in Frames)
-            {
-                string sAssignedName = Sap2000Library.S2KModel.SM.FrameMan.AddByPoint(feFrame.Value.IJoint.Id.ToString(), feFrame.Value.JJoint.Id.ToString(), feFrame.Value.Section.Name, feFrame.Value.Id.ToString());
-                if (sAssignedName != feFrame.Value.Id.ToString()) throw new Exception($"SAP2000 assigned the name {sAssignedName} to frame {feFrame.Value.Id.ToString()}");
-            }
-
-            // Groups the elements
-            foreach (KeyValuePair<string, FeGroup> feGroup in Groups)
-            {
-                // Adds the group
-                Sap2000Library.S2KModel.SM.GroupMan.AddGroup(feGroup.Value.Name);
-
-                foreach (FeJoint feGroupJoint in feGroup.Value.Joints)
-                {
-                    Sap2000Library.S2KModel.SM.GroupMan.AddPointToGroup(feGroup.Value.Name, feGroupJoint.Id.ToString());
-
-                    // There is a restraint in the joint
-                    if (feGroup.Value.Restraint == null) continue;
-
-                    // Gets the SAP point
-                    SapPoint sPnt = Sap2000Library.S2KModel.SM.PointMan.GetByName(feGroupJoint.Id.ToString());
-                    // Sets the restraints to the point
-                    sPnt.Restraints = new PointRestraintDef(feGroup.Value.Restraint.DoF);
-                }
-                foreach (FeFrame feGroupFrame in feGroup.Value.Frames)
-                {
-                    Sap2000Library.S2KModel.SM.GroupMan.AddFrameToGroup(feGroup.Value.Name, feGroupFrame.Id.ToString());
-                }
-            }
-
-
-            // Gets the results
+            throw new NotImplementedException();
         }
 
-        public override void RunAnalysis()
+        public override void RunAnalysisAndGetResults(List<ResultOutput> inDesiredResults)
         {
             // Sets the run options
             Sap2000Library.S2KModel.SM.AnalysisMan.SetAllNotToRun();
             Sap2000Library.S2KModel.SM.AnalysisMan.SetCaseRunFlag("DEAD", true);
             Sap2000Library.S2KModel.SM.AnalysisMan.RunAnalysis();
         }
-
-        public override void SaveDataAs(string inFilePath)
-        {
-            throw new NotImplementedException();
-        }
-
 
     }
 }

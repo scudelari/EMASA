@@ -25,7 +25,7 @@ using RhinoInterfaceLibrary;
 
 namespace AccordHelper.Opt
 {
-    public abstract class ObjectiveFunctionBase : NonlinearObjectiveFunction, IFitnessFunction, INotifyPropertyChanged
+    public abstract class ObjectiveFunctionBase : INotifyPropertyChanged
     {
         public ProblemBase Problem { get; set; }
         public FeModelBase FeModel
@@ -50,11 +50,6 @@ namespace AccordHelper.Opt
             FinalDefs = new FastObservableCollection<Output_ParamDefBase>();
 
             InitializeVariables();
-
-            // Sets the optimization data - cannot override so must be done in constructor
-            NumberOfVariables = GetNumberOfVariables();
-            Function = Function_Wrapper;
-            Gradient = Gradient_Override;
         }
 
         protected abstract void InitializeVariables();
@@ -291,11 +286,14 @@ namespace AccordHelper.Opt
         }
 
         private int? _autoNumber = null;
-        public virtual int GetNumberOfVariables()
+        public int NumberOfVariables
         {
-            if (_autoNumber.HasValue) return _autoNumber.Value;
-            _autoNumber = InputDefs.Sum(a => a.VarCount);
-            return _autoNumber.Value;
+            get
+            {
+                if (_autoNumber.HasValue) return _autoNumber.Value;
+                _autoNumber = InputDefs.Sum(a => a.VarCount);
+                return _autoNumber.Value;
+            }
         }
 
         private PossibleSolution _currentSolution;
@@ -351,36 +349,6 @@ namespace AccordHelper.Opt
             {
                 _noProgressCounter = value;
                 OnPropertyChanged();
-            }
-        }
-
-        private void CheckSolverStatus()
-        {
-            // The Genetic solver is different as the controls are made in the ProblemBase.Solve function
-            if (Problem.SolverType != SolverType.Genetic)
-            {
-                if (TotalHitCount >= Problem.MaxIterations) throw new SolverEndException(SolverStatus.MaxEvaluations, CurrentEval);
-
-                // Can break on residual?
-                if (Problem.ShouldTargetResidual)
-                {
-                    // Success: Finished on target residual
-                    if (CurrentEval <= Problem.TargetResidual) throw new SolverEndException(SolverStatus.Finished, CurrentEval);
-                }
-
-                if (Problem.ShouldLimitChange)
-                {
-                    // Not the first iteration
-                    if (!double.IsNaN(_previousEval))
-                    {
-                        double percentChange = (CurrentEval - PreviousEval) / CurrentEval;
-                        
-                        if (percentChange <= Problem.MinResidualPercentChange) NoProgressCounter++;
-                        else NoProgressCounter = 0;
-
-                        if (NoProgressCounter >= 5) throw new SolverEndException(SolverStatus.NoProgress, CurrentEval);
-                    }
-                }
             }
         }
 
@@ -495,6 +463,18 @@ namespace AccordHelper.Opt
             CurrentEval = double.NaN;
             PreviousEval = double.NaN;
             NoProgressCounter = 0;
+        }
+
+        protected void Rhino_SendInputAndGetOutput()
+        {
+            // Writes the points to Grasshopper
+            CurrentSolution.WriteInputToGrasshopper(RhinoStaticMethods.GH_Auto_InputVariableFolder(RhinoModel.RM.GrasshopperFullFileName));
+
+            // Runs Grasshopper
+            RhinoModel.RM.SolveGrasshopper();
+
+            // Reads the output variables from Grasshopper
+            CurrentSolution.ReadOutputFromGrasshopper(RhinoStaticMethods.GH_Auto_OutputVariableFolder(RhinoModel.RM.GrasshopperFullFileName));
         }
 
         #region Helpers

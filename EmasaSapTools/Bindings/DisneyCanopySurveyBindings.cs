@@ -14,6 +14,7 @@ using System.Windows;
 using BaseWPFLibrary;
 using BaseWPFLibrary.Bindings;
 using BaseWPFLibrary.Forms;
+using EmasaSapTools.DataGridTypes;
 using EmasaSapTools.Resources;
 using MathNet.Spatial.Euclidean;
 using Microsoft.Win32;
@@ -978,6 +979,360 @@ FROM JointNewCoordinates;";
                 OnEndCommand();
                 // Messages to send?
                 if (endMessages.Length != 0) OnMessage("Could not match the deflections at the end of the DEAD case with the deflections specified in the SQLite file.", endMessages.ToString());
+            }
+        }
+
+        private DelegateCommand _getResultDisplacementSupportFall;
+        public DelegateCommand GetResultDisplacementSupportFall =>
+            _getResultDisplacementSupportFall ?? (_getResultDisplacementSupportFall = new DelegateCommand(ExecuteGetResultDisplacementSupportFall));
+        async void ExecuteGetResultDisplacementSupportFall()
+        {
+            StringBuilder endMessages = new StringBuilder();
+
+            // Selects the Excel file in the view thread
+            OpenFileDialog ofd = new OpenFileDialog
+                {
+                Filter = "Excel file (*.xls;*.xlsx)|*.xls;*.xlsx",
+                DefaultExt = "*.xls;*.xlsx",
+                Title = "Select the Excel File With The Correct Format!",
+                Multiselect = false,
+                CheckFileExists = true,
+                CheckPathExists = true
+                };
+            bool? ofdret = ofd.ShowDialog();
+
+            if (ofdret.HasValue && ofdret.Value && string.IsNullOrWhiteSpace(ofd.FileName))
+            {
+                OnMessage("Excel File", "Please select a proper Excel File!");
+                return; // Aborts the Open File
+            }
+
+            try
+            {
+                OnBeginCommand();
+
+                void lf_Work()
+                {
+                    
+                    
+                    BusyOverlayBindings.I.Title = $"Getting support fall results";
+
+                    BusyOverlayBindings.I.SetIndeterminate($"Gathering basic load case data and validation.");
+                    DataSet fromExcel = ExcelHelper.GetDataSetFromExcel(ofd.FileName);
+
+                    // Reads the steps table and puts it in Excel!
+                    DataTable stepsTable = fromExcel.Tables["Steps"];
+                    List<SCStepsDataGridType> steps = new List<SCStepsDataGridType>();
+                    BusyOverlayBindings.I.SetIndeterminate("Reading Steps Table.");
+                    foreach (DataRow row in stepsTable.Rows)
+                    {
+                        StagedConstructionOperation op = default;
+                        string operationText = row.Field<string>("Operation");
+                        switch (operationText)
+                        {
+                            case "Add Guide Structure":
+                                op = StagedConstructionOperation.AddGuideStructure;
+                                break;
+
+                            case "Add Structure":
+                                op = StagedConstructionOperation.AddStructure;
+                                break;
+
+                            case "Change Releases":
+                                op = StagedConstructionOperation.ChangeReleases;
+                                break;
+
+                            case "Change Section/Area":
+                                op = StagedConstructionOperation.ChangeSectionProperties_Area;
+                                break;
+
+                            case "Change Section/Frame":
+                                op = StagedConstructionOperation.ChangeSectionProperties_Frame;
+                                break;
+
+                            case "Change Section/Link":
+                                op = StagedConstructionOperation.ChangeSectionProperties_Link;
+                                break;
+
+                            case "Change Section/Cable":
+                                op = StagedConstructionOperation.ChangeSectionProperties_Cable;
+                                break;
+
+                            case "Load Structure (OTHER LIST)":
+                                op = StagedConstructionOperation.LoadObjects;
+                                break;
+
+                            case "Load Structure if Added (OTHER LIST)":
+                                op = StagedConstructionOperation.LoadObjectsIfNew;
+                                break;
+
+                            case "Remove Structure":
+                                op = StagedConstructionOperation.RemoveStructure;
+                                break;
+
+                            case "Section Modifier/Area":
+                                op = StagedConstructionOperation.ChangeSectionPropertyModifiers_Area;
+                                break;
+
+                            case "Section Modifier/Frame":
+                                op = StagedConstructionOperation.ChangeSectionPropertyModifiers_Frame;
+                                break;
+
+                            default:
+                                throw new InvalidOperationException(
+                                    $"There is an error in the Excel. Steps column. {operationText} does not designate an implemented operation!");
+                        }
+
+                        steps.Add(new SCStepsDataGridType
+                        {
+                            GroupName = row.Field<string>("GroupName"),
+                            NamedProp = row.Field<string>("NamedProp"),
+                            Operation = op,
+                            Order = (int)row.Field<double>("Order")
+                        });
+                    }
+
+                    throw new NotImplementedException();
+
+                    BusyOverlayBindings.I.SetIndeterminate($"Gathering basic load case data and validation.");
+
+
+
+                    // First, checks if the model is run
+                    if (!S2KModel.SM.Locked) throw new S2KHelperException($"There is no load case that is run in the model (model unlocked). Please run the load cases to obtain the results.");
+
+                    // Gets the selected list
+                    if (ResultsDisplacements_Cases_Selected.Count == 0) throw new S2KHelperException($"Please select an output case.");
+                    if (ResultsDisplacements_Groups_Selected.Count == 0) throw new S2KHelperException($"Please select a group from which to get the results.");
+
+                    // Are the selected cases finished?
+                    List<LoadCase> selectedCases = S2KModel.SM.LCMan.GetAll().Where(a => ResultsDisplacements_Cases_Selected.Contains(a.Name)).ToList();
+                    if (selectedCases.Any(a => a.Status != LCStatus.Finished)) throw new S2KHelperException($"All selected load cases must be run. Please run the load cases to obtain the results. ");
+
+                    S2KModel.SM.ClearSelection();
+
+                    BusyOverlayBindings.I.SetIndeterminate($"Selecting the groups.");
+                    foreach (string group in ResultsDisplacements_Groups_Selected)
+                        S2KModel.SM.GroupMan.SelectGroup(group);
+
+                    ////progReporter.Report(ProgressData.SetMessage($"Ensuring that the points of the frames in the group are also selected.", true));
+                    //List<SapFrame> selFrames = S2KModel.SM.FrameMan.GetSelected();
+                    //foreach (SapFrame frame in selFrames) frame.SelectJoints();
+
+                    // Gets the selected joints
+                    var selPoints = S2KModel.SM.PointMan.GetSelected(true);
+
+                    BusyOverlayBindings.I.SetIndeterminate($"Preparing the output.");
+                    S2KModel.SM.ResultMan.DeselectAllCasesAndCombosForOutput();
+                    S2KModel.SM.ResultMan.SetOptionMultiStepStatic(OptionMultiStepStatic.LastStep);
+                    S2KModel.SM.ResultMan.SetOptionMultiValuedCombo(OptionMultiValuedCombo.Correspondence);
+                    S2KModel.SM.ResultMan.SetOptionNLStatic(OptionNLStatic.LastStep);
+
+                    foreach (LoadCase item in selectedCases) S2KModel.SM.ResultMan.SetCaseSelectedForOutput(item);
+
+                    BusyOverlayBindings.I.SetIndeterminate($"Getting the Joint Displacement Results Data from SAP2000.");
+                    var jointDisplacementDatas = S2KModel.SM.ResultMan.GetJointDisplacement("", ItemTypeElmEnum.SelectionElm);
+
+                    BusyOverlayBindings.I.SetDeterminate($"Filling the global coordinate transformed data.", "Joint");
+                    for (int i = 0; i < jointDisplacementDatas.Count; i++)
+                    {
+                        JointDisplacementData currDispData = jointDisplacementDatas[i];
+
+                        BusyOverlayBindings.I.UpdateProgress(i, jointDisplacementDatas.Count, currDispData.Obj);
+
+                        currDispData.FillGlobalCoordinates();
+                    }
+
+                    if (DuplicateAndSplit_IsChecked)
+                    {
+                        #region Displacement Data
+
+                        // Changes the list to account for various points in the same point
+                        BusyOverlayBindings.I.SetDeterminate($"Fixing the Joint Displacement to Account for Various Points.", "Object");
+                        int currentListSize = jointDisplacementDatas.Count;
+                        var toRemove1 = new List<JointDisplacementData>();
+                        for (int i = 0; i < currentListSize; i++)
+                        {
+                            JointDisplacementData currDispData = jointDisplacementDatas[i];
+                            BusyOverlayBindings.I.UpdateProgress(i, currentListSize, currDispData.Obj);
+
+                            if (currDispData.Obj != null && currDispData.Obj.Contains(DuplicateAndSplit_SeparatorText))
+                            {
+                                foreach (string subname in currDispData.Obj.Split(
+                                    new[] { DuplicateAndSplit_SeparatorText },
+                                    StringSplitOptions.RemoveEmptyEntries))
+                                    jointDisplacementDatas.Add(currDispData.DuplicateDataWithNewObj(subname));
+
+                                toRemove1.Add(currDispData);
+                            }
+                        }
+
+                        foreach (JointDisplacementData item in toRemove1) jointDisplacementDatas.Remove(item);
+
+                        #endregion
+
+                        #region Joint Coordinates
+
+                        BusyOverlayBindings.I.SetDeterminate($"Fixing the Joint Coordinates to Account for Various Points.", "Point");
+                        currentListSize = selPoints.Count;
+                        var toRemove2 = new List<SapPoint>();
+                        for (int i = 0; i < currentListSize; i++)
+                        {
+                            SapPoint currPoint = selPoints[i];
+                            BusyOverlayBindings.I.UpdateProgress(i, currentListSize, currPoint.Name);
+
+                            if (currPoint.Name != null && currPoint.Name.Contains(DuplicateAndSplit_SeparatorText))
+                            {
+                                foreach (string subname in currPoint.Name.Split(
+                                    new[] { DuplicateAndSplit_SeparatorText },
+                                    StringSplitOptions.RemoveEmptyEntries))
+                                    selPoints.Add(currPoint.DuplicateCoordinatesWithNewName(subname));
+
+                                toRemove2.Add(currPoint);
+                            }
+                        }
+
+                        foreach (SapPoint item in toRemove2) selPoints.Remove(item);
+
+                        #endregion
+                    }
+
+                    // Now, saves it in a new SQLite database
+                    BusyOverlayBindings.I.SetIndeterminate("Creating the new SQLite file.");
+
+                    string sqlFileName = Path.Combine(S2KModel.SM.ModelDir, Path.GetFileNameWithoutExtension(S2KModel.SM.FullFileName) + $"_Disp_{DateTime.Now:yyyy_MM_dd_HH_mm_ss_fff}.sqlite");
+
+                    SQLiteConnection.CreateFile(sqlFileName);
+
+                    SQLiteConnectionStringBuilder connectionStringBuilder = new SQLiteConnectionStringBuilder();
+                    connectionStringBuilder.DataSource = sqlFileName;
+                    using (SQLiteConnection sqliteConn = new SQLiteConnection(connectionStringBuilder.ConnectionString))
+                    {
+                        sqliteConn.Open();
+
+                        // Creates the tables
+                        using (SQLiteCommand createTable = new SQLiteCommand(JointDisplacementData.SQLite_CreateTableStatement, sqliteConn))
+                        {
+                            createTable.ExecuteNonQuery();
+                        }
+
+                        // Creates the tables
+                        using (SQLiteCommand createTable = new SQLiteCommand(SapPoint.SQLite_CreateCoordinateTableStatement, sqliteConn))
+                        {
+                            createTable.ExecuteNonQuery();
+                        }
+
+                        // Creates a view to expedite the reading of the data
+                        string ViewCommand = @"CREATE VIEW JointNewCoordinates AS
+SELECT 
+       [main].[JointCoordinates].[ShortName], 
+       [main].[JointCoordinates].[X], 
+       [main].[JointCoordinates].[Y], 
+       [main].[JointCoordinates].[Z], 
+       [main].[JointDisplacement].[GlobalU1], 
+       [main].[JointDisplacement].[GlobalU2], 
+       [main].[JointDisplacement].[GlobalU3],
+       [main].[JointCoordinates].[X] + [main].[JointDisplacement].[GlobalU1] AS NEWX,
+       [main].[JointCoordinates].[Y] + [main].[JointDisplacement].[GlobalU2] AS NEWY,
+       [main].[JointCoordinates].[Z] + [main].[JointDisplacement].[GlobalU3] AS NEWZ
+FROM   [main].[JointCoordinates]
+       INNER JOIN [main].[JointDisplacement] ON [main].[JointCoordinates].[ShortName] = [main].[JointDisplacement].[Obj];";
+                        // Creates the View
+                        using (SQLiteCommand createView = new SQLiteCommand(ViewCommand, sqliteConn))
+                        {
+                            createView.ExecuteNonQuery();
+                        }
+
+                        ViewCommand = @"CREATE VIEW ExcelImport AS 
+SELECT 
+ShortName,
+'GLOBAL' as CoordSys,
+'Cartesian' as CoordType,
+NEWX as XorR,
+NEWY as Y,
+NEWZ as Z
+FROM JointNewCoordinates;";
+                        // Creates the View
+                        using (SQLiteCommand createView = new SQLiteCommand(ViewCommand, sqliteConn))
+                        {
+                            createView.ExecuteNonQuery();
+                        }
+
+                        int bufferCounter = 1;
+                        BusyOverlayBindings.I.SetDeterminate("Saving the joint displacement table.", "Object");
+                        SQLiteTransaction transaction = sqliteConn.BeginTransaction();
+                        for (int i = 0; i < jointDisplacementDatas.Count; i++)
+                        {
+                            JointDisplacementData currDispData = jointDisplacementDatas[i];
+
+                            using (SQLiteCommand insertCommand = new SQLiteCommand(currDispData.SQLite_InsertStatement, sqliteConn))
+                            {
+                                insertCommand.ExecuteNonQuery();
+                            }
+
+                            if (bufferCounter % 1000 == 0)
+                            {
+                                // Commits and add a new transaction
+                                transaction.Commit();
+                                transaction.Dispose();
+                                transaction = sqliteConn.BeginTransaction();
+                            }
+
+                            bufferCounter++;
+
+                            BusyOverlayBindings.I.UpdateProgress(i, jointDisplacementDatas.Count, currDispData.Obj);
+                        }
+
+                        // Commits last transaction
+                        transaction.Commit();
+                        transaction.Dispose();
+
+                        bufferCounter = 1;
+                        BusyOverlayBindings.I.SetDeterminate("Saving the joint coordinate table.", "Point");
+                        transaction = sqliteConn.BeginTransaction();
+                        for (int i = 0; i < selPoints.Count; i++)
+                        {
+                            SapPoint currPoint = selPoints[i];
+
+                            using (SQLiteCommand insertCommand =
+                                new SQLiteCommand(currPoint.SQLite_InsertStatement, sqliteConn))
+                            {
+                                insertCommand.ExecuteNonQuery();
+                            }
+
+                            if (bufferCounter % 1000 == 0)
+                            {
+                                // Commits and add a new transaction
+                                transaction.Commit();
+                                transaction.Dispose();
+                                transaction = sqliteConn.BeginTransaction();
+                            }
+
+                            bufferCounter++;
+
+                            BusyOverlayBindings.I.UpdateProgress(i, jointDisplacementDatas.Count, currPoint.Name);
+                        }
+
+                        // Commits last transaction
+                        transaction.Commit();
+                        transaction.Dispose();
+                    }
+                }
+
+                // Runs the job async
+                Task task = new Task(lf_Work);
+                task.Start();
+                await task;
+            }
+            catch (Exception ex)
+            {
+                ExceptionViewer.Show(ex);
+            }
+            finally
+            {
+                OnEndCommand();
+                // Messages to send?
+                if (endMessages.Length != 0) OnMessage("Could not export the displacement data of the points to the SQLite database.", endMessages.ToString());
             }
         }
     }

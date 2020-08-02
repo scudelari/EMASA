@@ -248,7 +248,18 @@ namespace Emasa_Geometry_Optimizer.Bindings
                         // Set a Title to the Busy Overlay
                         CustomOverlayBindings.I.Title = "Initializing the Solver.";
 
-                        CurrentProblem.SetSolverManager();
+                        try
+                        {
+                            CurrentProblem.SetSolverManager();
+                        }
+                        catch (Exception e) // There was a problem with the form
+                        {
+                            IsEnabled_SolveManagement = true;
+                            endMessages.AppendLine(e.Message);
+                            endMessages.AppendLine();
+                            endMessages.AppendLine(e.StackTrace);
+                            return;;
+                        }
                     }
 
                     // Set a Title to the Busy Overlay
@@ -256,6 +267,10 @@ namespace Emasa_Geometry_Optimizer.Bindings
                     CustomOverlayBindings.I.MessageText = $"Solving the problem {CurrentProblem.ProblemFriendlyName} using the {CurrentProblem.SolverTypeListWithCaptions[CurrentProblem.SolverType]}";
 
                     CurrentProblem.Solve();
+
+                    // The problem finished
+                    CustomOverlayBindings.I.Title = "Saving the images.";
+                    CurrentProblem.SaveSolutionImages();
                 }
 
                 // Runs the job async
@@ -272,7 +287,7 @@ namespace Emasa_Geometry_Optimizer.Bindings
                 OnEndCommand();
                 // Messages to send?
                 if (endMessages.Length != 0)
-                    OnMessage("Could not delete the following constraints", endMessages.ToString());
+                    OnMessage("Could not run the solver.", endMessages.ToString());
             }
         }
 

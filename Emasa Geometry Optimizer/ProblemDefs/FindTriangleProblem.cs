@@ -34,10 +34,6 @@ namespace Emasa_Geometry_Optimizer.ProblemDefs
             AddParameterToInputs(new Point_Input_ParamDef("B", new PointValueRange(new Point3d(-100d, -100d, -100d), new Point3d(100d, 100d, 100d))));
             AddParameterToInputs(new Point_Input_ParamDef("C", new PointValueRange(new Point3d(-100d, -100d, -100d), new Point3d(100d, 100d, 100d))));
 
-            //AddParameterToInputs(new Point_Input_ParamDef("A", new PointValueRange(new Point3d(0d, 0d, -100d), new Point3d(100d, 100d, 100d))));
-            //AddParameterToInputs(new Point_Input_ParamDef("B", new PointValueRange(new Point3d(-100d, 0d, -100d), new Point3d(0d, 100d, 100d))));
-            //AddParameterToInputs(new Point_Input_ParamDef("C", new PointValueRange(new Point3d(0d, -100d, -100d), new Point3d(100d, 0d, 100d))));
-
             IntermediateDefs.Add(new LineList_Output_ParamDef("InnerLines"));
             IntermediateDefs.Add(new PointList_Output_ParamDef("InnerPoints"));
             IntermediateDefs.Add(new PointList_Output_ParamDef("InnerCentroid"));
@@ -70,19 +66,14 @@ namespace Emasa_Geometry_Optimizer.ProblemDefs
 
         public override double Function_Override(double[] inVariables)
         {
-            // Writes the points to Grasshopper
-            CurrentSolution.WritePointToGrasshopper(RhinoStaticMethods.GH_Auto_InputVariableFolder(RhinoModel.RM.GrasshopperFullFileName));
-
-            // Runs Grasshopper
-            RhinoModel.RM.SolveGrasshopper();
-
-            // Reads the output variables from Grasshopper
-            CurrentSolution.ReadResultsFromGrasshopper(RhinoStaticMethods.GH_Auto_OutputVariableFolder(RhinoModel.RM.GrasshopperFullFileName));
+            Rhino_SendInputAndGetOutput();
 
             // Gets the input vars in the right cast
             List<Line> triangleLines = CurrentSolution.GetIntermediateValueByName<List<Line>>("InnerLines");
             List<Point3d> triangleVertices = CurrentSolution.GetIntermediateValueByName<List<Point3d>>("InnerPoints");
             List<Point3d> centroid = CurrentSolution.GetIntermediateValueByName<List<Point3d>>("InnerCentroid");
+
+            CurrentSolution.FillScreenShotData();
 
             double L1Length = triangleLines[0].Length;
             double L2Length = triangleLines[1].Length;

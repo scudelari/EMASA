@@ -12,8 +12,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:system="clr-namespace:System;assembly=mscorlib"
     Title="Emasa Geometry Optimizer"
-    Width="1200"
-    Height="900"
+    Width="1500"
+    Height="950"
     Initialized="Window_Initialized"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
@@ -392,252 +392,618 @@
                     Margin="0,5,0,0"
                     BorderBrush="{DynamicResource EmsFaintBlueSolidBrush}"
                     BorderThickness="1" />
-                <DockPanel Grid.Column="2">
+                <Grid Grid.Column="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
                     <GroupBox
-                        DockPanel.Dock="Top"
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="5"
                         Header="Solver Options"
+                        Style="{DynamicResource Blue_GroupBox}">
+
+                        <Grid Grid.Column="0" IsEnabled="{Binding IsEnabled_SolveManagement}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                            <GroupBox Grid.Column="0" Header="Solver Type">
+                                <ComboBox
+                                    DisplayMemberPath="Value"
+                                    ItemsSource="{Binding CurrentProblem.SolverTypeListWithCaptions}"
+                                    SelectedValue="{Binding CurrentProblem.SolverType}"
+                                    SelectedValuePath="Key" />
+                            </GroupBox>
+                            <GroupBox Grid.Column="1" Header="Start Position">
+                                <ComboBox
+                                    DisplayMemberPath="Value"
+                                    ItemsSource="{Binding CurrentProblem.StartPositionTypeListWithCaptions}"
+                                    SelectedValue="{Binding CurrentProblem.SolverOptions_SelectedStartPositionType}"
+                                    SelectedValuePath="Key" />
+                            </GroupBox>
+                            <GroupBox Grid.Column="2" Header="Fea Solver">
+                                <ComboBox
+                                    DisplayMemberPath="Value"
+                                    IsEnabled="{Binding CurrentProblem.SolverOptions_FeaSoftwareIsEnabled}"
+                                    ItemsSource="{Binding CurrentProblem.FeaSoftwareListWithCaptions}"
+                                    SelectedValue="{Binding CurrentProblem.SolverOptions_SelectedFeaSoftware}"
+                                    SelectedValuePath="Key" />
+                            </GroupBox>
+                            <Grid
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Grid.ColumnSpan="3">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="150" />
+                                </Grid.ColumnDefinitions>
+                                <GroupBox Header="Stop Controls" Style="{DynamicResource CenterHeader_GroupBox}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" MinWidth="160" />
+                                            <ColumnDefinition Width="Auto" MinWidth="160" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                        </Grid.RowDefinitions>
+                                        <GroupBox
+                                            Grid.Row="0"
+                                            Grid.Column="0"
+                                            Margin="2,0"
+                                            ToolTip="Stop when an objective value of at least stopval is found.&#x0a;Stop minimizing when an objective value ≤ stopval is found, or stop maximizing a value ≥ stopval is found.">
+                                            <GroupBox.Header>
+                                                <CheckBox Content="F Stop Value" IsChecked="{Binding CurrentProblem.IsOn_StopValueOnObjectiveFunction}" />
+                                            </GroupBox.Header>
+                                            <TextBox IsEnabled="{Binding CurrentProblem.IsOn_StopValueOnObjectiveFunction}" Text="{Binding CurrentProblem.StopValueOnObjectiveFunction, StringFormat={}{0:E3}}" />
+                                        </GroupBox>
+                                        <GroupBox
+                                            Grid.Row="1"
+                                            Grid.Column="0"
+                                            Margin="2,0"
+                                            ToolTip="Set relative tolerance on function value.&#x0a;Stop when an optimization step (or an estimate of the optimum) changes the objective function value by less than tolerance multiplied&#x0a;by the absolute value of the function value.&#x0a;(If there is any chance that your optimum function value is close to zero, you might want to set an absolute tolerance as well.)">
+                                            <GroupBox.Header>
+                                                <CheckBox Content="F Relative Tolerance" IsChecked="{Binding CurrentProblem.IsOn_RelativeToleranceOnFunctionValue}" />
+                                            </GroupBox.Header>
+                                            <TextBox IsEnabled="{Binding CurrentProblem.IsOn_RelativeToleranceOnFunctionValue}" Text="{Binding CurrentProblem.RelativeToleranceOnFunctionValue, StringFormat={}{0:E3}}" />
+                                        </GroupBox>
+                                        <GroupBox
+                                            Grid.Row="2"
+                                            Grid.Column="0"
+                                            Margin="2,0"
+                                            ToolTip="Set absolute tolerance on function value.&#x0a;Stop when an optimization step (or an estimate of the optimum) changes the function value by less than tolerance.">
+                                            <GroupBox.Header>
+                                                <CheckBox Content="F Absolute Tolerance" IsChecked="{Binding CurrentProblem.IsOn_AbsoluteToleranceOnFunctionValue}" />
+                                            </GroupBox.Header>
+                                            <TextBox IsEnabled="{Binding CurrentProblem.IsOn_AbsoluteToleranceOnFunctionValue}" Text="{Binding CurrentProblem.AbsoluteToleranceOnFunctionValue, StringFormat={}{0:E3}}" />
+                                        </GroupBox>
+                                        <GroupBox
+                                            Grid.Row="0"
+                                            Grid.Column="1"
+                                            Margin="2,0"
+                                            ToolTip="Set relative tolerance on optimization parameters.&#x0a;Stop when an optimization step (or an estimate of the optimum) causes a relative change the input X by less than tolerance.">
+                                            <GroupBox.Header>
+                                                <CheckBox Content="X Relative Tolerance" IsChecked="{Binding CurrentProblem.IsOn_RelativeToleranceOnParameterValue}" />
+                                            </GroupBox.Header>
+                                            <TextBox IsEnabled="{Binding CurrentProblem.IsOn_RelativeToleranceOnParameterValue}" Text="{Binding CurrentProblem.RelativeToleranceOnParameterValue, StringFormat={}{0:E3}}" />
+                                        </GroupBox>
+                                        <GroupBox
+                                            Grid.Row="1"
+                                            Grid.Column="1"
+                                            Margin="2,0"
+                                            ToolTip="Sets the maximum number of iterations.">
+                                            <GroupBox.Header>
+                                                <CheckBox Content="Max. Iterations" IsChecked="{Binding CurrentProblem.IsOn_MaximumIterations}" />
+                                            </GroupBox.Header>
+                                            <TextBox IsEnabled="{Binding CurrentProblem.IsOn_MaximumIterations}" Text="{Binding CurrentProblem.MaximumIterations}" />
+                                        </GroupBox>
+                                        <GroupBox
+                                            Grid.Row="2"
+                                            Grid.Column="1"
+                                            Margin="2,0"
+                                            ToolTip="Sets the maximum solve time, in seconds.">
+                                            <GroupBox.Header>
+                                                <CheckBox Content="Max. Time" IsChecked="{Binding CurrentProblem.IsOn_MaximumRunTime}" />
+                                            </GroupBox.Header>
+                                            <TextBox IsEnabled="{Binding CurrentProblem.IsOn_MaximumRunTime}" Text="{Binding CurrentProblem.MaximumRunTime, StringFormat={}{0:F3}}" />
+                                        </GroupBox>
+
+                                        <GroupBox
+                                            Grid.Row="0"
+                                            Grid.RowSpan="1000"
+                                            Grid.Column="2"
+                                            Margin="2,0"
+                                            ToolTip="Set absolute tolerances on optimization parameters.&#x0a;Stop when an optimization step (or an estimate of the optimum) changes every parameter X[i] by less than its assigned tolerance. Criterion is disabled for a parameter X[i] if its tolerance is non-positive.">
+                                            <GroupBox.Header>
+                                                <CheckBox Content="X Absolute Tolerances" IsChecked="{Binding CurrentProblem.IsOn_AbsoluteToleranceOnParameterValue}" />
+                                            </GroupBox.Header>
+                                            <ListView
+                                                Width="250"
+                                                Height="98"
+                                                IsEnabled="{Binding CurrentProblem.IsOn_AbsoluteToleranceOnParameterValue}"
+                                                ItemsSource="{Binding CurrentProblem.AbsoluteToleranceOnParameterValue}"
+                                                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                                ScrollViewer.VerticalScrollBarVisibility="Visible">
+                                                <ListView.ItemContainerStyle>
+                                                    <Style TargetType="ListViewItem">
+                                                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                                    </Style>
+                                                </ListView.ItemContainerStyle>
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width=".7*" />
+                                                                <ColumnDefinition />
+                                                            </Grid.ColumnDefinitions>
+                                                            <TextBlock Grid.Column="0" Text="{Binding ParameterName, Mode=OneWay}" />
+                                                            <TextBox Grid.Column="1" Text="{Binding ParameterTolerance}" />
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                            </ListView>
+                                        </GroupBox>
+
+                                    </Grid>
+                                </GroupBox>
+                                <GroupBox
+                                    Grid.Column="1"
+                                    Header="Other"
+                                    Style="{DynamicResource CenterHeader_GroupBox}">
+                                    <StackPanel Orientation="Vertical">
+                                        <GroupBox
+                                            Margin="2,0"
+                                            ToolTip="Set Population Size. If not set, it will be calculated automatically."
+                                            Visibility="{Binding CurrentProblem.SolverNeedsPopulationSize}">
+                                            <GroupBox.Header>
+                                                <CheckBox Content="Population Size" IsChecked="{Binding CurrentProblem.IsOn_PopulationSize}" />
+                                            </GroupBox.Header>
+                                            <TextBox IsEnabled="{Binding CurrentProblem.IsOn_PopulationSize}" Text="{Binding CurrentProblem.PopulationSize}" />
+                                        </GroupBox>
+
+                                    </StackPanel>
+                                </GroupBox>
+                            </Grid>
+                        </Grid>
+
+                    </GroupBox>
+                    <GroupBox
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="5"
+                        Header="Problem"
                         Style="{DynamicResource Blue_GroupBox}">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition />
-                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition />
                             </Grid.ColumnDefinitions>
-                            <Grid Grid.Column="0" IsEnabled="{Binding IsEnabled_SolveManagement}">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition />
-                                    <ColumnDefinition />
-                                    <ColumnDefinition />
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition />
-                                    <RowDefinition />
-                                </Grid.RowDefinitions>
-                                <GroupBox Grid.Column="0" Header="Solver Type">
-                                    <ComboBox
-                                        DisplayMemberPath="Value"
-                                        ItemsSource="{Binding CurrentProblem.SolverTypeListWithCaptions}"
-                                        SelectedValue="{Binding CurrentProblem.SolverType}"
-                                        SelectedValuePath="Key" />
-                                </GroupBox>
-                                <GroupBox Grid.Column="1" Header="Start Position">
-                                    <ComboBox
-                                        DisplayMemberPath="Value"
-                                        ItemsSource="{Binding CurrentProblem.StartPositionTypeListWithCaptions}"
-                                        SelectedValue="{Binding CurrentProblem.SolverOptions_SelectedStartPositionType}"
-                                        SelectedValuePath="Key" />
-                                </GroupBox>
-                                <GroupBox Grid.Column="2" Header="Fea Solver">
-                                    <ComboBox
-                                        DisplayMemberPath="Value"
-                                        IsEnabled="{Binding CurrentProblem.SolverOptions_FeaSoftwareIsEnabled}"
-                                        ItemsSource="{Binding CurrentProblem.FeaSoftwareListWithCaptions}"
-                                        SelectedValue="{Binding CurrentProblem.SolverOptions_SelectedFeaSoftware}"
-                                        SelectedValuePath="Key" />
-                                </GroupBox>
-                                <GroupBox
-                                    Grid.Row="1"
-                                    Grid.Column="0"
-                                    Grid.ColumnSpan="3"
-                                    Header="Stop Controls"
-                                    Style="{DynamicResource CenterHeader_GroupBox}">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition />
-                                            <ColumnDefinition Width="1.4*" />
-                                            <ColumnDefinition />
-                                        </Grid.ColumnDefinitions>
-                                        <GroupBox
-                                            Grid.Column="0"
-                                            Margin="2,0"
-                                            ToolTip="{Binding CurrentProblem.TargetResidualToolTip}">
-                                            <GroupBox.Header>
-                                                <CheckBox Content="{Binding CurrentProblem.TargetResidualText}" IsChecked="{Binding CurrentProblem.ShouldTargetResidual}" />
-                                            </GroupBox.Header>
-                                            <TextBox IsEnabled="{Binding CurrentProblem.ShouldTargetResidual}" Text="{Binding CurrentProblem.TargetResidual, StringFormat={}{0:E3}}" />
-                                        </GroupBox>
-                                        <GroupBox
-                                            Grid.Column="1"
-                                            Margin="2,0"
-                                            ToolTip="{Binding CurrentProblem.MinimumResidualChangeToolTip}">
-                                            <GroupBox.Header>
-                                                <CheckBox Content="{Binding CurrentProblem.MinimumResidualChangeText}" IsChecked="{Binding CurrentProblem.ShouldLimitChange}" />
-                                            </GroupBox.Header>
-                                            <TextBox IsEnabled="{Binding CurrentProblem.ShouldLimitChange}" Text="{Binding CurrentProblem.MinResidualPercentChange, StringFormat={}{0:P3}}" />
-                                        </GroupBox>
-                                        <GroupBox
-                                            Grid.Column="2"
-                                            Margin="2,0"
-                                            Header="{Binding CurrentProblem.MaximumIterationsText}"
-                                            ToolTip="{Binding CurrentProblem.MaximumIterationsToolTip}">
-                                            <TextBox Text="{Binding CurrentProblem.MaxIterations}" />
-                                        </GroupBox>
-                                    </Grid>
-                                </GroupBox>
-                            </Grid>
-                            <Button
-                                Grid.Column="1"
-                                Margin="5,0"
-                                VerticalAlignment="Stretch"
-                                Command="{Binding NewSolverCommand}"
-                                Content="New" />
-                        </Grid>
-                    </GroupBox>
-                    <Grid DockPanel.Dock="Top">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition />
-                            <ColumnDefinition Width=".25*" />
-                        </Grid.ColumnDefinitions>
-                        <GroupBox
-                            Grid.Column="0"
-                            Header="Solver Status"
-                            Style="{DynamicResource Blue_GroupBox}">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width=".4*" />
-                                    <ColumnDefinition />
-                                </Grid.ColumnDefinitions>
-                                <GroupBox Grid.Column="0" Header="Objective Function Hit Count">
-                                    <Grid>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition />
-                                            <RowDefinition />
-                                            <RowDefinition />
-                                        </Grid.RowDefinitions>
-                                        <TextBlock Grid.Row="0">
-                                            <Run>Function:</Run>
-                                            <Run Text="{Binding CurrentProblem.ObjectiveFunction.FunctionHitCount, Mode=OneWay}" />
-                                        </TextBlock>
-                                        <TextBlock Grid.Row="1">
-                                            <Run>Gradient:</Run>
-                                            <Run Text="{Binding CurrentProblem.ObjectiveFunction.GradientHitCount, Mode=OneWay}" />
-                                        </TextBlock>
-                                        <Border
-                                            Grid.Row="2"
-                                            BorderBrush="{DynamicResource EmsFaintBlueSolidBrush}"
-                                            BorderThickness="0,1,0,0"
-                                            Visibility="{Binding CurrentProblem.IsOther}">
-                                            <TextBlock>
-                                                <Run>Total:</Run>
-                                                <Run Text="{Binding CurrentProblem.ObjectiveFunction.TotalHitCount, Mode=OneWay}" />
-                                            </TextBlock>
-                                        </Border>
-                                        <Border
-                                            Grid.Row="2"
-                                            BorderBrush="{DynamicResource EmsFaintBlueSolidBrush}"
-                                            BorderThickness="0,1,0,0"
-                                            Visibility="{Binding CurrentProblem.IsGenetic}">
-                                            <TextBlock>
-                                                <Run>Epochs:</Run>
-                                                <Run Text="{Binding CurrentProblem.GeneticEpochCount, Mode=OneWay}" />
-                                            </TextBlock>
-                                        </Border>
-                                    </Grid>
-                                </GroupBox>
-                                <GroupBox Grid.Column="1" Header="Run Status">
-                                    <Grid Tag="{Binding CurrentProblem.StatusText, Mode=OneWay}">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition />
-                                            <RowDefinition />
-                                        </Grid.RowDefinitions>
-                                        <TextBlock
-                                            Grid.Row="0"
-                                            HorizontalAlignment="Center"
-                                            FontFamily="Courier New"
-                                            Text="{Binding CurrentProblem.StatusText, Mode=OneWay}" />
-                                        <TextBlock
-                                            Grid.Row="1"
-                                            Text="{Binding CurrentProblem.StatusTextMessage, Mode=OneWay}"
-                                            TextWrapping="Wrap" />
-                                    </Grid>
-                                </GroupBox>
-                            </Grid>
-
-                        </GroupBox>
-                        <GroupBox
-                            Grid.Column="1"
-                            Header="Solver Control"
-                            Style="{DynamicResource Blue_GroupBox}">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition />
-
-                                </Grid.ColumnDefinitions>
-
-                                <Button
-                                    Grid.Column="0"
-                                    Margin="5,0"
-                                    VerticalAlignment="Stretch"
-                                    Command="{Binding SolveButtonCommand}"
-                                    Content="Run !" />
-                            </Grid>
-                        </GroupBox>
-                    </Grid>
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="300" />
-                            <RowDefinition />
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="200" />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
-                        <GroupBox Header="Possible Solutions">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-                                <ScrollViewer
-                                    ap:AutoScrollBehavior.AutoScroll="True"
-                                    HorizontalScrollBarVisibility="Disabled"
-                                    VerticalScrollBarVisibility="Visible">
+                            <GroupBox Header="DesiredScreenShotDefinitions" Style="{DynamicResource CenterHeader_GroupBox}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <GroupBox
+                                        Grid.Row="0"
+                                        Grid.Column="0"
+                                        Margin="0,0,4,0"
+                                        Header="Available ScreenShot">
+                                        <DockPanel>
+                                            <Button
+                                                Width="50"
+                                                Command="{Binding CurrentProblem.AddDesiredScreenShotCommand}"
+                                                Content="Add"
+                                                DockPanel.Dock="Right" />
+                                            <ComboBox
+                                                Height="22"
+                                                Margin="0,0,5,0"
+                                                DisplayMemberPath="Value"
+                                                ItemsSource="{Binding CurrentProblem.PossibleScreenShotList}"
+                                                SelectedItem="{Binding CurrentProblem.AddComboBox_SelectedScreenShotType}"
+                                                SelectedValuePath="Key" />
+                                        </DockPanel>
+                                    </GroupBox>
                                     <ListView
-                                        DockPanel.Dock="Top"
-                                        ItemsSource="{Binding CurrentProblem.FunctionSolutions_ViewItems}"
-                                        SelectedItem="{Binding CurrentProblem.SelectedPossibleSolution}"
+                                        Grid.Row="1"
+                                        Grid.RowSpan="3"
+                                        Grid.Column="0"
+                                        Margin="0,4,4,0"
+                                        ItemsSource="{Binding CurrentProblem.DesiredScreenShots}"
+                                        SelectedItem="{Binding CurrentProblem.Options_SelectedScreenShot}"
                                         SelectionMode="Single">
-                                        <ListView.ItemContainerStyle>
-                                            <Style TargetType="ListViewItem">
-                                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                                            </Style>
-                                        </ListView.ItemContainerStyle>
-                                        <ListBox.ItemTemplate>
+                                        <ListView.ItemTemplate>
                                             <DataTemplate>
-                                                <Grid>
+                                                <TextBlock>
+                                                    <Run FontWeight="Bold" Text="{Binding FriendlyName}" />
+                                                    <Run Text=" - " />
+                                                    <Run Foreground="{DynamicResource EmsExplanationSolidBrush}" Text="{Binding DirectionFriendlyString, Mode=OneWay}" />
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                    <Button
+                                        Grid.Row="4"
+                                        Grid.Column="0"
+                                        Margin="0,4,4,0"
+                                        Command="{Binding CurrentProblem.RemoveDesiredScreenShotCommand}"
+                                        Content="Remove" />
+                                    <GroupBox
+                                        Grid.Row="0"
+                                        Grid.RowSpan="2"
+                                        Grid.Column="1"
+                                        Header="Shared Options"
+                                        IsEnabled="{Binding CurrentProblem.Options_SelectedScreenShot.IsNotRhino}">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="24" />
+                                                <RowDefinition />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition />
+                                                <ColumnDefinition />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Margin="10,0,0,0" Text="Element Scale" />
+                                            <TextBox
+                                                Grid.Column="1"
+                                                Height="18"
+                                                Margin="0,0,10,0"
+                                                Text="{Binding CurrentProblem.FeModel.ElementPlotScale, FallbackValue=''}"
+                                                ToolTip="Sets the scale of the beam elements for visualization.&#x0a;Useful for visualizing contour plots on thin elements." />
+                                            <GroupBox Grid.Row="1" Grid.ColumnSpan="2">
+                                                <GroupBox.Header>
+                                                    <CheckBox
+                                                        Content="Deformed Shape"
+                                                        IsChecked="{Binding DisplayOnDeformedShape, FallbackValue=False}"
+                                                        ToolTip="Plots over the deformed shape of the structure." />
+                                                </GroupBox.Header>
+                                                <Grid IsEnabled="{Binding CurrentProblem.FeModel.DisplayOnDeformedShape, FallbackValue=False}">
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition />
+                                                        <RowDefinition />
+                                                    </Grid.RowDefinitions>
                                                     <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width=".7*" />
                                                         <ColumnDefinition />
+                                                        <ColumnDefinition />
+                                                    </Grid.ColumnDefinitions>
+                                                    <CheckBox
+                                                        Grid.ColumnSpan="2"
+                                                        Margin="5"
+                                                        Content="Original Wireframe"
+                                                        IsChecked="{Binding CurrentProblem.FeModel.OriginalShapeWireframe, FallbackValue=False}"
+                                                        ToolTip="Shows also a faint wireframe of the original structure." />
+                                                    <CheckBox
+                                                        Grid.Row="1"
+                                                        Margin="5,0,0,0"
+                                                        VerticalAlignment="Center"
+                                                        Content="Auto Scale"
+                                                        IsChecked="{Binding CurrentProblem.FeModel.DisplayOnDeformedShape_AutoScale, FallbackValue=False}"
+                                                        ToolTip="The scale of the deformation is calculated automatically." />
+                                                    <TextBox
+                                                        Grid.Row="1"
+                                                        Grid.Column="1"
+                                                        Text="{Binding CurrentProblem.FeModel.DeformedShapePlotScale, FallbackValue=''}"
+                                                        ToolTip="The scale of the deformation." />
+                                                </Grid>
+                                            </GroupBox>
+                                        </Grid>
+                                    </GroupBox>
+                                    <GroupBox
+                                        Grid.Row="2"
+                                        Grid.RowSpan="3"
+                                        Grid.Column="1">
+                                        <GroupBox.Header>
+                                            <TextBlock>
+                                                <Run Text="{Binding}" />
+                                                <Run Text=" Options" />
+                                            </TextBlock>
+                                        </GroupBox.Header>
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition />
+                                                <RowDefinition />
+                                                <RowDefinition />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="Name: " />
+                                            <TextBox Grid.Column="1" Text="{Binding CurrentProblem.Options_SelectedScreenShot.FriendlyName}" />
+                                            <GroupBox
+                                                Grid.Row="1"
+                                                Grid.ColumnSpan="2"
+                                                Header="Orientation"
+                                                IsEnabled="{Binding CurrentProblem.Options_SelectedScreenShot.IsNotRhino}">
+                                                <Grid Margin="5">
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="27" />
+                                                        <RowDefinition />
+                                                    </Grid.RowDefinitions>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="0.2*" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="0.2*" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="0.2*" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <ComboBox
+                                                        Grid.ColumnSpan="10"
+                                                        Height="22"
+                                                        Margin="0,0,0,5"
+                                                        DisplayMemberPath="Value"
+                                                        ItemsSource="{Binding CurrentProblem.PossibleImageDirectionList}"
+                                                        SelectedValue="{Binding CurrentProblem.Options_SelectedScreenShot.Direction}"
+                                                        SelectedValuePath="Key" />
+                                                    <TextBlock
+                                                        Grid.Row="1"
+                                                        Grid.Column="0"
+                                                        HorizontalAlignment="Right"
+                                                        Text="X" />
+                                                    <TextBox
+                                                        Grid.Row="1"
+                                                        Grid.Column="1"
+                                                        Margin="2,0,5,0"
+                                                        IsEnabled="{Binding CurrentProblem.Options_SelectedScreenShot.IsCustomDirection}"
+                                                        Text="{Binding CurrentProblem.Options_SelectedScreenShot.CustomDirX}" />
+                                                    <TextBlock
+                                                        Grid.Row="1"
+                                                        Grid.Column="2"
+                                                        HorizontalAlignment="Right"
+                                                        Text="Y" />
+                                                    <TextBox
+                                                        Grid.Row="1"
+                                                        Grid.Column="3"
+                                                        Margin="2,0,5,0"
+                                                        IsEnabled="{Binding CurrentProblem.Options_SelectedScreenShot.IsCustomDirection}"
+                                                        Text="{Binding CurrentProblem.Options_SelectedScreenShot.CustomDirY}" />
+                                                    <TextBlock
+                                                        Grid.Row="1"
+                                                        Grid.Column="4"
+                                                        HorizontalAlignment="Right"
+                                                        Text="Z" />
+                                                    <TextBox
+                                                        Grid.Row="1"
+                                                        Grid.Column="5"
+                                                        Margin="2,0,5,0"
+                                                        IsEnabled="{Binding CurrentProblem.Options_SelectedScreenShot.IsCustomDirection}"
+                                                        Text="{Binding CurrentProblem.Options_SelectedScreenShot.CustomDirZ}" />
+                                                </Grid>
+                                            </GroupBox>
+                                            <GroupBox
+                                                Grid.Row="2"
+                                                Grid.ColumnSpan="2"
+                                                IsEnabled="{Binding CurrentProblem.Options_SelectedScreenShot.IsNotRhino}">
+                                                <GroupBox.Header>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="Contour Range" />
+                                                        <CheckBox
+                                                            Margin="5,1,0,0"
+                                                            Content="Auto"
+                                                            IsChecked="{Binding CurrentProblem.Options_SelectedScreenShot.LegendAutoScale}" />
+                                                    </StackPanel>
+                                                </GroupBox.Header>
+                                                <Grid Margin="5,5,5,3" IsEnabled="{Binding CurrentProblem.Options_SelectedScreenShot.LegendRangeEnabled}">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
                                                     </Grid.ColumnDefinitions>
                                                     <TextBlock
                                                         Grid.Column="0"
-                                                        FontFamily="Courier New"
-                                                        Text="{Binding FunctionHitCount, Mode=OneWay}" />
-                                                    <TextBlock
+                                                        Foreground="{DynamicResource EmsFaintBlueSolidBrush}"
+                                                        Text="├─" />
+                                                    <TextBox
                                                         Grid.Column="1"
-                                                        FontFamily="Courier New"
-                                                        Text="{Binding Eval, Mode=OneWay, StringFormat={}{0:E3}}" />
+                                                        HorizontalContentAlignment="Center"
+                                                        Text="{Binding CurrentProblem.Options_SelectedScreenShot.LegendScale_Min, FallbackValue=''}" />
+                                                    <TextBlock
+                                                        Grid.Column="2"
+                                                        Foreground="{DynamicResource EmsFaintBlueSolidBrush}"
+                                                        Text="───" />
+                                                    <TextBox
+                                                        Grid.Column="3"
+                                                        HorizontalContentAlignment="Center"
+                                                        Text="{Binding CurrentProblem.Options_SelectedScreenShot.LegendScale_Max, FallbackValue=''}" />
+                                                    <TextBlock
+                                                        Grid.Column="4"
+                                                        Foreground="{DynamicResource EmsFaintBlueSolidBrush}"
+                                                        Text="─┤" />
+
                                                 </Grid>
+                                            </GroupBox>
+                                        </Grid>
+                                    </GroupBox>
+                                </Grid>
+                            </GroupBox>
+                            <Grid Grid.Column="1">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <GroupBox
+                                    Grid.Row="0"
+                                    Header="Solver Status"
+                                    Style="{DynamicResource CenterHeader_GroupBox}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width=".4*" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <GroupBox Grid.Column="0" Header="Hit Count">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition />
+                                                    <RowDefinition />
+                                                    <RowDefinition />
+                                                </Grid.RowDefinitions>
+                                                <TextBlock Grid.Row="0">
+                                                    <Run>Function:</Run>
+                                                    <Run Text="{Binding CurrentProblem.ObjectiveFunction.FunctionHitCount, Mode=OneWay}" />
+                                                </TextBlock>
+                                                <TextBlock Grid.Row="1">
+                                                    <Run>Gradient:</Run>
+                                                    <Run Text="{Binding CurrentProblem.ObjectiveFunction.GradientHitCount, Mode=OneWay}" />
+                                                </TextBlock>
+                                                <Border
+                                                    Grid.Row="2"
+                                                    BorderBrush="{DynamicResource EmsFaintBlueSolidBrush}"
+                                                    BorderThickness="0,1,0,0">
+                                                    <TextBlock>
+                                                        <Run>Total:</Run>
+                                                        <Run Text="{Binding CurrentProblem.ObjectiveFunction.TotalHitCount, Mode=OneWay}" />
+                                                    </TextBlock>
+                                                </Border>
+                                            </Grid>
+                                        </GroupBox>
+                                        <GroupBox Grid.Column="1" Header="Run Status">
+                                            <Grid Tag="{Binding CurrentProblem.StatusText, Mode=OneWay}">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition />
+                                                    <RowDefinition />
+                                                </Grid.RowDefinitions>
+                                                <TextBlock
+                                                    Grid.Row="0"
+                                                    HorizontalAlignment="Center"
+                                                    FontFamily="Courier New"
+                                                    Text="{Binding CurrentProblem.StatusText, Mode=OneWay}" />
+                                                <TextBlock
+                                                    Grid.Row="1"
+                                                    Text="{Binding CurrentProblem.StatusTextMessage, Mode=OneWay}"
+                                                    TextWrapping="Wrap" />
+                                            </Grid>
+                                        </GroupBox>
+                                    </Grid>
+
+                                </GroupBox>
+                                <GroupBox
+                                    Grid.Row="1"
+                                    Header="Solver Control"
+                                    Style="{DynamicResource Blue_GroupBox}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="70" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition />
+                                        </Grid.RowDefinitions>
+
+                                        <Button
+                                            Grid.Row="0"
+                                            Grid.Column="1"
+                                            Margin="5,0,5,5"
+                                            Command="{Binding NewSolverCommand}"
+                                            Content="Reset" />
+                                        <Button
+                                            Grid.Row="1"
+                                            Grid.Column="1"
+                                            Margin="5,0"
+                                            Command="{Binding SolveButtonCommand}"
+                                            Content="Run !" />
+                                    </Grid>
+                                </GroupBox>
+                            </Grid>
+                        </Grid>
+                    </GroupBox>
+                    <GroupBox
+                        Grid.Row="2"
+                        Grid.Column="0"
+                        Header="Frame Section"
+                        Style="{DynamicResource Blue_GroupBox}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <GroupBox Margin="0,0,4,0" Header="Frame Group">
+                                <ListView
+                                    x:Name="FrameSection_GHVarListView"
+                                    ItemsSource="{Binding CurrentProblem.GrasshopperLineListDefs_ViewItems}"
+                                    ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                    SelectionMode="Single">
+                                    <ListView.ItemContainerStyle>
+                                        <Style TargetType="ListViewItem">
+                                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                        </Style>
+                                    </ListView.ItemContainerStyle>
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock>
+                                                <Run Text="{Binding Name, Mode=OneWay}" />
+                                                <Run Text=" - [" />
+                                                <Run Text="{Binding SelectedCount, Mode=OneWay}" />
+                                                <Run Text="]" />
+                                            </TextBlock>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </GroupBox>
+                            <GroupBox
+                                Grid.Row="0"
+                                Grid.Column="1"
+                                Header="Sections">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition />
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Margin="2,0,2,5" TextWrapping="Wrap">
+                                        <Run Text="Current: " />
+                                        <Run Text="{Binding ElementName=FrameSection_GHVarListView, Path=SelectedItem.Display_PossibleSections, Mode=OneWay}" />
+                                    </TextBlock>
+                                    <ListBox
+                                        Grid.Row="1"
+                                        ec:MultiSelectorBehaviours.SynchronizedSelectedItems="{Binding ElementName=FrameSection_GHVarListView, Path=SelectedItem.SelectedSections}"
+                                        ItemsSource="{Binding CurrentProblem.AllPossibleSections_ViewItems}"
+                                        ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                        SelectionMode="Extended">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Name, Mode=OneWay}" />
                                             </DataTemplate>
                                         </ListBox.ItemTemplate>
-                                    </ListView>
-                                </ScrollViewer>
-                            </Grid>
-                        </GroupBox>
-                        <Border
-                            Grid.Row="0"
-                            Grid.Column="1"
-                            CornerRadius="0"
-                            Style="{DynamicResource LightBlue_Border}">
-                            <ScrollViewer HorizontalScrollBarVisibility="Visible">
-                                <TextBlock
-                                    Margin="5"
-                                    VerticalAlignment="Stretch"
-                                    FontFamily="Courier New"
-                                    Text="{Binding CurrentProblem.SelectedPossibleSolution.FriendlyReport}" />
-                            </ScrollViewer>
-                        </Border>
-                    </Grid>
-                </DockPanel>
+                                    </ListBox>
+                                </Grid>
+                            </GroupBox>
+                        </Grid>
+                    </GroupBox>
+                </Grid>
 
             </Grid>
 

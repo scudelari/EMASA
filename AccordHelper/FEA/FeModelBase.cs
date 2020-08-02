@@ -8,21 +8,26 @@ using System.Text;
 using System.Threading.Tasks;
 using Accord;
 using AccordHelper.FEA.Items;
+using AccordHelper.FEA.Loads;
 using AccordHelper.FEA.Results;
+using AccordHelper.Opt;
+using Prism.Mvvm;
 using r3dm::Rhino.DocObjects;
 using r3dm::Rhino.Geometry;
 
 namespace AccordHelper.FEA
 {
-    public abstract class FeModelBase
+    public abstract class FeModelBase : BindableBase
     {
+        protected ProblemBase Problem { get; set; }
+
         public virtual string SubDir { get; } = null;
 
         public string ModelFolder { get; set; }
         public string FileName { get; set; }
         public string FullFileName { get => Path.Combine(ModelFolder, FileName); }
 
-        protected FeModelBase(string inModelFolder, string inFilename)
+        protected FeModelBase(string inModelFolder, string inFilename, ProblemBase inProblem)
         {
             if (SubDir != null) inModelFolder = Path.Combine(inModelFolder, SubDir);
 
@@ -31,6 +36,8 @@ namespace AccordHelper.FEA
 
             if (Directory.Exists(ModelFolder)) Directory.Delete(ModelFolder, true);
             Directory.CreateDirectory(ModelFolder);
+
+            Problem = inProblem;
         }
 
         public void CleanUpDirectory()
@@ -40,9 +47,6 @@ namespace AccordHelper.FEA
                 File.Delete(file);
             }
         }
-
-        public int JointRoundingDecimals = 3;
-        public double SlendernessLimit = 120d;
 
         private Point3d RoundPoint3d(Point3d inPoint)
         {
@@ -64,6 +68,7 @@ namespace AccordHelper.FEA
         public Dictionary<int, FeMeshNode> MeshNodes { get; private set; } = new Dictionary<int, FeMeshNode>();
         public Dictionary<int, FeMeshBeamElement> MeshBeamElements { get; private set; } = new Dictionary<int, FeMeshBeamElement>();
 
+        public List<FeLoadBase> Loads { get; private set; } = new List<FeLoadBase>();
         public HashSet<FeSection> Sections
         {
             get => Frames.Select(a => a.Value.Section).Distinct().ToHashSet();
@@ -97,6 +102,11 @@ namespace AccordHelper.FEA
             return Groups[newGroup.Name];
         }
 
+        public void AddGravityLoad()
+        {
+            Loads.Add(FeLoad_Inertial.StandardGravity);
+        }
+
         public void AddPoint3dToGroups(List<Point3d> inPoints, List<string> inGroupNames)
         {
             if (inPoints.Count == 0 || inGroupNames.Count == 0) throw new ArgumentException("No data.");
@@ -112,13 +122,16 @@ namespace AccordHelper.FEA
             }
         }
 
-        public void AddFrameList(List<Line> inLines, string inSectionName = null, List<string> inGroupNames = null)
+        public void AddFrameList(List<Line> inLines, List<string> inGroupNames = null, List<FeSection> inPossibleSections = null)
         {
             List<FeFrame> frames = new List<FeFrame>();
+            
+            if (inPossibleSections == null || inPossibleSections.Count == 0) inPossibleSections = FeSectionPipe.GetAllSections();
+
 
             foreach (Line line in inLines)
             {
-                frames.Add(AddFrame(line, inSectionName));
+                frames.Add(AddFrame(line, inPossibleSections));
             }
 
             // Also adds the frame to the groups?
@@ -135,30 +148,18 @@ namespace AccordHelper.FEA
                 }
             }
         }
-        public FeFrame AddFrame(Line inRhinoLine, string inSectionName = null, List<string> inGroupNames = null)
+        public FeFrame AddFrame(Line inRhinoLine, List<FeSection> inPossibleSections, List<string> inGroupNames = null)
         {
+            if (inPossibleSections.Count == 0) throw new ArgumentException("Must contain at least one value.", nameof(inPossibleSections));
+
             // Adds the joints if they are to be added
             FeJoint iJoint = AddNewOrGetJointByCoordinate(inRhinoLine.From);
             FeJoint jJoint = AddNewOrGetJointByCoordinate(inRhinoLine.To);
 
-            FeSection section;
+            // Assigns the value that is at the median considering the area
+            inPossibleSections.Sort();
+            FeSection section = inPossibleSections[inPossibleSections.Count/2 + 1];
 
-            // No section given
-            if (string.IsNullOrWhiteSpace(inSectionName))
-            {
-                // Maybe it is always calculated in the Rhino Library. Ensures only once.
-                double lLenght = inRhinoLine.Length;
-
-                // Gets the section with the smallest area that yields an acceptable slenderness ratio
-                section = (from a in FeSectionPipe.GetAllSections()
-                    where lLenght / a.LeastGyrationRadius < SlendernessLimit // Limits the possible sections by the slenderness ratio of this line
-                    orderby a.Area // Orders by the area so that we can get the first
-                    select a).First();
-            }
-            else
-            {
-                section = FeSectionPipe.GetSectionByName(inSectionName);
-            }
 
             // Creates the Frame Element
             FeFrame newFrame = new FeFrame(FrameCount, section, iJoint, jJoint);
@@ -205,24 +206,55 @@ namespace AccordHelper.FEA
             Groups = new Dictionary<string, FeGroup>();
             MeshNodes = new Dictionary<int, FeMeshNode>();
             MeshBeamElements = new Dictionary<int, FeMeshBeamElement>();
+
         }
 
-        public abstract void WriteModelToSoftware();
-        public abstract void RunAnalysis();
-        public abstract void SaveDataAs(string inFilePath);
         public abstract void CloseApplication();
 
-        public virtual void GetResult_FillElementStrainEnergy() { throw new NotImplementedException(); }
+        public abstract void InitialPassForSectionAssignment();
 
-        public virtual void GetResult_FillNodalReactions() { throw new NotImplementedException(); }
-        public virtual void GetResult_FillNodalDisplacements() { throw new NotImplementedException(); }
+        public abstract void RunAnalysisAndGetResults(List<ResultOutput> inDesiredResults);
 
-        public virtual void GetResult_FillElementNodalBendingStrain() { throw new NotImplementedException(); }
-        public virtual void GetResult_FillElementNodalStress() { throw new NotImplementedException(); }
-        public virtual void GetResult_FillElementNodalForces() { throw new NotImplementedException(); }
-        public virtual void GetResult_FillElementNodalStrains() { throw new NotImplementedException(); }
+        #region General Options
+        public int JointRoundingDecimals = 3;
+        public double SlendernessLimit = 120d;
 
-        public virtual void GetResult_FillNodalSectionPointStressStrain() { throw new NotImplementedException(); }
+        private double _elementPlotScale = 50d;
+        public double ElementPlotScale
+        {
+            get => _elementPlotScale;
+            set => SetProperty(ref _elementPlotScale, value);
+        }
+
+        private bool _originalShapeWireframe;
+        public bool OriginalShapeWireframe
+        {
+            get => _originalShapeWireframe;
+            set => SetProperty(ref _originalShapeWireframe, value);
+        }
+
+        private bool _displayOnDeformedShape = true;
+        public bool DisplayOnDeformedShape
+        {
+            get => _displayOnDeformedShape;
+            set => SetProperty(ref _displayOnDeformedShape, value);
+        }
+        private bool _displayOnDeformedShape_AutoScale = true;
+        public bool DisplayOnDeformedShape_AutoScale
+        {
+            get => _displayOnDeformedShape_AutoScale;
+            set => SetProperty(ref _displayOnDeformedShape_AutoScale, value);
+        }
+        private double _deformedShapePlotScale;
+        public double DeformedShapePlotScale
+        {
+            get => _deformedShapePlotScale;
+            set
+            {
+                SetProperty(ref _deformedShapePlotScale, value);
+            }
+        }
+        #endregion
     }
 
     public enum FeaSoftwareEnum
@@ -232,5 +264,21 @@ namespace AccordHelper.FEA
         NoFea
     }
 
+    public enum ResultOutput
+    {
+        Nodal_Reaction,
+        Nodal_Displacement,
 
+        SectionNode_Stress,
+        SectionNode_Strain,
+
+        ElementNodal_BendingStrain,
+        ElementNodal_Force,
+        ElementNodal_Strain,
+        ElementNodal_Stress,
+
+        ElementNodal_CodeCheck,
+
+        Element_StrainEnergy,
+    }
 }
