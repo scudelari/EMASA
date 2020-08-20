@@ -19,13 +19,13 @@ namespace AccordHelper.FEA.Items
 
         public FeRestraint Restraint;
 
+
         public bool Equals(FeGroup other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             return string.Equals(Name, other.Name, StringComparison.InvariantCulture);
         }
-
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
@@ -33,17 +33,14 @@ namespace AccordHelper.FEA.Items
             if (obj.GetType() != this.GetType()) return false;
             return Equals((FeGroup) obj);
         }
-
         public override int GetHashCode()
         {
             return StringComparer.InvariantCulture.GetHashCode(Name);
         }
-
         public static bool operator ==(FeGroup left, FeGroup right)
         {
             return Equals(left, right);
         }
-
         public static bool operator !=(FeGroup left, FeGroup right)
         {
             return !Equals(left, right);

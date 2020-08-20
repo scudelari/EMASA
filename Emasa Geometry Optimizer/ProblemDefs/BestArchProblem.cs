@@ -32,11 +32,15 @@ namespace Emasa_Geometry_Optimizer.ProblemDefs
 
             // Gets the basic Rhino Screenshots
             base.SetDefaultScreenShots();
-        }
+            }
 
         public BestArchProblem() : base(new TestArchObjectiveFunction())
         {
             AddSupportedFeaSoftware(FeaSoftwareEnum.Ansys);
+
+            // Setting the default loads
+            Load_Gravity.IsActive = true;
+            Load_Gravity.Factor = 1.4d;
         }
     }
 
@@ -50,9 +54,10 @@ namespace Emasa_Geometry_Optimizer.ProblemDefs
 
             // Sets the intermediate variables we will receive from Grasshopper
             IntermediateDefs.Add(new DoubleList_Output_ParamDef("BowLength"));
-            IntermediateDefs.Add(new LineList_Output_ParamDef("ArchLines"));
-            IntermediateDefs.Add(new PointList_Output_ParamDef("FixedSupportJoint"));
-            IntermediateDefs.Add(new PointList_Output_ParamDef("SlidingSupportJoint"));
+            IntermediateDefs.Add(new LineList_Output_ParamDef("ArchLines_1", inDefaultRestraint: FeRestraint.YOnlyRestraint));
+            IntermediateDefs.Add(new LineList_Output_ParamDef("ArchLines_2", inDefaultRestraint: FeRestraint.YOnlyRestraint));
+            IntermediateDefs.Add(new PointList_Output_ParamDef("FixedSupportJoint_1", FeRestraint.PinnedRestraint));
+            IntermediateDefs.Add(new PointList_Output_ParamDef("FixedSupportJoint_2", FeRestraint.PinnedRestraint));
 
             // Sets the output variables
             FinalDefs.Add(new Double_Output_ParamDef("MaximumStrainEnergy",
@@ -73,34 +78,22 @@ namespace Emasa_Geometry_Optimizer.ProblemDefs
             ));
         }
 
-        public override double Function_Override(double[] inVariables)
+        protected override double Function_Override()
         {
             Rhino_SendInputAndGetOutput();
 
-            // Gets the input vars in the right cast
-            List<Line> archLines = CurrentSolution.GetIntermediateValueByName<List<Line>>("ArchLines");
+            // Gets the grasshopper vars in the right cast
             List<double> bowLength = CurrentSolution.GetIntermediateValueByName<List<double>>("BowLength");
-            List<Point3d> fixedSupport = CurrentSolution.GetIntermediateValueByName<List<Point3d>>("FixedSupportJoint");
-            List<Point3d> slidingSupport = CurrentSolution.GetIntermediateValueByName<List<Point3d>>("SlidingSupportJoint");
 
-            // Makes a new Ansys document
+            List<Point3d> fixedSupport_1 = FeModel.AddJoints_IntermediateParameter("FixedSupportJoint_1");
+            List<Point3d> fixedSupport_2 = FeModel.AddJoints_IntermediateParameter("FixedSupportJoint_2");
 
-            FeModel.SlendernessLimit = 50d;
-            FeModel.AddGravityLoad();
-            FeModel.AddFrameList(archLines, inGroupNames: new List<string>() {"Arch"}, inPossibleSections: (from a in FeSectionPipe.GetAllSections()
-                where a.Dimensions["OuterDiameter"] == 0.508
-                select a).ToList());
-        FeModel.AddPoint3dToGroups(fixedSupport, new List<string>() { "pin" });
-            FeModel.AddRestraint("pin", new bool[] { true, true, true, false, false, false });
+            List<Line> archLines_1 = FeModel.AddFrames_IntermediateParameter("ArchLines_1"); // The section is defined in the interface
+            List<Line> archLines_2 = FeModel.AddFrames_IntermediateParameter("ArchLines_2"); // The section is defined in the interface
 
-            FeModel.AddPoint3dToGroups(slidingSupport, new List<string>() {"slide"});
-            FeModel.AddRestraint("slide", new bool[] { true, true, true, false, false, false });
+            // Loading of the model is set in the Problem object by the interface
 
-            FeModel.AddPoint3dToGroups(archLines.GetAllPoints(), new List<string>() {"apnts"});
-            FeModel.AddRestraint("apnts", new bool[] { false, true, false, false, false, false });
-
-            //FeModel.FindBestSections();
-
+            // The chosen result output given is only valid for the model runs that are *not* for section analysis
             FeModel.RunAnalysisAndGetResults(new List<ResultOutput>()
                 {
                 ResultOutput.Element_StrainEnergy,

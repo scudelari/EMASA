@@ -452,7 +452,21 @@
             <param name="size">Size of buckets.</param>
             <returns>A sequence of equally sized buckets containing elements of the source collection.</returns>
             <remarks>
-            This operator uses deferred execution and streams its results (buckets and bucket content).
+            <para>
+            This operator uses deferred execution and streams its results
+            (buckets are streamed but their content buffered).</para>
+            <para>
+            When more than one bucket is streamed, all buckets except the last
+            is guaranteed to have <paramref name="size"/> elements. The last
+            bucket may be smaller depending on the remaining elements in the
+            <paramref name="source"/> sequence.</para>
+            <para>
+            Each bucket is pre-allocated to <paramref name="size"/> elements.
+            If <paramref name="size"/> is set to a very large value, e.g.
+            <see cref="F:System.Int32.MaxValue"/> to effectively disable batching by just
+            hoping for a single bucket, then it can lead to memory exhaustion
+            (<see cref="T:System.OutOfMemoryException"/>).
+            </para>
             </remarks>
         </member>
         <member name="M:MoreLinq.MoreEnumerable.Batch``2(System.Collections.Generic.IEnumerable{``0},System.Int32,System.Func{System.Collections.Generic.IEnumerable{``0},``1})">
@@ -465,9 +479,21 @@
             <param name="size">Size of buckets.</param>
             <param name="resultSelector">The projection to apply to each bucket.</param>
             <returns>A sequence of projections on equally sized buckets containing elements of the source collection.</returns>
-            <remarks>
-            This operator uses deferred execution and streams its results (buckets and bucket content).
-            </remarks>
+            <para>
+            This operator uses deferred execution and streams its results
+            (buckets are streamed but their content buffered).</para>
+            <para>
+            <para>
+            When more than one bucket is streamed, all buckets except the last
+            is guaranteed to have <paramref name="size"/> elements. The last
+            bucket may be smaller depending on the remaining elements in the
+            <paramref name="source"/> sequence.</para>
+            Each bucket is pre-allocated to <paramref name="size"/> elements.
+            If <paramref name="size"/> is set to a very large value, e.g.
+            <see cref="F:System.Int32.MaxValue"/> to effectively disable batching by just
+            hoping for a single bucket, then it can lead to memory exhaustion
+            (<see cref="T:System.OutOfMemoryException"/>).
+            </para>
         </member>
         <member name="M:MoreLinq.MoreEnumerable.Cartesian``3(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1},System.Func{``0,``1,``2})">
             <summary>
@@ -2378,49 +2404,6 @@
             <param name="otherSequences">The other sequences in the interleave group</param>
             <returns>A sequence of interleaved elements from all of the source sequences</returns>
         </member>
-        <member name="M:MoreLinq.MoreEnumerable.Interleave``1(System.Collections.Generic.IEnumerable{``0},MoreLinq.MoreEnumerable.ImbalancedInterleaveStrategy,System.Collections.Generic.IEnumerable{``0}[])">
-            <summary>
-            Interleaves the elements of two or more sequences into a single sequence, applying the specified strategy when sequences are of unequal length
-            </summary>
-            <remarks>
-            Interleave combines sequences by visiting each in turn, and returning the first element of each, followed
-            by the second, then the third, and so on. So, for example:<br/>
-            <code><![CDATA[
-            {1,1,1}.Interleave( {2,2,2}, {3,3,3} ) => { 1,2,3,1,2,3,1,2,3 }
-            ]]></code>
-            This operator behaves in a deferred and streaming manner.<br/>
-            When sequences are of unequal length, this method will use the imbalance strategy specified to
-            decide how to continue interleaving the remaining sequences. See <see cref="T:MoreLinq.MoreEnumerable.ImbalancedInterleaveStrategy"/>
-            for more information.<br/>
-            The sequences are interleaved in the order that they appear in the <paramref name="otherSequences"/>
-            collection, with <paramref name="sequence"/> as the first sequence.
-            </remarks>
-            <typeparam name="T">The type of the elements of the source sequences</typeparam>
-            <param name="sequence">The first sequence in the interleave group</param>
-            <param name="imbalanceStrategy">Defines the behavior of the operator when sequences are of unequal length</param>
-            <param name="otherSequences">The other sequences in the interleave group</param>
-            <returns>A sequence of interleaved elements from all of the source sequences</returns>
-        </member>
-        <member name="T:MoreLinq.MoreEnumerable.ImbalancedInterleaveStrategy">
-            <summary>
-            Defines the strategies available when Interleave is passed sequences of unequal length
-            </summary>
-        </member>
-        <member name="F:MoreLinq.MoreEnumerable.ImbalancedInterleaveStrategy.Pad">
-            <summary>
-            Extends a sequence by padding its tail with default(T)
-            </summary>
-        </member>
-        <member name="F:MoreLinq.MoreEnumerable.ImbalancedInterleaveStrategy.Skip">
-            <summary>
-            Removes the sequence from the interleave set, and continues interleaving remaining sequences.
-            </summary>
-        </member>
-        <member name="F:MoreLinq.MoreEnumerable.ImbalancedInterleaveStrategy.Stop">
-            <summary>
-            Stops the interleave operation.
-            </summary>
-        </member>
         <member name="M:MoreLinq.MoreEnumerable.Lag``2(System.Collections.Generic.IEnumerable{``0},System.Int32,System.Func{``0,``0,``1})">
             <summary>
             Produces a projection of a sequence by evaluating pairs of elements separated by a negative offset.
@@ -2710,7 +2693,6 @@
             <param name="selector">Selector to use to pick the results to compare</param>
             <returns>The maximal element, according to the projection.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="selector"/> is null</exception>
-            <exception cref="T:System.InvalidOperationException"><paramref name="source"/> is empty</exception>
         </member>
         <member name="M:MoreLinq.MoreEnumerable.MaxBy``2(System.Collections.Generic.IEnumerable{``0},System.Func{``0,``1},System.Collections.Generic.IComparer{``1})">
             <summary>
@@ -2729,7 +2711,6 @@
             <returns>The maximal element, according to the projection.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/>, <paramref name="selector"/>
             or <paramref name="comparer"/> is null</exception>
-            <exception cref="T:System.InvalidOperationException"><paramref name="source"/> is empty</exception>
         </member>
         <member name="M:MoreLinq.MoreEnumerable.MinBy``2(System.Collections.Generic.IEnumerable{``0},System.Func{``0,``1})">
             <summary>
@@ -2747,7 +2728,6 @@
             <param name="selector">Selector to use to pick the results to compare</param>
             <returns>The minimal element, according to the projection.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="selector"/> is null</exception>
-            <exception cref="T:System.InvalidOperationException"><paramref name="source"/> is empty</exception>
         </member>
         <member name="M:MoreLinq.MoreEnumerable.MinBy``2(System.Collections.Generic.IEnumerable{``0},System.Func{``0,``1},System.Collections.Generic.IComparer{``1})">
             <summary>
@@ -2766,7 +2746,6 @@
             <returns>The minimal element, according to the projection.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/>, <paramref name="selector"/>
             or <paramref name="comparer"/> is null</exception>
-            <exception cref="T:System.InvalidOperationException"><paramref name="source"/> is empty</exception>
         </member>
         <member name="M:MoreLinq.MoreEnumerable.Move``1(System.Collections.Generic.IEnumerable{``0},System.Int32,System.Int32,System.Int32)">
             <summary>
@@ -3913,6 +3892,14 @@
             <typeparam name="T">Type of elements in sequence</typeparam>
             <param name="sequence">The sequence to repeat</param>
             <returns>A sequence produced from the infinite repetition of the original source sequence</returns>
+        </member>
+        <member name="M:MoreLinq.MoreEnumerable.Return``1(``0)">
+            <summary>
+            Returns a single-element sequence containing the item provided.
+            </summary>
+            <typeparam name="T">The type of the item.</typeparam>
+            <param name="item">The item to return in a sequence.</param>
+            <returns>A sequence containing only <paramref name="item"/>.</returns>
         </member>
         <member name="M:MoreLinq.MoreEnumerable.RightJoin``3(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``0},System.Func{``0,``1},System.Func{``0,``2},System.Func{``0,``0,``2})">
             <summary>
@@ -6485,6 +6472,74 @@
             (though never simultaneously) may iterate over the sequence.
             </remarks>
         </member>
+        <member name="M:MoreLinq.Experimental.ExperimentalEnumerable.TrySingle``2(System.Collections.Generic.IEnumerable{``0},``1,``1,``1)">
+            <summary>
+            Returns a tuple with the cardinality of the sequence and the
+            single element in the sequence if it contains exactly one element.
+            similar to <see cref="M:System.Linq.Enumerable.Single``1(System.Collections.Generic.IEnumerable{``0})"/>.
+            </summary>
+            <param name="source">The source sequence.</param>
+            <param name="zero">
+            The value that is returned in the tuple if the sequence has zero
+            elements.</param>
+            <param name="one">
+            The value that is returned in the tuple if the sequence has a
+            single element only.</param>
+            <param name="many">
+            The value that is returned in the tuple if the sequence has two or
+            more elements.</param>
+            <typeparam name="T">
+            The type of the elements of <paramref name="source"/>.</typeparam>
+            <typeparam name="TCardinality">
+            The type that expresses cardinality.</typeparam>
+            <returns>
+            A tuple containing the identified <typeparamref name="TCardinality"/>
+            and either the single value of <typeparamref name="T"/> in the sequence
+            or its default value.</returns>
+            <remarks>
+            This operator uses immediate execution, but never consumes more
+            than two elements from the sequence.
+            </remarks>
+        </member>
+        <member name="M:MoreLinq.Experimental.ExperimentalEnumerable.TrySingle``3(System.Collections.Generic.IEnumerable{``0},``1,``1,``1,System.Func{``1,``0,``2})">
+            <summary>
+            Returns a result projected from the the cardinality of the sequence
+            and the single element in the sequence if it contains exactly one
+            element.
+            </summary>
+            <param name="source">The source sequence.</param>
+            <param name="zero">
+            The value that is passed as the first argument to
+            <paramref name="resultSelector" /> if the sequence has zero
+            elements.</param>
+            <param name="one">
+            The value that is passed as the first argument to
+            <paramref name="resultSelector" /> if the sequence has a
+            single element only.</param>
+            <param name="many">
+            The value that is passed as the first argument to
+            <paramref name="resultSelector" /> if the sequence has two or
+            more elements.</param>
+            <param name="resultSelector">
+            A function that receives the cardinality and, if the
+            sequence has just one element, the value of that element as
+            argument and projects a resulting value of type
+            <typeparamref name="TResult"/>.</param>
+            <typeparam name="T">
+            The type of the elements of <paramref name="source"/>.</typeparam>
+            <typeparam name="TCardinality">
+            The type that expresses cardinality.</typeparam>
+            <typeparam name="TResult">
+            The type of the result value returned by the
+            <paramref name="resultSelector"/> function. </typeparam>
+            <returns>
+            The value returned by <paramref name="resultSelector"/>.
+            </returns>
+            <remarks>
+            This operator uses immediate execution, but never consumes more
+            than two elements from the sequence.
+            </remarks>
+        </member>
         <member name="T:MoreLinq.Experimental.AwaitQueryOptions">
             <summary>
             Represents options for a query whose results evaluate asynchronously.
@@ -7068,7 +7123,21 @@
             <param name="size">Size of buckets.</param>
             <returns>A sequence of equally sized buckets containing elements of the source collection.</returns>
             <remarks>
-            This operator uses deferred execution and streams its results (buckets and bucket content).
+            <para>
+            This operator uses deferred execution and streams its results
+            (buckets are streamed but their content buffered).</para>
+            <para>
+            When more than one bucket is streamed, all buckets except the last
+            is guaranteed to have <paramref name="size"/> elements. The last
+            bucket may be smaller depending on the remaining elements in the
+            <paramref name="source"/> sequence.</para>
+            <para>
+            Each bucket is pre-allocated to <paramref name="size"/> elements.
+            If <paramref name="size"/> is set to a very large value, e.g.
+            <see cref="F:System.Int32.MaxValue"/> to effectively disable batching by just
+            hoping for a single bucket, then it can lead to memory exhaustion
+            (<see cref="T:System.OutOfMemoryException"/>).
+            </para>
             </remarks>
         </member>
         <member name="M:MoreLinq.Extensions.BatchExtension.Batch``2(System.Collections.Generic.IEnumerable{``0},System.Int32,System.Func{System.Collections.Generic.IEnumerable{``0},``1})">
@@ -7081,9 +7150,21 @@
             <param name="size">Size of buckets.</param>
             <param name="resultSelector">The projection to apply to each bucket.</param>
             <returns>A sequence of projections on equally sized buckets containing elements of the source collection.</returns>
-            <remarks>
-            This operator uses deferred execution and streams its results (buckets and bucket content).
-            </remarks>
+            <para>
+            This operator uses deferred execution and streams its results
+            (buckets are streamed but their content buffered).</para>
+            <para>
+            <para>
+            When more than one bucket is streamed, all buckets except the last
+            is guaranteed to have <paramref name="size"/> elements. The last
+            bucket may be smaller depending on the remaining elements in the
+            <paramref name="source"/> sequence.</para>
+            Each bucket is pre-allocated to <paramref name="size"/> elements.
+            If <paramref name="size"/> is set to a very large value, e.g.
+            <see cref="F:System.Int32.MaxValue"/> to effectively disable batching by just
+            hoping for a single bucket, then it can lead to memory exhaustion
+            (<see cref="T:System.OutOfMemoryException"/>).
+            </para>
         </member>
         <member name="T:MoreLinq.Extensions.CartesianExtension">
             <summary><c>Cartesian</c> extension.</summary>
@@ -9224,7 +9305,6 @@
             <param name="selector">Selector to use to pick the results to compare</param>
             <returns>The maximal element, according to the projection.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="selector"/> is null</exception>
-            <exception cref="T:System.InvalidOperationException"><paramref name="source"/> is empty</exception>
         </member>
         <member name="M:MoreLinq.Extensions.MaxByExtension.MaxBy``2(System.Collections.Generic.IEnumerable{``0},System.Func{``0,``1},System.Collections.Generic.IComparer{``1})">
             <summary>
@@ -9243,7 +9323,6 @@
             <returns>The maximal element, according to the projection.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/>, <paramref name="selector"/>
             or <paramref name="comparer"/> is null</exception>
-            <exception cref="T:System.InvalidOperationException"><paramref name="source"/> is empty</exception>
         </member>
         <member name="T:MoreLinq.Extensions.MinByExtension">
             <summary><c>MinBy</c> extension.</summary>
@@ -9264,7 +9343,6 @@
             <param name="selector">Selector to use to pick the results to compare</param>
             <returns>The minimal element, according to the projection.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/> or <paramref name="selector"/> is null</exception>
-            <exception cref="T:System.InvalidOperationException"><paramref name="source"/> is empty</exception>
         </member>
         <member name="M:MoreLinq.Extensions.MinByExtension.MinBy``2(System.Collections.Generic.IEnumerable{``0},System.Func{``0,``1},System.Collections.Generic.IComparer{``1})">
             <summary>
@@ -9283,7 +9361,6 @@
             <returns>The minimal element, according to the projection.</returns>
             <exception cref="T:System.ArgumentNullException"><paramref name="source"/>, <paramref name="selector"/>
             or <paramref name="comparer"/> is null</exception>
-            <exception cref="T:System.InvalidOperationException"><paramref name="source"/> is empty</exception>
         </member>
         <member name="T:MoreLinq.Extensions.MoveExtension">
             <summary><c>Move</c> extension.</summary>

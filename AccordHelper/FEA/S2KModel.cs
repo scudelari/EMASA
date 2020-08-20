@@ -24,7 +24,7 @@ namespace AccordHelper.FEA
 
         }
 
-        public override void InitializeSoftware()
+        public override void InitializeSoftware(bool inIsSectionSelection = false)
         {
             // Starts a new SAP2000 instance if it isn't available in the Singleton
             Sap2000Library.S2KModel.InitSingleton_RunningOrNew(UnitsEnum.N_m_C);
@@ -43,12 +43,7 @@ namespace AccordHelper.FEA
             throw new NotImplementedException();
         }
 
-        public override void InitialPassForSectionAssignment()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void RunAnalysisAndGetResults(List<ResultOutput> inDesiredResults)
+        public override void RunAnalysisAndGetResults(List<ResultOutput> inDesiredResults, int inEigenvalueBucklingMode = 0, double inEigenvalueBucklingScaleFactor = Double.NaN)
         {
             // Sets the run options
             Sap2000Library.S2KModel.SM.AnalysisMan.SetAllNotToRun();

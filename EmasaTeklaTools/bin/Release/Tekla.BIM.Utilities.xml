@@ -1,0 +1,1719 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Tekla.BIM.Utilities</name>
+    </assembly>
+    <members>
+        <member name="T:Tekla.BIM.ActionByRef`1">
+            <summary>
+            Encapsulates a method that has a single parameter and does not return a value.
+            </summary>
+            <typeparam name="T">The type of the parameter of the method that this delegate encapsulates.</typeparam>
+            <param name="arg">The parameter of the method that this delegate encapsulates.</param>
+        </member>
+        <member name="T:Tekla.BIM.ActionByRefExtensions">
+            <summary>
+            The <see cref="T:Tekla.BIM.ActionByRefExtensions"/> class provides a set of static methods for raising delegates while first performing a null check.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.ActionByRefExtensions.Raise``1(Tekla.BIM.ActionByRef{``0},``0@)">
+            <summary>
+            Raises <paramref name="action"/> if not null.
+            </summary>
+            <typeparam name="TArg">The type of the parameter of the method to raise.</typeparam>
+            <param name="action">The method to raise.</param>
+            <param name="arg">The parameter of the method to raise.</param>
+            <returns>True if <paramref name="action"/> is not null and therefore raised; otherwise, false.</returns>
+        </member>
+        <member name="T:Tekla.BIM.Collections.DisposableList">
+            <summary>
+            The <see cref="T:Tekla.BIM.Collections.DisposableList"/> class represents a list of the <see cref="T:System.IDisposable"/> items.
+            The instance will dispose all list items when it is disposed.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Collections.DisposableList.#ctor(System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Tekla.BIM.Collections.DisposableList"/> class.
+            </summary>
+            <param name="count">The count.</param>
+        </member>
+        <member name="M:Tekla.BIM.Collections.DisposableList.Dispose">
+            <summary>
+            Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+            </summary>
+        </member>
+        <member name="T:Tekla.BIM.Collections.LazyEnumerable">
+            <summary>
+            The <see cref="T:Tekla.BIM.Collections.LazyEnumerable" /> class provides a lazy implemenation for enumerables.
+            The enumerated object will be cached and reused for the subsequent enumerations.
+            </summary>
+        </member>
+        <member name="F:Tekla.BIM.Collections.LazyEnumerable.nextEnumerators">
+            <summary>
+            The next enumerators.
+            </summary>
+        </member>
+        <member name="F:Tekla.BIM.Collections.LazyEnumerable.currentEnumerator">
+            <summary>
+            The nextEnumerators.
+            </summary>
+        </member>
+        <member name="F:Tekla.BIM.Collections.LazyEnumerable.next">
+            <summary>
+            The next.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Collections.LazyEnumerable.#ctor(System.Object,System.Collections.IEnumerator,System.Collections.IEnumerator[])">
+            <summary>
+            Initializes a new instance of the <see cref="T:Tekla.BIM.Collections.LazyEnumerable" /> class.
+            </summary>
+            <param name="value">The value.</param>
+            <param name="currentEnumerator">The current enumerator.</param>
+            <param name="nextEnumerators">The next nextEnumerators.</param>
+        </member>
+        <member name="P:Tekla.BIM.Collections.LazyEnumerable.Next">
+            <summary>
+            Gets the next.
+            </summary>
+        </member>
+        <member name="P:Tekla.BIM.Collections.LazyEnumerable.Value">
+            <summary>
+            Gets the value.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Collections.LazyEnumerable.Create(System.Collections.IEnumerable[])">
+            <summary>
+            Creates a new instance <see cref="T:System.Collections.IEnumerable"/> that aggregates the <paramref name="enumerables"/>.
+            </summary>
+            <param name="enumerables">The enumerables.</param>
+            <returns>A new instance of <see cref="T:Tekla.BIM.Collections.LazyEnumerable"/>.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.LazyEnumerable.Create(System.Collections.IEnumerator[])">
+            <summary>
+            Creates a new instance of <see cref="T:Tekla.BIM.Collections.LazyEnumerable"/>.
+            </summary>
+            <param name="enumerators">The nextEnumerators.</param>
+            <returns>A new instance of <see cref="T:Tekla.BIM.Collections.LazyEnumerable"/>.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.LazyEnumerable.GetEnumerator">
+            <summary>
+            Returns an nextEnumerators that iterates through a collection.
+            </summary>
+            <returns>
+            An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.
+            </returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.LazyEnumerable.Create(System.Collections.IEnumerator,System.Collections.IEnumerator[])">
+            <summary>
+            Creates a new instance of <see cref="T:Tekla.BIM.Collections.LazyEnumerable"/>.
+            </summary>
+            <param name="currentEnumerator">The current enumerator.</param>
+            <param name="nextEnumerators">The next enumerators.</param>
+            <returns>A new instance of <see cref="T:Tekla.BIM.Collections.LazyEnumerable" />.</returns>
+        </member>
+        <member name="T:Tekla.BIM.Collections.ArrayListExtensions">
+            <summary>
+            The <see cref="T:Tekla.BIM.Collections.ArrayListExtensions"/> class provides extension methods for querying instances of type <see cref="T:System.Collections.ArrayList"/>.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Collections.ArrayListExtensions.IndicesOf(System.Collections.ArrayList,System.Object)">
+            <summary>
+            Searches for the specified <paramref name="item"/> instance using the default equality determination method
+            and returns the zero-based indices of all occurrences within the entire <paramref name="items"/> array.
+            </summary>
+            <param name="items">The <see cref="T:System.Collections.ArrayList"/> to search.</param>
+            <param name="item">The <see cref="T:System.Object"/> to get all possible indices for.</param>
+            <returns>The sequence of zero-based indices of all occurrences of <paramref name="item"/> within the entire <see cref="T:System.Collections.ArrayList"/>, if any.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.ArrayListExtensions.IndexByReferenceOf(System.Collections.ArrayList,System.Object)">
+            <summary>
+            Searches for the <paramref name="item"/> using <see cref="M:System.Object.ReferenceEquals(System.Object,System.Object)"/> to determine equality
+            and returns the zero-based index of the first occurrence within the entire <paramref name="items"/> array.
+            </summary>
+            <remarks>
+            The equality of objects is determined by the <see cref="M:System.Object.ReferenceEquals(System.Object,System.Object)"/> method.
+            While the default <see cref="M:System.Collections.ArrayList.IndexOf(System.Object)"/> implementation uses the <see cref="M:System.Object.Equals(System.Object)"/> method.
+            </remarks>
+            <param name="items">The <see cref="T:System.Collections.ArrayList"/> to search.</param>
+            <param name="item">The <see cref="T:System.Object"/> to get the index for.</param>
+            <returns>The zero-based index of the first occurrence of <paramref name="item"/> within the entire <see cref="T:System.Collections.ArrayList"/>, if found; otherwise, –1.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.ArrayListExtensions.ToList``1(System.Collections.ArrayList)">
+            <summary>
+            Returns the <see cref="T:System.Collections.ArrayList"/> as a <see cref="T:System.Collections.Generic.List`1"/> instance.
+            </summary>
+            <typeparam name="T">The type to cast all <paramref name="items"/> to.</typeparam>
+            <param name="items">The <see cref="T:System.Collections.ArrayList"/> to return as a <see cref="T:System.Collections.Generic.List`1"/> instance.</param>
+            <returns><paramref name="items"/> as a <see cref="T:System.Collections.Generic.List`1"/> instance.</returns>
+        </member>
+        <member name="T:Tekla.BIM.Collections.Collection">
+            <summary>
+            The <see cref="T:Tekla.BIM.Collections.Collection"/> class provides a set of static methods for querying objects that implement <see cref="T:System.Collections.Generic.ICollection`1"/>.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Collection.AddIfNew``1(System.Collections.Generic.ICollection{``0},``0)">
+            <summary>
+            Adds an item to <paramref name="collection"/> if the <paramref name="item"/> is not yet contained by the <see cref="T:System.Collections.Generic.ICollection`1"/>.
+            </summary>
+            <typeparam name="T">The type of elements in the collections.</typeparam>
+            <param name="collection">The collection to add <paramref name="item"/> to.</param>
+            <param name="item">The value to add, if not yet contained by <paramref name="collection"/>.</param>
+            <returns>True if <paramref name="item"/> is added; otherwise, false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Collection.AddIfNew``1(System.Collections.Generic.ICollection{``0},``0,System.Collections.Generic.IEqualityComparer{``0})">
+            <summary>
+            Adds an item to <paramref name="collection"/> if the <paramref name="item"/> is not yet contained by the <see cref="T:System.Collections.Generic.ICollection`1"/>.
+            </summary>
+            <typeparam name="T">The type of elements in the collections.</typeparam>
+            <param name="collection">The collection to add <paramref name="item"/> to.</param>
+            <param name="item">The value to add, if not yet contained by <paramref name="collection"/>.</param>
+            <param name="equalityComparer">An equality comparer to compare values with.</param>
+            <returns>True if <paramref name="item"/> is added; otherwise, false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Collection.AddRangeIfNew``1(System.Collections.Generic.ICollection{``0},System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Adds the elements of the specified <paramref name="items"/> which are do not yet exist in <paramref name="collection"/>,
+            to the end of the <paramref name="collection"/>.
+            </summary>
+            <typeparam name="T">The type of elements in the collections.</typeparam>
+            <param name="collection">The collection to add the <paramref name="items"/> to.</param>
+            <param name="items">The collection whose non-contained elements should be added to the end of the <paramref name="collection"/>.</param>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Collection.AddRangeIfNew``1(System.Collections.Generic.ICollection{``0},System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEqualityComparer{``0})">
+            <summary>
+            Adds the elements of the specified <paramref name="items"/> which do not yet exist in <paramref name="collection"/>,
+            to the end of the <paramref name="collection"/>.
+            </summary>
+            <typeparam name="T">The type of elements in the collections.</typeparam>
+            <param name="collection">The collection to add the <paramref name="items"/> to.</param>
+            <param name="items">The collection whose non-contained elements should be added to the end of the <paramref name="collection"/>.</param>
+            <param name="equalityComparer">An equality comparer to compare values with.</param>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Collection.AddRange``1(System.Collections.Generic.ICollection{``0},System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Adds the elements of the specified <paramref name="items"/> to the end of the <paramref name="collection"/>.
+            </summary>
+            <typeparam name="T">The type of elements in the collections.</typeparam>
+            <param name="collection">The collection to add the <paramref name="items"/> to.</param>
+            <param name="items">The collection whose elements should be added to the end of the <paramref name="collection"/>.</param>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Collection.AddRange``2(System.Collections.Generic.ICollection{``0},System.Collections.Generic.IEnumerable{``1},System.Func{``1,``0})">
+            <summary>
+            Adds the elements of the specified <paramref name="items"/> to the end of the <paramref name="collection"/>.
+            </summary>
+            <typeparam name="TTarget">The type of the items in the target <paramref name="collection"/>.</typeparam>
+            <typeparam name="TSource">The type of the items in the collection to add to the targeted <paramref name="collection"/>.</typeparam>
+            <param name="collection">The collection to add the <paramref name="items"/> to.</param>
+            <param name="items">The collection whose elements should be added to the end of the <paramref name="collection"/>.</param>
+            <param name="convertor">The method converting the <paramref name="items"/> to instances of <typeparamref name="TTarget"/>.</param>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Collection.RemoveRange``1(System.Collections.Generic.ICollection{``0},System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Removes the elements of the specified <paramref name="items"/> from the <paramref name="collection"/>.
+            </summary>
+            <typeparam name="T">The type of elements in the collections.</typeparam>
+            <param name="collection">The collection to remove the <paramref name="items"/> from.</param>
+            <param name="items">The collection whose elements should be removed from the <paramref name="collection"/>.</param>
+        </member>
+        <member name="T:Tekla.BIM.Collections.CustomEqualityComparer`2">
+            <summary>
+            The <see cref="T:Tekla.BIM.Collections.CustomEqualityComparer`1"/> class provides an implementation for the <see cref="T:System.Collections.Generic.IEqualityComparer`1"/> interface,
+            which compares objects for equality using a custom key and optionally a custom <see cref="T:System.Collections.Generic.IEqualityComparer`1"/> for the keys.
+            </summary>
+            <seealso cref="T:System.Collections.Generic.IEqualityComparer`1"/>
+            <seealso cref="T:System.Collections.Generic.EqualityComparer`1"/>
+            <typeparam name="T">The type of objects to compare by a key.</typeparam>
+            <typeparam name="TKey">The type of the objects key.</typeparam>
+        </member>
+        <member name="F:Tekla.BIM.Collections.CustomEqualityComparer`2.keySelector">
+            <summary>
+            The method selection <typeparamref name="TKey"/> values for any <typeparamref name="T"/> value.
+            </summary>
+        </member>
+        <member name="F:Tekla.BIM.Collections.CustomEqualityComparer`2.keyComparer">
+            <summary>
+            The comparer for <typeparamref name="TKey"/>.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Collections.CustomEqualityComparer`2.#ctor">
+            <summary>
+            Prevents a default instance of the <see cref="T:Tekla.BIM.Collections.CustomEqualityComparer`2"/> class from being created.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Collections.CustomEqualityComparer`2.Get(System.Func{`0,`1})">
+            <summary>
+            Gets a new <see cref="T:Tekla.BIM.Collections.CustomEqualityComparer`1"/> using the values returned by <paramref name="keySelector"/>
+            to compare equality between two instances of type <typeparamref name="T"/>.
+            </summary>
+            <param name="keySelector">The function to use for getting keys from objects of type <typeparamref name="T"/>.</param>
+            <returns>A new instance of the <see cref="T:Tekla.BIM.Collections.CustomEqualityComparer`2"/> class.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.CustomEqualityComparer`2.Get(System.Func{`0,`1},System.Collections.Generic.IEqualityComparer{`1})">
+            <summary>
+            Gets a new <see cref="T:Tekla.BIM.Collections.CustomEqualityComparer`1"/> using the values returned by <paramref name="keySelector"/>
+            to compare equality between two instances of type <typeparamref name="T"/>.
+            </summary>
+            <param name="keySelector">The function to use for getting keys from objects of type <typeparamref name="T"/>.</param>
+            <param name="keyComparer">The <see cref="T:System.Collections.Generic.IEqualityComparer`1"/> for comparing values of type <typeparamref name="TKey"/>.</param>
+            <returns>A new instance of the <see cref="T:Tekla.BIM.Collections.CustomEqualityComparer`2"/> class.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.CustomEqualityComparer`2.Equals(`0,`0)">
+            <summary>
+            Determines whether the specified objects are equal.
+            </summary>
+            <param name="first">The first object of type <typeparamref name="T"/> to compare.</param>
+            <param name="other">The second object of type <typeparamref name="T"/> to compare.</param>
+            <returns>True if the specified objects are equal; otherwise, false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.CustomEqualityComparer`2.GetHashCode(`0)">
+            <summary>
+            Returns a hash code for the specified object.
+            </summary>
+            <param name="obj">The object for which a hash code is to be returned.</param>
+            <returns>A hash code for the specified object.</returns>
+        </member>
+        <member name="T:Tekla.BIM.Collections.Dictionary">
+            <summary>
+            The <see cref="T:Tekla.BIM.Collections.Dictionary"/> class provides a set of static methods for querying objects that implement <see cref="T:System.Collections.Generic.IDictionary`2"/>.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Dictionary.AddOrUpdate``2(System.Collections.Generic.IDictionary{``0,``1},System.Collections.Generic.KeyValuePair{``0,``1})">
+            <summary>
+            Adds or updates the given <paramref name="pair"/> to the <paramref name="dictionary"/>.
+            </summary>
+            <typeparam name="TKey">The type of keys in <paramref name="dictionary"/>.</typeparam>
+            <typeparam name="TValue">The type of values in <paramref name="dictionary"/>.</typeparam>
+            <param name="dictionary">The <see cref="T:System.Collections.Generic.IDictionary`2"/> to add or update the element for.</param>
+            <param name="pair">The <see cref="T:System.Collections.Generic.KeyValuePair`2"/> to add or update.</param>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Dictionary.AddOrUpdate``2(System.Collections.Generic.IDictionary{``0,``1},``0,``1)">
+            <summary>
+            Adds or updates <paramref name="value"/> to the element identified by the provided <paramref name="key"/>.
+            </summary>
+            <typeparam name="TKey">The type of keys in <paramref name="dictionary"/>.</typeparam>
+            <typeparam name="TValue">The type of values in <paramref name="dictionary"/>.</typeparam>
+            <param name="dictionary">The <see cref="T:System.Collections.Generic.IDictionary`2"/> to add or update the element for.</param>
+            <param name="key">The key of the element to add or update.</param>
+            <param name="value">The value to set to the element of <paramref name="key"/>.</param>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Dictionary.Remove``2(System.Collections.Generic.IDictionary{``0,``1},``0,``1@)">
+            <summary>
+            Removes the element with the specified <paramref name="key"/> from the <see cref="T:System.Collections.Generic.IDictionary`2"/>.
+            </summary>
+            <typeparam name="TKey">The type of keys in the dictionary.</typeparam>
+            <typeparam name="TValue">The type of values in the dictionary.</typeparam>
+            <param name="dictionary">The <see cref="T:System.Collections.Generic.IDictionary`2"/> to remove the pair from.</param>
+            <param name="key">The key of the element to remove.</param>
+            <param name="value">The <typeparamref name="TValue"/> that was associated to <paramref name="key"/>.</param>
+            <returns>
+            True if the element is successfully removed; otherwise, false.
+            This method also returns false if key was not found in the original <see cref="T:System.Collections.Generic.IDictionary`2"/>.
+            </returns>
+        </member>
+        <member name="T:Tekla.BIM.Collections.Enumerator">
+            <summary>
+            The <see cref="T:Tekla.BIM.Collections.Enumerator"/> class provides a set of static methods for querying objects that implement <see cref="T:System.Collections.IEnumerator"/>.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Enumerator.ToList``1(System.Collections.IEnumerator)">
+            <summary>
+            Gets the list of the objects to which the <paramref name="enumerator"/> is pointing.
+            </summary>
+            <typeparam name="TSource">The type of the elements of source.</typeparam>
+            <param name="enumerator">The target enumerator.</param>
+            <returns>The list of the objects to which the <paramref name="enumerator"/> is pointing.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Enumerator.Select``2(System.Collections.IEnumerator,System.Func{``0,``1})">
+            <summary>
+            Projects each element of a sequence into a new form.
+            </summary>
+            <typeparam name="TSource">The type of the elements of source.</typeparam>
+            <typeparam name="TResult">The type of the value returned by selector.</typeparam>
+            <param name="enumerator">The target enumerator.</param>
+            <param name="selector">A transform function to apply to each source element.</param>
+            <returns>A list whose elements are the result of invoking the transform function on each element of source.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Enumerator.ForEach``1(System.Collections.IEnumerator,System.Action{``0})">
+            <summary>
+            Loops through each element of a sequence and invokes the <paramref name="method"/> on each element of source.
+            </summary>
+            <typeparam name="TSource">The type of the elements of source.</typeparam>
+            <param name="enumerator">The target enumerator.</param>
+            <param name="method">The method to be invoked on each element of source.</param>
+        </member>
+        <member name="T:Tekla.BIM.Collections.Enumerable">
+            <summary>
+            The <see cref="T:Tekla.BIM.Collections.Enumerable"/> class provides a set of static methods for querying objects that implement <see cref="T:System.Collections.Generic.IEnumerable`1"/>.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Enumerable.Any``1(System.Collections.Generic.IEnumerable{``0},``0@)">
+            <summary>
+            Determines whether a sequence contains any elements.
+            </summary>
+            <typeparam name="T">The type of the elements of source.</typeparam>
+            <param name="source">The <see cref="T:System.Collections.Generic.IEnumerable`1"/> to check for emptiness.</param>
+            <param name="firstItem">The first item of the sequence.</param>
+            <returns>True if the source sequence contains any elements; otherwise, false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Enumerable.Any``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Boolean},``0@)">
+            <summary>
+            Determines whether any element of a sequence satisfies a condition.
+            </summary>
+            <typeparam name="T">The type of the elements of source.</typeparam>
+            <param name="source">The <see cref="T:System.Collections.Generic.IEnumerable`1"/> whose elements to apply the predicate to.</param>
+            <param name="predicate">A function to test each element for a condition.</param>
+            <param name="firstMatchingItem">The first item matching the condition.</param>
+            <returns>True if any elements in the source sequence pass the test in the specified predicate; otherwise, false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Enumerable.Concat``1(System.Collections.Generic.IEnumerable{``0},``0[])">
+            <summary>
+            Concatenates multiple sequences.
+            </summary>
+            <typeparam name="T">The type of the elements of the input sequences.</typeparam>
+            <param name="first">The first sequence to concatenate.</param>
+            <param name="items">The items to concatenate to the first sequence.</param>
+            <returns>An <see cref="T:System.Collections.Generic.IEnumerable`1"/> that contains the concatenated elements of the two input sequences.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Enumerable.Concat``1(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``0}[])">
+            <summary>
+            Concatenates multiple sequences.
+            </summary>
+            <typeparam name="T">The type of the elements of the input sequences.</typeparam>
+            <param name="first">The first sequence to concatenate.</param>
+            <param name="sequences">The sequences to concatenate to the first sequence.</param>
+            <returns>An <see cref="T:System.Collections.Generic.IEnumerable`1"/> that contains the concatenated elements of the two input sequences.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Enumerable.ContainsAll``1(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Determines whether a sequence contains a specified other sequence by using the default equality comparer.
+            </summary>
+            <typeparam name="T">The type of the elements of source.</typeparam>
+            <param name="source">A sequence in which to locate the value.</param>
+            <param name="values">The value to locate in the sequence.</param>
+            <returns>True if the source sequence contains the elements that have the specified values; otherwise, false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Enumerable.ContainsAll``1(System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEqualityComparer{``0})">
+            <summary>
+            Determines whether a sequence contains a specified element by using a specified <see cref="T:System.Collections.Generic.IEqualityComparer`1"/>.
+            </summary>
+            <typeparam name="T">The type of the elements of source.</typeparam>
+            <param name="source">A sequence in which to locate the value.</param>
+            <param name="values">The value to locate in the sequence.</param>
+            <param name="comparer">An equality comparer to compare values.</param>
+            <returns>True if the source sequence contains the elements that have the specified values; otherwise, false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Enumerable.Distinct``2(System.Collections.Generic.IEnumerable{``0},System.Func{``0,``1})">
+            <summary>
+            Returns distinct elements from a sequence by comparing the values returned by <paramref name="keySelector"/>.
+            </summary>
+            <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
+            <typeparam name="TKey">The type of the values to compare.</typeparam>
+            <param name="source">The sequence to remove duplicate elements from.</param>
+            <param name="keySelector">A method selecting the values to compare.</param>
+            <returns>An <see cref="T:System.Collections.Generic.IEnumerable`1"/> that contains distinct elements from the <paramref name="source"/> sequence.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Enumerable.Distinct``2(System.Collections.Generic.IEnumerable{``0},System.Func{``0,``1},System.Collections.Generic.IEqualityComparer{``1})">
+            <summary>
+            Returns distinct elements from a sequence by comparing the values returned by <paramref name="keySelector"/>.
+            </summary>
+            <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
+            <typeparam name="TKey">The type of the values to compare.</typeparam>
+            <param name="source">The sequence to remove duplicate elements from.</param>
+            <param name="keySelector">A method selecting the values to compare.</param>
+            <param name="keyComparer">An <see cref="T:System.Collections.Generic.IEqualityComparer`1"/> to compare values with.</param>
+            <returns>An <see cref="T:System.Collections.Generic.IEnumerable`1"/> that contains distinct elements from the <paramref name="source"/> sequence.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Enumerable.Except``1(System.Collections.Generic.IEnumerable{``0},``0)">
+            <summary>
+            Returns a sequence that contains all elements of <paramref name="source"/>, except for <paramref name="element"/>.
+            </summary>
+            <typeparam name="TSource">The type of the elements of the input sequences.</typeparam>
+            <param name="source">An <see cref="T:System.Collections.Generic.IEnumerable`1"/> whose elements that do not equal <paramref name="element"/> will be returned.</param>
+            <param name="element">A <typeparamref name="TSource"/> to be removed from the returned sequence.</param>
+            <returns>A sequence that contains all elements of <paramref name="source"/>, except for <paramref name="element"/>.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Enumerable.FirstOrNull``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Returns the first element of a sequence, or a null value if the sequence contains no elements.
+            </summary>
+            <typeparam name="T">The type of the elements of <paramref name="source"/>.</typeparam>
+            <param name="source">The <see cref="T:System.Collections.Generic.IEnumerable`1"/> to return the first element of.</param>
+            <returns>The first element in <paramref name="source"/> if any; otherwise, null.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Enumerable.FirstOrNull``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Boolean})">
+            <summary>
+            Returns the first element of a sequence, or a null value if the sequence contains no elements.
+            </summary>
+            <typeparam name="T">The type of the elements of <paramref name="source"/>.</typeparam>
+            <param name="source">The <see cref="T:System.Collections.Generic.IEnumerable`1"/> to return the first element of.</param>
+            <param name="predicate">A function to test each element for a condition.</param>
+            <returns>The first element in <paramref name="source"/> if any; otherwise, null.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Enumerable.OfType(System.Collections.IEnumerable,System.Type)">
+            <summary>
+            Filters the elements of an <see cref="T:System.Collections.IEnumerable"/> based on a specified <paramref name="type"/>.
+            </summary>
+            <remarks>
+            This method will return the same results as the generic <see cref="M:System.Linq.Enumerable.OfType``1(System.Collections.IEnumerable)"/> method.
+            </remarks>
+            <param name="source">The <see cref="T:System.Collections.IEnumerable"/> whose elements to filter.</param>
+            <param name="type">The <see cref="T:System.Type"/> to filter the elements of the sequence on.</param>
+            <returns>An <see cref="T:System.Collections.IEnumerable"/> that contains elements from the input sequence of the given <paramref name="type"/>.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Enumerable.Max``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Double},``0@)">
+            <summary>
+            Invokes a transform function on each element of a sequence and returns the maximum <see cref="T:System.Double"/> value.
+            </summary>
+            <exception cref="T:System.InvalidOperationException"><paramref name="source"/> contains no elements.</exception>
+            <typeparam name="TSource">The type of the elements of source.</typeparam>
+            <param name="source">A sequence of values to determine the maximum value of.</param>
+            <param name="selector">A transform function to apply to each element.</param>
+            <param name="maxItem">The <typeparamref name="TSource"/> item in <paramref name="source"/> producing the returned maximum value.</param>
+            <returns>The maximum value in the sequence.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Enumerable.Min``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Double},``0@)">
+            <summary>
+            Invokes a transform function on each element of a sequence and returns the minimum <see cref="T:System.Double"/> value.
+            </summary>
+            <exception cref="T:System.InvalidOperationException"><paramref name="source"/> contains no elements.</exception>
+            <typeparam name="TSource">The type of the elements of source.</typeparam>
+            <param name="source">A sequence of values to determine the minimum value of.</param>
+            <param name="selector">A transform function to apply to each element.</param>
+            <param name="minItem">The <typeparamref name="TSource"/> item in <paramref name="source"/> producing the returned minimum value.</param>
+            <returns>The minimum value in the sequence.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Enumerable.MoveNext``1(System.Collections.Generic.IEnumerator{``0},``0@)">
+            <summary>
+            Advances the enumerator to the next element of the collection.
+            </summary>
+            <typeparam name="T">The type of objects in <paramref name="enumerator"/>.</typeparam>
+            <param name="enumerator">The <see cref="T:System.Collections.Generic.IEnumerator`1"/> to advance to the next element.</param>
+            <param name="nextValue">The next element, if any.</param>
+            <returns>True if the enumerator was successfully advanced to the next element; false if the enumerable has passed the end of the collection.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Enumerable.SelectMany``1(System.Collections.Generic.IEnumerable{System.Collections.Generic.IEnumerable{``0}})">
+            <summary>
+            Flattens the given <paramref name="sequences"/> into one sequence.
+            </summary>
+            <typeparam name="T">The type of the elements in <paramref name="sequences"/>.</typeparam>
+            <param name="sequences">A sequence of <see cref="T:System.Collections.Generic.IEnumerable`1"/> to flatten.</param>
+            <returns>A single sequence containing all elements of each given sequence.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Enumerable.ToList``1(System.Collections.IEnumerable)">
+            <summary>
+            Gets the list of the objects from the <paramref name="enumerable"/>.
+            </summary>
+            <typeparam name="TSource">The type of the elements of source.</typeparam>
+            <param name="enumerable">The target enumerable.</param>
+            <returns>The list of the objects to which the <paramref name="enumerable"/> is pointing.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Enumerable.IsNullOrEmpty(System.Collections.IEnumerable)">
+            <summary>
+            Determines whether a sequence is null or empty.
+            </summary>
+            <param name="sequence">The target sequence.</param>
+            <returns>True if the sequence is null or empty; otherwise, false.</returns>
+        </member>
+        <member name="T:Tekla.BIM.Collections.CustomEqualityComparer`1">
+            <summary>
+            The <see cref="T:Tekla.BIM.Collections.CustomEqualityComparer`1"/> class provides an implementation for the <see cref="T:System.Collections.Generic.IEqualityComparer`1"/> interface,
+            which compares objects for equality using a custom function.
+            </summary>
+            <seealso cref="T:System.Collections.Generic.IEqualityComparer`1"/>
+            <seealso cref="T:System.Collections.Generic.EqualityComparer`1"/>
+            <typeparam name="T">The type of objects to compare.</typeparam>
+        </member>
+        <member name="F:Tekla.BIM.Collections.CustomEqualityComparer`1.equalityComparer">
+            <summary>
+            The function to use for comparing equality between two objects of type <typeparamref name="T"/>.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Collections.CustomEqualityComparer`1.#ctor(System.Func{`0,`0,System.Boolean})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Tekla.BIM.Collections.CustomEqualityComparer`1"/> class.
+            </summary>
+            <param name="equalityComparer">The equality comparer.</param>
+        </member>
+        <member name="M:Tekla.BIM.Collections.CustomEqualityComparer`1.Get(System.Func{`0,`0,System.Boolean})">
+            <summary>
+            Gets a new <see cref="T:Tekla.BIM.Collections.CustomEqualityComparer`1"/> using the given <paramref name="equalityComparer"/> function
+            to compare equality with between two instances of type <typeparamref name="T"/>.
+            </summary>
+            <param name="equalityComparer">The function to use for comparing equality between two objects of type <typeparamref name="T"/>.</param>
+            <returns>A new instance of the <see cref="T:Tekla.BIM.Collections.CustomEqualityComparer`1"/> class.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.CustomEqualityComparer`1.Equals(`0,`0)">
+            <summary>
+            Determines whether the specified objects are equal.
+            </summary>
+            <param name="x">The first object of type <typeparamref name="T"/> to compare.</param>
+            <param name="y">The second object of type <typeparamref name="T"/> to compare.</param>
+            <returns>True if the specified objects are equal; otherwise, false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.CustomEqualityComparer`1.GetHashCode(`0)">
+            <summary>
+            Returns a hash code for the specified object.
+            </summary>
+            <param name="obj">The object for which a hash code is to be returned.</param>
+            <returns>A hash code for the specified object.</returns>
+        </member>
+        <member name="T:Tekla.BIM.Collections.Hashing">
+            <summary>
+            The <see cref="T:Tekla.BIM.Collections.Hashing"/> class provides a set of static helper methods for generating hash codes.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Hashing.CombineHashCodes(System.Int32,System.Int32)">
+            <summary>
+            Combines the given integers to a single hash code.
+            </summary>
+            <param name="first">The first value of the hash code.</param>
+            <param name="next">The second value of the hash code.</param>
+            <returns>The combined hash code.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Hashing.CombineHashCodes(System.Int32[])">
+            <summary>
+            Combines the given sequence of integers to a single hash code.
+            </summary>
+            <param name="hashCodes">The sequence of integers to combine to a single hash code.</param>
+            <returns>The combined hash code.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Hashing.GetHashCode(System.Object[])">
+            <summary>
+            Returns a hash code for the given sequence of <paramref name="values"/>.
+            </summary>
+            <param name="values">The sequence of values to get a hash code for.</param>
+            <returns>A hash code for the given sequence of <paramref name="values"/>.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Hashing.GetHashCode(System.ValueType[])">
+            <summary>
+            Returns a hash code for the given sequence of <paramref name="values"/>.
+            </summary>
+            <param name="values">The sequence of values to get a hash code for.</param>
+            <returns>A hash code for the given sequence of <paramref name="values"/>.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.Hashing.GenerateHashCode``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Generates a hash code for the given sequence of <paramref name="values"/>.
+            The algorithm is based on the algorithm used by the C# compiler for anonymous types.
+            </summary>
+            <typeparam name="T">The type of the values to generate a hash code for.</typeparam>
+            <param name="values">The sequence of values to get a hash code for.</param>
+            <returns>A hash code for the given sequence of <paramref name="values"/>.</returns>
+        </member>
+        <member name="T:Tekla.BIM.Collections.LinkedList">
+            <summary>
+            The <see cref="T:Tekla.BIM.Collections.LinkedList"/> class provides a set of static methods for querying objects of type <see cref="T:System.Collections.Generic.LinkedList`1"/>.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Collections.LinkedList.TryRemove``1(System.Collections.Generic.LinkedList{``0},``0)">
+            <summary>
+            Tries to remove the first occurrence of the specified value from the <see cref="T:System.Collections.Generic.LinkedList`1"/>.
+            </summary>
+            <typeparam name="T">Specifies the element type of the linked list.</typeparam>
+            <param name="linkedList">The <see cref="T:System.Collections.Generic.LinkedList`1"/> to remove <paramref name="item"/> from.</param>
+            <param name="item">The value to remove from the <see cref="T:System.Collections.Generic.LinkedList`1"/>.</param>
+            <returns>True if <paramref name="item"/> is successfully removed; otherwise, false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.LinkedList.TryRemove``1(System.Collections.Generic.LinkedList{``0},System.Collections.Generic.LinkedListNode{``0})">
+            <summary>
+            Tries to remove the specified node from the <see cref="T:System.Collections.Generic.LinkedList`1"/>.
+            </summary>
+            <typeparam name="T">Specifies the element type of the linked list.</typeparam>
+            <param name="linkedList">The <see cref="T:System.Collections.Generic.LinkedList`1"/> to remove <paramref name="node"/> from.</param>
+            <param name="node">The node to remove from the <see cref="T:System.Collections.Generic.LinkedList`1"/>.</param>
+            <returns>True if <paramref name="node"/> is successfully removed; otherwise, false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.LinkedList.IndexOf``1(System.Collections.Generic.LinkedList{``0},``0)">
+            <summary>
+            Finds the index of the <paramref name="node"/> in the <paramref name="linkedList"/>.
+            </summary>
+            <typeparam name="T">Specifies the element type of the linked list.</typeparam>
+            <param name="linkedList">The <see cref="T:System.Collections.Generic.LinkedList`1"/> to finds the index of the <paramref name="node"/>.</param>
+            <param name="node">The node to find the index from the <see cref="T:System.Collections.Generic.LinkedList`1"/>.</param>
+            <returns>The index of the <paramref name="node"/> in the <paramref name="linkedList"/>; otherwise, -1.</returns>
+        </member>
+        <member name="T:Tekla.BIM.Collections.List">
+            <summary>
+            The <see cref="T:Tekla.BIM.Collections.List"/> class provides a set of static methods for querying objects that implement <see cref="T:System.Collections.Generic.IList`1"/>.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Collections.List.Insert``1(System.Collections.Generic.IList{``0},System.Int32,System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Inserts the given <paramref name="items"/> into <paramref name="list"/>, starting on the given <paramref name="index"/>.
+            </summary>
+            <typeparam name="T">The type of items in <paramref name="list"/>.</typeparam>
+            <param name="list">The <see cref="T:System.Collections.Generic.IList`1"/> instance to insert the <paramref name="items"/> into.</param>
+            <param name="index">The index to start inserting on.</param>
+            <param name="items">The sequence of items to insert.</param>
+        </member>
+        <member name="M:Tekla.BIM.Collections.List.Swap``1(System.Collections.Generic.IList{``0},System.Int32,System.Int32)">
+            <summary>
+            Swaps two items in the list by indices.
+            </summary>
+            <typeparam name="T">The type of items in <paramref name="list"/>.</typeparam>
+            <param name="list">The target list.</param>
+            <param name="indexA">The index of the first item.</param>
+            <param name="indexB">The index of the second item.</param>
+        </member>
+        <member name="M:Tekla.BIM.Collections.List.RemoveRange(System.Collections.IList,System.Collections.IEnumerable)">
+            <summary>
+            Removes the elements of the specified <paramref name="items"/> from the <paramref name="list"/>.
+            </summary>
+            <param name="list">The collection to remove the <paramref name="items"/> from.</param>
+            <param name="items">The collection whose elements should be removed from the <paramref name="list"/>.</param>
+        </member>
+        <member name="M:Tekla.BIM.Collections.List.TryRemoveFirst``1(System.Collections.Generic.IList{``0},``0,System.Collections.Generic.IEqualityComparer{``0})">
+            <summary>
+            Removes the first matching element of <paramref name="target"/> from the <paramref name="list" />.
+            </summary>
+            <typeparam name="T">The type of elements in the collections.</typeparam>
+            <param name="list">The list to remove from.</param>
+            <param name="target">The target element to compare against using the <paramref name="comparer"/>.</param>
+            <param name="comparer">The comparer.</param>
+            <returns>True if any element was removed; otherwise, false.</returns>
+        </member>
+        <member name="T:Tekla.BIM.Collections.MultiCollectionEnumerable`1">
+            <summary>
+            The <see cref="T:Tekla.BIM.Collections.MultiCollectionEnumerable`1"/> class is a helper class for enumerating
+            multiple instances of <see cref="T:System.Collections.Generic.IEnumerable`1"/> as a single <see cref="T:System.Collections.Generic.IEnumerable`1"/>.
+            </summary>
+            <typeparam name="T">The element type.</typeparam>
+        </member>
+        <member name="F:Tekla.BIM.Collections.MultiCollectionEnumerable`1.collections">
+            <summary>
+            All the collections that must be enumerated.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Collections.MultiCollectionEnumerable`1.#ctor(System.Collections.Generic.IEnumerable{`0}[])">
+            <summary>
+            Initializes a new instance of the <see cref="T:Tekla.BIM.Collections.MultiCollectionEnumerable`1"/> class.
+            </summary>
+            <param name="collections">The collections.</param>
+        </member>
+        <member name="M:Tekla.BIM.Collections.MultiCollectionEnumerable`1.GetEnumerator">
+            <summary>
+            Returns an enumerator that iterates through the collections.
+            </summary>
+            <returns>An <see cref="T:System.Collections.Generic.IEnumerator`1"/> object that can be used to iterate through the collections.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.MultiCollectionEnumerable`1.System#Collections#IEnumerable#GetEnumerator">
+            <summary>
+            Returns an enumerator that iterates through the collections.
+            </summary>
+            <returns>An <see cref="T:System.Collections.IEnumerator"/> object that can be used to iterate through the collections.</returns>
+        </member>
+        <member name="T:Tekla.BIM.Collections.MultiCollectionEnumerator`1">
+            <summary>
+            The MultiCollectionEnumerator&lt;T&gt; class is a helper class for enumerating
+            multiple instances of <see cref="T:System.Collections.Generic.IEnumerable`1"/> as a single <see cref="T:System.Collections.Generic.IEnumerable`1"/>.
+            </summary>
+            <typeparam name="T">The element type.</typeparam>
+        </member>
+        <member name="F:Tekla.BIM.Collections.MultiCollectionEnumerator`1.collections">
+            <summary>
+            All the collections that must be enumerated.
+            </summary>
+        </member>
+        <member name="F:Tekla.BIM.Collections.MultiCollectionEnumerator`1.collectionIndex">
+            <summary>
+            The index of the current <see cref="T:System.Collections.Generic.IEnumerable`1"/> used from <see cref="F:Tekla.BIM.Collections.MultiCollectionEnumerator`1.collections"/>.
+            </summary>
+        </member>
+        <member name="F:Tekla.BIM.Collections.MultiCollectionEnumerator`1.current">
+            <summary>
+            The current <see cref="T:System.Collections.Generic.IEnumerator`1"/>.
+            Enumerates the <see cref="T:System.Collections.Generic.IEnumerable`1"/> located at <see cref="F:Tekla.BIM.Collections.MultiCollectionEnumerator`1.collectionIndex"/> in
+            <see cref="F:Tekla.BIM.Collections.MultiCollectionEnumerator`1.collections"/>.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Collections.MultiCollectionEnumerator`1.#ctor(System.Collections.Generic.IEnumerable{`0}[])">
+            <summary>
+            Initializes a new instance of the <see cref="T:Tekla.BIM.Collections.MultiCollectionEnumerator`1"/> class which
+            wraps the given <paramref name="collections"/>.
+            </summary>
+            <param name="collections">The collections to wrap as a single <see cref="T:System.Collections.Generic.IEnumerable`1"/>.</param>
+        </member>
+        <member name="P:Tekla.BIM.Collections.MultiCollectionEnumerator`1.System#Collections#IEnumerator#Current">
+            <summary>
+            Gets the element in the collection at the current position of the enumerator.
+            </summary>
+        </member>
+        <member name="P:Tekla.BIM.Collections.MultiCollectionEnumerator`1.Current">
+            <summary>
+            Gets the element in the collection at the current position of the enumerator.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Collections.MultiCollectionEnumerator`1.MoveNext">
+            <summary>
+            Advances the enumerator to the next element of the collection.
+            </summary>
+            <returns>True if the enumerator was successfully advanced to the next element;
+            false if the enumerator has passed the end of the collection.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.MultiCollectionEnumerator`1.Reset">
+            <summary>
+            Sets the enumerator to its initial position, which is before the first element in the collection.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Collections.MultiCollectionEnumerator`1.Dispose">
+            <summary>
+            Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+            </summary>
+        </member>
+        <member name="T:Tekla.BIM.Collections.PairList`2">
+            <summary>
+            The <see cref="T:Tekla.BIM.Collections.PairList`2"/> class represents a list of key/value pairs.
+            </summary>
+            <typeparam name="TKey">The type of the key objects in the pairs.</typeparam>
+            <typeparam name="TValue">The value of the key objects in the pairs.</typeparam>
+        </member>
+        <member name="F:Tekla.BIM.Collections.PairList`2.defaultInitializer">
+            <summary>
+            The default value initializer for new pair.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Collections.PairList`2.#ctor(System.Func{`1})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Tekla.BIM.Collections.PairList`2"/> class.
+            </summary>
+            <param name="defaultInitializer">The default initializer of <typeparamref name="TValue"/>.</param>
+        </member>
+        <member name="P:Tekla.BIM.Collections.PairList`2.Keys">
+            <summary>
+            Gets the keys.
+            </summary>
+        </member>
+        <member name="P:Tekla.BIM.Collections.PairList`2.Item(`0)">
+            <summary>
+            Gets or sets the value of the pair with a matching key.
+            </summary>
+            <param name="key">The key.</param>
+            <returns>The value of the pair with a matching key.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.PairList`2.GetPair(`0)">
+            <summary>
+            Gets the pair with the matching key.
+            If the pair does not exist, creates a new pair with a matching key and default value.
+            </summary>
+            <param name="key">The key.</param>
+            <returns>The pair with the matching key.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.PairList`2.Add(`0,`1)">
+            <summary>
+            Adds the specified key-value pair.
+            </summary>
+            <param name="key">The key.</param>
+            <param name="value">The value.</param>
+        </member>
+        <member name="M:Tekla.BIM.Collections.PairList`2.Remove(`0)">
+            <summary>
+            Removes the specified key.
+            </summary>
+            <param name="key">The key.</param>
+            <returns>True on success; otherwise, false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Collections.PairList`2.ContainsKey(`0)">
+            <summary>
+            Determines whether the list contains the <paramref name="key"/>.
+            </summary>
+            <param name="key">The key.</param>
+            <returns>
+              <c>true</c> if the list contains the <paramref name="key"/>; otherwise, <c>false</c>.
+            </returns>
+        </member>
+        <member name="T:Tekla.BIM.CommandBase">
+            <summary>
+            The <see cref="T:Tekla.BIM.CommandBase"/> class represents an input command.
+            </summary>
+        </member>
+        <member name="E:Tekla.BIM.CommandBase.CanExecuteChanged">
+            <summary>
+            Raises when the command executable state has been changed.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.CommandBase.CanExecute(System.Object)">
+            <summary>
+            Determines whether the command can be executed.
+            </summary>
+            <param name="parameter">The command parameter.</param>
+            <returns>True if this command can be executed; otherwise, false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.CommandBase.Execute(System.Object)">
+            <summary>
+            Executes the command.
+            </summary>
+            <param name="parameter">The command parameter.</param>
+        </member>
+        <member name="M:Tekla.BIM.CommandBase.RaiseCanExecuteChanged">
+            <summary>
+            Raises the <see cref="E:Tekla.BIM.CommandBase.CanExecuteChanged"/> event.
+            </summary>
+        </member>
+        <member name="T:Tekla.BIM.ActionExtensions">
+            <summary>
+            The <see cref="T:Tekla.BIM.ActionExtensions"/> class provides a set of static methods for raising delegates while first performing a null check.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.ActionExtensions.Raise(System.Action)">
+            <summary>
+            Raises <paramref name="action"/> if not null.
+            </summary>
+            <param name="action">The method to raise.</param>
+            <returns>True if <paramref name="action"/> is not null and therefore raised; otherwise, false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.ActionExtensions.Raise``1(System.Action{``0},``0)">
+            <summary>
+            Raises <paramref name="action"/> if not null.
+            </summary>
+            <typeparam name="TArg">The type of the parameter of the method to raise.</typeparam>
+            <param name="action">The method to raise.</param>
+            <param name="arg">The parameter of the method to raise.</param>
+            <returns>True if <paramref name="action"/> is not null and therefore raised; otherwise, false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.ActionExtensions.Raise``2(System.Action{``0,``1},``0,``1)">
+            <summary>
+            Raises <paramref name="action"/> if not null.
+            </summary>
+            <typeparam name="TArg1">The type of the first parameter of the method to raise.</typeparam>
+            <typeparam name="TArg2">The type of the second parameter of the method to raise.</typeparam>
+            <param name="action">The method to raise.</param>
+            <param name="arg1">The first parameter of the method to raise.</param>
+            <param name="arg2">The second parameter of the method to raise.</param>
+            <returns>True if <paramref name="action"/> is not null and therefore raised; otherwise, false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.ActionExtensions.Raise``3(System.Action{``0,``1,``2},``0,``1,``2)">
+            <summary>
+            Raises <paramref name="action"/> if not null.
+            </summary>
+            <typeparam name="TArg1">The type of the first parameter of the method to raise.</typeparam>
+            <typeparam name="TArg2">The type of the second parameter of the method to raise.</typeparam>
+            <typeparam name="TArg3">The type of the third parameter of the method to raise.</typeparam>
+            <param name="action">The method to raise.</param>
+            <param name="arg1">The first parameter of the method to raise.</param>
+            <param name="arg2">The second parameter of the method to raise.</param>
+            <param name="arg3">The third parameter of the method to raise.</param>
+            <returns>True if <paramref name="action"/> is not null and therefore raised; otherwise, false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.ActionExtensions.Raise``4(System.Action{``0,``1,``2,``3},``0,``1,``2,``3)">
+            <summary>
+            Raises <paramref name="action"/> if not null.
+            </summary>
+            <typeparam name="TArg1">The type of the first parameter of the method to raise.</typeparam>
+            <typeparam name="TArg2">The type of the second parameter of the method to raise.</typeparam>
+            <typeparam name="TArg3">The type of the third parameter of the method to raise.</typeparam>
+            <typeparam name="TArg4">The type of the fourth parameter of the method to raise.</typeparam>
+            <param name="action">The method to raise.</param>
+            <param name="arg1">The first parameter of the method to raise.</param>
+            <param name="arg2">The second parameter of the method to raise.</param>
+            <param name="arg3">The third parameter of the method to raise.</param>
+            <param name="arg4">The fourth parameter of the method to raise.</param>
+            <returns>True if <paramref name="action"/> is not null and therefore raised; otherwise, false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.ActionExtensions.Raise(System.Collections.Generic.IEnumerable{System.Action})">
+            <summary>
+            Raises the specified <paramref name="actions"/> if not null.
+            </summary>
+            <param name="actions">The methods to raise.</param>
+        </member>
+        <member name="M:Tekla.BIM.ActionExtensions.Raise``1(System.Collections.Generic.IEnumerable{System.Action{``0}},``0)">
+            <summary>
+            Raises the specified <paramref name="actions"/> if not null.
+            </summary>
+            <typeparam name="TArg">The type of the parameter of the methods to raise.</typeparam>
+            <param name="actions">The methods to raise.</param>
+            <param name="arg">The parameter of the methods to raise.</param>
+        </member>
+        <member name="M:Tekla.BIM.ActionExtensions.Raise``2(System.Collections.Generic.IEnumerable{System.Action{``0,``1}},``0,``1)">
+            <summary>
+            Raises the specified <paramref name="actions"/> if not null.
+            </summary>
+            <typeparam name="TArg1">The type of the first parameter of the methods to raise.</typeparam>
+            <typeparam name="TArg2">The type of the second parameter of the methods to raise.</typeparam>
+            <param name="actions">The methods to raise.</param>
+            <param name="arg1">The first parameter of the methods to raise.</param>
+            <param name="arg2">The second parameter of the methods to raise.</param>
+        </member>
+        <member name="M:Tekla.BIM.ActionExtensions.Raise(System.Delegate,System.Object,System.EventArgs)">
+            <summary>
+            Raises the action if not null.
+            </summary>
+            <param name="action">The method to raise.</param>
+            <param name="sender">The first parameter of the method to raise.</param>
+            <param name="e">The second parameter of the method to raise.></param>
+        </member>
+        <member name="T:Tekla.BIM.ActionCommand">
+            <summary>
+            The <see cref="T:Tekla.BIM.ActionCommand"/> class represents an input command which invokes a delegate.
+            </summary>
+        </member>
+        <member name="F:Tekla.BIM.ActionCommand.canExecute">
+            <summary>
+            The predicate determining whether the command can be executed.
+            </summary>
+        </member>
+        <member name="F:Tekla.BIM.ActionCommand.action">
+            <summary>
+            The command action.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.ActionCommand.#ctor(System.Action)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Tekla.BIM.ActionCommand"/> class.
+            </summary>
+            <param name="action">The action.</param>
+        </member>
+        <member name="M:Tekla.BIM.ActionCommand.#ctor(System.Action,System.Func{System.Boolean})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Tekla.BIM.ActionCommand"/> class.
+            </summary>
+            <param name="action">The action.</param>
+            <param name="canExecute">The predicate determining whether the command can be executed.</param>
+        </member>
+        <member name="M:Tekla.BIM.ActionCommand.CanExecute(System.Object)">
+            <summary>
+            Determines whether the command can be executed.
+            </summary>
+            <param name="parameter">The command parameter.</param>
+            <returns>True if this command can be executed; otherwise, false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.ActionCommand.Execute(System.Object)">
+            <summary>
+            Executes the command.
+            </summary>
+            <param name="parameter">The command parameter.</param>
+        </member>
+        <member name="T:Tekla.BIM.ActionCommand`1">
+            <summary>
+            The <see cref="T:Tekla.BIM.ActionCommand`1"/> class represents an input command which invokes a delegate.
+            </summary>
+            <typeparam name="T">The type of the command parameter.</typeparam>
+        </member>
+        <member name="F:Tekla.BIM.ActionCommand`1.canExecute">
+            <summary>
+            The predicate determining whether the command can be executed.
+            </summary>
+        </member>
+        <member name="F:Tekla.BIM.ActionCommand`1.action">
+            <summary>
+            The command action.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.ActionCommand`1.#ctor(System.Action{`0})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Tekla.BIM.ActionCommand`1"/> class.
+            </summary>
+            <param name="action">The action.</param>
+        </member>
+        <member name="M:Tekla.BIM.ActionCommand`1.#ctor(System.Action{`0},System.Predicate{`0})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Tekla.BIM.ActionCommand`1"/> class.
+            </summary>
+            <param name="action">The action.</param>
+            <param name="canExecute">The predicate determining whether the command can be executed.</param>
+        </member>
+        <member name="M:Tekla.BIM.ActionCommand`1.CanExecute(System.Object)">
+            <summary>
+            Determines whether the command can be executed.
+            </summary>
+            <param name="parameter">The command parameter.</param>
+            <returns>True if this command can be executed; otherwise, false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.ActionCommand`1.Execute(System.Object)">
+            <summary>
+            Executes the command.
+            </summary>
+            <param name="parameter">The command parameter.</param>
+        </member>
+        <member name="M:Tekla.BIM.ActionCommand`1.GetParameter(System.Object)">
+            <summary>
+            Get the parameter object based on the <paramref name="data"/>.
+            </summary>
+            <param name="data">The data.</param>
+            <returns>The parameter object based on the <paramref name="data"/>.</returns>
+        </member>
+        <member name="T:Tekla.BIM.Diagnostics.Benchmark">
+            <summary>
+            The <see cref="T:Tekla.BIM.Diagnostics.Benchmark"/> class provides a set of static methods that help benchmarking your code.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Diagnostics.Benchmark.Begin(System.Action,System.String,System.Action{Tekla.BIM.Diagnostics.BenchmarkResult},System.Boolean)">
+            <summary>
+            Benchmarks the given <paramref name="target"/> method.
+            By default, the result is written as debug output through the <see cref="T:Tekla.BIM.Diagnostics.Debug"/> class.
+            </summary>
+            <param name="target">A delegate to the method to benchmark.</param>
+            <param name="message">The message associated to the bencmark.</param>
+            <param name="benchmarkEnded">A callback to invoke when the benchmark ended. The parameters include <paramref name="message"/> and the elapsed time.</param>
+            <param name="debugBuildOnly">A value indicating whether the benchmarking should only be performed in debug builds.</param>
+        </member>
+        <member name="T:Tekla.BIM.Diagnostics.BenchmarkResult">
+            <summary>
+            The <see cref="T:Tekla.BIM.Diagnostics.BenchmarkResult"/> class describes the result of a <see cref="T:Tekla.BIM.Diagnostics.Benchmark"/>.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Diagnostics.BenchmarkResult.#ctor(System.TimeSpan,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Tekla.BIM.Diagnostics.BenchmarkResult"/> class.
+            </summary>
+            <param name="elapsed">The total elapsed time.</param>
+            <param name="message">A message associated to the benchmark.</param>
+        </member>
+        <member name="M:Tekla.BIM.Diagnostics.BenchmarkResult.#ctor(System.TimeSpan,System.String,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Tekla.BIM.Diagnostics.BenchmarkResult"/> class.
+            </summary>
+            <param name="elapsed">The total elapsed time.</param>
+            <param name="message">A message associated to the benchmark.</param>
+            <param name="exception">The <see cref="T:System.Exception"/> terminating the benchmark.</param>
+        </member>
+        <member name="P:Tekla.BIM.Diagnostics.BenchmarkResult.Elapsed">
+            <summary>
+            Gets the total elapsed time measured by the benchmark.
+            </summary>
+        </member>
+        <member name="P:Tekla.BIM.Diagnostics.BenchmarkResult.Exception">
+            <summary>
+            Gets the <see cref="T:System.Exception"/> that terminated the benchmark, if any.
+            </summary>
+        </member>
+        <member name="P:Tekla.BIM.Diagnostics.BenchmarkResult.Message">
+            <summary>
+            Gets the message specified for the benchmark.
+            </summary>
+        </member>
+        <member name="P:Tekla.BIM.Diagnostics.BenchmarkResult.TerminatedByException">
+            <summary>
+            Gets a value indicating whether the benchmark was terminated by an <see cref="P:Tekla.BIM.Diagnostics.BenchmarkResult.Exception"/>.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Diagnostics.BenchmarkResult.ToString">
+            <summary>
+            Gets a <see cref="T:System.String"/> representation of the current <see cref="T:Tekla.BIM.Diagnostics.BenchmarkResult"/>.
+            </summary>
+            <returns>A <see cref="T:System.String"/> representation of the current <see cref="T:Tekla.BIM.Diagnostics.BenchmarkResult"/>.</returns>
+        </member>
+        <member name="T:Tekla.BIM.Diagnostics.Debug">
+            <summary>
+            The <see cref="T:Tekla.BIM.Diagnostics.Debug"/> class provides a set of methods and properties that help debug your code.
+            All written messages are forwarded to each item of the <see cref="P:Tekla.BIM.Diagnostics.Debug.Listeners"/> collection.
+            </summary>
+            <remarks>
+            In debug builds <see cref="T:System.Diagnostics.Debug"/> is by default included in the <see cref="P:Tekla.BIM.Diagnostics.Debug.Listeners"/> collection.
+            </remarks>
+        </member>
+        <member name="M:Tekla.BIM.Diagnostics.Debug.#cctor">
+            <summary>
+            Initializes static members of the <see cref="T:Tekla.BIM.Diagnostics.Debug"/> class.
+            </summary>
+        </member>
+        <member name="P:Tekla.BIM.Diagnostics.Debug.Listeners">
+            <summary>
+            Gets the collection of listeners that is monitoring the debug output.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Diagnostics.Debug.CreateListener(System.Action{System.String},System.Action{System.String})">
+            <summary>
+            Creates a <see cref="T:System.Diagnostics.TraceListener"/> which forwards all received messages to the given methods.
+            </summary>
+            <remarks>
+            The returned <see cref="T:System.Diagnostics.TraceListener"/> is <em>not</em> automatically added to the <see cref="P:Tekla.BIM.Diagnostics.Debug.Listeners"/> collection.
+            </remarks>
+            <exception cref="T:System.ArgumentNullException">Thrown when any of the arguments is null.</exception>
+            <param name="write">A delegate to the method to write messages with.</param>
+            <param name="writeLine">A delegate to the method to write lines with.</param>
+            <returns>A new <see cref="T:System.Diagnostics.TraceListener"/> which forwards all received messages to the given methods.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Diagnostics.Debug.Print(System.String,System.Object[])">
+            <summary>
+            Writes a formatted string followed by a line terminator to the trace listeners in the <see cref="P:Tekla.BIM.Diagnostics.Debug.Listeners"/> collection.
+            </summary>
+            <param name="format">A composite format <see cref="T:System.String"/>.</param>
+            <param name="args">An <see cref="T:System.Object"/> array containing zero or more objects to format.</param>
+        </member>
+        <member name="M:Tekla.BIM.Diagnostics.Debug.Write(System.Object)">
+            <summary>
+            Writes the value of the object's <see cref="M:System.Object.ToString"/> method to the trace listeners in the <see cref="P:Tekla.BIM.Diagnostics.Debug.Listeners"/> collection.
+            </summary>
+            <param name="value">An object whose name is sent to the Listeners.</param>
+        </member>
+        <member name="M:Tekla.BIM.Diagnostics.Debug.Write(System.String,System.Object[])">
+            <summary>
+            Writes a message to the trace listeners in the <see cref="P:Tekla.BIM.Diagnostics.Debug.Listeners"/> collection.
+            </summary>
+            <param name="format">A composite format <see cref="T:System.String"/>.</param>
+            <param name="args">An <see cref="T:System.Object"/> array containing zero or more objects to format.</param>
+        </member>
+        <member name="M:Tekla.BIM.Diagnostics.Debug.WriteLine(System.Object)">
+            <summary>
+            Writes the value of the object's <see cref="M:System.Object.ToString"/> method to the trace listeners in the <see cref="P:Tekla.BIM.Diagnostics.Debug.Listeners"/> collection.
+            </summary>
+            <param name="value">An object whose name is sent to the Listeners.</param>
+        </member>
+        <member name="M:Tekla.BIM.Diagnostics.Debug.WriteLine(System.String,System.Object[])">
+            <summary>
+            Writes a message followed by a line terminator to the trace listeners in the <see cref="P:Tekla.BIM.Diagnostics.Debug.Listeners"/> collection.
+            </summary>
+            <param name="format">A composite format <see cref="T:System.String"/>.</param>
+            <param name="args">An <see cref="T:System.Object"/> array containing zero or more objects to format.</param>
+        </member>
+        <member name="T:Tekla.BIM.Diagnostics.Debug.TraceListenerProxy">
+            <summary>
+            The <see cref="T:Tekla.BIM.Diagnostics.Debug.TraceListenerProxy"/> class provides a proxy for <see cref="T:System.Diagnostics.TraceListener"/>,
+            using <see cref="T:System.Action`1"/> delegates to expose and write messages with.
+            </summary>
+        </member>
+        <member name="F:Tekla.BIM.Diagnostics.Debug.TraceListenerProxy.write">
+            <summary>
+            A delegate to the method to write messages with.
+            </summary>
+        </member>
+        <member name="F:Tekla.BIM.Diagnostics.Debug.TraceListenerProxy.writeLine">
+            <summary>
+            A delegate to the method to write lines with.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Diagnostics.Debug.TraceListenerProxy.#ctor(System.Action{System.String},System.Action{System.String})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Tekla.BIM.Diagnostics.Debug.TraceListenerProxy"/> class.
+            </summary>
+            <exception cref="T:System.ArgumentNullException">Thrown when any of the arguments is null.</exception>
+            <param name="write">A delegate to the method to write messages with.</param>
+            <param name="writeLine">A delegate to the method to write lines with.</param>
+        </member>
+        <member name="M:Tekla.BIM.Diagnostics.Debug.TraceListenerProxy.Write(System.String)">
+            <summary>
+            Writes a message to the listener.
+            </summary>
+            <param name="message">A message to write.</param>
+        </member>
+        <member name="M:Tekla.BIM.Diagnostics.Debug.TraceListenerProxy.WriteLine(System.String)">
+            <summary>
+            Writes a message to the listener, followed by a line terminator.
+            </summary>
+            <param name="message">A message to write.</param>
+        </member>
+        <member name="T:Tekla.BIM.EnumExtensions">
+            <summary>
+            The <see cref="T:Tekla.BIM.EnumExtensions"/> class provides a set of extension methods for <see cref="T:System.Enum"/> types.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.EnumExtensions.GetFlags(System.Enum)">
+            <summary>
+            Gets a sequence with all flags set in <paramref name="enumValue"/>.
+            </summary>
+            <param name="enumValue">The value to get all set flags from.</param>
+            <returns>A sequence with all flags defined in <paramref name="enumValue"/>.</returns>
+        </member>
+        <member name="M:Tekla.BIM.EnumExtensions.GetFlags``1(System.Enum)">
+            <summary>
+            Gets a sequence with all flags set in <paramref name="enumValue"/>.
+            </summary>
+            <typeparam name="T">The type to convert the values of <paramref name="enumValue"/> to.</typeparam>
+            <param name="enumValue">The value to get all set flags from.</param>
+            <returns>A sequence with all flags defined in <paramref name="enumValue"/>.</returns>
+        </member>
+        <member name="T:Tekla.BIM.EventHandlerExtensions">
+            <summary>
+            The <see cref="T:Tekla.BIM.EventHandlerExtensions"/> class provides the extension methods for the <see cref="T:Tekla.BIM.EventHandler`2"/>.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.EventHandlerExtensions.Raise``1(System.EventHandler{``0},System.Object,``0)">
+            <summary>
+            Raises the specified sender.
+            </summary>
+            <typeparam name="TArgs">The type of the arguments.</typeparam>
+            <param name="eventHandler">The event handler.</param>
+            <param name="sender">The sender.</param>
+            <param name="eventArgs">The event arguments.</param>
+        </member>
+        <member name="T:Tekla.BIM.EventHandler`2">
+            <summary>
+            The <see cref="T:Tekla.BIM.EventHandler`2" /> delegate provides the signature for event handler with arguments.
+            </summary>
+            <typeparam name="TSender">The type of the sender.</typeparam>
+            <typeparam name="TEventArgs">The type of the event arguments.</typeparam>
+            <param name="sender">The sender.</param>
+            <param name="eventArgs">The <typeparamref name="TEventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="T:Tekla.BIM.FuncByRef`2">
+            <summary>
+            Encapsulates a method that has one parameter and returns a value of the type specified by the <typeparamref name="TResult"/> parameter.
+            </summary>
+            <typeparam name="T">The type of the parameter of the method that this delegate encapsulates.</typeparam>
+            <typeparam name="TResult">The type of the return value of the method that this delegate encapsulates.</typeparam>
+            <param name="arg">The parameter of the method that this delegate encapsulates.</param>
+            <returns>The return value of the method that this delegate encapsulates.</returns>
+        </member>
+        <member name="T:Tekla.BIM.FuncByRefExtensions">
+            <summary>
+            The <see cref="T:Tekla.BIM.FuncByRefExtensions"/> class provides a set of static methods for raising delegates while first performing a null check.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.FuncByRefExtensions.Raise``2(Tekla.BIM.FuncByRef{``0,``1},``0@)">
+            <summary>
+            Raises <paramref name="func"/> if not null.
+            </summary>
+            <typeparam name="TArg">The type of the parameter of the method to raise.</typeparam>
+            <typeparam name="TResult">The type of the return value of the method that this delegate encapsulates.</typeparam>
+            <param name="func">The method to raise.</param>
+            <param name="arg">The parameter of the method to raise.</param>
+            <returns>The return value of <paramref name="func"/>, or default(<typeparamref name="TResult"/>) if <paramref name="func"/> is null.</returns>
+        </member>
+        <member name="M:Tekla.BIM.FuncByRefExtensions.TryRaise``2(Tekla.BIM.FuncByRef{``0,``1},``0,``1@)">
+            <summary>
+            Raises <paramref name="func"/> if not null.
+            </summary>
+            <typeparam name="TArg">The type of the parameter of the method to raise.</typeparam>
+            <typeparam name="TResult">The type of the return value of the method that this delegate encapsulates.</typeparam>
+            <param name="func">The method to raise.</param>
+            <param name="arg">The parameter of the method to raise.</param>
+            <param name="result">The return value of <paramref name="func"/>, or default(<typeparamref name="TResult"/>) if <paramref name="func"/> is null.</param>
+            <returns>True if <paramref name="func"/> is not null; otherwise, false.</returns>
+        </member>
+        <member name="T:Tekla.BIM.FuncExtensions">
+            <summary>
+            The <see cref="T:Tekla.BIM.FuncExtensions"/> class provides a set of static methods for raising delegates while first performing a null check.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.FuncExtensions.Raise``1(System.Func{``0})">
+            <summary>
+            Raises <paramref name="func"/> if not null.
+            </summary>
+            <typeparam name="TResult">The type of the return value of the method that this delegate encapsulates.</typeparam>
+            <param name="func">The method to raise.</param>
+            <returns>The return value of <paramref name="func"/>, or default(<typeparamref name="TResult"/>) if <paramref name="func"/> is null.</returns>
+        </member>
+        <member name="M:Tekla.BIM.FuncExtensions.Raise``2(System.Func{``0,``1},``0)">
+            <summary>
+            Raises <paramref name="func"/> if not null.
+            </summary>
+            <typeparam name="TArg">The type of the parameter of the method to raise.</typeparam>
+            <typeparam name="TResult">The type of the return value of the method that this delegate encapsulates.</typeparam>
+            <param name="func">The method to raise.</param>
+            <param name="arg">The parameter of the method to raise.</param>
+            <returns>The return value of <paramref name="func"/>, or default(<typeparamref name="TResult"/>) if <paramref name="func"/> is null.</returns>
+        </member>
+        <member name="M:Tekla.BIM.FuncExtensions.Raise``3(System.Func{``0,``1,``2},``0,``1)">
+            <summary>
+            Raises <paramref name="func"/> if not null.
+            </summary>
+            <typeparam name="TArg1">The type of the first parameter of the method to raise.</typeparam>
+            <typeparam name="TArg2">The type of the second parameter of the method to raise.</typeparam>
+            <typeparam name="TResult">The type of the return value of the method that this delegate encapsulates.</typeparam>
+            <param name="func">The method to raise.</param>
+            <param name="arg1">The first parameter of the method to raise.</param>
+            <param name="arg2">The second parameter of the method to raise.</param>
+            <returns>The return value of <paramref name="func"/>, or default(<typeparamref name="TResult"/>) if <paramref name="func"/> is null.</returns>
+        </member>
+        <member name="M:Tekla.BIM.FuncExtensions.Raise``4(System.Func{``0,``1,``2,``3},``0,``1,``2)">
+            <summary>
+            Raises <paramref name="func"/> if not null.
+            </summary>
+            <typeparam name="TArg1">The type of the first parameter of the method to raise.</typeparam>
+            <typeparam name="TArg2">The type of the second parameter of the method to raise.</typeparam>
+            <typeparam name="TArg3">The type of the third parameter of the method to raise.</typeparam>
+            <typeparam name="TResult">The type of the return value of the method that this delegate encapsulates.</typeparam>
+            <param name="func">The method to raise.</param>
+            <param name="arg1">The first parameter of the method to raise.</param>
+            <param name="arg2">The second parameter of the method to raise.</param>
+            <param name="arg3">The third parameter of the method to raise.</param>
+            <returns>The return value of <paramref name="func"/>, or default(<typeparamref name="TResult"/>) if <paramref name="func"/> is null.</returns>
+        </member>
+        <member name="M:Tekla.BIM.FuncExtensions.Raise``5(System.Func{``0,``1,``2,``3,``4},``0,``1,``2,``3)">
+            <summary>
+            Raises <paramref name="func"/> if not null.
+            </summary>
+            <typeparam name="TArg1">The type of the first parameter of the method to raise.</typeparam>
+            <typeparam name="TArg2">The type of the second parameter of the method to raise.</typeparam>
+            <typeparam name="TArg3">The type of the third parameter of the method to raise.</typeparam>
+            <typeparam name="TArg4">The type of the fourth parameter of the method to raise.</typeparam>
+            <typeparam name="TResult">The type of the return value of the method that this delegate encapsulates.</typeparam>
+            <param name="func">The method to raise.</param>
+            <param name="arg1">The first parameter of the method to raise.</param>
+            <param name="arg2">The second parameter of the method to raise.</param>
+            <param name="arg3">The third parameter of the method to raise.</param>
+            <param name="arg4">The fourth parameter of the method to raise.</param>
+            <returns>The return value of <paramref name="func"/>, or default(<typeparamref name="TResult"/>) if <paramref name="func"/> is null.</returns>
+        </member>
+        <member name="M:Tekla.BIM.FuncExtensions.TryRaise``1(System.Func{``0},``0@)">
+            <summary>
+            Raises <paramref name="func"/> if not null.
+            </summary>
+            <typeparam name="TResult">The type of the return value of the method that this delegate encapsulates.</typeparam>
+            <param name="func">The method to raise.</param>
+            <param name="result">The return value of <paramref name="func"/>, or default(<typeparamref name="TResult"/>) if <paramref name="func"/> is null.</param>
+            <returns>True if <paramref name="func"/> is not null; otherwise, false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.FuncExtensions.TryRaise``2(System.Func{``0,``1},``0,``1@)">
+            <summary>
+            Raises <paramref name="func"/> if not null.
+            </summary>
+            <typeparam name="TArg">The type of the parameter of the method to raise.</typeparam>
+            <typeparam name="TResult">The type of the return value of the method that this delegate encapsulates.</typeparam>
+            <param name="func">The method to raise.</param>
+            <param name="arg">The parameter of the method to raise.</param>
+            <param name="result">The return value of <paramref name="func"/>, or default(<typeparamref name="TResult"/>) if <paramref name="func"/> is null.</param>
+            <returns>True if <paramref name="func"/> is not null; otherwise, false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.FuncExtensions.TryRaise``3(System.Func{``0,``1,``2},``0,``1,``2@)">
+            <summary>
+            Raises <paramref name="func"/> if not null.
+            </summary>
+            <typeparam name="TArg1">The type of the first parameter of the method to raise.</typeparam>
+            <typeparam name="TArg2">The type of the second parameter of the method to raise.</typeparam>
+            <typeparam name="TResult">The type of the return value of the method that this delegate encapsulates.</typeparam>
+            <param name="func">The method to raise.</param>
+            <param name="arg1">The first parameter of the method to raise.</param>
+            <param name="arg2">The second parameter of the method to raise.</param>
+            <param name="result">The return value of <paramref name="func"/>, or default(<typeparamref name="TResult"/>) if <paramref name="func"/> is null.</param>
+            <returns>True if <paramref name="func"/> is not null; otherwise, false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.FuncExtensions.TryRaise``4(System.Func{``0,``1,``2,``3},``0,``1,``2,``3@)">
+            <summary>
+            Raises <paramref name="func"/> if not null.
+            </summary>
+            <typeparam name="TArg1">The type of the first parameter of the method to raise.</typeparam>
+            <typeparam name="TArg2">The type of the second parameter of the method to raise.</typeparam>
+            <typeparam name="TArg3">The type of the third parameter of the method to raise.</typeparam>
+            <typeparam name="TResult">The type of the return value of the method that this delegate encapsulates.</typeparam>
+            <param name="func">The method to raise.</param>
+            <param name="arg1">The first parameter of the method to raise.</param>
+            <param name="arg2">The second parameter of the method to raise.</param>
+            <param name="arg3">The third parameter of the method to raise.</param>
+            <param name="result">The return value of <paramref name="func"/>, or default(<typeparamref name="TResult"/>) if <paramref name="func"/> is null.</param>
+            <returns>True if <paramref name="func"/> is not null; otherwise, false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.FuncExtensions.TryRaise``5(System.Func{``0,``1,``2,``3,``4},``0,``1,``2,``3,``4@)">
+            <summary>
+            Raises <paramref name="func"/> if not null.
+            </summary>
+            <typeparam name="TArg1">The type of the first parameter of the method to raise.</typeparam>
+            <typeparam name="TArg2">The type of the second parameter of the method to raise.</typeparam>
+            <typeparam name="TArg3">The type of the third parameter of the method to raise.</typeparam>
+            <typeparam name="TArg4">The type of the fourth parameter of the method to raise.</typeparam>
+            <typeparam name="TResult">The type of the return value of the method that this delegate encapsulates.</typeparam>
+            <param name="func">The method to raise.</param>
+            <param name="arg1">The first parameter of the method to raise.</param>
+            <param name="arg2">The second parameter of the method to raise.</param>
+            <param name="arg3">The third parameter of the method to raise.</param>
+            <param name="arg4">The fourth parameter of the method to raise.</param>
+            <param name="result">The return value of <paramref name="func"/>, or default(<typeparamref name="TResult"/>) if <paramref name="func"/> is null.</param>
+            <returns>True if <paramref name="func"/> is not null; otherwise, false.</returns>
+        </member>
+        <member name="T:Tekla.BIM.KeyValue`2">
+            <summary>
+            The <see cref="T:Tekla.BIM.KeyValue`2"/> class defines a key/value pair that can be gotten or set.
+            </summary>
+            <typeparam name="TK">The key type.</typeparam>
+            <typeparam name="TV">The value type.</typeparam>
+        </member>
+        <member name="M:Tekla.BIM.KeyValue`2.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Tekla.BIM.KeyValue`2"/> class.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.KeyValue`2.#ctor(`0,`1)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Tekla.BIM.KeyValue`2"/> class.
+            </summary>
+            <param name="key">The key.</param>
+            <param name="value">The value.</param>
+        </member>
+        <member name="P:Tekla.BIM.KeyValue`2.Key">
+            <summary>
+            Gets or sets the key.
+            </summary>
+        </member>
+        <member name="P:Tekla.BIM.KeyValue`2.Value">
+            <summary>
+            Gets or sets the value.
+            </summary>
+        </member>
+        <member name="T:Tekla.BIM.TupleExtensions">
+            <summary>
+            The <see cref="T:Tekla.BIM.TupleExtensions"/> class provides a set of extension methods for the <see cref="T:System.Tuple"/> type.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.TupleExtensions.GetValues``1(System.Tuple{System.Nullable{``0},System.Nullable{``0}})">
+            <summary>
+            Gets the item values of the tuple.
+            </summary>
+            <typeparam name="TValue">The underlying nullable value type of items in the <paramref name="tuple"/>.</typeparam>
+            <param name="tuple">The tuple instance to get the values from.</param>
+            <returns>The item values of the tuple.</returns>
+        </member>
+        <member name="T:Tekla.BIM.ObjectExtensions">
+            <summary>
+            The <see cref="T:Tekla.BIM.ObjectExtensions"/> class provides a set of extension methods for any object type.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.ObjectExtensions.AsArray``1(``0)">
+            <summary>
+            Creates an array that contains the value of <paramref name="target"/>.
+            </summary>
+            <typeparam name="TValue">The underlying type of <paramref name="target"/>.</typeparam>
+            <param name="target">The target object.</param>
+            <returns>An array that contains <paramref name="target"/> or an empty array if the object is null.</returns>
+        </member>
+        <member name="M:Tekla.BIM.ObjectExtensions.AsList``1(``0)">
+            <summary>
+            Creates a List that contains the value of <paramref name="target"/>.
+            </summary>
+            <typeparam name="TValue">The underlying type of <paramref name="target"/>.</typeparam>
+            <param name="target">The target object.</param>
+            <returns>A list that contains <paramref name="target"/> or an empty list if the object is null.</returns>
+        </member>
+        <member name="M:Tekla.BIM.ObjectExtensions.AreEquals``1(``0,``0)">
+            <summary>
+            Determines whether the 2 objects are equal.
+            </summary>
+            <typeparam name="TValue">The type of the value.</typeparam>
+            <param name="first">The first object.</param>
+            <param name="second">The second object.</param>
+            <returns>True if the 2 objects are equal; otherwise, false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.ObjectExtensions.IsNot``1(System.Object)">
+            <summary>
+            Determines whether <paramref name="target"/> is not of type <typeparamref name="TType"/>.
+            </summary>
+            <typeparam name="TType">The type to check.</typeparam>
+            <param name="target">The target.</param>
+            <returns><c>true</c> if <paramref name="target"/> is not of type <typeparamref name="TType"/>; otherwise, <c>false</c>.</returns>
+        </member>
+        <member name="T:Tekla.BIM.NullableExtensions">
+            <summary>
+            The <see cref="T:Tekla.BIM.NullableExtensions"/> class provides a set of extension methods for the <see cref="T:System.Nullable`1"/> type.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.NullableExtensions.TryGetValue``1(System.Nullable{``0},``0@)">
+            <summary>
+            Retrieves the value of the specified <see cref="T:System.Nullable`1"/> instance.
+            </summary>
+            <typeparam name="TValue">The underlying value type of <paramref name="nullableValue"/>.</typeparam>
+            <param name="nullableValue">The <see cref="T:System.Nullable`1"/> instance to get the value from.</param>
+            <param name="value">The underlying value of <paramref name="nullableValue"/>.</param>
+            <returns>True if <paramref name="nullableValue"/> has an underlying value; otherwise, false.</returns>
+        </member>
+        <member name="M:Tekla.BIM.NullableExtensions.AsArray``1(System.Nullable{``0})">
+            <summary>
+            Creates an array that contains the underlying value of <paramref name="nullableValue"/>.
+            </summary>
+            <typeparam name="TValue">The underlying value type of <paramref name="nullableValue"/>.</typeparam>
+            <param name="nullableValue">The <see cref="T:System.Nullable`1"/> instance to get the value from.</param>
+            <returns>
+            An array that contains the underlying value of <paramref name="nullableValue"/> 
+            or an empty array if there is no underlying value.
+            </returns>
+        </member>
+        <member name="T:Tekla.BIM.SymmetricAction">
+            <summary>
+            The SymmetricAction class represents any kind of action that requires two symmetric actions
+            which both have no return value and don't take any arguments, no matter how the control flow
+            enters or leaves the scope.
+            </summary>
+            <remarks>
+            <para>
+            The main purpose of <see cref="T:Tekla.BIM.SymmetricAction"/> is to ensure the enter and exit actions are
+            always both executed.
+            </para>
+            <para>
+            <see cref="T:Tekla.BIM.SymmetricAction"/> can possibly be used for controlling mutex locks, for interop support
+            (open handles, memory leaks), RAII (Resource Acquisition Is Initialization), ...
+            </para>
+            <para>
+            DevNote:
+            </para>
+            <para>
+            This class should also be implemented for all possible combinations of <see cref="T:System.Action"/>,
+            <see cref="T:System.Action`1"/>, ... , <see cref="T:System.Func`1"/>, <see cref="T:System.Func`2"/>, ...
+            </para>
+            </remarks>
+            <example>
+            <code>
+            EnterSymmetricAction();
+            try
+            {
+                   ... Do some stuff, potentially throwing exceptions.
+            }
+            finally
+            {
+                   ExitSymmetricAction();
+            }
+            
+            // ... Can be replaced by the easier to type and read:
+            
+            using (new SymmetricAction(EnterSymmetricAction, ExitSymmetricAction)
+            {
+                   ... Do some stuff, potentially throwing exceptions.
+            }
+            // This construction can also be wrapped in an extension method returning an instance of
+            <see cref="T:System.IDisposable"/>.
+            </code>
+            </example>
+        </member>
+        <member name="F:Tekla.BIM.SymmetricAction.exit">
+            <summary>
+            The <see cref="T:System.Action"/> to invoke on <see cref="M:Tekla.BIM.SymmetricAction.Dispose"/>.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.SymmetricAction.#ctor(System.Action,System.Action)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Tekla.BIM.SymmetricAction"/> class.
+            </summary>
+            <param name="enter">The <see cref="T:System.Action"/> to invoke immediately, can be null.</param>
+            <param name="exit">The <see cref="T:System.Action"/> to invoke on <see cref="M:Tekla.BIM.SymmetricAction.Dispose"/>, can be null.</param>
+        </member>
+        <member name="M:Tekla.BIM.SymmetricAction.Dispose">
+            <summary>
+            Invokes the exiting action of the current <see cref="T:Tekla.BIM.SymmetricAction"/>.
+            </summary>
+        </member>
+        <member name="T:Tekla.BIM.Text.EditDistanceAlgorithmBase">
+            <summary>
+            The <see cref="T:Tekla.BIM.Text.EditDistanceAlgorithmBase"/> class is the base class for any algorithm calculating the edit distance
+            between two <see cref="T:System.String"/> values.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Text.EditDistanceAlgorithmBase.GetDistance(System.String,System.String)">
+            <summary>
+            Gets the distance between the two given <see cref="T:System.String"/> values.
+            </summary>
+            <param name="firstValue">The first <see cref="T:System.String"/> value.</param>
+            <param name="otherValue">The other <see cref="T:System.String"/> value.</param>
+            <returns>The distance between the two given <see cref="T:System.String"/> values.</returns>
+        </member>
+        <member name="T:Tekla.BIM.Text.LevenshteinAlgorithm">
+            <summary>
+            The <see cref="T:Tekla.BIM.Text.LevenshteinAlgorithm"/> class implements the Levenshtein distance algorithm.
+            The Levenshtein distance between two strings is defined as the minimum number of edits needed to transform one string into the other,
+            with the allowable edit operations being insertion, deletion, or substitution of a single character.
+            </summary>
+            <remarks>
+            Further documentation on the algorithm can be found at http://www.codeproject.com/KB/recipes/Levenshtein.aspx.
+            </remarks>
+        </member>
+        <member name="M:Tekla.BIM.Text.LevenshteinAlgorithm.GetDistance(System.String,System.String)">
+            <summary>
+            Gets the distance between the two given <see cref="T:System.String"/> values.
+            </summary>
+            <param name="fromValue">The first <see cref="T:System.String"/> value.</param>
+            <param name="toValue">The other <see cref="T:System.String"/> value.</param>
+            <returns>The distance between the two given <see cref="T:System.String"/> values.</returns>
+        </member>
+        <member name="T:Tekla.BIM.Text.TableStringBuilder">
+            <summary>
+            The <see cref="T:Tekla.BIM.Text.TableStringBuilder"/> class represents a mutable table of <see cref="T:System.String"/> values.
+            </summary>
+            <remarks>
+            If the class is extended at some point,
+            the interface should be built according to the <see cref="T:System.Text.StringBuilder"/> interface.
+            </remarks>
+        </member>
+        <member name="F:Tekla.BIM.Text.TableStringBuilder.DefaultLinePrefix">
+            <summary>
+            The default prefix to append to lines when formatting the table to <see cref="T:System.String"/> values.
+            </summary>
+            <remarks>
+            The value is <see cref="F:System.String.Empty"/>.
+            </remarks>
+        </member>
+        <member name="F:Tekla.BIM.Text.TableStringBuilder.DefaultLineSeparator">
+            <summary>
+            The default <see cref="T:System.String"/> to separate lines with when formatting the table to a single <see cref="T:System.String"/> value.
+            </summary>
+            <remarks>
+            The value is <see cref="P:System.Environment.NewLine"/>.
+            </remarks>
+        </member>
+        <member name="F:Tekla.BIM.Text.TableStringBuilder.MinSpacing">
+            <summary>
+            The default minimum number of spaces between each column.
+            </summary>
+            <remarks>
+            The value represents four (4) spaces.
+            </remarks>
+        </member>
+        <member name="F:Tekla.BIM.Text.TableStringBuilder.rows">
+            <summary>
+            The actual <see cref="T:System.String"/> table.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Text.TableStringBuilder.#ctor(System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Tekla.BIM.Text.TableStringBuilder"/> class.
+            </summary>
+            <param name="columnCount">The number of columns in the table.</param>
+        </member>
+        <member name="P:Tekla.BIM.Text.TableStringBuilder.ColumnCount">
+            <summary>
+            Gets the number of columns in the table.
+            </summary>
+        </member>
+        <member name="P:Tekla.BIM.Text.TableStringBuilder.RowCount">
+            <summary>
+            Gets the number of rows in the table.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Text.TableStringBuilder.AppendRow(System.String[])">
+            <summary>
+            Appends a copy of the specified <paramref name="values"/> as a new row
+            to the current <see cref="T:Tekla.BIM.Text.TableStringBuilder"/> object.
+            </summary>
+            <exception cref="T:System.ArgumentException">
+            Thrown when the number of elements in <paramref name="values"/> does not equal <see cref="P:Tekla.BIM.Text.TableStringBuilder.ColumnCount"/>.
+            </exception>
+            <param name="values">The <see cref="T:System.String"/> values of the row to append.</param>
+        </member>
+        <member name="M:Tekla.BIM.Text.TableStringBuilder.ToLines(System.String,System.Int32)">
+            <summary>
+            Converts the value of this instance to an array having a <see cref="T:System.String"/> value for each row.
+            </summary>
+            <param name="linePrefix">The <see cref="T:System.String"/> value to prefix each line with; if null, <see cref="F:Tekla.BIM.Text.TableStringBuilder.DefaultLinePrefix"/> is used.</param>
+            <param name="minSpacing">The minimum number of spaces between each column.</param>
+            <returns>A <see cref="T:System.String"/> array whose value is the same as this instance.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Text.TableStringBuilder.ToString">
+            <summary>
+            Converts the value of this instance to a <see cref="T:System.String"/>.
+            </summary>
+            <returns>A <see cref="T:System.String"/> whose value represents this instance.</returns>
+        </member>
+        <member name="M:Tekla.BIM.Text.TableStringBuilder.ToString(System.String,System.String,System.Int32)">
+            <summary>
+            Converts the value of this instance to a <see cref="T:System.String"/>.
+            </summary>
+            <param name="linePrefix">The <see cref="T:System.String"/> value to prefix each line with; if null, <see cref="F:Tekla.BIM.Text.TableStringBuilder.DefaultLinePrefix"/> is used.</param>
+            <param name="lineSeparator">The <see cref="T:System.String"/> value to separate each line with; if null, <see cref="F:Tekla.BIM.Text.TableStringBuilder.DefaultLineSeparator"/> is used.</param>
+            <param name="minSpacing">The minimun number of spaces between each column.</param>
+            <returns>A <see cref="T:System.String"/> whose value represents this instance.</returns>
+        </member>
+        <member name="T:Tekla.BIM.Wrapper">
+            <summary>
+            The <see cref="T:Tekla.BIM.Wrapper"/> creates a reference instance wrapping any object instance.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.Wrapper.#ctor(System.Object)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Tekla.BIM.Wrapper"/> class.
+            </summary>
+            <param name="target">The wrapped object.</param>
+        </member>
+        <member name="P:Tekla.BIM.Wrapper.Object">
+            <summary>
+            Gets or sets the wrapped object.
+            </summary>
+        </member>
+        <member name="T:Tekla.BIM.WrapperExtensions">
+            <summary>
+            The <see cref="T:Tekla.BIM.WrapperExtensions"/> class provides extension methods for the <see cref="T:Tekla.BIM.Wrapper"/> class.
+            </summary>
+        </member>
+        <member name="M:Tekla.BIM.WrapperExtensions.Wrap(System.Object)">
+            <summary>
+            Creates a <see cref="T:Tekla.BIM.Wrapper"/> instance wrapping the <paramref name="target"/>.
+            </summary>
+            <param name="target">The target.</param>
+            <returns>A <see cref="T:Tekla.BIM.Wrapper"/> instance wrapping the <paramref name="target"/>.</returns>
+        </member>
+    </members>
+</doc>

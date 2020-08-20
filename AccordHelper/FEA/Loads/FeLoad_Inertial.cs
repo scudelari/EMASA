@@ -8,7 +8,7 @@ using r3dm::Rhino.Geometry;
 
 namespace AccordHelper.FEA.Loads
 {
-    public class FeLoad_Inertial : FeLoadBase
+    public class FeLoad_Inertial : FeLoad
     {
         public FeLoad_Inertial(double inValue) : base()
         {
@@ -29,12 +29,12 @@ namespace AccordHelper.FEA.Loads
 
         }
 
-        public override void LoadModel(FeModelBase inModel, double inFactor = 1d)
+        public override void LoadModel(FeModelBase inModel)
         {
             switch (inModel)
             {
                 case AnsysModel ansysModel:
-                    Vector3d acc = Direction * (Value * inFactor);
+                    Vector3d acc = Direction * (Value * Factor);
                     ansysModel.sb.AppendLine($"ACEL,{acc.X},{acc.Y},{acc.Z} ! Sets the Inertial Load");
                     break;
 

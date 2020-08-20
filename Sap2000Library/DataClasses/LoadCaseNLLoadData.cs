@@ -5,6 +5,9 @@ namespace Sap2000Library.DataClasses
     public class LoadCaseNLLoadData
     {
         private string _loadType;
+        /// <summary>
+        /// Must be either Load or Accel
+        /// </summary>
         public string LoadType
         {
             get { return _loadType; }

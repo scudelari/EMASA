@@ -10,11 +10,11 @@ none
 false
 TRACE
 
-6-240081118
+7-711106437
 
-381327010732
+43-1808804194
 22-1666290231
-BusyOverlay.xaml;Forms\BusyForm.xaml;Forms\CancelOpForm.xaml;Forms\ExceptionViewer.xaml;MessageOverlay.xaml;ResourceDictionary.xaml;
+BusyOverlay.xaml;CustomOverlay.xaml;Forms\BusyForm.xaml;Forms\CancelOpForm.xaml;Forms\ExceptionViewer.xaml;MessageOverlay.xaml;ResourceDictionary.xaml;
 
-True
+False
 

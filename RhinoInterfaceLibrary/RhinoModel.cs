@@ -121,6 +121,16 @@ namespace RhinoInterfaceLibrary
             }
         }
 
+        public string RhinoActiveDocumentFullFileName => _emsPluginReference.GetActiveDocumentFullFileName();
+        public void SaveAsActiveRhinoDocument(string inDocFullFileName)
+        {
+            if (_emsPluginReference.SaveActiveDocumentAs(inDocFullFileName) == false) throw new Exception($"Could not save the active Rhino document as {inDocFullFileName}.");
+        }
+        public void OpenRhinoDocument(string inFullPath)
+        {
+            if (!_emsPluginReference.OpenDocument(inFullPath)) throw new Exception($"Could not open the Rhino document {inFullPath}.");
+        }
+        
         public bool SendRhinoCommand(string inCommand, int inEcho = 0)
         {
             if (!IsRhinoOk) throw new InvalidOperationException("There is no Rhino instance running.");
@@ -317,7 +327,6 @@ namespace RhinoInterfaceLibrary
 
             _emsPluginReference.AddPointWithTriad(pointName, pointArray, xVecArray, yVecArray, zVecArray, size);
         }
-
         public void AddIdToGroup(string strGuid, string groupname, Color? changeObjectColour = null)
         {
             int? colorParam = null;
@@ -334,7 +343,6 @@ namespace RhinoInterfaceLibrary
         {
             throw new NotImplementedException();
         }
-
         public void SaveScreenShot(string inFullFilename, int inViewNumber)
         {
             string rhinoReturn = _emsPluginReference.SaveScreenShot(inFullFilename, inViewNumber);
@@ -346,6 +354,64 @@ namespace RhinoInterfaceLibrary
         public void SetActiveViewport(int inViewNumber)
         {
             _emsPluginReference.SetActiveViewPort(inViewNumber);
+        }
+        
+        public void AddPointWithGroupAndColor(string inPointName, MN.Point3D inPointLocation, int inGroupId, Color inColor)
+        {
+            double[] pointArray = { inPointLocation.X, inPointLocation.Y, inPointLocation.Z };
+            int[] rgb = {inColor.R, inColor.G, inColor.B};
+
+            _emsPluginReference.AddPointWithGroupAndColor(inPointName, pointArray, inGroupId, rgb);
+        }
+        public int AddGroupIfNew(string inGroupName)
+        {
+            return _emsPluginReference.AddGroupIfNew(inGroupName);
+        }
+        public void AddLineWithGroupAndColor(string inName, MN.Point3D inStart, MN.Point3D inEnd, int inGroupId, Color inColor)
+        {
+            double[] startArray = { inStart.X, inStart.Y, inStart.Z };
+            double[] endArray = { inEnd.X, inEnd.Y, inEnd.Z };
+            int[] rgb = { inColor.R, inColor.G, inColor.B };
+
+            _emsPluginReference.AddLineWithGroupAndColor(inName, startArray, endArray, inGroupId, rgb);
+        }
+        public void AddSphereWithGroupAndColor(string inName, MN.Point3D inCenter, int inGroupId, Color inColor, double inRadius)
+        {
+            double[] centerArray = { inCenter.X, inCenter.Y, inCenter.Z };
+            int[] rgb = { inColor.R, inColor.G, inColor.B };
+
+            _emsPluginReference.AddSphereWithGroupAndColor(inName, centerArray, inGroupId, rgb, inRadius);
+        }
+        public void AddSpheresInterpolatedColor(string[] inNames, List<MN.Point3D> inCenters, int[] inGroupIds, Color inStartColor, Color inEndColor, double inRadius)
+        {
+            double[,] centers = new double[inCenters.Count,3];
+            for (int i = 0; i < inCenters.Count; i++)
+            {
+                MN.Point3D pnt = inCenters[i];
+
+                centers[i, 0] = pnt.X;
+                centers[i, 1] = pnt.Y;
+                centers[i, 2] = pnt.Z;
+            }
+
+            int[] startRgb = { inStartColor.R, inStartColor.G, inStartColor.B };
+            int[] endRgb = { inEndColor.R, inEndColor.G, inEndColor.B };
+
+            // public void AddSpheresInterpolatedColor(string[] inNames, double[,] inCenters, int[] inGroupIds, int[] startColor, int[] endColor, double inRadius)
+            _emsPluginReference.AddSpheresInterpolatedColor(inNames,
+                centers,
+                inGroupIds,
+                startRgb,
+                endRgb,
+                inRadius);
+        }
+
+        public void ChangePropertiesOfObjectInGroup(string inGroupName, Color? inColor = null, int inLineTypeIndex = -1)
+        {
+            int[] rgb = null;
+            if (inColor.HasValue) rgb = new int[] { inColor.Value.R, inColor.Value.G, inColor.Value.B };
+
+            _emsPluginReference.ChangePropertiesOfObjectInGroup(inGroupName, rgb, inLineTypeIndex);
         }
         #endregion
 

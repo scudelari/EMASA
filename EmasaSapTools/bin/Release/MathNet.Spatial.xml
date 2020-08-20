@@ -1767,22 +1767,6 @@
             Gets a point where all values are NAN
             </summary>
         </member>
-        <member name="M:MathNet.Spatial.Euclidean.Point3D.op_Multiply(MathNet.Numerics.LinearAlgebra.Matrix{System.Double},MathNet.Spatial.Euclidean.Point3D)">
-            <summary>
-            Multiplies a matrix and a vector representation of the point together
-            </summary>
-            <param name="left">A matrix</param>
-            <param name="right">A point</param>
-            <returns>A Mathnet.Numerics vector</returns>
-        </member>
-        <member name="M:MathNet.Spatial.Euclidean.Point3D.op_Multiply(MathNet.Spatial.Euclidean.Point3D,MathNet.Numerics.LinearAlgebra.Matrix{System.Double})">
-            <summary>
-            Multiplies a matrix and a vector representation of the point together
-            </summary>
-            <param name="left">A point</param>
-            <param name="right">A matrix</param>
-            <returns>A Mathnet.Numerics vector</returns>
-        </member>
         <member name="M:MathNet.Spatial.Euclidean.Point3D.op_Addition(MathNet.Spatial.Euclidean.Point3D,MathNet.Spatial.Euclidean.Vector3D)">
             <summary>
             Adds a point and a vector together

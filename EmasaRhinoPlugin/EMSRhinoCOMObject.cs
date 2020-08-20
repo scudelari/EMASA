@@ -14,16 +14,45 @@ using System.Windows.Forms;
 using System.Xml;
 using Rhino.Commands;
 using Rhino.Display;
+using Rhino.FileIO;
 
 namespace EmasaRhinoPlugin
 {
     [ComVisible(true)]
     public class EMSRhinoCOMObject
     {
-        public RhinoDoc ActiveDoc
+        private RhinoDoc ActiveDoc
         {
             get { return RhinoDoc.ActiveDoc; }
         }
+
+        #region Rhino File Handling
+
+        public string GetActiveDocumentFullFileName()
+        {
+            return ActiveDoc.Path;
+        }
+        public bool SaveActiveDocumentAs(string inFullPath)
+        {
+            return ActiveDoc.WriteFile(inFullPath, new FileWriteOptions() {UpdateDocumentPath = true, SuppressDialogBoxes = true});
+        }
+        public bool OpenDocument(string inFullPath)
+        {
+            RhinoDoc doc = null;
+            try
+            {
+                bool bla = false;
+                doc = RhinoDoc.Open(inFullPath, out bla);
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+            return doc != null;
+
+        }
+
+        #endregion
 
         public int GetInteger()
         {
@@ -223,6 +252,118 @@ namespace EmasaRhinoPlugin
                         (enumType & (RhinoObjectType)(uint)a.ObjectType) == (RhinoObjectType)(uint)a.ObjectType
                     select a.Id.ToString()).ToArray();
 
+        }
+
+        public int AddGroupIfNew(string inGroupName)
+        {
+            Group grp = ActiveDoc.Groups.FindName(inGroupName);
+
+            if (grp == null)
+            { // Creates the group
+                ActiveDoc.Groups.Add(inGroupName);
+                grp = ActiveDoc.Groups.FindName(inGroupName);
+                if (grp == null) throw new InvalidOperationException($"Could not get group called {inGroupName}. Nor could a new one be added with this name.");
+            }
+
+            return grp.Index;
+        }
+        public void AddPointWithGroupAndColor(string inName, double[] inPointArray, int inGroupId, int[] inRGB)
+        {
+            Point3d p = new Point3d(inPointArray[0], inPointArray[1], inPointArray[2]);
+
+            ObjectAttributes a = new ObjectAttributes();
+            a.Name = inName;
+            a.ColorSource = ObjectColorSource.ColorFromObject;
+            a.ObjectColor = Color.FromArgb(255, inRGB[0], inRGB[1], inRGB[2]);
+
+            Guid pntId = ActiveDoc.Objects.AddPoint(p, a);
+
+            ActiveDoc.Groups.AddToGroup(inGroupId, pntId);
+        }
+        public void AddLineWithGroupAndColor(string inName, double[] inStart, double[] inEnd, int inGroupId, int[] inRGB)
+        {
+            Point3d start = new Point3d(inStart[0], inStart[1], inStart[2]);
+            Point3d end = new Point3d(inEnd[0], inEnd[1], inEnd[2]);
+
+            Line l = new Line(start, end);
+
+            ObjectAttributes a = new ObjectAttributes();
+            a.Name = inName;
+            a.ColorSource = ObjectColorSource.ColorFromObject;
+            a.ObjectColor = Color.FromArgb(255, inRGB[0], inRGB[1], inRGB[2]);
+
+            Guid lineGuid = ActiveDoc.Objects.AddLine(l, a);
+
+            ActiveDoc.Groups.AddToGroup(inGroupId, lineGuid);
+        }
+        public void AddSphereWithGroupAndColor(string inName, double[] inCenter, int inGroupId, int[] inRGB, double inRadius)
+        {
+            Point3d center = new Point3d(inCenter[0], inCenter[1], inCenter[2]);
+
+            Sphere s = new Sphere(center, inRadius);
+
+            ObjectAttributes a = new ObjectAttributes();
+            a.Name = inName;
+            a.ColorSource = ObjectColorSource.ColorFromObject;
+            a.ObjectColor = Color.FromArgb(255, inRGB[0], inRGB[1], inRGB[2]);
+
+            Guid sphereGuid = ActiveDoc.Objects.AddSphere(s, a);
+
+            ActiveDoc.Groups.AddToGroup(inGroupId, sphereGuid);
+        }
+        public void AddSpheresInterpolatedColor(string[] inNames, double[,] inCenters, int[] inGroupIds, int[] startColor, int[] endColor, double inRadius)
+        {
+            if (inNames.Length != inCenters.GetLength(0)) throw new ArgumentException("The size of the name and center array must be the same.");
+            if (inGroupIds.Length != 1 && (inGroupIds.Length != inNames.Length)) throw new ArgumentException("You must either give only one group for all spheres; or one group per sphere.");
+
+            int elementCount = inNames.Length;
+
+            for (int i = 0; i < inNames.Length; i++)
+            {
+                int grp = inGroupIds.Length == 1 ? inGroupIds[0] : inGroupIds[i];
+                int[] elemColor = LerpRGB_Array(startColor, endColor, (i + 1d) / inNames.Length);
+                double[] center = {inCenters[i, 0], inCenters[i, 1], inCenters[i, 2]};
+
+                AddSphereWithGroupAndColor(inNames[i], center, grp, elemColor, inRadius);
+            }
+        }
+        private Color LerpRGB(Color a, Color b, double t)
+        {
+            return Color.FromArgb(
+                (int)(a.A + (b.A - a.A) * t),
+                (int)(a.R + (b.R - a.R) * t),
+                (int)(a.G + (b.G - a.G) * t),
+                (int)(a.B + (b.B - a.B) * t)
+            );
+        }
+        private int[] LerpRGB_Array(int[] a, int[] b, double t)
+        {
+            return new[] {
+                (int) (a[0] + (b[0] - a[0]) * t),
+                (int) (a[1] + (b[1] - a[1]) * t),
+                (int) (a[2] + (b[2] - a[2]) * t)};
+        }
+
+        public void ChangePropertiesOfObjectInGroup(string inGroupName, int[] inColor = null, int inLineTypeIndex = -1)
+        {
+            // Finds the group
+            Group grp = ActiveDoc.Groups.FindName(inGroupName);
+
+            foreach (RhinoObject groupMember in ActiveDoc.Groups.GroupMembers(grp.Index))
+            {
+                if (inColor != null)
+                {
+                    groupMember.Attributes.ColorSource = ObjectColorSource.ColorFromObject;
+                    groupMember.Attributes.ObjectColor = Color.FromArgb(255, inColor[0], inColor[1], inColor[2]);
+
+                }
+
+                if (inLineTypeIndex >= 0)
+                {
+                    groupMember.Attributes.LinetypeSource = ObjectLinetypeSource.LinetypeFromObject;
+                    groupMember.Attributes.LinetypeIndex = inLineTypeIndex;
+                }
+            }
         }
 
         #region Grasshopper

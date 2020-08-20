@@ -103,7 +103,7 @@
     <Compile Include="FEA\Items\FeRestraint.cs" />
     <Compile Include="FEA\Items\FeSection.cs" />
     <Compile Include="FEA\Items\FeSectionPipe.cs" />
-    <Compile Include="FEA\Loads\FeLoadBase.cs" />
+    <Compile Include="FEA\Loads\FeLoad.cs" />
     <Compile Include="FEA\Loads\FeLoad_Inertial.cs" />
     <Compile Include="FEA\Results\FeResult_ElementNodalCodeCheck.cs" />
     <Compile Include="FEA\Results\FeResult_ElementNodalForces.cs" />
@@ -114,6 +114,7 @@
     <Compile Include="FEA\Results\FeResult_NodalDisplacements.cs" />
     <Compile Include="FEA\Results\FeResult_NodalReactions.cs" />
     <Compile Include="FEA\Results\FeResult_SectionNode.cs" />
+    <Compile Include="FEA\Results\FeResult_EigenvalueBucklingSummary.cs" />
     <Compile Include="FEA\S2KModel.cs" />
     <Compile Include="Opt\InputParamChromosome.cs" />
     <Compile Include="Opt\ObjectiveFunctionBase.cs" />

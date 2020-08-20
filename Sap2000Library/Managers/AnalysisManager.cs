@@ -31,6 +31,11 @@ namespace Sap2000Library.Managers
         {
             if (SapApi.Analyze.DeleteResults("", true) != 0) throw new S2KHelperException($"Could not delete the results of all load cases.");
         }
+
+        public void DeleteResultsOfLoadCase(string inLoadCaseName)
+        {
+            if (SapApi.Analyze.DeleteResults(inLoadCaseName, false) != 0) throw new S2KHelperException($"Could not delete the results of the {inLoadCaseName} load case.");
+        }
         public void SetCaseRunFlag(string inCaseName, bool run)
         {
             if (SapApi.Analyze.SetRunCaseFlag(inCaseName, run, false) != 0) throw new S2KHelperException($"Could not set the run flag of load case {inCaseName} to {run}.");

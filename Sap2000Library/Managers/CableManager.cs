@@ -165,5 +165,13 @@ namespace Sap2000Library.Managers
             }
             return allSelected;
         }
+
+        public void Selected_SetTemperatureLoad(string inLoadPatternName, double inTemperature, bool inReplace = true)
+        {
+            if (0 != SapApi.CableObj.SetLoadTemperature("", inLoadPatternName, inTemperature, "", inReplace, eItemType.SelectedObjects))
+            {
+                throw new S2KHelperException($"Could not set {inTemperature:+###.###F;-###.###F;0FRef} as the temperature loading for pattern {inLoadPatternName} for the selected cables.");
+            }
+        }
     }
 }

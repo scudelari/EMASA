@@ -11,6 +11,7 @@ using AccordHelper.FEA.Items;
 using AccordHelper.FEA.Loads;
 using AccordHelper.FEA.Results;
 using AccordHelper.Opt;
+using AccordHelper.Opt.ParamDefinitions;
 using Prism.Mvvm;
 using r3dm::Rhino.DocObjects;
 using r3dm::Rhino.Geometry;
@@ -26,6 +27,8 @@ namespace AccordHelper.FEA
         public string ModelFolder { get; set; }
         public string FileName { get; set; }
         public string FullFileName { get => Path.Combine(ModelFolder, FileName); }
+
+        public bool IsSectionAnalysis = false;
 
         protected FeModelBase(string inModelFolder, string inFilename, ProblemBase inProblem)
         {
@@ -68,7 +71,7 @@ namespace AccordHelper.FEA
         public Dictionary<int, FeMeshNode> MeshNodes { get; private set; } = new Dictionary<int, FeMeshNode>();
         public Dictionary<int, FeMeshBeamElement> MeshBeamElements { get; private set; } = new Dictionary<int, FeMeshBeamElement>();
 
-        public List<FeLoadBase> Loads { get; private set; } = new List<FeLoadBase>();
+        public List<FeLoad> Loads { get; private set; } = new List<FeLoad>();
         public HashSet<FeSection> Sections
         {
             get => Frames.Select(a => a.Value.Section).Distinct().ToHashSet();
@@ -78,7 +81,7 @@ namespace AccordHelper.FEA
             get => Sections.Select(a => a.Material).Distinct().ToHashSet();
         }
 
-        public FeJoint AddNewOrGetJointByCoordinate(Point3d inPoint)
+        private FeJoint AddNewOrGetJointByCoordinate(Point3d inPoint)
         {
             // Rounds the point coordinates
             inPoint = RoundPoint3d(inPoint);
@@ -102,11 +105,14 @@ namespace AccordHelper.FEA
             return Groups[newGroup.Name];
         }
 
-        public void AddGravityLoad()
+        public void AddGravityLoad(double inFactor = 1d)
         {
-            Loads.Add(FeLoad_Inertial.StandardGravity);
+            FeLoad gravity = FeLoad_Inertial.StandardGravity;
+            gravity.Factor = inFactor;
+            Loads.Add(gravity);
         }
 
+        [Obsolete]
         public void AddPoint3dToGroups(List<Point3d> inPoints, List<string> inGroupNames)
         {
             if (inPoints.Count == 0 || inGroupNames.Count == 0) throw new ArgumentException("No data.");
@@ -121,48 +127,82 @@ namespace AccordHelper.FEA
                 }
             }
         }
-
-        public void AddFrameList(List<Line> inLines, List<string> inGroupNames = null, List<FeSection> inPossibleSections = null)
+        [Obsolete]
+        public void AddRestraint(string inGroupName, bool[] inDoF)
         {
-            List<FeFrame> frames = new List<FeFrame>();
-            
-            if (inPossibleSections == null || inPossibleSections.Count == 0) inPossibleSections = FeSectionPipe.GetAllSections();
-
-
-            foreach (Line line in inLines)
-            {
-                frames.Add(AddFrame(line, inPossibleSections));
-            }
-
-            // Also adds the frame to the groups?
-            if (inGroupNames != null && inGroupNames.Count > 0)
-            {
-                foreach (string groupName in inGroupNames)
-                {
-                    FeGroup grp = AddNewOrGetGroup(groupName);
-                    foreach (FeFrame feFrame in frames)
-                    {
-                        grp.Frames.Add(feFrame);
-                    }
-
-                }
-            }
+            FeGroup grp = AddNewOrGetGroup(inGroupName);
+            grp.Restraint = new FeRestraint(inDoF);
         }
-        public FeFrame AddFrame(Line inRhinoLine, List<FeSection> inPossibleSections, List<string> inGroupNames = null)
-        {
-            if (inPossibleSections.Count == 0) throw new ArgumentException("Must contain at least one value.", nameof(inPossibleSections));
 
+
+        public List<Point3d> AddJoints_IntermediateParameter(string inIntermediateParameterName, List<string> inGroupNames = null)
+        {
+            // The default group is the var name without special chars 
+            if (inGroupNames == null) inGroupNames = new List<string>() { inIntermediateParameterName.Replace(' ', '_').Replace('.', '_') };
+
+            // Gets the points from the parameter
+            List<Point3d> points = Problem.CurrentSolverSolution.GetIntermediateValueByName<List<Point3d>>(inIntermediateParameterName);
+
+            // Finds the parameter definition in the list - it will have the restraints
+            PointList_Output_ParamDef pParam = Problem.ObjectiveFunction.IntermediateDefs.FirstOrDefault(a => a.Name == inIntermediateParameterName) as PointList_Output_ParamDef;
+
+            if (pParam == null) throw new Exception($"The parameter {inIntermediateParameterName} is not a PointList_Output_ParamDef or could not be found.");
+
+            // Adds the joint definitions to the Model
+            List<FeJoint> addedJoints = new List<FeJoint>();
+            foreach (Point3d pnt in points)
+            {
+                FeJoint j = AddJoint(pnt, pParam);
+                addedJoints.Add(j);
+            }
+
+            return points;
+        }
+        private FeJoint AddJoint(Point3d inRhinoPoint, PointList_Output_ParamDef inPointParam)
+        {
+            FeJoint joint = AddNewOrGetJointByCoordinate(inRhinoPoint);
+
+            joint.Restraint.IncorporateRestraint(inPointParam.Restraint);
+
+            return joint;
+        }
+
+        public List<Line> AddFrames_IntermediateParameter(string inIntermediateParameterName, List<string> inGroupNames = null)
+        {
+            // The default group is the var name without special chars 
+            if (inGroupNames == null) inGroupNames = new List<string>() { inIntermediateParameterName.Replace(' ','_').Replace('.','_') };
+
+            // Gets the lines from the parameter
+            List<Line> lines = Problem.CurrentSolverSolution.GetIntermediateValueByName<List<Line>>(inIntermediateParameterName);
+
+            // Finds the parameter definition in the list - it will have the sections and the restraints
+            LineList_Output_ParamDef lParam = Problem.ObjectiveFunction.IntermediateDefs.FirstOrDefault(a => a.Name == inIntermediateParameterName) as LineList_Output_ParamDef;
+            
+            if (lParam == null ) throw new Exception($"The parameter {inIntermediateParameterName} is not a LineList_Output_ParamDef or could not be found.");
+            if (lParam.SolveSection == null) throw new Exception("The SolveSection parameter of the LineList_Output_ParamDef must be set.");
+
+            // Adds the line definitions to the Model
+            List<FeFrame> addedFrames = new List<FeFrame>();
+            foreach (Line line in lines)
+            {
+                FeFrame f = AddFrame(line, lParam);
+                addedFrames.Add(f);
+            }
+
+            return lines;
+        }
+        private FeFrame AddFrame(Line inRhinoLine, LineList_Output_ParamDef inLineParam)
+        {
             // Adds the joints if they are to be added
             FeJoint iJoint = AddNewOrGetJointByCoordinate(inRhinoLine.From);
             FeJoint jJoint = AddNewOrGetJointByCoordinate(inRhinoLine.To);
 
-            // Assigns the value that is at the median considering the area
-            inPossibleSections.Sort();
-            FeSection section = inPossibleSections[inPossibleSections.Count/2 + 1];
-
+            // Adds a restraint to the joint if there is one given by this line
+            iJoint.Restraint.IncorporateRestraint(inLineParam.Restraint);
+            jJoint.Restraint.IncorporateRestraint(inLineParam.Restraint);
 
             // Creates the Frame Element
-            FeFrame newFrame = new FeFrame(FrameCount, section, iJoint, jJoint);
+            FeFrame newFrame = new FeFrame(FrameCount, inLineParam.SolveSection, iJoint, jJoint);
 
             // We already have this Frame?
             if (Frames.Any(a => (a.Value.IJoint == newFrame.IJoint && a.Value.JJoint == newFrame.JJoint) ||
@@ -173,28 +213,13 @@ namespace AccordHelper.FEA
 
             Frames.Add(newFrame.Id, newFrame);
 
-            // Also adds the frame to the groups?
-            if (inGroupNames != null && inGroupNames.Count > 0)
-            {
-                foreach (string groupName in inGroupNames)
-                {
-                    FeGroup grp = AddNewOrGetGroup(groupName);
-                    grp.Frames.Add(newFrame);
-                }
-            }
-
             FrameCount++;
 
             return newFrame;
         }
 
-        public void AddRestraint(string inGroupName, bool[] inDoF)
-        {
-            FeGroup grp = AddNewOrGetGroup(inGroupName);
-            grp.Restraint = new FeRestraint(inDoF);
-        }
 
-        public abstract void InitializeSoftware();
+        public abstract void InitializeSoftware(bool inIsSectionSelection = false);
 
         public abstract void ResetSoftwareData();
         public virtual void ResetClassData()
@@ -211,9 +236,7 @@ namespace AccordHelper.FEA
 
         public abstract void CloseApplication();
 
-        public abstract void InitialPassForSectionAssignment();
-
-        public abstract void RunAnalysisAndGetResults(List<ResultOutput> inDesiredResults);
+        public abstract void RunAnalysisAndGetResults(List<ResultOutput> inDesiredResults, int inEigenvalueBucklingMode = 0, double inEigenvalueBucklingScaleFactor = double.NaN);
 
         #region General Options
         public int JointRoundingDecimals = 3;
@@ -280,5 +303,11 @@ namespace AccordHelper.FEA
         ElementNodal_CodeCheck,
 
         Element_StrainEnergy,
+
+        EigenvalueBuckling_Summary,
+
+        EigenvalueBuckling_ModeShape1,
+        EigenvalueBuckling_ModeShape2,
+        EigenvalueBuckling_ModeShape3,
     }
 }

@@ -174,11 +174,27 @@ namespace EmasaSapTools.Bindings
 
                         try
                         {
+                            BusyOverlayBindings.I.MessageText = "Deleting Old Results.";
+                            S2KModel.SM.AnalysisMan.DeleteResultsOfLoadCase(item.Name);
+
                             BusyOverlayBindings.I.MessageText = $"Updating Solution Controls.";
                             S2KModel.SM.LCMan.UpdateNLSolControlParams(item, SelectedCase.SolControlParams);
 
                             BusyOverlayBindings.I.MessageText = $"Updating Target Force Controls.";
                             S2KModel.SM.LCMan.UpdateNLTargetForceParams(item, SelectedCase.TargetForceParams);
+
+                            BusyOverlayBindings.I.MessageText = $"Updating Node Control.";
+                            S2KModel.SM.LCMan.UpdateNLLoadApplication(item, new LCNonLinear_LoadApplicationOptions()
+                                {
+                                DOF = LCNonLinear_DOF.U1,
+                                Displacement = 0d,
+                                DispType = LCNonLinear_DispType.MonitoredDisplacement,
+                                GeneralizedDisplacementName = "",
+                                LoadControl = LCNonLinear_LoadControl.FullLoad,
+                                Monitor = LCNonLinear_Monitor.DisplacementAtSpecifiedPoint,
+                                PointName = "KH_600006_IJ_2"
+                            });
+
 
                             BusyOverlayBindings.I.MessageText = $"Updating Results Saved Controls.";
                             switch (item.NLSubType)

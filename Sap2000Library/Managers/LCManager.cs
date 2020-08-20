@@ -359,13 +359,13 @@ namespace Sap2000Library.Managers
 
             return true;
         }
-        public bool AddNew_LCNonLinear(string inCaseName, List<LoadCaseNLLoadData> inLoads, bool inUseStepping, string inPreviousCase = null)
+        public bool AddNew_LCNonLinear(string inCaseName, List<LoadCaseNLLoadData> inLoads, bool inUseStepping, string inPreviousCase = null, LCNonLinear_NLGeomType inGeomNonLinearType = LCNonLinear_NLGeomType.PDelta)
         {
             int ret = SapApi.LoadCases.StaticNonlinear.SetCase(inCaseName);
             if (ret != 0) throw new S2KHelperException($"Could not add Non-Linear case named {inCaseName}", this);
 
-            ret = SapApi.LoadCases.StaticNonlinear.SetGeometricNonlinearity(inCaseName, (int)LCNonLinear_NLGeomType.PDelta);
-            if (ret != 0) throw new S2KHelperException($"Could set the Geometric Non-Linearity to P-Delta to Non-Linear case named {inCaseName}", this);
+            ret = SapApi.LoadCases.StaticNonlinear.SetGeometricNonlinearity(inCaseName, (int)inGeomNonLinearType);
+            if (ret != 0) throw new S2KHelperException($"Could set the Geometric Non-Linearity to {inGeomNonLinearType} to Non-Linear case named {inCaseName}", this);
 
             // Adds the loads
             if (inLoads != null && inLoads.Count > 0)
@@ -488,6 +488,12 @@ namespace Sap2000Library.Managers
             List<string> lcNames = GetAllNames(filterType);
 
             return lcNames.Select(a => new LoadCase(this) { Name = a }).ToList();
+        }
+
+        public void RenameCase(string inOldCaseName, string inNewCaseName)
+        {
+            int ret = SapApi.LoadCases.ChangeName(inOldCaseName, inNewCaseName);
+            if (ret != 0) throw new S2KHelperException($"Could not rename case {inOldCaseName} to {inNewCaseName}");
         }
     }
 }

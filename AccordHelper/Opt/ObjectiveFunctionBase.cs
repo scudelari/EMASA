@@ -368,7 +368,8 @@ namespace AccordHelper.Opt
 
             try
             {
-                CurrentEval = Function_Override(inVariables);
+                // The values vector is given by the CurrentSolution object.
+                CurrentEval = Function_Override();
             }
             catch (Exception e) // If there was an error in the objective function, increases the previous value by 25%
             {
@@ -398,7 +399,7 @@ namespace AccordHelper.Opt
 
             try
             {
-                double retValue = Function_Override(inVariables);
+                double retValue = Function_Override();
 
                 sw.Stop();
                 CurrentEvalElapsedSeconds = sw.Elapsed.TotalSeconds;
@@ -425,7 +426,7 @@ namespace AccordHelper.Opt
 
             return Function_Wrapper(inVariables);
         }
-        public abstract double Function_Override(double[] inVariables);
+        protected abstract double Function_Override();
 
         /// <summary>
         /// The default implementation is to make an approximation using Finite Differences

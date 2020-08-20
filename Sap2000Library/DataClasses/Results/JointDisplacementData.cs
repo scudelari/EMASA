@@ -40,18 +40,19 @@ namespace Sap2000Library.DataClasses.Results
         public double R2 { get; set; }
         public double R3 { get; set; }
 
-        private SapPoint linkedPoint = null;
-        public void LinkToPoint(SapPoint inPoint)
+        private SapPoint _linkedPoint = null;
+        public SapPoint LinkedPoint
         {
-            linkedPoint = inPoint;
+            get => _linkedPoint;
+            set => _linkedPoint = value;
         }
 
         public Point3D OriginalCoordinates
         {
             get
             {
-                if (linkedPoint == null) throw new S2KHelperException($"You can only get the original coordinates if the linked point has been linked using the LinkToPoint function");
-                return linkedPoint.Point;
+                if (_linkedPoint == null) throw new S2KHelperException($"You can only get the original coordinates if the linked point has been linked using the LinkToPoint function");
+                return _linkedPoint.Point;
             }
         }
         public Vector3D GlobalDelta
@@ -67,7 +68,7 @@ namespace Sap2000Library.DataClasses.Results
         {
             get
             {
-                if (linkedPoint == null) throw new S2KHelperException($"You can only get the final coordinates if the linked point has been linked using the LinkToPoint function");
+                if (_linkedPoint == null) throw new S2KHelperException($"You can only get the final coordinates if the linked point has been linked using the LinkToPoint function");
                 if (!GlobalU1.HasValue || !GlobalU2.HasValue || !GlobalU3.HasValue)
                     throw new S2KHelperException("Before getting the final coordinates you must get the global coordinates through the function FillGlobalCoordinates");
 
@@ -81,7 +82,7 @@ namespace Sap2000Library.DataClasses.Results
 
             // Tries to get the SapPoint
             SapPoint point = null;
-            if (linkedPoint != null) point = linkedPoint;
+            if (_linkedPoint != null) point = _linkedPoint;
             else point = owner.s2KModel.PointMan.GetByName(Obj);
 
             if (point == null) return false;
@@ -173,7 +174,7 @@ namespace Sap2000Library.DataClasses.Results
             get     
             {
                 return
-$@"INSERT INTO JointDisplacement (Obj , Element , LoadCase , StepType , StepNum , 
+$@"INSERT INTO [JointDisplacement] (Obj , Element , LoadCase , StepType , StepNum , 
     U1 , U2 , U3 , R1 , R2 , R3 , 
     GlobalU1 , GlobalU2 , GlobalU3 , GlobalR1 , GlobalR2 , GlobalR3 ,
     TransformationMatrix )
@@ -190,7 +191,7 @@ VALUES(
             get
             {
                 return
-@"CREATE TABLE JointDisplacement (
+@"CREATE TABLE [JointDisplacement] (
     Obj TEXT, Element TEXT, LoadCase TEXT, StepType TEXT, StepNum TEXT, 
     U1 DOUBLE, U2 DOUBLE, U3 DOUBLE, R1 DOUBLE, R2 DOUBLE, R3 DOUBLE, 
     GlobalU1 DOUBLE, GlobalU2 DOUBLE, GlobalU3 DOUBLE, GlobalR1 DOUBLE, GlobalR2 DOUBLE, GlobalR3 DOUBLE,

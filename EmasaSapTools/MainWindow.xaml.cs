@@ -39,6 +39,7 @@ using BaseWPFLibrary.Bindings;
 using BaseWPFLibrary.Events;
 using BaseWPFLibrary.Forms;
 using Prism.Events;
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace EmasaSapTools
 {
@@ -48,6 +49,7 @@ namespace EmasaSapTools
     public partial class MainWindow : Window
     {
         #region Window Bindings and Helpers
+        [Obsolete]
         private void CreateAndBind()
         {
             FormBasicRefreshingBindings.Start(MainTabControl, false);
@@ -64,7 +66,7 @@ namespace EmasaSapTools
             RenameItemsBindings.Start(Rename_TabItem_Panel);
             CreateSpliceBindings.Start(CreateSpliceGroupBox);
             SelectionInfoBindings.Start(Selection_TabItem_Panel);
-            BreakFrameBindings.Start(BreakFrames_GroupBox);
+            //BreakFrameBindings.Start(BreakFrames_GroupBox);
             SQLiteBindings.Start(SQLiteOperations_TabItem_Panel);
 
 
@@ -174,8 +176,11 @@ namespace EmasaSapTools
             DisneyCanopySurveyBindings.Start(CanopySurveyTabItem);
             DisneyCanopySurveyBindings.I.ResultsDisplacements_Cases_ViewItems = (new CollectionViewSource() { Source = FormSharedDataBindings.I.Sap2000CaseList }).View;
             DisneyCanopySurveyBindings.I.ResultsDisplacements_Groups_ViewItems = (new CollectionViewSource() { Source = FormSharedDataBindings.I.Sap2000GroupList }).View;
+            DisneyCanopySurveyBindings.I.StepwiseReport_OutputGroups_ViewItems = (new CollectionViewSource() { Source = FormSharedDataBindings.I.Sap2000GroupList }).View;
 
-            RhinoOperationsBindings.Start(RhinoOperations_TabItem_Panel);
+            RhinoOperationsBindings.Start(RhinoOperations_TabItem);
+
+            ManipulateItemsBindings.Start(ManipulateItems_TabItem);
 
             TestBindings.Start(Test_StackPanel);
 
@@ -298,6 +303,9 @@ namespace EmasaSapTools
                 StatusBarBindings.I.SapFileName = "COULD NOT CONNECT TO AN INSTANCE OF SAP2000. ARE YOU SURE SAP2000 IS OPEN?";
                 return;
             }
+
+            // Are we already busy?
+            if (BusyOverlayBindings.I.OverlayVisibility != Visibility.Collapsed) return;
 
             DisableWindow();
             BusyOverlayBindings.I.Title = "Updating Interface Items";
@@ -838,116 +846,116 @@ namespace EmasaSapTools
             }
         }
 
-        private async void BreakFrameClosestPointButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                DisableWindow();
+        //private async void BreakFrameClosestPointButton_Click(object sender, RoutedEventArgs e)
+        //{
+        //    try
+        //    {
+        //        DisableWindow();
 
-                // The async body
-                void work()
-                {
-                    //progReporter.Report(ProgressData.SetMessage("Getting the selected points.", true));
-                    var sPoints = S2KModel.SM.PointMan.GetSelected();
+        //        // The async body
+        //        void work()
+        //        {
+        //            //progReporter.Report(ProgressData.SetMessage("Getting the selected points.", true));
+        //            var sPoints = S2KModel.SM.PointMan.GetSelected();
 
-                    if (sPoints.Count != 1)
-                        throw new S2KHelperException(
-                            "You must select one - and only one point. It is the point closest to which the frame will be broken.");
+        //            if (sPoints.Count != 1)
+        //                throw new S2KHelperException(
+        //                    "You must select one - and only one point. It is the point closest to which the frame will be broken.");
 
-                    //progReporter.Report(ProgressData.SetMessage("Getting the selected frames.", true));
-                    var sFrames = S2KModel.SM.FrameMan.GetSelected();
+        //            //progReporter.Report(ProgressData.SetMessage("Getting the selected frames.", true));
+        //            var sFrames = S2KModel.SM.FrameMan.GetSelected();
 
-                    if (sFrames.Count != 1)
-                        throw new S2KHelperException(
-                            "You must select one - and only one frame. It is the frame that will be broken.");
+        //            if (sFrames.Count != 1)
+        //                throw new S2KHelperException(
+        //                    "You must select one - and only one frame. It is the frame that will be broken.");
 
-                    //progReporter.Report(ProgressData.SetMessage("Breaking the frame.", true));
+        //            //progReporter.Report(ProgressData.SetMessage("Breaking the frame.", true));
 
-                    // Puts a point in the frame that is closest to the selected point
-                    SapPoint onFrame = sFrames[0]
-                        .AddPointInFrameClosestToGiven(sPoints[0], $"KH_Link_{S2KStaticMethods.UniqueName(6)}");
+        //            // Puts a point in the frame that is closest to the selected point
+        //            SapPoint onFrame = sFrames[0]
+        //                .AddPointInFrameClosestToGiven(sPoints[0], $"KH_Link_{S2KStaticMethods.UniqueName(6)}");
 
-                    // Checks if is one of the extreme frames
-                    if (sFrames[0].IsPointIJ(onFrame))
-                        throw new S2KHelperException(
-                            "The frame will not be broken as the closest point is one of the end joints of the frame.");
+        //            // Checks if is one of the extreme frames
+        //            if (sFrames[0].IsPointIJ(onFrame))
+        //                throw new S2KHelperException(
+        //                    "The frame will not be broken as the closest point is one of the end joints of the frame.");
 
-                    // Breaks the frame at the either the given or added point - depends on the results of the AddPointInFrameClosestToGiven function.
-                    List<SapFrame> sapFrames = null;
-                    try
-                    {
-                        sapFrames = sFrames[0].DivideAtIntersectPoint(onFrame, "P");
-                    }
-                    catch (Exception)
-                    {
-                        throw new S2KHelperException(
-                            "Cannot break the frame at the given point. Probably the closest point is too close (considering Sap2000 Merge Tolerance) to the frame as to prevent a point to be added all the while being too far to be captured as being on the line to break the frame. Try reducing Sap2000's Merge Tolerance.");
-                    }
+        //            // Breaks the frame at the either the given or added point - depends on the results of the AddPointInFrameClosestToGiven function.
+        //            List<SapFrame> sapFrames = null;
+        //            try
+        //            {
+        //                sapFrames = sFrames[0].DivideAtIntersectPoint(onFrame, "P");
+        //            }
+        //            catch (Exception)
+        //            {
+        //                throw new S2KHelperException(
+        //                    "Cannot break the frame at the given point. Probably the closest point is too close (considering Sap2000 Merge Tolerance) to the frame as to prevent a point to be added all the while being too far to be captured as being on the line to break the frame. Try reducing Sap2000's Merge Tolerance.");
+        //            }
 
-                    // Should we add a constraint?
-                    if (BreakFrameBindings.I.ClosestPointAddConstraint_IsChecked)
-                    {
-                        //progReporter.Report(ProgressData.SetMessage("Adding a constraint.", true));
+        //            // Should we add a constraint?
+        //            if (BreakFrameBindings.I.ClosestPointAddConstraint_IsChecked)
+        //            {
+        //                //progReporter.Report(ProgressData.SetMessage("Adding a constraint.", true));
 
-                        bool[] constVals =
-                        {
-                            BreakFrameBindings.I.U1CheckBox_IsChecked, BreakFrameBindings.I.U2CheckBox_IsChecked,
-                            BreakFrameBindings.I.U3CheckBox_IsChecked,
-                            BreakFrameBindings.I.R1CheckBox_IsChecked, BreakFrameBindings.I.R2CheckBox_IsChecked,
-                            BreakFrameBindings.I.R3CheckBox_IsChecked
-                        };
+        //                bool[] constVals =
+        //                {
+        //                    BreakFrameBindings.I.U1CheckBox_IsChecked, BreakFrameBindings.I.U2CheckBox_IsChecked,
+        //                    BreakFrameBindings.I.U3CheckBox_IsChecked,
+        //                    BreakFrameBindings.I.R1CheckBox_IsChecked, BreakFrameBindings.I.R2CheckBox_IsChecked,
+        //                    BreakFrameBindings.I.R3CheckBox_IsChecked
+        //                };
 
-                        string constName = BreakFrameBindings.I.OutConstraintName + S2KStaticMethods.UniqueName(10);
+        //                string constName = BreakFrameBindings.I.OutConstraintName + S2KStaticMethods.UniqueName(10);
 
-                        if (BreakFrameBindings.I.BodyConstraintTypeRadioButton_IsChecked)
-                        {
-                            // Creates a joint constraint
-                            if (!S2KModel.SM.JointConstraintMan.SetBodyConstraint(constName, constVals))
-                                throw new S2KHelperException($"Could not create constraint called {constName}.");
-                        }
-                        else if (BreakFrameBindings.I.LocalConstraintTypeRadioButton_IsChecked)
-                        {
-                            // Creates a joint constraint
-                            if (!S2KModel.SM.JointConstraintMan.SetLocalConstraint(constName, constVals))
-                                throw new S2KHelperException($"Could not create constraint called {constName}.");
-                        }
-                        else if (BreakFrameBindings.I.EqualConstraintTypeRadioButton_IsChecked)
-                        {
-                            // Creates a joint constraint
-                            if (!S2KModel.SM.JointConstraintMan.SetEqualConstraint(constName, constVals))
-                                throw new S2KHelperException($"Could not create constraint called {constName}.");
-                        }
+        //                if (BreakFrameBindings.I.BodyConstraintTypeRadioButton_IsChecked)
+        //                {
+        //                    // Creates a joint constraint
+        //                    if (!S2KModel.SM.JointConstraintMan.SetBodyConstraint(constName, constVals))
+        //                        throw new S2KHelperException($"Could not create constraint called {constName}.");
+        //                }
+        //                else if (BreakFrameBindings.I.LocalConstraintTypeRadioButton_IsChecked)
+        //                {
+        //                    // Creates a joint constraint
+        //                    if (!S2KModel.SM.JointConstraintMan.SetLocalConstraint(constName, constVals))
+        //                        throw new S2KHelperException($"Could not create constraint called {constName}.");
+        //                }
+        //                else if (BreakFrameBindings.I.EqualConstraintTypeRadioButton_IsChecked)
+        //                {
+        //                    // Creates a joint constraint
+        //                    if (!S2KModel.SM.JointConstraintMan.SetEqualConstraint(constName, constVals))
+        //                        throw new S2KHelperException($"Could not create constraint called {constName}.");
+        //                }
 
-                        sPoints[0].AddJointConstraint(constName, false);
-                        onFrame.AddJointConstraint(constName, false);
-                    }
-                }
+        //                sPoints[0].AddJointConstraint(constName, false);
+        //                onFrame.AddJointConstraint(constName, false);
+        //            }
+        //        }
 
-                // Runs the job async
-                Task task = new Task(() => work());
-                task.Start();
-                await task;
+        //        // Runs the job async
+        //        Task task = new Task(() => work());
+        //        task.Start();
+        //        await task;
 
 
-                // There was an error in getting the data or the data table was not acquired
-                if (task.IsFaulted)
-                {
-                    S2KStaticMethods.ShowErrorMessageBox("Could not break the frame.", task.Exception);
-                }
-                else
-                {
-                }
-            }
-            catch (Exception ex)
-            {
-                S2KStaticMethods.ShowErrorMessageBox("Could not work on the SAP2000 model.", ex);
-            }
-            finally
-            {
-                ////StatusBarBindings.I.IProgressReporter.Report(ProgressData.Reset());
-                EnableWindow();
-            }
-        }
+        //        // There was an error in getting the data or the data table was not acquired
+        //        if (task.IsFaulted)
+        //        {
+        //            S2KStaticMethods.ShowErrorMessageBox("Could not break the frame.", task.Exception);
+        //        }
+        //        else
+        //        {
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        S2KStaticMethods.ShowErrorMessageBox("Could not work on the SAP2000 model.", ex);
+        //    }
+        //    finally
+        //    {
+        //        ////StatusBarBindings.I.IProgressReporter.Report(ProgressData.Reset());
+        //        EnableWindow();
+        //    }
+        //}
 
         #endregion
 
@@ -2381,8 +2389,7 @@ namespace EmasaSapTools
                                     // Saves the current lines in the buffer to the previous table
                                     local_SendBuffer();
 
-                                    currentTableType =
-                                        SQLiteBindings.MatchTableType(tableNameMatch.Groups["tableName"].Value);
+                                    currentTableType = SQLiteBindings.MatchTableType(tableNameMatch.Groups["tableName"].Value);
 
                                     // Adds it to the DataSet
                                     currentTable = SQLiteBindings.I.RegexTableDic[currentTableType.Value].table;
@@ -2390,10 +2397,6 @@ namespace EmasaSapTools
 
                                     // Creates the table in the SQLite
                                     SQLiteBindings.I.SQLiteCommand_CreateTable(sqliteConn, currentTableType.Value);
-
-                                    ////progReporter.Report(
-                                    //    ProgressData.SetMessage(
-                                    //        $"Reading Table {currentTableType.ToString()} from S2K file."));
 
                                     continue;
                                 }
@@ -4138,11 +4141,10 @@ namespace EmasaSapTools
             {
                 void work()
                 {
-                    string targetFilename = Path.Combine(S2KModel.SM.ModelDir,
-                        $"{S2KModel.SM.FileNameWithoutExtension}_s2kExport_{S2KStaticMethods.CurrentTimeStamp()}.s2k");
-
-                    S2KModel.SM.InterAuto.ExportTablesToS2K(targetFilename,
-                        new List<Sap2000ExportTable>() {Sap2000ExportTable.Frame_Section_Assignments});
+                    {
+                        RhinoModel.Initialize();
+                        RhinoModel.RM.OpenRhinoDocument(@"C:\Users\EngRafaelSMacedo\Desktop\00 CANOPY\30 - Site Temperature\Playtime\Base.3dm");
+                    }
                 }
 
                 // Runs the job async

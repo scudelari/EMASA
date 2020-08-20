@@ -571,6 +571,7 @@ namespace AccordHelper.FEA.Items
         }
 
         public override double OuterDiameter => Dimensions["OuterDiameter"];
+        public override double Thickness => Dimensions["Thickness"];
 
         private static string _ansysList = null;
         public static string GetFullAnsysTable()

@@ -31,13 +31,29 @@ namespace AccordHelper.FEA.Items
             set => _point = value;
         }
 
+        private FeRestraint _restraint = new FeRestraint();
+        public FeRestraint Restraint
+        {
+            get => _restraint;
+            set => _restraint = value;
+        }
+
+
+        public void IncorporateRestraint(FeRestraint inRestraint)
+        {
+            if (inRestraint.ExistAny)
+            {
+
+            }
+        }
+
+
         public bool Equals(FeJoint other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             return _point.Equals(other._point);
         }
-
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
@@ -45,22 +61,18 @@ namespace AccordHelper.FEA.Items
             if (obj.GetType() != this.GetType()) return false;
             return Equals((FeJoint) obj);
         }
-
         public override int GetHashCode()
         {
             return _point.GetHashCode();
         }
-
         public static bool operator ==(FeJoint left, FeJoint right)
         {
             return Equals(left, right);
         }
-
         public static bool operator !=(FeJoint left, FeJoint right)
         {
             return !Equals(left, right);
         }
-
         public override string ToString()
         {
             return $"{Id}: {Point}";

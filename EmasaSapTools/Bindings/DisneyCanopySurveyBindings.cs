@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
 using System.Data.SQLite;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -16,6 +17,7 @@ using BaseWPFLibrary.Bindings;
 using BaseWPFLibrary.Forms;
 using EmasaSapTools.DataGridTypes;
 using EmasaSapTools.Resources;
+using ExcelDataReader.Exceptions;
 using MathNet.Spatial.Euclidean;
 using Microsoft.Win32;
 using MoreLinq;
@@ -23,7 +25,10 @@ using Prism.Commands;
 using Sap2000Library;
 using Sap2000Library.DataClasses;
 using Sap2000Library.DataClasses.Results;
+using Sap2000Library.Other;
 using Sap2000Library.SapObjects;
+using DataTable = System.Data.DataTable;
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace EmasaSapTools.Bindings
 {
@@ -75,6 +80,13 @@ namespace EmasaSapTools.Bindings
 
         private bool _workRadio_IsChecked;
         public bool WorkRadio_IsChecked { get => _workRadio_IsChecked; set => SetProperty(ref _workRadio_IsChecked, value); }
+
+        private bool _appendPoints_IsChecked = true;
+        public bool AppendPoints_IsChecked
+        {
+            get => _appendPoints_IsChecked;
+            set => SetProperty(ref _appendPoints_IsChecked, value);
+        }
 
 
         private string _currentUnits;
@@ -149,11 +161,17 @@ namespace EmasaSapTools.Bindings
                     DataSet fromExcel = ExcelHelper.GetDataSetFromExcel(ofd.FileName, new int[] { 0 });
                     DataTable surveyPoints = fromExcel.Tables["SURVEY"];
 
-                    BusyOverlayBindings.I.SetIndeterminate("Making sure target groups exist.");
                     string flag = WorkRadio_IsChecked ? "Work" : "Survey";
                     string groupNamePoint = $"0-SurveyPoints_{Areas}_{flag}";
-                    S2KModel.SM.GroupMan.DeleteGroup(groupNamePoint);
-                    S2KModel.SM.GroupMan.AddGroup(groupNamePoint);
+                    if (!AppendPoints_IsChecked)
+                    {
+                        BusyOverlayBindings.I.SetIndeterminate("Making sure target groups exist.");
+                        S2KModel.SM.GroupMan.DeleteGroup(groupNamePoint);
+                        S2KModel.SM.GroupMan.AddGroup(groupNamePoint); 
+                    }
+
+                    List<SapPoint> existingPoints = null;
+                    if (AppendPoints_IsChecked) existingPoints = S2KModel.SM.PointMan.GetAll(true);
 
                     BusyOverlayBindings.I.SetDeterminate("Adding Survey Information to Model.");
                     var addedPoints = new List<SapPoint>();
@@ -173,6 +191,10 @@ namespace EmasaSapTools.Bindings
                             // Means that the work points location were not given
                             if ((double)row["NX"] == -166800d && (double)row["NY"] == -763200d && (double)row["NZ"] == 0) continue;
 
+                            // The point already exists
+                            if (AppendPoints_IsChecked) 
+                                if (existingPoints.Any(a => a.Name == row["SAPPointName"].ToString())) continue;
+
                             SapPoint newPoint = S2KModel.SM.PointMan.AddByCoord_ReturnSapEntity((double)row["NX"], (double)row["NY"], (double)row["NZ"], row["SAPPointName"].ToString(), 57);
                             newPoint.AddGroup(groupNamePoint);
                             addedPoints.Add(newPoint);
@@ -184,6 +206,10 @@ namespace EmasaSapTools.Bindings
 
                             // Means that the surveyed values were not given
                             if ((double)row["SX"] == -166800d && (double)row["SY"] == -763200d && (double)row["SZ"] == 0) continue;
+
+                            // The point already exists
+                            if (AppendPoints_IsChecked) 
+                                if (existingPoints.Any(a => a.Name == row["SAPPointName"].ToString())) continue;
 
                             SapPoint newPoint = S2KModel.SM.PointMan.AddByCoord_ReturnSapEntity((double)row["SX"], (double)row["SY"], (double)row["SZ"], row["SAPPointName"].ToString(), 57);
                             newPoint.AddGroup(groupNamePoint);
@@ -252,10 +278,16 @@ namespace EmasaSapTools.Bindings
                     List<SapFrame> canopyFrames = S2KModel.SM.FrameMan.GetGroup("0-CANOPY", true);
                     if (canopyFrames.Count == 0) throw new S2KHelperException("Could not get list of canopy frames.");
 
-                    BusyOverlayBindings.I.SetIndeterminate("Making sure groups exist.");
                     string GroupNameFrame = $"0-SurveyLinks_{Areas}_{flag}";
-                    S2KModel.SM.GroupMan.DeleteGroup(GroupNameFrame);
-                    S2KModel.SM.GroupMan.AddGroup(GroupNameFrame);
+                    if (!AppendPoints_IsChecked)
+                    {
+                        BusyOverlayBindings.I.SetIndeterminate("Making sure groups exist.");
+                        S2KModel.SM.GroupMan.DeleteGroup(GroupNameFrame);
+                        S2KModel.SM.GroupMan.AddGroup(GroupNameFrame);
+                    }
+
+                    List<SapFrame> previousLinks = null;
+                    if (AppendPoints_IsChecked) previousLinks = S2KModel.SM.FrameMan.GetGroup(GroupNameFrame, true);
 
                     BusyOverlayBindings.I.SetDeterminate("Linking survey points to the canopy.", "Survey Point");
                     double maxDistance = 1; // The maximum distance allowed to just link the survey to the canopy
@@ -263,6 +295,10 @@ namespace EmasaSapTools.Bindings
                     {
                         SapPoint surveyPoint = surveyPoints[i];
                         BusyOverlayBindings.I.UpdateProgress(i, surveyPoints.Count, surveyPoint.Name);
+
+                        // Ignoring points that have already been connected
+                        if (AppendPoints_IsChecked)
+                            if (previousLinks.Any(a => a.IsPointIJ(surveyPoint))) continue;
 
                         // Gets closest point in the canopy
                         SapPoint closest = canopyPoints.MinBy(a => surveyPoint.Point.DistanceTo(a.Point)).First();
@@ -868,7 +904,7 @@ FROM JointNewCoordinates;";
                             SapPoint linkedPoint = selPoints.FirstOrDefault(a => a.Name == currDispData.Obj);
                             if (linkedPoint == null) throw new S2KHelperException($"Could not find the SapPoint linked to the Displacement Data with Obj={currDispData.Obj}.");
 
-                            currDispData.LinkToPoint(linkedPoint);
+                            currDispData.LinkedPoint = linkedPoint;
                         }
 
                         BusyOverlayBindings.I.SetDeterminate($"Results Acquire = Filling the transformed data.", "Joint");
@@ -1335,5 +1371,555 @@ FROM JointNewCoordinates;";
                 if (endMessages.Length != 0) OnMessage("Could not export the displacement data of the points to the SQLite database.", endMessages.ToString());
             }
         }
+
+        #region Stepwise Report
+
+        private DataTable _stepwiseReport_MatchDataTable = null;
+
+        private string _stepwiseReport_ExcelMatchFileTextBox;
+        public string StepwiseReport_ExcelMatchFileTextBox
+        {
+            get => _stepwiseReport_ExcelMatchFileTextBox;
+            set => SetProperty(ref _stepwiseReport_ExcelMatchFileTextBox, value);
+        }
+        private string _stepwiseReport_DesiredTemperatureTextBox = "68 -5[3] +5[4]";
+        public string StepwiseReport_DesiredTemperatureTextBox
+        {
+            get => _stepwiseReport_DesiredTemperatureTextBox;
+            set => SetProperty(ref _stepwiseReport_DesiredTemperatureTextBox, value);
+        }
+
+        private ICollectionView _stepwiseReport_OutputGroups_ViewItems;
+        public ICollectionView StepwiseReport_OutputGroups_ViewItems
+        {
+            get => _stepwiseReport_OutputGroups_ViewItems;
+            set
+            {
+                SetProperty(ref _stepwiseReport_OutputGroups_ViewItems, value);
+                _stepwiseReport_OutputGroups_ViewItems.SortDescriptions.Add(new SortDescription("", ListSortDirection.Ascending));
+            }
+        }
+        private string _stepwiseReport_SelectedOutputGroup;
+        public string StepwiseReport_SelectedOutputGroup
+        {
+            get => _stepwiseReport_SelectedOutputGroup;
+            set => SetProperty(ref _stepwiseReport_SelectedOutputGroup, value);
+        }
+
+
+        private DelegateCommand _stepwiseReport_SelectMatchExcelCommand;
+        public DelegateCommand StepwiseReport_SelectMatchExcelCommand =>
+            _stepwiseReport_SelectMatchExcelCommand ?? (_stepwiseReport_SelectMatchExcelCommand = new DelegateCommand(ExecuteStepwiseReport_SelectMatchExcelCommand));
+        void ExecuteStepwiseReport_SelectMatchExcelCommand()
+        {
+            // Selects the Excel file in the view thread
+            OpenFileDialog ofd = new OpenFileDialog
+                {
+                Filter = "Excel file (*.xls;*.xlsx)|*.xls;*.xlsx",
+                DefaultExt = "*.xls;*.xlsx",
+                Title = "Select the Match Excel File With Match Sheet in the Correct Format!",
+                Multiselect = false,
+                CheckFileExists = true,
+                CheckPathExists = true
+                };
+            bool? ofdret = ofd.ShowDialog();
+
+            if (ofdret.HasValue && ofdret.Value && string.IsNullOrWhiteSpace(ofd.FileName))
+            {
+                OnMessage("Excel File", "Please select a proper Excel File!");
+                return; // Aborts the Open File
+            }
+
+            try
+            {
+                // Tries to read the selected excel for the Match sheet
+                DataSet fromExcel = ExcelHelper.GetDataSetFromExcel(ofd.FileName);
+                // Reads the steps table and puts it in Excel!
+                DataTable matchDataTable = fromExcel.Tables["Match"];
+                _stepwiseReport_MatchDataTable = matchDataTable;
+            }
+            catch (Exception)
+            {
+                OnMessage("Excel File", "Could not find the Match table in the excel file.");
+                return; // Aborts the Open File
+            }
+
+            // Saves the filename
+            StepwiseReport_ExcelMatchFileTextBox = ofd.FileName;
+        }
+
+        private DelegateCommand _stepwiseReport_GenerateAndRunCasesCommand;
+        public DelegateCommand StepwiseReport_GenerateAndRunCasesCommand =>
+            _stepwiseReport_GenerateAndRunCasesCommand ?? (_stepwiseReport_GenerateAndRunCasesCommand = new DelegateCommand(ExecuteStepwiseReport_GenerateAndRunCasesCommand));
+        async void ExecuteStepwiseReport_GenerateAndRunCasesCommand()
+        {
+            StringBuilder endMessages = new StringBuilder();
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(StepwiseReport_DesiredTemperatureTextBox)) throw new ArgumentNullException("Match DataTable", "Please select the Excel file with the matching table.");
+                if (_stepwiseReport_MatchDataTable == null) throw new ArgumentNullException("Match DataTable", "The Match Excel DataTable cannot be null.");
+
+                double ref_temp = double.NaN;
+                Dictionary<int, double> tempStepDictionary = new Dictionary<int, double>();
+
+                try
+                {
+                    Regex chunkReader = new Regex(@"(?<ref>\d+)\s((?<tvar>[\-\+\d\.]*)\[(?<tcount>\d*)]\s?)*");
+                    Match m = chunkReader.Match(StepwiseReport_DesiredTemperatureTextBox);
+                    if (!m.Success) throw new Exception();
+
+                    ref_temp = double.Parse(m.Groups["ref"].Value);
+
+                    for (int i = 0; i < m.Groups["tcount"].Captures.Count; i++)
+                    {
+                        tempStepDictionary.Add(int.Parse(m.Groups["tcount"].Captures[i].Value),double.Parse(m.Groups["tvar"].Captures[i].Value));
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new ArgumentException("Desired Temperatures", "You did not specify the temperatures properly.");
+                }
+
+                OnBeginCommand();
+
+                void lf_Work()
+                {
+
+                    BusyOverlayBindings.I.Title = $"Generating the Stepwise (with temperature) Load Cases and Run";
+
+                    BusyOverlayBindings.I.SetIndeterminate($"Getting the list of Staged Construction cases with format <###_BD_1D>.");
+                    List<LCNonLinear> allNlCases = S2KModel.SM.LCMan.GetNonLinearStaticLoadCaseList(inRegexFilter: @"\d\d\d_BD_1D");
+                    allNlCases.RemoveAll(a => a.NLSubType != LCNonLinear_SubType.StagedConstruction);
+
+                    BusyOverlayBindings.I.SetDeterminate("Generating Report the Temperature Load Cases for Each Step.", "Temperature");
+
+                    int currentCase = 0;
+                    int totalCases = tempStepDictionary.Aggregate(1, (inD, inPair) => inD * inPair.Key) * allNlCases.Count;
+
+                    double shift = 0d;
+
+                    for (int i = 0; i < tempStepDictionary.Count; i++)
+                    {
+                        KeyValuePair<int, double> pair = tempStepDictionary.ElementAt(i);
+
+                        for (int j = 0; j < pair.Key; j++)
+                        {
+                            double tval = ref_temp + (pair.Value * (j + 1));
+
+                            string tval_string = tval.ToString("+###.###F;-###.###F", CultureInfo.InvariantCulture);
+                            BusyOverlayBindings.I.UpdateProgress(currentCase++, totalCases, tval_string);
+
+                            string pattern_name = $"RepT";
+
+                            string currentCaseNamePrefix = $"T_{tval_string}_";
+                            //string previousCaseNamePrefix = j == 0 ? "" : "T_" + (tval - pair.Value).ToString("+###.###F;-###.###F", CultureInfo.InvariantCulture) + "_";
+                            string previousCaseNamePrefix = "T_" + (tval - pair.Value).ToString("+###.###F;-###.###F", CultureInfo.InvariantCulture) + "_";
+
+                            string refTempPrefix = "T_" + (ref_temp).ToString("+###.###F;-###.###F", CultureInfo.InvariantCulture) + "_";
+
+                            foreach (LCNonLinear bdcase in allNlCases)
+                            {
+                                // Sets the temperature case
+                                S2KModel.SM.LCMan.AddNew_LCNonLinear(inCaseName: bdcase.Name.Replace(refTempPrefix, currentCaseNamePrefix),
+                                    inLoads: new List<LoadCaseNLLoadData>()
+                                        {
+                                    new LoadCaseNLLoadData() {LoadType = "Load", LoadName = pattern_name, ScaleFactor = pair.Value},
+                                        },
+                                    inUseStepping: true,
+                                    inPreviousCase: bdcase.Name.Replace(refTempPrefix, previousCaseNamePrefix),
+                                    inGeomNonLinearType: LCNonLinear_NLGeomType.None);
+                            }
+                        } 
+                    }
+
+                    // Renames the base dead cases
+
+                    //foreach (LCNonLinear lcNonLinear in allNlCases)
+                    //{
+                    //    S2KModel.SM.LCMan.RenameCase(lcNonLinear.Name, $"T_{ref_temp.ToString("+###.###F;-###.###F", CultureInfo.InvariantCulture)}_{lcNonLinear.Name}");
+                    //}
+
+                    //// Sets all cases to Run
+                    S2KModel.SM.AnalysisMan.SetAllToRun();
+                    BusyOverlayBindings.I.SetIndeterminate($"Running the SAP2000 Analysis");
+                    S2KModel.SM.AnalysisMan.RunAnalysis();
+                }
+
+                // Runs the job async
+                Task task = new Task(lf_Work);
+                task.Start();
+                await task;
+            }
+            catch (Exception ex)
+            {
+                ExceptionViewer.Show(ex);
+            }
+            finally
+            {
+                OnEndCommand();
+                // Messages to send?
+                if (endMessages.Length != 0) OnMessage("Could not export create and run the desired temperatures.", endMessages.ToString());
+            }
+        }
+
+        private DelegateCommand _stepwiseReport_GenerateReportCommand;
+        public DelegateCommand StepwiseReport_GenerateReportCommand =>
+            _stepwiseReport_GenerateReportCommand ?? (_stepwiseReport_GenerateReportCommand = new DelegateCommand(ExecuteStepwiseReport_GenerateReportCommand));
+        async void ExecuteStepwiseReport_GenerateReportCommand()
+        {
+            StringBuilder endMessages = new StringBuilder();
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(StepwiseReport_DesiredTemperatureTextBox)) throw new ArgumentNullException("Match DataTable", "Please select the Excel file with the matching table.");
+                if (_stepwiseReport_MatchDataTable == null) throw new ArgumentNullException("Match DataTable", "The Match Excel DataTable cannot be null.");
+
+                OnBeginCommand();
+
+                void lf_Work()
+                {
+
+                    BusyOverlayBindings.I.Title = $"Generating the Stepwise (with temperature) Report";
+
+                    if (!S2KModel.SM.AnalysisMan.ModelLocked) throw new Exception("The model must be locked and the cases must be run!");
+
+                    // Getting the output points
+                    S2KModel.SM.ClearSelection();
+                    S2KModel.SM.GroupMan.SelectGroup(StepwiseReport_SelectedOutputGroup);
+                    List<SapPoint> selPoints = S2KModel.SM.PointMan.GetSelected(true);
+
+                    // Getting the list of survey links
+                    S2KModel.SM.ClearSelection();
+                    //S2KModel.SM.GroupMan.SelectGroup("0-SurveyPoints_1_2_3_4_5_Survey");
+                    S2KModel.SM.GroupMan.SelectGroup("0-SurveyLinks_1_2_3_4_5_Survey");
+                    S2KModel.SM.GroupMan.DeselectGroup("*** GHOST ***");
+                    List<SapFrame> linkFrames = S2KModel.SM.FrameMan.GetSelected(true);
+
+                    // Finds a match 
+                    BusyOverlayBindings.I.SetIndeterminate("Finding the modules related to each survey point.");
+                    Regex grpRegex = new Regex(@"^[AB]\d\d\w?");
+                    Dictionary<SapPoint, string> pntModuleDic = new Dictionary<SapPoint, string>();
+                    foreach (SapPoint pnt in selPoints)
+                    {
+                        // Finds the frame
+                        SapFrame frame = (from a in linkFrames
+                            where a.IsPointIJ(pnt)
+                            select a).First();
+
+                        // Gets the frame's group that is a module
+                        string grpName = (from a in frame.Groups
+                            where grpRegex.IsMatch(a)
+                            select a).First();
+
+                        // Adds the match to the dictionary
+                        pntModuleDic.Add(pnt, grpName);
+                    }
+
+                    BusyOverlayBindings.I.SetIndeterminate($"Setting the results output configuration");
+
+                    // Performs basic setup for output
+                    S2KModel.SM.ClearSelection();
+                    S2KModel.SM.GroupMan.SelectGroup(StepwiseReport_SelectedOutputGroup);
+
+                    S2KModel.SM.ResultMan.DeselectAllCasesAndCombosForOutput();
+                    S2KModel.SM.ResultMan.SetOptionMultiStepStatic(OptionMultiStepStatic.LastStep);
+                    S2KModel.SM.ResultMan.SetOptionMultiValuedCombo(OptionMultiValuedCombo.Correspondence);
+                    S2KModel.SM.ResultMan.SetOptionNLStatic(OptionNLStatic.LastStep);
+
+                    List<LCNonLinear> runNlCases = S2KModel.SM.LCMan.GetNonLinearStaticLoadCaseList().Where(a => a.Status == LCStatus.Finished).ToList();
+                    foreach (LCNonLinear item in runNlCases) S2KModel.SM.ResultMan.SetCaseSelectedForOutput(item);
+
+                    BusyOverlayBindings.I.SetIndeterminate($"Getting the Joint Displacement Results Data from SAP2000.");
+                    List<JointDisplacementData> jointDisplacementDatas = S2KModel.SM.ResultMan.GetJointDisplacement("", ItemTypeElmEnum.SelectionElm);
+
+                    BusyOverlayBindings.I.SetDeterminate($"Linking the Joint Displacement Data to the Joints (for global coord. transform).");
+                    for (int i = 0; i < jointDisplacementDatas.Count; i++)
+                    {
+                        JointDisplacementData jdd = jointDisplacementDatas[i];
+                        BusyOverlayBindings.I.UpdateProgress(i, jointDisplacementDatas.Count);
+                        
+                        jdd.LinkedPoint = selPoints.First(a => a.Name == jdd.Obj);
+                    }
+
+                    BusyOverlayBindings.I.SetDeterminate($"Filling the global coordinate transformed data for each result.");
+                    for (int i = 0; i < jointDisplacementDatas.Count; i++)
+                    {
+                        JointDisplacementData currDispData = jointDisplacementDatas[i];
+
+                        BusyOverlayBindings.I.UpdateProgress(i, jointDisplacementDatas.Count);
+
+                        currDispData.FillGlobalCoordinates();
+                    }
+
+                    Regex prefixRegex = new Regex(@"^S_\dSrv._");
+                    BusyOverlayBindings.I.SetDeterminate($"Fixing the names at the joint coordinates data.");
+                    for (int index = 0; index < selPoints.Count; index++)
+                    {
+                        SapPoint selPoint = selPoints[index];
+                        BusyOverlayBindings.I.UpdateProgress(index, selPoints.Count);
+
+                        selPoint.Name = prefixRegex.Replace(selPoint.Name, "");
+                    }
+                    BusyOverlayBindings.I.SetDeterminate($"Fixing the names at the joint displacement data.");
+                    for (int index = 0; index < jointDisplacementDatas.Count; index++)
+                    {
+                        JointDisplacementData currDispData = jointDisplacementDatas[index];
+                        BusyOverlayBindings.I.UpdateProgress(index, selPoints.Count);
+
+                        currDispData.Obj = prefixRegex.Replace(currDispData.Obj, "");
+                    }
+                    // Check if we need to change the names at the module dictionary - probably not as they have references to the same point object.
+
+                    #region SQLite File
+
+                    string sqlFileName = Path.Combine(S2KModel.SM.ModelDir, Path.GetFileNameWithoutExtension(S2KModel.SM.FullFileName) + $"_StepwiseReport_{DateTime.Now:yyyy_MM_dd_HH_mm_ss_fff}.sqlite");
+                    SQLiteConnection.CreateFile(sqlFileName);
+
+                    SQLiteConnectionStringBuilder connectionStringBuilder = new SQLiteConnectionStringBuilder();
+                    connectionStringBuilder.DataSource = sqlFileName;
+                    using (SQLiteConnection sqliteConn = new SQLiteConnection(connectionStringBuilder.ConnectionString))
+                    {
+                        sqliteConn.Open();
+
+                        // Creates the tables
+                        using (SQLiteCommand createTable = new SQLiteCommand(JointDisplacementData.SQLite_CreateTableStatement, sqliteConn))
+                        {
+                            createTable.ExecuteNonQuery();
+                        }
+
+                        // Creates the tables
+                        using (SQLiteCommand createTable = new SQLiteCommand(SapPoint.SQLite_CreateCoordinateTableStatement, sqliteConn))
+                        {
+                            createTable.ExecuteNonQuery();
+                        }
+
+                        int bufferCounter = 1;
+                        BusyOverlayBindings.I.SetDeterminate("Saving the joint displacement table to the aggregate SQlite file.", "Object");
+                        SQLiteTransaction transaction = sqliteConn.BeginTransaction();
+                        for (int i = 0; i < jointDisplacementDatas.Count; i++)
+                        {
+                            JointDisplacementData currDispData = jointDisplacementDatas[i];
+
+                            using (SQLiteCommand insertCommand = new SQLiteCommand(currDispData.SQLite_InsertStatement, sqliteConn))
+                            {
+                                insertCommand.ExecuteNonQuery();
+                            }
+
+                            if (bufferCounter % 1000 == 0)
+                            {
+                                // Commits and add a new transaction
+                                transaction.Commit();
+                                transaction.Dispose();
+                                transaction = sqliteConn.BeginTransaction();
+                            }
+
+                            bufferCounter++;
+
+                            BusyOverlayBindings.I.UpdateProgress(i, jointDisplacementDatas.Count, currDispData.Obj);
+                        }
+
+                        // Commits last transaction
+                        transaction.Commit();
+                        transaction.Dispose();
+
+                        bufferCounter = 1;
+                        BusyOverlayBindings.I.SetDeterminate("Saving the joint coordinate table to the aggregate SQlite file.", "Point");
+                        transaction = sqliteConn.BeginTransaction();
+                        for (int i = 0; i < selPoints.Count; i++)
+                        {
+                            SapPoint currPoint = selPoints[i];
+
+                            using (SQLiteCommand insertCommand =
+                                new SQLiteCommand(currPoint.SQLite_InsertStatement, sqliteConn))
+                            {
+                                insertCommand.ExecuteNonQuery();
+                            }
+
+                            if (bufferCounter % 1000 == 0)
+                            {
+                                // Commits and add a new transaction
+                                transaction.Commit();
+                                transaction.Dispose();
+                                transaction = sqliteConn.BeginTransaction();
+                            }
+
+                            bufferCounter++;
+
+                            BusyOverlayBindings.I.UpdateProgress(i, jointDisplacementDatas.Count, currPoint.Name);
+                        }
+
+                        // Commits last transaction
+                        transaction.Commit();
+                        transaction.Dispose();
+
+                        // Saving the joint module dictionary to the table
+                        using (SQLiteCommand createTable = new SQLiteCommand(@"CREATE TABLE JointModule ( Name TEXT, Module TEXT);", sqliteConn))
+                        {
+                            createTable.ExecuteNonQuery();
+                        }
+
+                        bufferCounter = 1;
+                        BusyOverlayBindings.I.SetDeterminate("Saving the joint module dictionary table to the aggregate SQlite file.", "Point");
+                        transaction = sqliteConn.BeginTransaction();
+                        for (int i = 0; i < selPoints.Count; i++)
+                        {
+                            SapPoint currPoint = selPoints[i];
+
+                            using (SQLiteCommand insertCommand = new SQLiteCommand($@"INSERT INTO JointModule (Name , Module) VALUES('{currPoint.Name ?? "NULL"}','{pntModuleDic.Where(a => a.Key.Name == currPoint.Name).First().Value}');", sqliteConn))
+                            {
+                                insertCommand.ExecuteNonQuery();
+                            }
+
+                            if (bufferCounter % 1000 == 0)
+                            {
+                                // Commits and add a new transaction
+                                transaction.Commit();
+                                transaction.Dispose();
+                                transaction = sqliteConn.BeginTransaction();
+                            }
+                            bufferCounter++;
+
+                            BusyOverlayBindings.I.UpdateProgress(i, jointDisplacementDatas.Count, currPoint.Name);
+                        }
+
+                        // Commits last transaction
+                        transaction.Commit();
+                        transaction.Dispose();
+                    } 
+
+                    #endregion
+                    
+                    BusyOverlayBindings.I.SetDeterminate("Generating the Separated Excel Files.", "Load Case");
+
+                    Regex caseRegex = new Regex(@"^T_(?<temp>[\+\-]?\d+)[FC]?_(?<step>\d*)_BD_1D");
+
+                    // Opens the Excel application that will be used to handle the excel data
+                    Excel._Application excelApp = new Excel.Application();
+                    Excel._Workbook excelWorkbook = null;
+                    Excel._Worksheet excelWorksheetFinalCoordsInFt = null;
+
+
+                    for (int i = 0; i < runNlCases.Count; i++)
+                    {
+                        LCNonLinear nlCase = runNlCases[i];
+                        BusyOverlayBindings.I.UpdateProgress(i, runNlCases.Count, nlCase.Name);
+
+                        Match m = caseRegex.Match(nlCase.Name);
+                        if (!m.Success) throw new Exception($"Case {nlCase.Name} did not match the expected temperature Regex.");
+
+                        string caseFolderName = Path.Combine(S2KModel.SM.ModelDir, Path.GetFileNameWithoutExtension(S2KModel.SM.FullFileName), $"TEMP {m.Groups["temp"].Value}F");
+                        if (!Directory.Exists(caseFolderName)) Directory.CreateDirectory(caseFolderName);
+
+                        // Getting the step number
+                        int step = Int32.MinValue;
+                        try
+                        {
+                            step = int.Parse(m.Groups["step"].Value);
+                        }
+                        catch
+                        {
+                            throw new Exception($"Could not parse the step number from the load case case name.");
+                        }
+
+                        double temperature = double.NaN;
+                        try
+                        {
+                            temperature = double.Parse(m.Groups["temp"].Value);
+                        }
+                        catch
+                        {
+                            throw new Exception($"Could not parse the temperature from the load case case name.");
+                        }
+
+
+                        // Getting the friendly name from the match table
+                        string stepFriendlyName = _stepwiseReport_MatchDataTable.AsEnumerable().First(a => a.Field<double>("Step") == step).Field<string>("ProjectStepName");
+
+                        // Configures the output Table for the excel output
+                        DataTable dt = new DataTable();
+                        dt.Columns.Add("Survey Point Name", typeof(string)); // 0
+                        dt.Columns.Add("Northing (Y) (ft)", typeof(double));
+                        dt.Columns.Add("Easting (X) (ft)", typeof(double));
+                        dt.Columns.Add("Elevation (Z) (ft)", typeof(double));
+                        dt.Columns.Add("Description", typeof(string));
+
+                        //dt.Columns.Add("Temperature (F)", typeof(double));
+                        //dt.Columns.Add("Step", typeof(string));
+                        //dt.Columns.Add("Module", typeof(string)); // 6
+                        
+                        //dt.Columns.Add("Delta Y (ft)", typeof(double)); // 7
+                        //dt.Columns.Add("Delta X (ft)", typeof(double));
+                        //dt.Columns.Add("Delta Z (ft)", typeof(double));
+
+                        //dt.Columns.Add("As-Fab Y (ft)", typeof(double)); // 10
+                        //dt.Columns.Add("As-Fab X (ft)", typeof(double));
+                        //dt.Columns.Add("As-Fab Z (ft)", typeof(double));
+
+                        foreach (JointDisplacementData dispData in jointDisplacementDatas.Where(a => a.LoadCase == nlCase.Name))
+                        {
+                            DataRow r = dt.NewRow();
+                            int count = 0;
+                            r[count++] = dispData.Obj;
+
+                            r[count++] = (dispData.FinalCoordinates.Y / 12d) + 63600; // Y Final Coordinate
+                            r[count++] = (dispData.FinalCoordinates.X / 12d) + 13900; // X Final Coordinate
+                            r[count++] = (dispData.FinalCoordinates.Z / 12d); // Z Final Coordinate
+
+                            r[count++] = $"PNTMOD[{pntModuleDic.Where(a => a.Key.Name == dispData.LinkedPoint.Name).First().Value}]_STEP[{stepFriendlyName}]_TEMP[{temperature}F]";
+
+                            //r[count++] = temperature;
+                            //r[count++] = stepFriendlyName;
+                            //r[count++] = pntModuleDic.Where(a => a.Key.Name == dispData.LinkedPoint.Name).First().Value; // Saves the module name
+
+                            //r[count++] = (dispData.GlobalU2.Value / 12d); // Y Delta
+                            //r[count++] = (dispData.GlobalU1.Value / 12d); // X Delta
+                            //r[count++] = (dispData.GlobalU3.Value / 12d); // Z Delta
+
+                            //r[count++] = (dispData.LinkedPoint.Y / 12d) + 63600; // Y Final Coordinate
+                            //r[count++] = (dispData.LinkedPoint.X / 12d) + 13900; // X Final Coordinate
+                            //r[count++] = (dispData.LinkedPoint.Z / 12d); // Z Final Coordinate
+
+                            dt.Rows.Add(r);
+                        }
+
+
+                        // Adding the data to a new excel workbook
+                        // Starts a new workbook
+                        excelWorkbook = excelApp.Workbooks.Add();
+                        excelWorksheetFinalCoordsInFt = (Excel.Worksheet)excelWorkbook.Worksheets[1]; // First worksheet is in the first index
+                        excelWorksheetFinalCoordsInFt.Name = $"Data";
+
+                        object[,] tableAsObjects = dt.ConvertToObjectArray2(true);
+                        excelWorksheetFinalCoordsInFt.Range[excelWorksheetFinalCoordsInFt.Cells[1, 1], excelWorksheetFinalCoordsInFt.Cells[tableAsObjects.GetLength(0), tableAsObjects.GetLength(1)]].Value
+                            = tableAsObjects;
+
+                        string excelFullFileName = Path.Combine(caseFolderName, $"{stepFriendlyName} - TEMP {m.Groups["temp"].Value}F.xlsx");
+                        excelWorkbook.Close(true, excelFullFileName);
+
+                    }
+
+                    // Closes the excel app that was handling the creation of the files
+                    excelApp.Quit();
+
+                }
+
+                // Runs the job async
+                Task task = new Task(lf_Work);
+                task.Start();
+                await task;
+            }
+            catch (Exception ex)
+            {
+                ExceptionViewer.Show(ex);
+            }
+            finally
+            {
+                OnEndCommand();
+                // Messages to send?
+                if (endMessages.Length != 0) OnMessage("Could not export the displacement data of the points to the SQLite database and the infinite excel files.", endMessages.ToString());
+            }
+        }
+        #endregion
     }
 }

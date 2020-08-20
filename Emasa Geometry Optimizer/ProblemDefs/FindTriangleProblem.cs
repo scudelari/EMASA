@@ -64,7 +64,7 @@ namespace Emasa_Geometry_Optimizer.ProblemDefs
 
         }
 
-        public override double Function_Override(double[] inVariables)
+        protected override double Function_Override()
         {
             Rhino_SendInputAndGetOutput();
 

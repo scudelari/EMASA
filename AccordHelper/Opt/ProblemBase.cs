@@ -25,6 +25,7 @@ using Accord.Math.Optimization;
 using AccordHelper.Annotations;
 using AccordHelper.FEA;
 using AccordHelper.FEA.Items;
+using AccordHelper.FEA.Loads;
 using AccordHelper.Opt.ParamDefinitions;
 using BaseWPFLibrary.Others;
 using NLoptNet;
@@ -204,12 +205,13 @@ namespace AccordHelper.Opt
         {
             Status = SolverStatus.NotStarted;
 
+            // Gives a reference of this problem to the objective function
+            inObjectiveFunction.Problem = this;
             // Stores the function given
             _objectiveFunction = inObjectiveFunction;
-            // Gives a reference of this problem to the objective function
-            _objectiveFunction.Problem = this;
 
-            // Generates the default views of such parameters
+
+            // Generates the default views of list parameters
             InputDefs_ViewItems = CollectionViewSource.GetDefaultView(_objectiveFunction.InputDefs);
             IntermediateDefs_ViewItems = CollectionViewSource.GetDefaultView(_objectiveFunction.IntermediateDefs);
             FinalDefs_ViewItems = CollectionViewSource.GetDefaultView(_objectiveFunction.FinalDefs);
@@ -217,6 +219,10 @@ namespace AccordHelper.Opt
             CollectionViewSource ghLineDefs_ViewSource = new CollectionViewSource() {Source = _objectiveFunction.IntermediateDefs };
             GrasshopperLineListDefs_ViewItems = ghLineDefs_ViewSource.View;
             GrasshopperLineListDefs_ViewItems.Filter = GrasshopperLineListDefs_ViewItems_Filter;
+
+            CollectionViewSource ghPointDefs_ViewSource = new CollectionViewSource() {Source = _objectiveFunction.IntermediateDefs};
+            GrasshopperPointListDefs_ViewItems = ghPointDefs_ViewSource.View;
+            GrasshopperPointListDefs_ViewItems.Filter = GrasshopperPointListDefs_ViewItems_Filter;
 
             CollectionViewSource functionSolutions_ViewSource = new CollectionViewSource {Source = _possibleSolutions};
             FunctionSolutions_ViewItems = functionSolutions_ViewSource.View;
@@ -230,6 +236,7 @@ namespace AccordHelper.Opt
 
             CollectionViewSource allPossibleSections_ViewSource = new CollectionViewSource {Source = FeSectionPipe.GetAllSections()};
             allPossibleSections_ViewSource.SortDescriptions.Add(new SortDescription("OuterDiameter", ListSortDirection.Ascending));
+            allPossibleSections_ViewSource.SortDescriptions.Add(new SortDescription("Thickness", ListSortDirection.Ascending));
             AllPossibleSections_ViewItems = allPossibleSections_ViewSource.View;
 
             // Fills the parameters
@@ -431,7 +438,7 @@ namespace AccordHelper.Opt
             set { SetProperty(ref _totalSolveSeconds, value); }
         }
 
-        public void CleanUpSolver_NewSolve()
+        public void CleanUp_Solver()
         {
             // Cleans all the important state variables
             PossibleSolutions.Clear();
@@ -450,7 +457,7 @@ namespace AccordHelper.Opt
 
             Status = SolverStatus.NotStarted;
         }
-        public void SetSolverManager()
+        public void SetNLOptSolverManager()
         {
             // Validates the input
             if (ObjectiveFunction.LowerBounds == null || ObjectiveFunction.UpperBounds == null) throw new Exception("The selected solver requires boundaries.");
@@ -515,7 +522,7 @@ namespace AccordHelper.Opt
 
             #region NLOpt Optimizations
 
-                if (_nLOptMethod == null) throw new Exception("You did not start the solver. Please use the SetSolverManager function for this.");
+                if (_nLOptMethod == null) throw new Exception("You did not start the solver. Please use the SetNLOptSolverManager function for this.");
                 
                 // This is the first time we are running this solver
                 double[] vector = Status == SolverStatus.NotStarted ? ObjectiveFunction.GetStartPosition(StartPositionType) : BestSolutionSoFar.InputValuesAsDouble;
@@ -623,8 +630,76 @@ namespace AccordHelper.Opt
             TotalSolveSeconds = sw.Elapsed.TotalSeconds;
         }
 
-        #region Problem Variable Definition
+        public void CleanUp_SectionEvaluation()
+        {
+            PossibleSolutions.Clear();
+            ObjectiveFunction.Reset();
 
+            CancelSource = new CancellationTokenSource();
+        }
+        public void EvaluateSections()
+        {
+            Stopwatch sw = Stopwatch.StartNew();
+
+            // Starts the solver process
+            if (FeModel != null)
+            {
+                FeModel.InitializeSoftware(inIsSectionSelection: true);
+            }
+
+            // Makes a combination of the sections we need to evaluate
+            HashSet<SectionCombination> combs = new HashSet<SectionCombination>();
+            foreach (LineList_Output_ParamDef currentParam in GrasshopperLineListDefs_ViewItems.Cast<LineList_Output_ParamDef>()) 
+            {
+                foreach (FeSection currentParamSection in currentParam.SelectedSections)
+                {
+                    // Initializes the combination
+                    SectionCombination comb = new SectionCombination();
+
+                    // Adds the section of the first parameter
+                    comb.Combination.Add(currentParam, currentParamSection);
+
+                    foreach (LineList_Output_ParamDef otherParam in GrasshopperLineListDefs_ViewItems.Cast<LineList_Output_ParamDef>().Where(a => a!= currentParam))
+                    {
+                        foreach (FeSection otherParamSection in otherParam.SelectedSections)
+                        {
+                            // Adds the section of the other parameters. 
+                            // the underlying Combination is a SortedList by the LineParam thus it will be consistent
+                            comb.Combination.Add(otherParam, otherParamSection);
+                        }
+                    }
+
+                    // Adds it to the HashSet if it is unique (hopefully)
+                    combs.Add(comb);
+                }
+            }
+
+            foreach (SectionCombination sectionCombination in combs)
+            {
+                // Configures the selected section for each line parameter
+                foreach (KeyValuePair<LineList_Output_ParamDef, FeSection> keyValuePair in sectionCombination.Combination)
+                {
+                    keyValuePair.Key.SolveSection = keyValuePair.Value;
+                }
+
+                // Sets the start vector for the Rhino Input params
+                double[] vector = ObjectiveFunction.GetStartPosition(StartPositionType);
+
+                // Runs the evaluation. The underlying ObjectiveFunction will consume the defined sections accordingly
+                double evalValue = ObjectiveFunction.Function_NLOptFunctionWrapper(vector);
+            }
+
+            // Terminates the solver process
+            if (FeModel != null)
+            {
+                FeModel.CloseApplication();
+            }
+
+            sw.Stop();
+            TotalSolveSeconds = sw.Elapsed.TotalSeconds;
+        }
+
+        #region Problem Variable Definition
         public ICollectionView InputDefs_ViewItems { get; set; }
         public ICollectionView IntermediateDefs_ViewItems { get; set; }
         public ICollectionView FinalDefs_ViewItems { get; set; }
@@ -824,6 +899,12 @@ namespace AccordHelper.Opt
                             {ScreenShotType.XDisplacementPlot, "Displacement X"},
                             {ScreenShotType.YDisplacementPlot, "Displacement Y"},
                             {ScreenShotType.ZDisplacementPlot, "Displacement Z"},
+
+                            {ScreenShotType.EigenvalueBuckling1, "Eigenvalue Buckling 1"},
+                            {ScreenShotType.EigenvalueBuckling2, "Eigenvalue Buckling 2"},
+                            {ScreenShotType.EigenvalueBuckling3, "Eigenvalue Buckling 3"},
+
+                            {ScreenShotType.CodeCheck, "Basic Code Check"},
                         };
                 }
                 else
@@ -927,8 +1008,18 @@ namespace AccordHelper.Opt
         }
         #endregion
 
+        #region Boundary Conditions Control
+        public ICollectionView GrasshopperPointListDefs_ViewItems { get; set; } // Type is PointList_Output_ParamDef
+        private bool GrasshopperPointListDefs_ViewItems_Filter(object inObj)
+        {
+            if (!(inObj is Output_ParamDefBase interParam)) throw new InvalidCastException("The GrasshopperLineListDefs_ViewItems contains something other than a Output_ParamDefBase object.");
+            if (interParam is PointList_Output_ParamDef) return true;
+            return false;
+        }
+        #endregion
+
         #region Frame Section Management
-        public ICollectionView GrasshopperLineListDefs_ViewItems { get; set; }
+        public ICollectionView GrasshopperLineListDefs_ViewItems { get; set; } // Type is LineList_Output_ParamDef
         private bool GrasshopperLineListDefs_ViewItems_Filter(object inObj)
         {
             if (!(inObj is Output_ParamDefBase interParam)) throw new InvalidCastException("The GrasshopperLineListDefs_ViewItems contains something other than a Output_ParamDefBase object.");
@@ -936,8 +1027,35 @@ namespace AccordHelper.Opt
             return false;
         }
 
+        private LineList_Output_ParamDef _grasshopperLineListDefs_SelectedItem;
+        public LineList_Output_ParamDef GrasshopperLineListDefs_SelectedItem
+        {
+            get => _grasshopperLineListDefs_SelectedItem;
+            set
+            {
+                _grasshopperLineListDefs_SelectedItem = value;
+
+                foreach (object item in GrasshopperLineListDefs_ViewItems)
+                {
+                    if (item is LineList_Output_ParamDef lparam)
+                    {
+                        lparam.SectionAssignment_Visibility = Visibility.Collapsed;
+
+                        if (lparam == value)
+                        {
+                            lparam.SectionAssignment_Visibility = Visibility.Visible;
+                        }
+                    }
+                }
+            }
+        }
+
         public ICollectionView AllPossibleSections_ViewItems { get; set; }
-        public FeSection GrasshopperLineList_Selected { get; set; }
+        //public FeSection GrasshopperLineList_Selected { get; set; }
+        #endregion
+
+        #region Load Controls
+        public FeLoad_Inertial Load_Gravity { get; } = FeLoad_Inertial.StandardGravity;
         #endregion
     }
 
@@ -995,6 +1113,14 @@ namespace AccordHelper.Opt
         XDisplacementPlot,
         YDisplacementPlot,
         ZDisplacementPlot,
+
+        // Eigenvalue Buckling Shapes
+        EigenvalueBuckling1,
+        EigenvalueBuckling2,
+        EigenvalueBuckling3,
+
+        // Code Check
+        CodeCheck,
 
         // Rhino
         RhinoShot,

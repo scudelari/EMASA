@@ -115,5 +115,9 @@ namespace Emasa_Geometry_Optimizer
         {
             FormGeneralBindings.I.ExecuteCancelSolveCommand();
         }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+        }
     }
 }

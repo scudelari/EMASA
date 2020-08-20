@@ -250,7 +250,7 @@ namespace Emasa_Geometry_Optimizer.Bindings
 
                         try
                         {
-                            CurrentProblem.SetSolverManager();
+                            CurrentProblem.SetNLOptSolverManager();
                         }
                         catch (Exception e) // There was a problem with the form
                         {
@@ -315,7 +315,7 @@ namespace Emasa_Geometry_Optimizer.Bindings
                     CustomOverlayBindings.I.Title = "Resetting the problem.";
 
                     // Cleans-up the solver
-                    CurrentProblem.CleanUpSolver_NewSolve();
+                    CurrentProblem.CleanUp_Solver();
 
                     IsEnabled_SolveManagement = true;
                 }
@@ -343,6 +343,47 @@ namespace Emasa_Geometry_Optimizer.Bindings
         public void ExecuteCancelSolveCommand()
         {
             if (!CurrentProblem.CancelSource.IsCancellationRequested) CurrentProblem.CancelSource.Cancel();
+        }
+
+        private DelegateCommand _evaluateSectionsCommand;
+        public DelegateCommand EvaluateSectionsCommand =>
+            _evaluateSectionsCommand ?? (_evaluateSectionsCommand = new DelegateCommand(ExecuteEvaluateSectionsCommand));
+        async void ExecuteEvaluateSectionsCommand()
+        {
+            StringBuilder endMessages = new StringBuilder();
+            try
+            {
+                OnBeginCommand();
+
+                void lf_Work()
+                {
+                    // Set a Title to the Busy Overlay
+                    CustomOverlayBindings.I.Title = "Evaluating the Sections.";
+                    CustomOverlayBindings.I.MessageText = $"Evaluating the problem {CurrentProblem.ProblemFriendlyName} sections.";
+
+                    CurrentProblem.Solve();
+
+                    // The problem finished
+                    CustomOverlayBindings.I.Title = "Saving the images.";
+                    CurrentProblem.SaveSolutionImages();
+                }
+
+                // Runs the job async
+                Task task = new Task(lf_Work);
+                task.Start();
+                await task;
+            }
+            catch (Exception ex)
+            {
+                ExceptionViewer.Show(ex);
+            }
+            finally
+            {
+                OnEndCommand();
+                // Messages to send?
+                if (endMessages.Length != 0)
+                    OnMessage("Could not run the solver.", endMessages.ToString());
+            }
         }
     }
 

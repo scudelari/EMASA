@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using BaseWPFLibrary.Bindings;
 using BaseWPFLibrary.Events;
+using ExcelDataReader.Exceptions;
 using Sap2000Library.Other;
 
 namespace Sap2000Library.Managers
@@ -37,6 +39,12 @@ namespace Sap2000Library.Managers
         {
             return 0 == SapApi.SelectObj.Group(group, false);
         }
+
+        public bool DeselectGroup(string group)
+        {
+            return 0 == SapApi.SelectObj.Group(group, true);
+        }
+
 
         public bool CreateGroup(string group)
         {
@@ -87,6 +95,39 @@ namespace Sap2000Library.Managers
         public bool RemoveFrameFromGroup(string inGroup, string inName)
         {
             return 0 == s2KModel.SapApi.FrameObj.SetGroupAssign(inName, inGroup, true);
+        }
+
+        public Color GetGroupColor(string inGroupName)
+        {
+            int colorInt = 0;
+            bool SpecifiedForSelection = false;
+            bool SpecifiedForSectionCutDefinition = false;
+            bool SpecifiedForSteelDesign = false;
+            bool SpecifiedForConcreteDesign = false;
+            bool SpecifiedForAluminumDesign = false;
+            bool SpecifiedForColdFormedDesign = false;
+            bool SpecifiedForStaticNLActiveStage = false;
+            bool SpecifiedForBridgeResponseOutput = false;
+            bool SpecifiedForAutoSeismicOutput = false;
+            bool SpecifiedForAutoWindOutput = false;
+            bool SpecifiedForMassAndWeight = false;
+
+            int ret = SapApi.GroupDef.GetGroup(inGroupName, ref colorInt,
+                ref SpecifiedForSelection,
+                ref SpecifiedForSectionCutDefinition,
+                ref SpecifiedForSteelDesign,
+                ref SpecifiedForConcreteDesign,
+                ref SpecifiedForAluminumDesign,
+                ref SpecifiedForColdFormedDesign,
+                ref SpecifiedForStaticNLActiveStage,
+                ref SpecifiedForBridgeResponseOutput,
+                ref SpecifiedForAutoSeismicOutput,
+                ref SpecifiedForAutoWindOutput,
+                ref SpecifiedForMassAndWeight);
+
+            if (ret != 0) throw new Exception($"Could not get the color of group {inGroupName}.");
+
+            return S2KStaticMethods.DecimalToColor(colorInt);
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using BaseWPFLibrary;
 using BaseWPFLibrary.Bindings;
+using ExcelDataReader.Exceptions;
 using Sap2000Library.Other;
 using Sap2000Library.SapObjects;
 using SAP2000v1;
@@ -173,6 +174,7 @@ namespace Sap2000Library.Managers
 
             return toReturn;
         }
+        [Obsolete]
         public List<SapFrame> GetSelected(BusyOverlay BusyOverlay)
         {
             if (BusyOverlay != null) BusyOverlay.SetDeterminate($"Getting selected frames from SAP2000.", "Frame");
@@ -202,6 +204,36 @@ namespace Sap2000Library.Managers
             }
 
             BusyOverlay.Stop();
+            return toReturn;
+        }
+        public List<SapFrame> GetSelected(bool inUpdateInterface)
+        {
+            if (inUpdateInterface) BusyOverlayBindings.I.SetDeterminate($"SAP2000: Getting selected Frames.", "Frame");
+
+            int count = 0;
+            int[] objectType = null;
+            string[] selectedNames = null;
+
+            int ret = SapApi.SelectObj.GetSelected(ref count, ref objectType, ref selectedNames);
+            if (ret != 0 || count == 0) return new List<SapFrame>();
+
+            // Gets count of desired element types
+            int currType = 0;
+            int typeCount = objectType.Count(a => a == (int)SelectObjectType.FrameObject);
+            // Declares the return
+            List<SapFrame> toReturn = new List<SapFrame>();
+
+            for (int i = 0; i < count; i++)
+            {
+                if (objectType[i] == (int)SelectObjectType.FrameObject)
+                {
+                    toReturn.Add(GetByName(selectedNames[i]));
+
+                    if (inUpdateInterface) BusyOverlayBindings.I.UpdateProgress(currType, typeCount, selectedNames[i]);
+                    currType++;
+                }
+            }
+
             return toReturn;
         }
 
@@ -314,6 +346,14 @@ namespace Sap2000Library.Managers
         {
             if (0 != SapApi.FrameObj.SetSection(inFrameName, inSectionName))
                 throw new S2KHelperException($"Could not set the section of frame named {inFrameName} to section {inSectionName}.");
+        }
+
+        public void Selected_SetTemperatureLoad(string inLoadPatternName, double inTemperature, bool inReplace = true)
+        {
+            if (0 != SapApi.FrameObj.SetLoadTemperature("", inLoadPatternName, 1, inTemperature, "", inReplace, eItemType.SelectedObjects))
+            {
+                throw new S2KHelperException($"Could not set {inTemperature:+###.###F;-###.###F;0FRef} as the temperature loading for pattern {inLoadPatternName} for the selected frames.");
+            }
         }
     }
 }

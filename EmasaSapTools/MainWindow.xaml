@@ -877,7 +877,6 @@
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Vertical">
                             <GroupBox
-                                x:Name="BreakFrames_GroupBox"
                                 Margin="5"
                                 Header="Break Frames"
                                 Style="{DynamicResource Blue_GroupBox}">
@@ -899,24 +898,24 @@
                                                             Margin="0,0,0,0"
                                                             HorizontalAlignment="Center"
                                                             Content="Add Constraint"
-                                                            IsChecked="{Binding ClosestPointAddConstraint_IsChecked}" />
+                                                            IsChecked="{Binding BreakFrame_ClosestPointAddConstraint_IsChecked}" />
                                                     </Border>
                                                     <Border Margin="0,1,0,5" Style="{DynamicResource TopBottom_Border}">
-                                                        <DockPanel IsEnabled="{Binding ClosestPointAddConstraint_IsChecked}">
+                                                        <DockPanel IsEnabled="{Binding BreakFrame_ClosestPointAddConstraint_IsChecked}">
                                                             <StackPanel
                                                                 Margin="5"
                                                                 DockPanel.Dock="Right"
                                                                 Orientation="Vertical">
                                                                 <StackPanel Orientation="Horizontal">
                                                                     <TextBlock Margin="0,0,5,0" Text="Prefix:" />
-                                                                    <TextBox Width="100" Text="{Binding ConstraintPrefix_Text}" />
+                                                                    <TextBox Width="100" Text="{Binding BreakFrame_ConstraintPrefix_Text}" />
                                                                 </StackPanel>
                                                                 <TextBlock
                                                                     Width="150"
                                                                     Margin="0,5"
                                                                     TextWrapping="Wrap">
                                                                     <Run Text="ShortName: " />
-                                                                    <Run FontFamily="Courier New" Text="{Binding ConstraintName_Label}" />
+                                                                    <Run FontFamily="Courier New" Text="{Binding BreakFrame_ConstraintName_Label}" />
                                                                     <Run Text="." />
                                                                 </TextBlock>
                                                             </StackPanel>
@@ -929,15 +928,15 @@
                                                                     <RadioButton
                                                                         Content="Body [B]"
                                                                         GroupName="ConstraintType"
-                                                                        IsChecked="{Binding BodyConstraintTypeRadioButton_IsChecked}" />
+                                                                        IsChecked="{Binding BreakFrame_BodyConstraintTypeRadioButton_IsChecked}" />
                                                                     <RadioButton
                                                                         Content="Equal [E]"
                                                                         GroupName="ConstraintType"
-                                                                        IsChecked="{Binding EqualConstraintTypeRadioButton_IsChecked}" />
+                                                                        IsChecked="{Binding BreakFrame_EqualConstraintTypeRadioButton_IsChecked}" />
                                                                     <RadioButton
                                                                         Content="Local [L]"
                                                                         GroupName="ConstraintType"
-                                                                        IsChecked="{Binding LocalConstraintTypeRadioButton_IsChecked}" />
+                                                                        IsChecked="{Binding BreakFrame_LocalConstraintTypeRadioButton_IsChecked}" />
                                                                 </StackPanel>
                                                                 <Rectangle
                                                                     Width="1"
@@ -948,27 +947,26 @@
                                                                     Width="40"
                                                                     Margin="5"
                                                                     Orientation="Vertical">
-                                                                    <CheckBox Content="{Binding U1CheckBox_Label}" IsChecked="{Binding U1CheckBox_IsChecked}" />
-                                                                    <CheckBox Content="{Binding U2CheckBox_Label}" IsChecked="{Binding U2CheckBox_IsChecked}" />
-                                                                    <CheckBox Content="{Binding U3CheckBox_Label}" IsChecked="{Binding U3CheckBox_IsChecked}" />
+                                                                    <CheckBox Content="{Binding BreakFrame_U1CheckBox_Label}" IsChecked="{Binding BreakFrame_U1CheckBox_IsChecked}" />
+                                                                    <CheckBox Content="{Binding BreakFrame_U2CheckBox_Label}" IsChecked="{Binding BreakFrame_U2CheckBox_IsChecked}" />
+                                                                    <CheckBox Content="{Binding BreakFrame_U3CheckBox_Label}" IsChecked="{Binding BreakFrame_U3CheckBox_IsChecked}" />
                                                                 </StackPanel>
                                                                 <StackPanel
                                                                     Width="40"
                                                                     Margin="5"
                                                                     Orientation="Vertical">
-                                                                    <CheckBox Content="{Binding R1CheckBox_Label}" IsChecked="{Binding R1CheckBox_IsChecked}" />
-                                                                    <CheckBox Content="{Binding R2CheckBox_Label}" IsChecked="{Binding R2CheckBox_IsChecked}" />
-                                                                    <CheckBox Content="{Binding R3CheckBox_Label}" IsChecked="{Binding R3CheckBox_IsChecked}" />
+                                                                    <CheckBox Content="{Binding BreakFrame_R1CheckBox_Label}" IsChecked="{Binding BreakFrame_R1CheckBox_IsChecked}" />
+                                                                    <CheckBox Content="{Binding BreakFrame_R2CheckBox_Label}" IsChecked="{Binding BreakFrame_R2CheckBox_IsChecked}" />
+                                                                    <CheckBox Content="{Binding BreakFrame_R3CheckBox_Label}" IsChecked="{Binding BreakFrame_R3CheckBox_IsChecked}" />
                                                                 </StackPanel>
                                                             </StackPanel>
                                                         </DockPanel>
                                                     </Border>
                                                     <Button
-                                                        x:Name="BreakFrameClosestPointButton"
                                                         Width="200"
-                                                        Click="BreakFrameClosestPointButton_Click"
+                                                        Command="{Binding BreakFrameCommand}"
                                                         Content="Break at Closest Point"
-                                                        IsEnabled="{Binding BreakFrameClosestPointButton_IsEnabled}" />
+                                                        IsEnabled="{Binding BreakFrame_BreakFrameClosestPointButton_IsEnabled}" />
 
                                                 </StackPanel>
                                             </Grid>
@@ -2637,81 +2635,165 @@
                         <Grid />
                     </DockPanel>
                 </TabItem>
-                <TabItem Header="Rhino Operations">
-                    <StackPanel x:Name="RhinoOperations_TabItem_Panel" Orientation="Horizontal">
-                        <StackPanel Width="300" Orientation="Vertical">
-                            <GroupBox
-                                Margin="5"
-                                HorizontalAlignment="Stretch"
-                                Header="Align Joints To Rhino Surface"
-                                Style="{DynamicResource Blue_GroupBox}">
-                                <StackPanel Orientation="Vertical">
+                <TabItem x:Name="RhinoOperations_TabItem" Header="Rhino Operations">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="300" />
+                            <ColumnDefinition Width="300" />
+                            <ColumnDefinition Width="300" />
+
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <GroupBox
+                            Grid.Column="0"
+                            Margin="5"
+                            HorizontalAlignment="Stretch"
+                            Header="Align Joints To Rhino Surface"
+                            Style="{DynamicResource Blue_GroupBox}">
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock
+                                    Margin="3"
+                                    Foreground="Gray"
+                                    TextWrapping="Wrap">
+                                    <Run>Will project the points in SAP2000 group &quot;RhinoAlignPoints&quot; to the selected surface in Rhino6.</Run>
+                                    <LineBreak />
+                                    <Run>Rhino6 must be open and the surface must be selected.</Run>
+                                </TextBlock>
+                                <Button
+                                    x:Name="AlignPointsToRhinoSurfaceButton"
+                                    Margin="25,5,25,5"
+                                    Click="AlignPointsToRhinoSurfaceButton_Click"
+                                    Content="Align Points to Rhino6 Surface" />
+                                <Separator Margin="4" />
+                                <TextBlock
+                                    Margin="3"
+                                    Foreground="Gray"
+                                    TextWrapping="Wrap">
+                                    <Run>Will add the points in group &quot;RhinoAlignPoints&quot;, and their local axes' triads, to the currently open Rhino6 document.</Run>
+                                </TextBlock>
+                                <Button
+                                    x:Name="AddPointsAndTriadsToRhinoButton"
+                                    Margin="25,5,25,10"
+                                    Click="AddPointsAndTriadsToRhinoButton_Click"
+                                    Content="Add Points and Triads to Rhino" />
+                            </StackPanel>
+                        </GroupBox>
+                        <GroupBox
+                            Grid.Column="1"
+                            Margin="5"
+                            HorizontalAlignment="Stretch"
+                            Header="Mark ShortNames in Clipboard"
+                            Style="{DynamicResource Blue_GroupBox}">
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock
+                                    Margin="3"
+                                    Foreground="Gray"
+                                    TextWrapping="Wrap">
+                                    <Run>Will get the list of elements' name from the Clipboard and:</Run>
+                                    <LineBreak />
+                                    <Run>1- Mark them in black for visual effects.</Run>
+                                    <LineBreak />
+                                    <Run>2- Put them in the following named Group.</Run>
+                                </TextBlock>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
                                     <TextBlock
-                                        Margin="3"
-                                        Foreground="Gray"
+                                        Grid.Column="0"
+                                        Margin="5"
+                                        Text="Rhino Group:" />
+                                    <TextBox
+                                        Grid.Column="1"
+                                        Margin="5"
+                                        Text="{Binding TargetRhinoGroupForSelectedJoints}" />
+                                </Grid>
+                                <Button
+                                    x:Name="MarkNamesInClipboardRhinoButton"
+                                    Margin="25,5,25,10"
+                                    Click="MarkNamesInClipboardRhinoButton_Click"
+                                    Content="Mark Guids in Clipboard" />
+                            </StackPanel>
+                        </GroupBox>
+                        <StackPanel Grid.Column="2" Orientation="Vertical">
+                            <GroupBox Header="Copy To Rhino Model" Style="{DynamicResource Blue_GroupBox}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock
+                                        Grid.ColumnSpan="2"
+                                        Margin="0,0,0,5"
+                                        Style="{DynamicResource Explanation_TextBlock}"
                                         TextWrapping="Wrap">
-                                        <Run>Will project the points in SAP2000 group &quot;RhinoAlignPoints&quot; to the selected surface in Rhino6.</Run>
+                                        <Run>Copies Selected Frames and Joints to a New Rhino Model. It will keep:</Run>
                                         <LineBreak />
-                                        <Run>Rhino6 must be open and the surface must be selected.</Run>
+                                        <Run>- The names of the frames and joints.</Run>
+                                        <LineBreak />
+                                        <Run>- The groups of the frames and joints.</Run>
+                                        <LineBreak />
+                                        <Run>- The color of the frames, as given by the group.</Run>
                                     </TextBlock>
-                                    <Button
-                                        x:Name="AlignPointsToRhinoSurfaceButton"
-                                        Margin="25,5,25,5"
-                                        Click="AlignPointsToRhinoSurfaceButton_Click"
-                                        Content="Align Points to Rhino6 Surface" />
-                                    <Separator Margin="4" />
                                     <TextBlock
-                                        Margin="3"
-                                        Foreground="Gray"
-                                        TextWrapping="Wrap">
-                                        <Run>Will add the points in group &quot;RhinoAlignPoints&quot;, and their local axes' triads, to the currently open Rhino6 document.</Run>
+                                        Grid.Row="1"
+                                        Grid.Column="0"
+                                        Margin="0,0,5,0">
+                                        Group Regex Filter:
                                     </TextBlock>
+                                    <TextBox
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        Text="{Binding GroupRegexFilter}" />
                                     <Button
-                                        x:Name="AddPointsAndTriadsToRhinoButton"
-                                        Margin="25,5,25,10"
-                                        Click="AddPointsAndTriadsToRhinoButton_Click"
-                                        Content="Add Points and Triads to Rhino" />
-                                </StackPanel>
+                                        Grid.Row="2"
+                                        Grid.ColumnSpan="2"
+                                        Margin="40,5"
+                                        Command="{Binding CopyFramesAndJointsToRhinoCommand}"
+                                        Content="Copy Elements" />
+
+                                </Grid>
                             </GroupBox>
-                            <GroupBox
-                                Margin="5"
-                                HorizontalAlignment="Stretch"
-                                Header="Mark ShortNames in Clipboard"
-                                Style="{DynamicResource Blue_GroupBox}">
-                                <StackPanel Orientation="Vertical">
-                                    <TextBlock
-                                        Margin="3"
-                                        Foreground="Gray"
-                                        TextWrapping="Wrap">
-                                        <Run>Will get the list of elements' name from the Clipboard and:</Run>
-                                        <LineBreak />
-                                        <Run>1- Mark them in black for visual effects.</Run>
-                                        <LineBreak />
-                                        <Run>2- Put them in the following named Group.</Run>
-                                    </TextBlock>
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="*" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock
-                                            Grid.Column="0"
-                                            Margin="5"
-                                            Text="Rhino Group:" />
-                                        <TextBox
-                                            Grid.Column="1"
-                                            Margin="5"
-                                            Text="{Binding TargetRhinoGroupForSelectedJoints}" />
-                                    </Grid>
+                            <GroupBox Header="Stepwise Temperature Spheres">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox
+                                        Margin="5"
+                                        IsReadOnly="True"
+                                        Text="{Binding SqliteDatabaseFileName}" />
                                     <Button
-                                        x:Name="MarkNamesInClipboardRhinoButton"
-                                        Margin="25,5,25,10"
-                                        Click="MarkNamesInClipboardRhinoButton_Click"
-                                        Content="Mark Guids in Clipboard" />
-                                </StackPanel>
+                                        Grid.Row="0"
+                                        Grid.Column="1"
+                                        Margin="5"
+                                        Command="{Binding StepwiseSpheres_BrowseSqLiteCommand}"
+                                        Content="Browse SqLite" />
+                                    <Button
+                                        Grid.Row="1"
+                                        Grid.ColumnSpan="2"
+                                        Margin="40,5"
+                                        Command="{Binding StepwiseSpheres_MakeTemperatureSpheresCommand}"
+                                        Content="Create Copies" />
+                                </Grid>
                             </GroupBox>
                         </StackPanel>
-                    </StackPanel>
+                    </Grid>
                 </TabItem>
                 <TabItem x:Name="TrussSolverTabItem" Header="Truss Solver">
                     <Grid>
@@ -2865,7 +2947,17 @@
                             <ColumnDefinition />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <GroupBox Header="Results" Style="{DynamicResource Blue_GroupBox}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <GroupBox
+                            Grid.Row="0"
+                            Grid.RowSpan="3"
+                            Grid.Column="0"
+                            Header="Results"
+                            Style="{DynamicResource Blue_GroupBox}">
                             <StackPanel Orientation="Vertical">
                                 <GroupBox Margin="3,0,3,3" Header="Displacements">
                                     <Grid>
@@ -2976,86 +3068,190 @@
                                 </GroupBox>
                             </StackPanel>
                         </GroupBox>
-                        <StackPanel Grid.Column="1" Orientation="Vertical">
-                            <GroupBox
-                                Margin="5"
-                                Header="Survey"
-                                Style="{DynamicResource Blue_GroupBox}">
-                                <StackPanel Orientation="Vertical">
+
+                        <GroupBox
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Margin="5"
+                            Header="Survey"
+                            Style="{DynamicResource Blue_GroupBox}">
+                            <StackPanel Orientation="Vertical">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <TextBlock
+                                        Margin="5"
+                                        Text="Areas:"
+                                        TextAlignment="Right" />
+                                    <TextBox
+                                        Grid.Column="1"
+                                        Margin="5"
+                                        Text="{Binding Areas}"
+                                        ToolTip="Separate with underline _ for more." />
+                                    <RadioButton
+                                        Grid.Row="1"
+                                        Margin="5"
+                                        HorizontalAlignment="Center"
+                                        Content="Survey Points"
+                                        GroupName="SurveyWorkOrSurveyPoint"
+                                        IsChecked="{Binding SurveyRadio_IsChecked}" />
+                                    <RadioButton
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        Margin="5"
+                                        HorizontalAlignment="Center"
+                                        Content="Work Points"
+                                        GroupName="SurveyWorkOrSurveyPoint"
+                                        IsChecked="{Binding WorkRadio_IsChecked}" />
+                                    <CheckBox
+                                        Grid.Row="1"
+                                        Grid.Column="2"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Content="Append Points"
+                                        IsChecked="{Binding AppendPoints_IsChecked}" />
+                                </Grid>
+                                <Button
+                                    Margin="5"
+                                    Command="{Binding SurveyReadPointsCommand}"
+                                    Content="Insert Points From Excel" />
+                                <Button
+                                    Margin="5"
+                                    Command="{Binding SurveyLinkToCanopyCommand}"
+                                    Content="Link Points to Canopy" />
+                                <Button
+                                    Margin="5"
+                                    Command="{Binding SurveyAddFixedSupportWithDisplacementsCommand}"
+                                    Content="Add Movements" />
+                            </StackPanel>
+                        </GroupBox>
+                        <GroupBox
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Margin="5"
+                            Header="Solver - Match Position for DEAD case"
+                            Style="{DynamicResource Blue_GroupBox}">
+                            <StackPanel Margin="5" Orientation="Vertical">
+                                <TextBlock HorizontalAlignment="Center" Text="Messages" />
+                                <Border Style="{DynamicResource LightBlue_Border}">
+                                    <TextBox
+                                        Height="150"
+                                        Margin="3"
+                                        BorderThickness="0"
+                                        IsReadOnly="True"
+                                        Text="{Binding DeadMatchSolverMessages}" />
+                                </Border>
+                                <TextBlock
+                                    Margin="5"
+                                    HorizontalAlignment="Center"
+                                    Foreground="DarkSlateBlue"
+                                    Text="The *target* model must be open." />
+                                <Button
+                                    Margin="50,0"
+                                    Command="{Binding SolverMatchDEADCasePositionCommand}"
+                                    Content="Start Solver" />
+                            </StackPanel>
+                        </GroupBox>
+                        <GroupBox
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            Header="Stepwise Report"
+                            Style="{DynamicResource Blue_GroupBox}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <GroupBox Grid.ColumnSpan="2" Header="Step Match Table">
                                     <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                        </Grid.RowDefinitions>
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
+                                        <TextBlock
+                                            Grid.ColumnSpan="2"
+                                            Margin="5,0,5,5"
+                                            Style="{DynamicResource Explanation_TextBlock}"
+                                            Text="Select the Excel file that contains, in a sheet called Match, the translation of the Staged Construction cases to the project steps."
+                                            TextWrapping="Wrap" />
+                                        <TextBox
+                                            Grid.Row="1"
+                                            Grid.Column="0"
+                                            Margin="5,0"
+                                            IsEnabled="False"
+                                            Text="{Binding StepwiseReport_ExcelMatchFileTextBox}" />
+                                        <Button
+                                            Grid.Row="1"
+                                            Grid.Column="1"
+                                            Width="75"
+                                            Command="{Binding StepwiseReport_SelectMatchExcelCommand}"
+                                            Content="Select" />
+                                    </Grid>
+                                </GroupBox>
+                                <GroupBox
+                                    Grid.Row="1"
+                                    Grid.Column="0"
+                                    Grid.ColumnSpan="2"
+                                    Header="Temperature Selection">
+                                    <Grid>
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="Auto" />
                                         </Grid.RowDefinitions>
                                         <TextBlock
-                                            Margin="5"
-                                            Text="Areas:"
-                                            TextAlignment="Right" />
-                                        <TextBox
-                                            Grid.Column="1"
-                                            Margin="5"
-                                            Text="{Binding Areas}"
-                                            ToolTip="Separate with underline _ for more." />
-                                        <RadioButton
-                                            Grid.Row="1"
-                                            Margin="5"
-                                            HorizontalAlignment="Center"
-                                            Content="Survey Points"
-                                            GroupName="SurveyWorkOrSurveyPoint"
-                                            IsChecked="{Binding SurveyRadio_IsChecked}" />
-                                        <RadioButton
-                                            Grid.Row="1"
-                                            Grid.Column="1"
-                                            Margin="5"
-                                            HorizontalAlignment="Center"
-                                            Content="Work Points"
-                                            GroupName="SurveyWorkOrSurveyPoint"
-                                            IsChecked="{Binding WorkRadio_IsChecked}" />
+                                            Grid.ColumnSpan="2"
+                                            Margin="5,0,5,5"
+                                            Style="{DynamicResource Explanation_TextBlock}"
+                                            Text="Add the desired temperatures for output. Must be in the following format: [Ref_temp] +T[#Steps] -T[#Steps]."
+                                            TextWrapping="Wrap" />
+                                        <TextBox Grid.Row="1" Text="{Binding StepwiseReport_DesiredTemperatureTextBox}" />
                                     </Grid>
-                                    <Button
-                                        Margin="5"
-                                        Command="{Binding SurveyReadPointsCommand}"
-                                        Content="Insert Points From Excel" />
-                                    <Button
-                                        Margin="5"
-                                        Command="{Binding SurveyLinkToCanopyCommand}"
-                                        Content="Link Points to Canopy" />
-                                    <Button
-                                        Margin="5"
-                                        Command="{Binding SurveyAddFixedSupportWithDisplacementsCommand}"
-                                        Content="Add Movements" />
-                                </StackPanel>
-                            </GroupBox>
-                            <GroupBox
-                                Margin="5"
-                                Header="Solver - Match Position for DEAD case"
-                                Style="{DynamicResource Blue_GroupBox}">
-                                <StackPanel Margin="5" Orientation="Vertical">
-                                    <TextBlock HorizontalAlignment="Center" Text="Messages" />
-                                    <Border Style="{DynamicResource LightBlue_Border}">
-                                        <TextBox
-                                            Height="300"
-                                            Margin="3"
-                                            BorderThickness="0"
-                                            IsReadOnly="True"
-                                            Text="{Binding DeadMatchSolverMessages}" />
-                                    </Border>
-                                    <TextBlock
-                                        Margin="5"
-                                        HorizontalAlignment="Center"
-                                        Foreground="DarkSlateBlue"
-                                        Text="The *target* model must be open." />
-                                    <Button
-                                        Margin="50,0"
-                                        Command="{Binding SolverMatchDEADCasePositionCommand}"
-                                        Content="Start Solver" />
-                                </StackPanel>
-                            </GroupBox>
-                        </StackPanel>
+                                </GroupBox>
+                                <GroupBox
+                                    Grid.Row="2"
+                                    Grid.Column="0"
+                                    Header="Output Joint Group">
+                                    <ComboBox ItemsSource="{Binding StepwiseReport_OutputGroups_ViewItems}" SelectedItem="{Binding StepwiseReport_SelectedOutputGroup}" />
+                                </GroupBox>
+                                <TextBlock
+                                    Grid.Row="3"
+                                    Grid.Column="0"
+                                    Margin="5"
+                                    Style="{DynamicResource Explanation_TextBlock}"
+                                    Text="** Please add a RepT load pattern to each element, with a unitary temperature load."
+                                    TextWrapping="Wrap" />
+                                <Button
+                                    Grid.Row="2"
+                                    Grid.Column="1"
+                                    Width="150"
+                                    Command="{Binding StepwiseReport_GenerateAndRunCasesCommand}"
+                                    Content="Set and Run Cases" />
+                                <Button
+                                    Grid.Row="3"
+                                    Grid.Column="1"
+                                    Width="150"
+                                    Command="{Binding StepwiseReport_GenerateReportCommand}"
+                                    Content="Generate Report" />
+                            </Grid>
+
+                        </GroupBox>
                     </Grid>
                 </TabItem>
             </TabControl>

@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using AccordHelper.FEA;
+using AccordHelper.FEA.Items;
 using AccordHelper.Opt.ParamDefinitions;
 using BaseWPFLibrary.Others;
 using Prism.Mvvm;
@@ -60,6 +61,12 @@ namespace AccordHelper.Opt
             foreach (Output_ParamDefBase outputParamDef in Problem.ObjectiveFunction.FinalDefs)
             {
                 FinalValues.Add(outputParamDef, null);
+            }
+
+            // Saving the sections of this current solution
+            foreach (LineList_Output_ParamDef lineList_Output_ParamDef in Problem.ObjectiveFunction.IntermediateDefs.Where(a => a is LineList_Output_ParamDef).Cast<LineList_Output_ParamDef>())
+            {
+                IntermediateLineSection.Add(lineList_Output_ParamDef, lineList_Output_ParamDef.SolveSection);
             }
 
             InputValuesAsDouble = inInputValuesAsDouble; // The setter also fills the InputValues dictionary
@@ -134,6 +141,12 @@ namespace AccordHelper.Opt
             get => _intermediateValues;
         }
 
+        private Dictionary<LineList_Output_ParamDef, FeSection> _intermediateLineSection = new Dictionary<LineList_Output_ParamDef, FeSection>();
+        public Dictionary<LineList_Output_ParamDef, FeSection> IntermediateLineSection
+        {
+            get => _intermediateLineSection;
+        }
+
         private Dictionary<Output_ParamDefBase, object> _finalValues = new Dictionary<Output_ParamDefBase, object>();
         public Dictionary<Output_ParamDefBase, object> FinalValues
         {
@@ -179,6 +192,7 @@ namespace AccordHelper.Opt
         }
         public void ReadOutputFromGrasshopper(string inOutputFolder)
         {
+            List<Point3d> allPoints = new List<Point3d>();
             for (int i = 0; i < IntermediateValues.Count; i++)
             {
                 Output_ParamDefBase key = IntermediateValues.ElementAt(i).Key;
@@ -226,9 +240,13 @@ namespace AccordHelper.Opt
                         {
                             if (!RhinoStaticMethods.TryParseLine(fileLine, out Line line)) throw new Exception($"Could not parse {fileLine} to a Line.");
                             else lines.Add(line);
+
+                            allPoints.Add(line.From);
+                            allPoints.Add(line.To);
                         }
 
                         IntermediateValues[key] = lines;
+
                         break;
 
                     case PointList_Output_ParamDef pointListOutputParamDef:
@@ -238,6 +256,8 @@ namespace AccordHelper.Opt
                         {
                             if (!RhinoStaticMethods.TryParsePoint3d(fileLine, out Point3d pnt)) throw new Exception($"Could not parse {fileLine} to a Point3d.");
                             else points.Add(pnt);
+
+                            allPoints.Add(pnt);
                         }
 
                         IntermediateValues[key] = points;
@@ -247,7 +267,9 @@ namespace AccordHelper.Opt
                         throw new ArgumentOutOfRangeException(nameof(key));
                 }
             }
+            GeometryBoundingBox = new BoundingBox(allPoints);
         }
+        public BoundingBox GeometryBoundingBox { get; set; }
 
         public T GetInputValueByName<T>(string inParamName)
         {

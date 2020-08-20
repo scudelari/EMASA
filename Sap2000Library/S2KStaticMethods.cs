@@ -1,6 +1,7 @@
 ﻿using MathNet.Spatial.Euclidean;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,6 +21,7 @@ using BaseWPFLibrary;
 using BaseWPFLibrary.Bindings;
 using Sap2000Library.Other;
 using Sap2000Library.SapObjects;
+using Color = System.Drawing.Color;
 
 namespace Sap2000Library
 {
@@ -57,7 +59,7 @@ namespace Sap2000Library
             MD5 md5Hash = MD5.Create();
             byte[] md5Data = md5Hash.ComputeHash(finalData);
 
-            // Loop through each byte of the hashed data and format each one as a hexadecimal string.
+            // Loop through each byte of the hashed data and inFormat each one as a hexadecimal string.
             StringBuilder sBuilder = new StringBuilder();
             foreach (byte _t in md5Data)
             {
@@ -215,5 +217,91 @@ namespace Sap2000Library
             Debug.WriteLine($"{message} | {callMember} Line:{lineNumber} | Thread Name: {Thread.CurrentThread.Name}");
         }
 
+        public static object[,] ConvertToObjectArray2(this DataTable dt, bool inIncludeColumnHeaders = true)
+        {
+            if (inIncludeColumnHeaders)
+            {
+                DataRowCollection rows = dt.Rows;
+                int rowCount = rows.Count + 1;
+                int colCount = dt.Columns.Count;
+
+                object[,] result = new object[rowCount, colCount];
+
+                for (int j = 0; j < colCount; j++)
+                {
+                    result[0, j] = dt.Columns[j].ColumnName;
+                }
+
+                for (int i = 0; i < rowCount - 1; i++)
+                {
+                    DataRow row = rows[i];
+                    for (int j = 0; j < colCount; j++)
+                    {
+                        result[i + 1, j] = row[j];
+                    }
+                }
+
+                return result;
+            }
+            else
+            {
+                DataRowCollection rows = dt.Rows;
+                int rowCount = rows.Count;
+                int colCount = dt.Columns.Count;
+
+                object[,] result = new object[rowCount, colCount];
+
+                for (int i = 0; i < rowCount; i++)
+                {
+                    DataRow row = rows[i];
+                    for (int j = 0; j < colCount; j++)
+                    {
+                        result[i, j] = row[j];
+                    }
+                }
+
+                return result;
+            }
+
+        }
+
+
+        public enum TransformColorFormat
+        {
+            RGB, RGBA, ARGB, SAP2000
+        }
+        public static int ColorToDecimal(System.Drawing.Color inColor, TransformColorFormat inFormat = TransformColorFormat.SAP2000)
+        {
+            switch (inFormat)
+            {
+                default:
+                case TransformColorFormat.RGB:
+                    return inColor.R << 16 | inColor.G << 8 | inColor.B;
+                case TransformColorFormat.RGBA:
+                    return inColor.R << 24 | inColor.G << 16 | inColor.B << 8 | inColor.A;
+                case TransformColorFormat.ARGB:
+                    return inColor.A << 24 | inColor.R << 16 | inColor.G << 8 | inColor.B;
+                case TransformColorFormat.SAP2000:
+                    return inColor.R | inColor.G << 8 | inColor.B << 16;
+            }
+        }
+        public static System.Drawing.Color DecimalToColor(int inVal, TransformColorFormat inFormat = TransformColorFormat.SAP2000)
+        {
+            switch (inFormat)
+            {
+                default:
+                case TransformColorFormat.RGB:
+                    return System.Drawing.Color.FromArgb((inVal >> 16) & 0xFF, (inVal >> 8) & 0xFF, inVal & 0xFF);
+                case TransformColorFormat.RGBA:
+                    return System.Drawing.Color.FromArgb(inVal & 0xFF, (inVal >> 24) & 0xFF, (inVal >> 16) & 0xFF, (inVal >> 8) & 0xFF);
+                case TransformColorFormat.ARGB:
+                    return System.Drawing.Color.FromArgb((inVal >> 24) & 0xFF, (inVal >> 16) & 0xFF, (inVal >> 8) & 0xFF, inVal & 0xFF);
+                case TransformColorFormat.SAP2000:
+                    int red = (inVal) & 0xFF;
+                    int green = (inVal >> 8) & 0xFF;
+                    int blue = (inVal >> 16) & 0xFF;
+                    return System.Drawing.Color.FromArgb(255, red, green, blue);
+            }
+        }
     }
 }

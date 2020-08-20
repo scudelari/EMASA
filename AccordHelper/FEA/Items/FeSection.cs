@@ -32,6 +32,8 @@ namespace AccordHelper.FEA.Items
             get => _name;
             set => SetProperty(ref _name, value);
         }
+        public string NameFixed => Name.Replace('_', '.');
+        
 
         protected FeMaterial _material;
         public FeMaterial Material
@@ -42,6 +44,7 @@ namespace AccordHelper.FEA.Items
 
         public readonly Dictionary<string, double> Dimensions = new Dictionary<string, double>();
         public virtual double OuterDiameter => throw new NotImplementedException($"{this.GetType().Name} does not implement {nameof(MethodBase.GetCurrentMethod)}.");
+        public virtual double Thickness => throw new NotImplementedException($"{this.GetType().Name} does not implement {nameof(MethodBase.GetCurrentMethod)}.");
 
         protected double _area;
         public virtual double Area
@@ -180,7 +183,8 @@ namespace AccordHelper.FEA.Items
         }
         public override int GetHashCode()
         {
-            return _id;
+            
+            return GetType().ToString().GetHashCode() ^ _id.GetHashCode();
         }
         public static bool operator ==(FeSection left, FeSection right)
         {
@@ -194,6 +198,11 @@ namespace AccordHelper.FEA.Items
         public string NameChunk(int inIndex, string inSeparator = "X")
         {
             return Name.Split(new []{inSeparator}, StringSplitOptions.RemoveEmptyEntries)[inIndex];
+        }
+
+        public string NameFixedChunk(int inIndex, string inSeparator = "X")
+        {
+            return NameFixed.Split(new[] { inSeparator }, StringSplitOptions.RemoveEmptyEntries)[inIndex];
         }
     }
 

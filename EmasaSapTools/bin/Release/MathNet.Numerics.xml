@@ -2390,6 +2390,58 @@
             Resets the function evaluation counter for the Jacobian.
             </summary>
         </member>
+        <member name="M:MathNet.Numerics.DifferIntegrate.DoubleExponential(System.Func{System.Double,System.Double},System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Evaluates the Riemann-Liouville fractional derivative that uses the double exponential integration.
+            </summary>
+            <remarks>
+            <para>order = 1.0 : normal derivative</para>
+            <para>order = 0.5 : semi-derivative</para>
+            <para>order = -0.5 : semi-integral</para>
+            <para>order = -1.0 : normal integral</para>
+            </remarks>
+            <param name="f">The analytic smooth function to differintegrate.</param>
+            <param name="x">The evaluation point.</param>
+            <param name="order">The order of fractional derivative.</param>
+            <param name="x0">The reference point of integration.</param>
+            <param name="targetAbsoluteError">The expected relative accuracy of the Double-Exponential integration.</param>
+            <returns>Approximation of the differintegral of order n at x.</returns>
+        </member>
+        <member name="M:MathNet.Numerics.DifferIntegrate.GaussLegendre(System.Func{System.Double,System.Double},System.Double,System.Double,System.Double,System.Int32)">
+            <summary>
+            Evaluates the Riemann-Liouville fractional derivative that uses the Gauss-Legendre integration.
+            </summary>
+            <remarks>
+            <para>order = 1.0 : normal derivative</para>
+            <para>order = 0.5 : semi-derivative</para>
+            <para>order = -0.5 : semi-integral</para>
+            <para>order = -1.0 : normal integral</para>
+            </remarks>
+            <param name="f">The analytic smooth function to differintegrate.</param>
+            <param name="x">The evaluation point.</param>
+            <param name="order">The order of fractional derivative.</param>
+            <param name="x0">The reference point of integration.</param>
+            <param name="gaussLegendrePoints">The number of Gauss-Legendre points.</param>
+            <returns>Approximation of the differintegral of order n at x.</returns>
+        </member>
+        <member name="M:MathNet.Numerics.DifferIntegrate.GaussKronrod(System.Func{System.Double,System.Double},System.Double,System.Double,System.Double,System.Double,System.Int32)">
+            <summary>
+            Evaluates the Riemann-Liouville fractional derivative that uses the Gauss-Kronrod integration.
+            </summary>
+            <remarks>
+            <para>order = 1.0 : normal derivative</para>
+            <para>order = 0.5 : semi-derivative</para>
+            <para>order = -0.5 : semi-integral</para>
+            <para>order = -1.0 : normal integral</para>
+            </remarks>
+            <param name="f">The analytic smooth function to differintegrate.</param>
+            <param name="x">The evaluation point.</param>
+            <param name="order">The order of fractional derivative.</param>
+            <param name="x0">The reference point of integration.</param>
+            <param name="targetRelativeError">The expected relative accuracy of the Gauss-Kronrod integration.</param>
+            <param name="gaussKronrodPoints">The number of Gauss-Kronrod points. Pre-computed for 15, 21, 31, 41, 51 and 61 points.</param>
+            <returns>Approximation of the differintegral of order n at x.</returns>
+        </member>
         <member name="T:MathNet.Numerics.Distance">
             <summary>
             Metrics to measure the distance between two structures.
@@ -9028,16 +9080,6 @@
             is defined.
             </summary>
         </member>
-        <member name="F:MathNet.Numerics.Distributions.MeanPrecisionPair._mean">
-            <summary>
-            The mean value.
-            </summary>
-        </member>
-        <member name="F:MathNet.Numerics.Distributions.MeanPrecisionPair._precision">
-            <summary>
-            The precision value.
-            </summary>
-        </member>
         <member name="M:MathNet.Numerics.Distributions.MeanPrecisionPair.#ctor(System.Double,System.Double)">
             <summary>
             Initializes a new instance of the <see cref="T:MathNet.Numerics.Distributions.MeanPrecisionPair"/> struct.
@@ -9917,6 +9959,378 @@
             </summary>
             <param name="values">The array to fill with the samples.</param>
             <param name="scale">The scale (σ) of the distribution. Range: σ > 0.</param>
+            <returns>a sequence of samples from the distribution.</returns>
+        </member>
+        <member name="T:MathNet.Numerics.Distributions.SkewedGeneralizedError">
+            <summary>
+            Continuous Univariate Skewed Generalized Error Distribution (SGED).
+            Implements the univariate SSkewed Generalized Error Distribution. For details about this
+            distribution, see
+            <a href="https://en.wikipedia.org/wiki/Generalized_normal_distribution">
+            Wikipedia - Generalized Error Distribution</a>.
+            It includes Laplace, Normal and Student-t distributions.
+            This is the <see cref="T:MathNet.Numerics.Distributions.SkewedGeneralizedT"/> distribution with q=Inf.
+            </summary>
+            <remarks><para>This implementation is based on the R package dsgt and corresponding viginette, see
+            <a href="">https://cran.r-project.org/web/packages/sgt/vignettes/sgt.pdf</a>. Compared to that
+            implementation, the options for mean adjustment and variance adjustment are always true.
+            The location (μ) is the mean of the distribution.
+            The scale (σ) squared is the variance of the distribution.
+            </para>
+            <para>The distribution will use the <see cref="T:System.Random"/> by
+            default.  Users can get/set the random number generator by using the
+            <see cref="P:MathNet.Numerics.Distributions.SkewedGeneralizedError.RandomSource"/> property.</para>
+            <para>The statistics classes will check all the incoming parameters
+            whether they are in the allowed range.</para></remarks>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.SkewedGeneralizedError.#ctor">
+            <summary>
+            Initializes a new instance of the SkewedGeneralizedError class. This is a generalized error distribution
+            with location=0.0, scale=1.0, skew=0.0 and p=2.0 (a standard normal distribution).
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.SkewedGeneralizedError.#ctor(System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Initializes a new instance of the SkewedGeneralizedT class with a particular location, scale, skew
+            and kurtosis parameters. Different parameterizations result in different distributions.
+            </summary>
+            <param name="location">The location (μ) of the distribution.</param>
+            <param name="scale">The scale (σ) of the distribution. Range: σ > 0.</param>
+            <param name="skew">The skew, 1 > λ > -1</param>
+            <param name="p">Parameter that controls kurtosis. Range: p > 0</param>
+        </member>
+        <member name="P:MathNet.Numerics.Distributions.SkewedGeneralizedError.RandomSource">
+            <summary>
+            Gets or sets the random number generator which is used to draw random samples.
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.SkewedGeneralizedError.ToString">
+            <summary>
+            A string representation of the distribution.
+            </summary>
+            <returns>a string representation of the distribution.</returns>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.SkewedGeneralizedError.IsValidParameterSet(System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Tests whether the provided values are valid parameters for this distribution.
+            </summary>
+            <param name="location">The location (μ) of the distribution.</param>
+            <param name="scale">The scale (σ) of the distribution. Range: σ > 0.</param>
+            <param name="skew">The skew, 1 > λ > -1</param>
+            <param name="p">Parameter that controls kurtosis. Range: p > 0</param>
+        </member>
+        <member name="P:MathNet.Numerics.Distributions.SkewedGeneralizedError.Location">
+            <summary>
+            Gets the location (μ) of the Skewed Generalized t-distribution.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Distributions.SkewedGeneralizedError.Scale">
+            <summary>
+            Gets the scale (σ) of the Skewed Generalized t-distribution. Range: σ > 0.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Distributions.SkewedGeneralizedError.Skew">
+            <summary>
+            Gets the skew (λ) of the Skewed Generalized t-distribution. Range: 1 > λ > -1.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Distributions.SkewedGeneralizedError.P">
+            <summary>
+            Gets the parameter that controls the kurtosis of the distribution. Range: p > 0.
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.SkewedGeneralizedError.Sample(System.Random,System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Generates a sample from the Skew Generalized Error distribution.
+            </summary>
+            <param name="rnd">The random number generator to use.</param>
+            <param name="location">The location (μ) of the distribution.</param>
+            <param name="scale">The scale (σ) of the distribution. Range: σ > 0.</param>
+            <param name="skew">The skew, 1 > λ > -1</param>
+            <param name="p">Parameter that controls kurtosis. Range: p > 0</param>
+            <returns>a sample from the distribution.</returns>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.SkewedGeneralizedError.Samples(System.Random,System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Generates a sequence of samples from the Skew Generalized Error distribution using inverse transform.
+            </summary>
+            <param name="rnd">The random number generator to use.</param>
+            <param name="location">The location (μ) of the distribution.</param>
+            <param name="scale">The scale (σ) of the distribution. Range: σ > 0.</param>
+            <param name="skew">The skew, 1 > λ > -1</param>
+            <param name="p">Parameter that controls kurtosis. Range: p > 0</param>
+            <returns>a sequence of samples from the distribution.</returns>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.SkewedGeneralizedError.Samples(System.Random,System.Double[],System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Fills an array with samples from the Skew Generalized Error distribution using inverse transform.
+            </summary>
+            <param name="rnd">The random number generator to use.</param>
+            <param name="values">The array to fill with the samples.</param>
+            <param name="location">The location (μ) of the distribution.</param>
+            <param name="scale">The scale (σ) of the distribution. Range: σ > 0.</param>
+            <param name="skew">The skew, 1 > λ > -1</param>
+            <param name="p">Parameter that controls kurtosis. Range: p > 0</param>
+            <returns>a sequence of samples from the distribution.</returns>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.SkewedGeneralizedError.Sample(System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Generates a sample from the Skew Generalized Error distribution.
+            </summary>
+            <param name="location">The location (μ) of the distribution.</param>
+            <param name="scale">The scale (σ) of the distribution. Range: σ > 0.</param>
+            <param name="skew">The skew, 1 > λ > -1</param>
+            <param name="p">Parameter that controls kurtosis. Range: p > 0</param>
+            <returns>a sample from the distribution.</returns>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.SkewedGeneralizedError.Samples(System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Generates a sequence of samples from the Skew Generalized Error distribution using inverse transform.
+            </summary>
+            <param name="location">The location (μ) of the distribution.</param>
+            <param name="scale">The scale (σ) of the distribution. Range: σ > 0.</param>
+            <param name="skew">The skew, 1 > λ > -1</param>
+            <param name="p">Parameter that controls kurtosis. Range: p > 0</param>
+            <returns>a sequence of samples from the distribution.</returns>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.SkewedGeneralizedError.Samples(System.Double[],System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Fills an array with samples from the Skew Generalized Error distribution using inverse transform.
+            </summary>
+            <param name="values">The array to fill with the samples.</param>
+            <param name="location">The location (μ) of the distribution.</param>
+            <param name="scale">The scale (σ) of the distribution. Range: σ > 0.</param>
+            <param name="skew">The skew, 1 > λ > -1</param>
+            <param name="p">Parameter that controls kurtosis. Range: p > 0</param>
+            <returns>a sequence of samples from the distribution.</returns>
+        </member>
+        <member name="T:MathNet.Numerics.Distributions.SkewedGeneralizedT">
+            <summary>
+            Continuous Univariate Skewed Generalized T-distribution.
+            Implements the univariate Skewed Generalized t-distribution. For details about this
+            distribution, see
+            <a href="https://en.wikipedia.org/wiki/Skewed_generalized_t_distribution">
+            Wikipedia - Skewed generalized t-distribution</a>.
+            The skewed generalized t-distribution contains many different distributions within it
+            as special cases based on the parameterization chosen.
+            </summary>
+            <remarks><para>This implementation is based on the R package dsgt and corresponding viginette, see
+            <a href="">https://cran.r-project.org/web/packages/sgt/vignettes/sgt.pdf</a>. Compared to that
+            implementation, the options for mean adjustment and variance adjustment are always true.
+            The location (μ) is the mean of the distribution.
+            The scale (σ) squared is the variance of the distribution.
+            </para>
+            <para>The distribution will use the <see cref="T:System.Random"/> by
+            default.  Users can get/set the random number generator by using the
+            <see cref="P:MathNet.Numerics.Distributions.SkewedGeneralizedT.RandomSource"/> property.</para>
+            <para>The statistics classes will check all the incoming parameters
+            whether they are in the allowed range.</para></remarks>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.SkewedGeneralizedT.#ctor">
+            <summary>
+            Initializes a new instance of the SkewedGeneralizedT class. This is a skewed generalized t-distribution
+            with location=0.0, scale=1.0, skew=0.0, p=2.0 and q=Inf (a standard normal distribution).
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.SkewedGeneralizedT.#ctor(System.Double,System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Initializes a new instance of the SkewedGeneralizedT class with a particular location, scale, skew
+            and kurtosis parameters. Different parameterizations result in different distributions.
+            </summary>
+            <param name="location">The location (μ) of the distribution.</param>
+            <param name="scale">The scale (σ) of the distribution. Range: σ > 0.</param>
+            <param name="skew">The skew, 1 > λ > -1</param>
+            <param name="p">First parameter that controls kurtosis. Range: p > 0</param>
+            <param name="q">Second parameter that controls kurtosis. Range: q > 0</param>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.SkewedGeneralizedT.FindSpecializedDistribution(System.Double,System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Given a parameter set, returns the distribution that matches this parameterization.
+            </summary>
+            <param name="location">The location (μ) of the distribution.</param>
+            <param name="scale">The scale (σ) of the distribution. Range: σ > 0.</param>
+            <param name="skew">The skew, 1 > λ > -1</param>
+            <param name="p">First parameter that controls kurtosis. Range: p > 0</param>
+            <param name="q">Second parameter that controls kurtosis. Range: q > 0</param>
+            <returns>Null if no known distribution matches the parameterization, else the distribution.</returns>
+        </member>
+        <member name="P:MathNet.Numerics.Distributions.SkewedGeneralizedT.RandomSource">
+            <summary>
+            Gets or sets the random number generator which is used to draw random samples.
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.SkewedGeneralizedT.ToString">
+            <summary>
+            A string representation of the distribution.
+            </summary>
+            <returns>a string representation of the distribution.</returns>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.SkewedGeneralizedT.IsValidParameterSet(System.Double,System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Tests whether the provided values are valid parameters for this distribution.
+            </summary>
+            <param name="location">The location (μ) of the distribution.</param>
+            <param name="scale">The scale (σ) of the distribution. Range: σ > 0.</param>
+            <param name="skew">The skew, 1 > λ > -1</param>
+            <param name="p">First parameter that controls kurtosis. Range: p > 0</param>
+            <param name="q">Second parameter that controls kurtosis. Range: q > 0</param>
+        </member>
+        <member name="P:MathNet.Numerics.Distributions.SkewedGeneralizedT.Location">
+            <summary>
+            Gets the location (μ) of the Skewed Generalized t-distribution.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Distributions.SkewedGeneralizedT.Scale">
+            <summary>
+            Gets the scale (σ) of the Skewed Generalized t-distribution. Range: σ > 0.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Distributions.SkewedGeneralizedT.Skew">
+            <summary>
+            Gets the skew (λ) of the Skewed Generalized t-distribution. Range: 1 > λ > -1.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Distributions.SkewedGeneralizedT.P">
+            <summary>
+            Gets the first parameter that controls the kurtosis of the distribution. Range: p > 0.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Distributions.SkewedGeneralizedT.Q">
+            <summary>
+            Gets the second parameter that controls the kurtosis of the distribution. Range: q > 0.
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.SkewedGeneralizedT.PDF(System.Double,System.Double,System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Computes the probability density of the distribution (PDF) at x, i.e. ∂P(X ≤ x)/∂x.
+            </summary>
+            <param name="location">The location (μ) of the distribution.</param>
+            <param name="scale">The scale (σ) of the distribution. Range: σ > 0.</param>
+            <param name="skew">The skew, 1 > λ > -1</param>
+            <param name="p">First parameter that controls kurtosis. Range: p > 0</param>
+            <param name="q">Second parameter that controls kurtosis. Range: q > 0</param>
+            <param name="x">The location at which to compute the density.</param>
+            <returns>the density at <paramref name="x"/>.</returns>
+            <seealso cref="M:MathNet.Numerics.Distributions.SkewedGeneralizedT.Density(System.Double)"/>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.SkewedGeneralizedT.PDFLn(System.Double,System.Double,System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Computes the log probability density of the distribution (lnPDF) at x, i.e. ln(∂P(X ≤ x)/∂x).
+            </summary>
+            <param name="location">The location (μ) of the distribution.</param>
+            <param name="scale">The scale (σ) of the distribution. Range: σ > 0.</param>
+            <param name="skew">The skew, 1 > λ > -1</param>
+            <param name="p">First parameter that controls kurtosis. Range: p > 0</param>
+            <param name="q">Second parameter that controls kurtosis. Range: q > 0</param>
+            <param name="x">The location at which to compute the density.</param>
+            <returns>the density at <paramref name="x"/>.</returns>
+            <seealso cref="M:MathNet.Numerics.Distributions.SkewedGeneralizedT.Density(System.Double)"/>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.SkewedGeneralizedT.CDF(System.Double,System.Double,System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Computes the cumulative distribution (CDF) of the distribution at x, i.e. P(X ≤ x).
+            </summary>
+            <param name="x">The location at which to compute the cumulative distribution function.</param>
+            <param name="location">The location (μ) of the distribution.</param>
+            <param name="scale">The scale (σ) of the distribution. Range: σ > 0.</param>
+            <param name="skew">The skew, 1 > λ > -1</param>
+            <param name="p">First parameter that controls kurtosis. Range: p > 0</param>
+            <param name="q">Second parameter that controls kurtosis. Range: q > 0</param>
+            <returns>the cumulative distribution at location <paramref name="x"/>.</returns>
+            <seealso cref="M:MathNet.Numerics.Distributions.SkewedGeneralizedT.CumulativeDistribution(System.Double)"/>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.SkewedGeneralizedT.InvCDF(System.Double,System.Double,System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Computes the inverse of the cumulative distribution function (InvCDF) for the distribution
+            at the given probability. This is also known as the quantile or percent point function.
+            </summary>
+            <param name="pr">The location at which to compute the inverse cumulative density.</param>
+            <param name="location">The location (μ) of the distribution.</param>
+            <param name="scale">The scale (σ) of the distribution. Range: σ > 0.</param>
+            <param name="skew">The skew, 1 > λ > -1</param>
+            <param name="p">First parameter that controls kurtosis. Range: p > 0</param>
+            <param name="q">Second parameter that controls kurtosis. Range: q > 0</param>
+            <returns>the inverse cumulative density at <paramref name="p"/>.</returns>
+            <seealso cref="M:MathNet.Numerics.Distributions.SkewedGeneralizedT.InverseCumulativeDistribution(System.Double)"/>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.SkewedGeneralizedT.InverseCumulativeDistribution(System.Double)">
+            <summary>
+            Computes the inverse of the cumulative distribution function (InvCDF) for the distribution
+            at the given probability. This is also known as the quantile or percent point function.
+            </summary>
+            <param name="p">The location at which to compute the inverse cumulative density.</param>
+            <returns>the inverse cumulative density at <paramref name="p"/>.</returns>
+            <seealso cref="M:MathNet.Numerics.Distributions.SkewedGeneralizedT.InvCDF(System.Double,System.Double,System.Double,System.Double,System.Double,System.Double)"/>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.SkewedGeneralizedT.Sample(System.Random,System.Double,System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Generates a sample from the Skew Generalized t-distribution.
+            </summary>
+            <param name="rnd">The random number generator to use.</param>
+            <param name="location">The location (μ) of the distribution.</param>
+            <param name="scale">The scale (σ) of the distribution. Range: σ > 0.</param>
+            <param name="skew">The skew, 1 > λ > -1</param>
+            <param name="p">First parameter that controls kurtosis. Range: p > 0</param>
+            <param name="q">Second parameter that controls kurtosis. Range: q > 0</param>
+            <returns>a sample from the distribution.</returns>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.SkewedGeneralizedT.Samples(System.Random,System.Double,System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Generates a sequence of samples from the Skew Generalized t-distribution using inverse transform.
+            </summary>
+            <param name="rnd">The random number generator to use.</param>
+            <param name="location">The location (μ) of the distribution.</param>
+            <param name="scale">The scale (σ) of the distribution. Range: σ > 0.</param>
+            <param name="skew">The skew, 1 > λ > -1</param>
+            <param name="p">First parameter that controls kurtosis. Range: p > 0</param>
+            <param name="q">Second parameter that controls kurtosis. Range: q > 0</param>
+            <returns>a sequence of samples from the distribution.</returns>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.SkewedGeneralizedT.Samples(System.Random,System.Double[],System.Double,System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Fills an array with samples from the Skew Generalized t-distribution using inverse transform.
+            </summary>
+            <param name="rnd">The random number generator to use.</param>
+            <param name="values">The array to fill with the samples.</param>
+            <param name="location">The location (μ) of the distribution.</param>
+            <param name="scale">The scale (σ) of the distribution. Range: σ > 0.</param>
+            <param name="skew">The skew, 1 > λ > -1</param>
+            <param name="p">First parameter that controls kurtosis. Range: p > 0</param>
+            <param name="q">Second parameter that controls kurtosis. Range: q > 0</param>
+            <returns>a sequence of samples from the distribution.</returns>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.SkewedGeneralizedT.Sample(System.Double,System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Generates a sample from the Skew Generalized t-distribution.
+            </summary>
+            <param name="location">The location (μ) of the distribution.</param>
+            <param name="scale">The scale (σ) of the distribution. Range: σ > 0.</param>
+            <param name="skew">The skew, 1 > λ > -1</param>
+            <param name="p">First parameter that controls kurtosis. Range: p > 0</param>
+            <param name="q">Second parameter that controls kurtosis. Range: q > 0</param>
+            <returns>a sample from the distribution.</returns>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.SkewedGeneralizedT.Samples(System.Double,System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Generates a sequence of samples from the Skew Generalized t-distribution using inverse transform.
+            </summary>
+            <param name="location">The location (μ) of the distribution.</param>
+            <param name="scale">The scale (σ) of the distribution. Range: σ > 0.</param>
+            <param name="skew">The skew, 1 > λ > -1</param>
+            <param name="p">First parameter that controls kurtosis. Range: p > 0</param>
+            <param name="q">Second parameter that controls kurtosis. Range: q > 0</param>
+            <returns>a sequence of samples from the distribution.</returns>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.SkewedGeneralizedT.Samples(System.Double[],System.Double,System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Fills an array with samples from the Skew Generalized t-distribution using inverse transform.
+            </summary>
+            <param name="values">The array to fill with the samples.</param>
+            <param name="location">The location (μ) of the distribution.</param>
+            <param name="scale">The scale (σ) of the distribution. Range: σ > 0.</param>
+            <param name="skew">The skew, 1 > λ > -1</param>
+            <param name="p">First parameter that controls kurtosis. Range: p > 0</param>
+            <param name="q">Second parameter that controls kurtosis. Range: q > 0</param>
             <returns>a sequence of samples from the distribution.</returns>
         </member>
         <member name="T:MathNet.Numerics.Distributions.Stable">
@@ -13310,7 +13724,7 @@
             <param name="intervalEnd">Where the interval stops.</param>
             <param name="targetRelativeError">The expected relative accuracy of the approximation.</param>
             <param name="maximumDepth">The maximum number of interval splittings permitted before stopping.</param>
-            <param name="order">The number of Gauss-Kronrod points. Pre-computed for 15, 31, 41, 51 and 61 points.</param>
+            <param name="order">The number of Gauss-Kronrod points. Pre-computed for 15, 21, 31, 41, 51 and 61 points.</param>
             <returns>Approximation of the finite integral in the given interval.</returns>
         </member>
         <member name="M:MathNet.Numerics.Integrate.GaussKronrod(System.Func{System.Double,System.Double},System.Double,System.Double,System.Double@,System.Double@,System.Double,System.Int32,System.Int32)">
@@ -16187,70 +16601,6 @@
             <param name="symmetricity">If it is known whether the matrix is symmetric or not the routine can skip checking it itself.</param>
             <exception cref="T:System.ArgumentNullException">If <paramref name="matrix"/> is <c>null</c>.</exception>
             <exception cref="T:System.ArgumentException">If EVD algorithm failed to converge with matrix <paramref name="matrix"/>.</exception>
-        </member>
-        <member name="M:MathNet.Numerics.LinearAlgebra.Double.Factorization.DenseEvd.SymmetricTridiagonalize(System.Double[],System.Double[],System.Double[],System.Int32)">
-            <summary>
-            Symmetric Householder reduction to tridiagonal form.
-            </summary>
-            <param name="a">Data array of matrix V (eigenvectors)</param>
-            <param name="d">Arrays for internal storage of real parts of eigenvalues</param>
-            <param name="e">Arrays for internal storage of imaginary parts of eigenvalues</param>
-            <param name="order">Order of initial matrix</param>
-            <remarks>This is derived from the Algol procedures tred2 by
-            Bowdler, Martin, Reinsch, and Wilkinson, Handbook for
-            Auto. Comp., Vol.ii-Linear Algebra, and the corresponding
-            Fortran subroutine in EISPACK.</remarks>
-        </member>
-        <member name="M:MathNet.Numerics.LinearAlgebra.Double.Factorization.DenseEvd.SymmetricDiagonalize(System.Double[],System.Double[],System.Double[],System.Int32)">
-            <summary>
-            Symmetric tridiagonal QL algorithm.
-            </summary>
-            <param name="a">Data array of matrix V (eigenvectors)</param>
-            <param name="d">Arrays for internal storage of real parts of eigenvalues</param>
-            <param name="e">Arrays for internal storage of imaginary parts of eigenvalues</param>
-            <param name="order">Order of initial matrix</param>
-            <remarks>This is derived from the Algol procedures tql2, by
-            Bowdler, Martin, Reinsch, and Wilkinson, Handbook for
-            Auto. Comp., Vol.ii-Linear Algebra, and the corresponding
-            Fortran subroutine in EISPACK.</remarks>
-            <exception cref="T:MathNet.Numerics.NonConvergenceException"></exception>
-        </member>
-        <member name="M:MathNet.Numerics.LinearAlgebra.Double.Factorization.DenseEvd.NonsymmetricReduceToHessenberg(System.Double[],System.Double[],System.Int32)">
-            <summary>
-            Nonsymmetric reduction to Hessenberg form.
-            </summary>
-            <param name="a">Data array of matrix V (eigenvectors)</param>
-            <param name="matrixH">Array for internal storage of nonsymmetric Hessenberg form.</param>
-            <param name="order">Order of initial matrix</param>
-            <remarks>This is derived from the Algol procedures orthes and ortran,
-            by Martin and Wilkinson, Handbook for Auto. Comp.,
-            Vol.ii-Linear Algebra, and the corresponding
-            Fortran subroutines in EISPACK.</remarks>
-        </member>
-        <member name="M:MathNet.Numerics.LinearAlgebra.Double.Factorization.DenseEvd.NonsymmetricReduceHessenberToRealSchur(System.Double[],System.Double[],System.Double[],System.Double[],System.Int32)">
-            <summary>
-            Nonsymmetric reduction from Hessenberg to real Schur form.
-            </summary>
-            <param name="a">Data array of matrix V (eigenvectors)</param>
-            <param name="matrixH">Array for internal storage of nonsymmetric Hessenberg form.</param>
-            <param name="d">Arrays for internal storage of real parts of eigenvalues</param>
-            <param name="e">Arrays for internal storage of imaginary parts of eigenvalues</param>
-            <param name="order">Order of initial matrix</param>
-            <remarks>This is derived from the Algol procedure hqr2,
-            by Martin and Wilkinson, Handbook for Auto. Comp.,
-            Vol.ii-Linear Algebra, and the corresponding
-            Fortran subroutine in EISPACK.</remarks>
-            <exception cref="T:MathNet.Numerics.NonConvergenceException"></exception>
-        </member>
-        <member name="M:MathNet.Numerics.LinearAlgebra.Double.Factorization.DenseEvd.Cdiv(System.Double,System.Double,System.Double,System.Double)">
-            <summary>
-            Complex scalar division X/Y.
-            </summary>
-            <param name="xreal">Real part of X</param>
-            <param name="ximag">Imaginary part of X</param>
-            <param name="yreal">Real part of Y</param>
-            <param name="yimag">Imaginary part of Y</param>
-            <returns>Division result as a <see cref="T:System.Numerics.Complex"/> number.</returns>
         </member>
         <member name="M:MathNet.Numerics.LinearAlgebra.Double.Factorization.DenseEvd.Solve(MathNet.Numerics.LinearAlgebra.Matrix{System.Double},MathNet.Numerics.LinearAlgebra.Matrix{System.Double})">
             <summary>
@@ -20506,70 +20856,6 @@
             <exception cref="T:System.ArgumentNullException">If <paramref name="matrix"/> is <c>null</c>.</exception>
             <exception cref="T:System.ArgumentException">If EVD algorithm failed to converge with matrix <paramref name="matrix"/>.</exception>
         </member>
-        <member name="M:MathNet.Numerics.LinearAlgebra.Single.Factorization.DenseEvd.SymmetricTridiagonalize(System.Single[],System.Single[],System.Single[],System.Int32)">
-            <summary>
-            Symmetric Householder reduction to tridiagonal form.
-            </summary>
-            <param name="a">Data array of matrix V (eigenvectors)</param>
-            <param name="d">Arrays for internal storage of real parts of eigenvalues</param>
-            <param name="e">Arrays for internal storage of imaginary parts of eigenvalues</param>
-            <param name="order">Order of initial matrix</param>
-            <remarks>This is derived from the Algol procedures tred2 by
-            Bowdler, Martin, Reinsch, and Wilkinson, Handbook for
-            Auto. Comp., Vol.ii-Linear Algebra, and the corresponding
-            Fortran subroutine in EISPACK.</remarks>
-        </member>
-        <member name="M:MathNet.Numerics.LinearAlgebra.Single.Factorization.DenseEvd.SymmetricDiagonalize(System.Single[],System.Single[],System.Single[],System.Int32)">
-            <summary>
-            Symmetric tridiagonal QL algorithm.
-            </summary>
-            <param name="a">Data array of matrix V (eigenvectors)</param>
-            <param name="d">Arrays for internal storage of real parts of eigenvalues</param>
-            <param name="e">Arrays for internal storage of imaginary parts of eigenvalues</param>
-            <param name="order">Order of initial matrix</param>
-            <remarks>This is derived from the Algol procedures tql2, by
-            Bowdler, Martin, Reinsch, and Wilkinson, Handbook for
-            Auto. Comp., Vol.ii-Linear Algebra, and the corresponding
-            Fortran subroutine in EISPACK.</remarks>
-            <exception cref="T:MathNet.Numerics.NonConvergenceException"></exception>
-        </member>
-        <member name="M:MathNet.Numerics.LinearAlgebra.Single.Factorization.DenseEvd.NonsymmetricReduceToHessenberg(System.Single[],System.Single[],System.Int32)">
-            <summary>
-            Nonsymmetric reduction to Hessenberg form.
-            </summary>
-            <param name="a">Data array of matrix V (eigenvectors)</param>
-            <param name="matrixH">Array for internal storage of nonsymmetric Hessenberg form.</param>
-            <param name="order">Order of initial matrix</param>
-            <remarks>This is derived from the Algol procedures orthes and ortran,
-            by Martin and Wilkinson, Handbook for Auto. Comp.,
-            Vol.ii-Linear Algebra, and the corresponding
-            Fortran subroutines in EISPACK.</remarks>
-        </member>
-        <member name="M:MathNet.Numerics.LinearAlgebra.Single.Factorization.DenseEvd.NonsymmetricReduceHessenberToRealSchur(System.Single[],System.Single[],System.Single[],System.Single[],System.Int32)">
-            <summary>
-            Nonsymmetric reduction from Hessenberg to real Schur form.
-            </summary>
-            <param name="a">Data array of matrix V (eigenvectors)</param>
-            <param name="matrixH">Array for internal storage of nonsymmetric Hessenberg form.</param>
-            <param name="d">Arrays for internal storage of real parts of eigenvalues</param>
-            <param name="e">Arrays for internal storage of imaginary parts of eigenvalues</param>
-            <param name="order">Order of initial matrix</param>
-            <remarks>This is derived from the Algol procedure hqr2,
-            by Martin and Wilkinson, Handbook for Auto. Comp.,
-            Vol.ii-Linear Algebra, and the corresponding
-            Fortran subroutine in EISPACK.</remarks>
-            <exception cref="T:MathNet.Numerics.NonConvergenceException"></exception>
-        </member>
-        <member name="M:MathNet.Numerics.LinearAlgebra.Single.Factorization.DenseEvd.Cdiv(System.Single,System.Single,System.Single,System.Single)">
-            <summary>
-            Complex scalar division X/Y.
-            </summary>
-            <param name="xreal">Real part of X</param>
-            <param name="ximag">Imaginary part of X</param>
-            <param name="yreal">Real part of Y</param>
-            <param name="yimag">Imaginary part of Y</param>
-            <returns>Division result as a <see cref="T:System.Numerics.Complex"/> number.</returns>
-        </member>
         <member name="M:MathNet.Numerics.LinearAlgebra.Single.Factorization.DenseEvd.Solve(MathNet.Numerics.LinearAlgebra.Matrix{System.Single},MathNet.Numerics.LinearAlgebra.Matrix{System.Single})">
             <summary>
             Solves a system of linear equations, <b>AX = B</b>, with A SVD factorized.
@@ -24795,72 +25081,6 @@
             <exception cref="T:System.ArgumentNullException">If <paramref name="matrix"/> is <c>null</c>.</exception>
             <exception cref="T:System.ArgumentException">If EVD algorithm failed to converge with matrix <paramref name="matrix"/>.</exception>
         </member>
-        <member name="M:MathNet.Numerics.LinearAlgebra.Complex.Factorization.DenseEvd.SymmetricTridiagonalize(System.Numerics.Complex[],System.Double[],System.Double[],System.Numerics.Complex[],System.Int32)">
-            <summary>
-            Reduces a complex Hermitian matrix to a real symmetric tridiagonal matrix using unitary similarity transformations.
-            </summary>
-            <param name="matrixA">Source matrix to reduce</param>
-            <param name="d">Output: Arrays for internal storage of real parts of eigenvalues</param>
-            <param name="e">Output: Arrays for internal storage of imaginary parts of eigenvalues</param>
-            <param name="tau">Output: Arrays that contains further information about the transformations.</param>
-            <param name="order">Order of initial matrix</param>
-            <remarks>This is derived from the Algol procedures HTRIDI by
-            Smith, Boyle, Dongarra, Garbow, Ikebe, Klema, Moler, and Wilkinson, Handbook for
-            Auto. Comp., Vol.ii-Linear Algebra, and the corresponding
-            Fortran subroutine in EISPACK.</remarks>
-        </member>
-        <member name="M:MathNet.Numerics.LinearAlgebra.Complex.Factorization.DenseEvd.SymmetricDiagonalize(System.Numerics.Complex[],System.Double[],System.Double[],System.Int32)">
-            <summary>
-            Symmetric tridiagonal QL algorithm.
-            </summary>
-            <param name="dataEv">Data array of matrix V (eigenvectors)</param>
-            <param name="d">Arrays for internal storage of real parts of eigenvalues</param>
-            <param name="e">Arrays for internal storage of imaginary parts of eigenvalues</param>
-            <param name="order">Order of initial matrix</param>
-            <remarks>This is derived from the Algol procedures tql2, by
-            Bowdler, Martin, Reinsch, and Wilkinson, Handbook for
-            Auto. Comp., Vol.ii-Linear Algebra, and the corresponding
-            Fortran subroutine in EISPACK.</remarks>
-            <exception cref="T:MathNet.Numerics.NonConvergenceException"></exception>
-        </member>
-        <member name="M:MathNet.Numerics.LinearAlgebra.Complex.Factorization.DenseEvd.SymmetricUntridiagonalize(System.Numerics.Complex[],System.Numerics.Complex[],System.Numerics.Complex[],System.Int32)">
-            <summary>
-            Determines eigenvectors by undoing the symmetric tridiagonalize transformation
-            </summary>
-            <param name="dataEv">Data array of matrix V (eigenvectors)</param>
-            <param name="matrixA">Previously tridiagonalized matrix by <see cref="M:MathNet.Numerics.LinearAlgebra.Complex.Factorization.DenseEvd.SymmetricTridiagonalize(System.Numerics.Complex[],System.Double[],System.Double[],System.Numerics.Complex[],System.Int32)"/>.</param>
-            <param name="tau">Contains further information about the transformations</param>
-            <param name="order">Input matrix order</param>
-            <remarks>This is derived from the Algol procedures HTRIBK, by
-            by Smith, Boyle, Dongarra, Garbow, Ikebe, Klema, Moler, and Wilkinson, Handbook for
-            Auto. Comp., Vol.ii-Linear Algebra, and the corresponding
-            Fortran subroutine in EISPACK.</remarks>
-        </member>
-        <member name="M:MathNet.Numerics.LinearAlgebra.Complex.Factorization.DenseEvd.NonsymmetricReduceToHessenberg(System.Numerics.Complex[],System.Numerics.Complex[],System.Int32)">
-            <summary>
-            Nonsymmetric reduction to Hessenberg form.
-            </summary>
-            <param name="dataEv">Data array of matrix V (eigenvectors)</param>
-            <param name="matrixH">Array for internal storage of nonsymmetric Hessenberg form.</param>
-            <param name="order">Order of initial matrix</param>
-            <remarks>This is derived from the Algol procedures orthes and ortran,
-            by Martin and Wilkinson, Handbook for Auto. Comp.,
-            Vol.ii-Linear Algebra, and the corresponding
-            Fortran subroutines in EISPACK.</remarks>
-        </member>
-        <member name="M:MathNet.Numerics.LinearAlgebra.Complex.Factorization.DenseEvd.NonsymmetricReduceHessenberToRealSchur(System.Numerics.Complex[],System.Numerics.Complex[],System.Numerics.Complex[],System.Int32)">
-            <summary>
-            Nonsymmetric reduction from Hessenberg to real Schur form.
-            </summary>
-            <param name="vectorV">Data array of the eigenvectors</param>
-            <param name="dataEv">Data array of matrix V (eigenvectors)</param>
-            <param name="matrixH">Array for internal storage of nonsymmetric Hessenberg form.</param>
-            <param name="order">Order of initial matrix</param>
-            <remarks>This is derived from the Algol procedure hqr2,
-            by Martin and Wilkinson, Handbook for Auto. Comp.,
-            Vol.ii-Linear Algebra, and the corresponding
-            Fortran subroutine in EISPACK.</remarks>
-        </member>
         <member name="M:MathNet.Numerics.LinearAlgebra.Complex.Factorization.DenseEvd.Solve(MathNet.Numerics.LinearAlgebra.Matrix{System.Numerics.Complex},MathNet.Numerics.LinearAlgebra.Matrix{System.Numerics.Complex})">
             <summary>
             Solves a system of linear equations, <b>AX = B</b>, with A SVD factorized.
@@ -29060,72 +29280,6 @@
             <param name="symmetricity">If it is known whether the matrix is symmetric or not the routine can skip checking it itself.</param>
             <exception cref="T:System.ArgumentNullException">If <paramref name="matrix"/> is <c>null</c>.</exception>
             <exception cref="T:System.ArgumentException">If EVD algorithm failed to converge with matrix <paramref name="matrix"/>.</exception>
-        </member>
-        <member name="M:MathNet.Numerics.LinearAlgebra.Complex32.Factorization.DenseEvd.SymmetricTridiagonalize(MathNet.Numerics.Complex32[],System.Single[],System.Single[],MathNet.Numerics.Complex32[],System.Int32)">
-            <summary>
-            Reduces a complex Hermitian matrix to a real symmetric tridiagonal matrix using unitary similarity transformations.
-            </summary>
-            <param name="matrixA">Source matrix to reduce</param>
-            <param name="d">Output: Arrays for internal storage of real parts of eigenvalues</param>
-            <param name="e">Output: Arrays for internal storage of imaginary parts of eigenvalues</param>
-            <param name="tau">Output: Arrays that contains further information about the transformations.</param>
-            <param name="order">Order of initial matrix</param>
-            <remarks>This is derived from the Algol procedures HTRIDI by
-            Smith, Boyle, Dongarra, Garbow, Ikebe, Klema, Moler, and Wilkinson, Handbook for
-            Auto. Comp., Vol.ii-Linear Algebra, and the corresponding
-            Fortran subroutine in EISPACK.</remarks>
-        </member>
-        <member name="M:MathNet.Numerics.LinearAlgebra.Complex32.Factorization.DenseEvd.SymmetricDiagonalize(MathNet.Numerics.Complex32[],System.Single[],System.Single[],System.Int32)">
-            <summary>
-            Symmetric tridiagonal QL algorithm.
-            </summary>
-            <param name="dataEv">Data array of matrix V (eigenvectors)</param>
-            <param name="d">Arrays for internal storage of real parts of eigenvalues</param>
-            <param name="e">Arrays for internal storage of imaginary parts of eigenvalues</param>
-            <param name="order">Order of initial matrix</param>
-            <remarks>This is derived from the Algol procedures tql2, by
-            Bowdler, Martin, Reinsch, and Wilkinson, Handbook for
-            Auto. Comp., Vol.ii-Linear Algebra, and the corresponding
-            Fortran subroutine in EISPACK.</remarks>
-            <exception cref="T:MathNet.Numerics.NonConvergenceException"></exception>
-        </member>
-        <member name="M:MathNet.Numerics.LinearAlgebra.Complex32.Factorization.DenseEvd.SymmetricUntridiagonalize(MathNet.Numerics.Complex32[],MathNet.Numerics.Complex32[],MathNet.Numerics.Complex32[],System.Int32)">
-            <summary>
-            Determines eigenvectors by undoing the symmetric tridiagonalize transformation
-            </summary>
-            <param name="dataEv">Data array of matrix V (eigenvectors)</param>
-            <param name="matrixA">Previously tridiagonalized matrix by <see cref="M:MathNet.Numerics.LinearAlgebra.Complex32.Factorization.DenseEvd.SymmetricTridiagonalize(MathNet.Numerics.Complex32[],System.Single[],System.Single[],MathNet.Numerics.Complex32[],System.Int32)"/>.</param>
-            <param name="tau">Contains further information about the transformations</param>
-            <param name="order">Input matrix order</param>
-            <remarks>This is derived from the Algol procedures HTRIBK, by
-            by Smith, Boyle, Dongarra, Garbow, Ikebe, Klema, Moler, and Wilkinson, Handbook for
-            Auto. Comp., Vol.ii-Linear Algebra, and the corresponding
-            Fortran subroutine in EISPACK.</remarks>
-        </member>
-        <member name="M:MathNet.Numerics.LinearAlgebra.Complex32.Factorization.DenseEvd.NonsymmetricReduceToHessenberg(MathNet.Numerics.Complex32[],MathNet.Numerics.Complex32[],System.Int32)">
-            <summary>
-            Nonsymmetric reduction to Hessenberg form.
-            </summary>
-            <param name="dataEv">Data array of matrix V (eigenvectors)</param>
-            <param name="matrixH">Array for internal storage of nonsymmetric Hessenberg form.</param>
-            <param name="order">Order of initial matrix</param>
-            <remarks>This is derived from the Algol procedures orthes and ortran,
-            by Martin and Wilkinson, Handbook for Auto. Comp.,
-            Vol.ii-Linear Algebra, and the corresponding
-            Fortran subroutines in EISPACK.</remarks>
-        </member>
-        <member name="M:MathNet.Numerics.LinearAlgebra.Complex32.Factorization.DenseEvd.NonsymmetricReduceHessenberToRealSchur(MathNet.Numerics.Complex32[],MathNet.Numerics.Complex32[],MathNet.Numerics.Complex32[],System.Int32)">
-            <summary>
-            Nonsymmetric reduction from Hessenberg to real Schur form.
-            </summary>
-            <param name="vectorV">Data array of the eigenvectors</param>
-            <param name="dataEv">Data array of matrix V (eigenvectors)</param>
-            <param name="matrixH">Array for internal storage of nonsymmetric Hessenberg form.</param>
-            <param name="order">Order of initial matrix</param>
-            <remarks>This is derived from the Algol procedure hqr2,
-            by Martin and Wilkinson, Handbook for Auto. Comp.,
-            Vol.ii-Linear Algebra, and the corresponding
-            Fortran subroutine in EISPACK.</remarks>
         </member>
         <member name="M:MathNet.Numerics.LinearAlgebra.Complex32.Factorization.DenseEvd.Solve(MathNet.Numerics.LinearAlgebra.Matrix{MathNet.Numerics.Complex32},MathNet.Numerics.LinearAlgebra.Matrix{MathNet.Numerics.Complex32})">
             <summary>
@@ -45053,16 +45207,6 @@
             Does not unload the provider itself, it is still usable afterwards.
             </summary>
         </member>
-        <member name="M:MathNet.Numerics.Providers.LinearAlgebra.ManagedReference.ManagedReferenceLinearAlgebraProvider.GetRow``1(MathNet.Numerics.Providers.LinearAlgebra.Transpose,System.Int32,System.Int32,System.Int32,``0[],``0[])">
-            <summary>
-            Assumes that <paramref name="numRows"/> and <paramref name="numCols"/> have already been transposed.
-            </summary>
-        </member>
-        <member name="M:MathNet.Numerics.Providers.LinearAlgebra.ManagedReference.ManagedReferenceLinearAlgebraProvider.GetColumn``1(MathNet.Numerics.Providers.LinearAlgebra.Transpose,System.Int32,System.Int32,System.Int32,``0[],``0[])">
-            <summary>
-            Assumes that <paramref name="numRows"/> and <paramref name="numCols"/> have already been transposed.
-            </summary>
-        </member>
         <member name="M:MathNet.Numerics.Providers.LinearAlgebra.ManagedReference.ManagedReferenceLinearAlgebraProvider.AddVectorToScaledVector(System.Double[],System.Double,System.Double[],System.Double[])">
             <summary>
             Adds a scaled vector to another: <c>result = y + alpha*x</c>.
@@ -46245,6 +46389,72 @@
             <param name="vectorEv">On output, the eigen values (λ) of matrix in ascending value. The length of the array must <paramref name="order"/>.</param>
             <param name="matrixD">On output, the block diagonal eigenvalue matrix. The length of the array must be order * order.</param>
         </member>
+        <member name="M:MathNet.Numerics.Providers.LinearAlgebra.Managed.ManagedLinearAlgebraProvider.SymmetricTridiagonalize(System.Numerics.Complex[],System.Double[],System.Double[],System.Numerics.Complex[],System.Int32)">
+            <summary>
+            Reduces a complex Hermitian matrix to a real symmetric tridiagonal matrix using unitary similarity transformations.
+            </summary>
+            <param name="matrixA">Source matrix to reduce</param>
+            <param name="d">Output: Arrays for internal storage of real parts of eigenvalues</param>
+            <param name="e">Output: Arrays for internal storage of imaginary parts of eigenvalues</param>
+            <param name="tau">Output: Arrays that contains further information about the transformations.</param>
+            <param name="order">Order of initial matrix</param>
+            <remarks>This is derived from the Algol procedures HTRIDI by
+            Smith, Boyle, Dongarra, Garbow, Ikebe, Klema, Moler, and Wilkinson, Handbook for
+            Auto. Comp., Vol.ii-Linear Algebra, and the corresponding
+            Fortran subroutine in EISPACK.</remarks>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.LinearAlgebra.Managed.ManagedLinearAlgebraProvider.SymmetricDiagonalize(System.Numerics.Complex[],System.Double[],System.Double[],System.Int32)">
+            <summary>
+            Symmetric tridiagonal QL algorithm.
+            </summary>
+            <param name="dataEv">Data array of matrix V (eigenvectors)</param>
+            <param name="d">Arrays for internal storage of real parts of eigenvalues</param>
+            <param name="e">Arrays for internal storage of imaginary parts of eigenvalues</param>
+            <param name="order">Order of initial matrix</param>
+            <remarks>This is derived from the Algol procedures tql2, by
+            Bowdler, Martin, Reinsch, and Wilkinson, Handbook for
+            Auto. Comp., Vol.ii-Linear Algebra, and the corresponding
+            Fortran subroutine in EISPACK.</remarks>
+            <exception cref="T:MathNet.Numerics.NonConvergenceException"></exception>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.LinearAlgebra.Managed.ManagedLinearAlgebraProvider.SymmetricUntridiagonalize(System.Numerics.Complex[],System.Numerics.Complex[],System.Numerics.Complex[],System.Int32)">
+            <summary>
+            Determines eigenvectors by undoing the symmetric tridiagonalize transformation
+            </summary>
+            <param name="dataEv">Data array of matrix V (eigenvectors)</param>
+            <param name="matrixA">Previously tridiagonalized matrix by SymmetricTridiagonalize.</param>
+            <param name="tau">Contains further information about the transformations</param>
+            <param name="order">Input matrix order</param>
+            <remarks>This is derived from the Algol procedures HTRIBK, by
+            by Smith, Boyle, Dongarra, Garbow, Ikebe, Klema, Moler, and Wilkinson, Handbook for
+            Auto. Comp., Vol.ii-Linear Algebra, and the corresponding
+            Fortran subroutine in EISPACK.</remarks>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.LinearAlgebra.Managed.ManagedLinearAlgebraProvider.NonsymmetricReduceToHessenberg(System.Numerics.Complex[],System.Numerics.Complex[],System.Int32)">
+            <summary>
+            Nonsymmetric reduction to Hessenberg form.
+            </summary>
+            <param name="dataEv">Data array of matrix V (eigenvectors)</param>
+            <param name="matrixH">Array for internal storage of nonsymmetric Hessenberg form.</param>
+            <param name="order">Order of initial matrix</param>
+            <remarks>This is derived from the Algol procedures orthes and ortran,
+            by Martin and Wilkinson, Handbook for Auto. Comp.,
+            Vol.ii-Linear Algebra, and the corresponding
+            Fortran subroutines in EISPACK.</remarks>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.LinearAlgebra.Managed.ManagedLinearAlgebraProvider.NonsymmetricReduceHessenberToRealSchur(System.Numerics.Complex[],System.Numerics.Complex[],System.Numerics.Complex[],System.Int32)">
+            <summary>
+            Nonsymmetric reduction from Hessenberg to real Schur form.
+            </summary>
+            <param name="vectorV">Data array of the eigenvectors</param>
+            <param name="dataEv">Data array of matrix V (eigenvectors)</param>
+            <param name="matrixH">Array for internal storage of nonsymmetric Hessenberg form.</param>
+            <param name="order">Order of initial matrix</param>
+            <remarks>This is derived from the Algol procedure hqr2,
+            by Martin and Wilkinson, Handbook for Auto. Comp.,
+            Vol.ii-Linear Algebra, and the corresponding
+            Fortran subroutine in EISPACK.</remarks>
+        </member>
         <member name="M:MathNet.Numerics.Providers.LinearAlgebra.Managed.ManagedLinearAlgebraProvider.GetRow(MathNet.Numerics.Providers.LinearAlgebra.Transpose,System.Int32,System.Int32,System.Int32,System.Numerics.Complex[],System.Numerics.Complex[])">
             <summary>
             Assumes that <paramref name="numRows"/> and <paramref name="numCols"/> have already been transposed.
@@ -46617,6 +46827,72 @@
             <param name="matrixEv">On output, the matrix contains the eigen vectors. The length of the array must be order * order.</param>
             <param name="vectorEv">On output, the eigen values (λ) of matrix in ascending value. The length of the array must <paramref name="order"/>.</param>
             <param name="matrixD">On output, the block diagonal eigenvalue matrix. The length of the array must be order * order.</param>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.LinearAlgebra.Managed.ManagedLinearAlgebraProvider.SymmetricTridiagonalize(MathNet.Numerics.Complex32[],System.Single[],System.Single[],MathNet.Numerics.Complex32[],System.Int32)">
+            <summary>
+            Reduces a complex Hermitian matrix to a real symmetric tridiagonal matrix using unitary similarity transformations.
+            </summary>
+            <param name="matrixA">Source matrix to reduce</param>
+            <param name="d">Output: Arrays for internal storage of real parts of eigenvalues</param>
+            <param name="e">Output: Arrays for internal storage of imaginary parts of eigenvalues</param>
+            <param name="tau">Output: Arrays that contains further information about the transformations.</param>
+            <param name="order">Order of initial matrix</param>
+            <remarks>This is derived from the Algol procedures HTRIDI by
+            Smith, Boyle, Dongarra, Garbow, Ikebe, Klema, Moler, and Wilkinson, Handbook for
+            Auto. Comp., Vol.ii-Linear Algebra, and the corresponding
+            Fortran subroutine in EISPACK.</remarks>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.LinearAlgebra.Managed.ManagedLinearAlgebraProvider.SymmetricDiagonalize(MathNet.Numerics.Complex32[],System.Single[],System.Single[],System.Int32)">
+            <summary>
+            Symmetric tridiagonal QL algorithm.
+            </summary>
+            <param name="dataEv">Data array of matrix V (eigenvectors)</param>
+            <param name="d">Arrays for internal storage of real parts of eigenvalues</param>
+            <param name="e">Arrays for internal storage of imaginary parts of eigenvalues</param>
+            <param name="order">Order of initial matrix</param>
+            <remarks>This is derived from the Algol procedures tql2, by
+            Bowdler, Martin, Reinsch, and Wilkinson, Handbook for
+            Auto. Comp., Vol.ii-Linear Algebra, and the corresponding
+            Fortran subroutine in EISPACK.</remarks>
+            <exception cref="T:MathNet.Numerics.NonConvergenceException"></exception>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.LinearAlgebra.Managed.ManagedLinearAlgebraProvider.SymmetricUntridiagonalize(MathNet.Numerics.Complex32[],MathNet.Numerics.Complex32[],MathNet.Numerics.Complex32[],System.Int32)">
+            <summary>
+            Determines eigenvectors by undoing the symmetric tridiagonalize transformation
+            </summary>
+            <param name="dataEv">Data array of matrix V (eigenvectors)</param>
+            <param name="matrixA">Previously tridiagonalized matrix by SymmetricTridiagonalize.</param>
+            <param name="tau">Contains further information about the transformations</param>
+            <param name="order">Input matrix order</param>
+            <remarks>This is derived from the Algol procedures HTRIBK, by
+            by Smith, Boyle, Dongarra, Garbow, Ikebe, Klema, Moler, and Wilkinson, Handbook for
+            Auto. Comp., Vol.ii-Linear Algebra, and the corresponding
+            Fortran subroutine in EISPACK.</remarks>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.LinearAlgebra.Managed.ManagedLinearAlgebraProvider.NonsymmetricReduceToHessenberg(MathNet.Numerics.Complex32[],MathNet.Numerics.Complex32[],System.Int32)">
+            <summary>
+            Nonsymmetric reduction to Hessenberg form.
+            </summary>
+            <param name="dataEv">Data array of matrix V (eigenvectors)</param>
+            <param name="matrixH">Array for internal storage of nonsymmetric Hessenberg form.</param>
+            <param name="order">Order of initial matrix</param>
+            <remarks>This is derived from the Algol procedures orthes and ortran,
+            by Martin and Wilkinson, Handbook for Auto. Comp.,
+            Vol.ii-Linear Algebra, and the corresponding
+            Fortran subroutines in EISPACK.</remarks>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.LinearAlgebra.Managed.ManagedLinearAlgebraProvider.NonsymmetricReduceHessenberToRealSchur(MathNet.Numerics.Complex32[],MathNet.Numerics.Complex32[],MathNet.Numerics.Complex32[],System.Int32)">
+            <summary>
+            Nonsymmetric reduction from Hessenberg to real Schur form.
+            </summary>
+            <param name="vectorV">Data array of the eigenvectors</param>
+            <param name="dataEv">Data array of matrix V (eigenvectors)</param>
+            <param name="matrixH">Array for internal storage of nonsymmetric Hessenberg form.</param>
+            <param name="order">Order of initial matrix</param>
+            <remarks>This is derived from the Algol procedure hqr2,
+            by Martin and Wilkinson, Handbook for Auto. Comp.,
+            Vol.ii-Linear Algebra, and the corresponding
+            Fortran subroutine in EISPACK.</remarks>
         </member>
         <member name="M:MathNet.Numerics.Providers.LinearAlgebra.Managed.ManagedLinearAlgebraProvider.GetRow(MathNet.Numerics.Providers.LinearAlgebra.Transpose,System.Int32,System.Int32,System.Int32,MathNet.Numerics.Complex32[],MathNet.Numerics.Complex32[])">
             <summary>
@@ -47031,6 +47307,70 @@
             <param name="vectorEv">On output, the eigen values (λ) of matrix in ascending value. The length of the array must <paramref name="order"/>.</param>
             <param name="matrixD">On output, the block diagonal eigenvalue matrix. The length of the array must be order * order.</param>
         </member>
+        <member name="M:MathNet.Numerics.Providers.LinearAlgebra.Managed.ManagedLinearAlgebraProvider.SymmetricTridiagonalize(System.Double[],System.Double[],System.Double[],System.Int32)">
+            <summary>
+            Symmetric Householder reduction to tridiagonal form.
+            </summary>
+            <param name="a">Data array of matrix V (eigenvectors)</param>
+            <param name="d">Arrays for internal storage of real parts of eigenvalues</param>
+            <param name="e">Arrays for internal storage of imaginary parts of eigenvalues</param>
+            <param name="order">Order of initial matrix</param>
+            <remarks>This is derived from the Algol procedures tred2 by
+            Bowdler, Martin, Reinsch, and Wilkinson, Handbook for
+            Auto. Comp., Vol.ii-Linear Algebra, and the corresponding
+            Fortran subroutine in EISPACK.</remarks>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.LinearAlgebra.Managed.ManagedLinearAlgebraProvider.SymmetricDiagonalize(System.Double[],System.Double[],System.Double[],System.Int32)">
+            <summary>
+            Symmetric tridiagonal QL algorithm.
+            </summary>
+            <param name="a">Data array of matrix V (eigenvectors)</param>
+            <param name="d">Arrays for internal storage of real parts of eigenvalues</param>
+            <param name="e">Arrays for internal storage of imaginary parts of eigenvalues</param>
+            <param name="order">Order of initial matrix</param>
+            <remarks>This is derived from the Algol procedures tql2, by
+            Bowdler, Martin, Reinsch, and Wilkinson, Handbook for
+            Auto. Comp., Vol.ii-Linear Algebra, and the corresponding
+            Fortran subroutine in EISPACK.</remarks>
+            <exception cref="T:MathNet.Numerics.NonConvergenceException"></exception>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.LinearAlgebra.Managed.ManagedLinearAlgebraProvider.NonsymmetricReduceToHessenberg(System.Double[],System.Double[],System.Int32)">
+            <summary>
+            Nonsymmetric reduction to Hessenberg form.
+            </summary>
+            <param name="a">Data array of matrix V (eigenvectors)</param>
+            <param name="matrixH">Array for internal storage of nonsymmetric Hessenberg form.</param>
+            <param name="order">Order of initial matrix</param>
+            <remarks>This is derived from the Algol procedures orthes and ortran,
+            by Martin and Wilkinson, Handbook for Auto. Comp.,
+            Vol.ii-Linear Algebra, and the corresponding
+            Fortran subroutines in EISPACK.</remarks>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.LinearAlgebra.Managed.ManagedLinearAlgebraProvider.NonsymmetricReduceHessenberToRealSchur(System.Double[],System.Double[],System.Double[],System.Double[],System.Int32)">
+            <summary>
+            Nonsymmetric reduction from Hessenberg to real Schur form.
+            </summary>
+            <param name="a">Data array of matrix V (eigenvectors)</param>
+            <param name="matrixH">Array for internal storage of nonsymmetric Hessenberg form.</param>
+            <param name="d">Arrays for internal storage of real parts of eigenvalues</param>
+            <param name="e">Arrays for internal storage of imaginary parts of eigenvalues</param>
+            <param name="order">Order of initial matrix</param>
+            <remarks>This is derived from the Algol procedure hqr2,
+            by Martin and Wilkinson, Handbook for Auto. Comp.,
+            Vol.ii-Linear Algebra, and the corresponding
+            Fortran subroutine in EISPACK.</remarks>
+            <exception cref="T:MathNet.Numerics.NonConvergenceException"></exception>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.LinearAlgebra.Managed.ManagedLinearAlgebraProvider.Cdiv(System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Complex scalar division X/Y.
+            </summary>
+            <param name="xreal">Real part of X</param>
+            <param name="ximag">Imaginary part of X</param>
+            <param name="yreal">Real part of Y</param>
+            <param name="yimag">Imaginary part of Y</param>
+            <returns>Division result as a <see cref="T:System.Numerics.Complex"/> number.</returns>
+        </member>
         <member name="M:MathNet.Numerics.Providers.LinearAlgebra.Managed.ManagedLinearAlgebraProvider.AddVectorToScaledVector(System.Single[],System.Single,System.Single[],System.Single[])">
             <summary>
             Adds a scaled vector to another: <c>result = y + alpha*x</c>.
@@ -47406,6 +47746,70 @@
             <param name="matrixEv">On output, the matrix contains the eigen vectors. The length of the array must be order * order.</param>
             <param name="vectorEv">On output, the eigen values (λ) of matrix in ascending value. The length of the array must <paramref name="order"/>.</param>
             <param name="matrixD">On output, the block diagonal eigenvalue matrix. The length of the array must be order * order.</param>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.LinearAlgebra.Managed.ManagedLinearAlgebraProvider.SymmetricTridiagonalize(System.Single[],System.Single[],System.Single[],System.Int32)">
+            <summary>
+            Symmetric Householder reduction to tridiagonal form.
+            </summary>
+            <param name="a">Data array of matrix V (eigenvectors)</param>
+            <param name="d">Arrays for internal storage of real parts of eigenvalues</param>
+            <param name="e">Arrays for internal storage of imaginary parts of eigenvalues</param>
+            <param name="order">Order of initial matrix</param>
+            <remarks>This is derived from the Algol procedures tred2 by
+            Bowdler, Martin, Reinsch, and Wilkinson, Handbook for
+            Auto. Comp., Vol.ii-Linear Algebra, and the corresponding
+            Fortran subroutine in EISPACK.</remarks>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.LinearAlgebra.Managed.ManagedLinearAlgebraProvider.SymmetricDiagonalize(System.Single[],System.Single[],System.Single[],System.Int32)">
+            <summary>
+            Symmetric tridiagonal QL algorithm.
+            </summary>
+            <param name="a">Data array of matrix V (eigenvectors)</param>
+            <param name="d">Arrays for internal storage of real parts of eigenvalues</param>
+            <param name="e">Arrays for internal storage of imaginary parts of eigenvalues</param>
+            <param name="order">Order of initial matrix</param>
+            <remarks>This is derived from the Algol procedures tql2, by
+            Bowdler, Martin, Reinsch, and Wilkinson, Handbook for
+            Auto. Comp., Vol.ii-Linear Algebra, and the corresponding
+            Fortran subroutine in EISPACK.</remarks>
+            <exception cref="T:MathNet.Numerics.NonConvergenceException"></exception>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.LinearAlgebra.Managed.ManagedLinearAlgebraProvider.NonsymmetricReduceToHessenberg(System.Single[],System.Single[],System.Int32)">
+            <summary>
+            Nonsymmetric reduction to Hessenberg form.
+            </summary>
+            <param name="a">Data array of matrix V (eigenvectors)</param>
+            <param name="matrixH">Array for internal storage of nonsymmetric Hessenberg form.</param>
+            <param name="order">Order of initial matrix</param>
+            <remarks>This is derived from the Algol procedures orthes and ortran,
+            by Martin and Wilkinson, Handbook for Auto. Comp.,
+            Vol.ii-Linear Algebra, and the corresponding
+            Fortran subroutines in EISPACK.</remarks>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.LinearAlgebra.Managed.ManagedLinearAlgebraProvider.NonsymmetricReduceHessenberToRealSchur(System.Single[],System.Single[],System.Single[],System.Single[],System.Int32)">
+            <summary>
+            Nonsymmetric reduction from Hessenberg to real Schur form.
+            </summary>
+            <param name="a">Data array of matrix V (eigenvectors)</param>
+            <param name="matrixH">Array for internal storage of nonsymmetric Hessenberg form.</param>
+            <param name="d">Arrays for internal storage of real parts of eigenvalues</param>
+            <param name="e">Arrays for internal storage of imaginary parts of eigenvalues</param>
+            <param name="order">Order of initial matrix</param>
+            <remarks>This is derived from the Algol procedure hqr2,
+            by Martin and Wilkinson, Handbook for Auto. Comp.,
+            Vol.ii-Linear Algebra, and the corresponding
+            Fortran subroutine in EISPACK.</remarks>
+            <exception cref="T:MathNet.Numerics.NonConvergenceException"></exception>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.LinearAlgebra.Managed.ManagedLinearAlgebraProvider.Cdiv(System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+            Complex scalar division X/Y.
+            </summary>
+            <param name="xreal">Real part of X</param>
+            <param name="ximag">Imaginary part of X</param>
+            <param name="yreal">Real part of Y</param>
+            <param name="yimag">Imaginary part of Y</param>
+            <returns>Division result as a <see cref="T:System.Numerics.Complex"/> number.</returns>
         </member>
         <member name="T:MathNet.Numerics.Providers.LinearAlgebra.Mkl.MklLinearAlgebraProvider">
             <summary>
@@ -51058,7 +51462,7 @@
             <param name="f">The function to find roots from.</param>
             <param name="guessLowerBound">Guess for the low value of the range where the root is supposed to be. Will be expanded if needed.</param>
             <param name="guessUpperBound">Guess for the  high value of the range where the root is supposed to be. Will be expanded if needed.</param>
-            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached. Default 1e-8.</param>
+            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached. Default 1e-8. Must be greater than 0.</param>
             <param name="maxIterations">Maximum number of iterations. Default 100.</param>
             <param name="expandFactor">Factor at which to expand the bounds, if needed. Default 1.6.</param>
             <param name="maxExpandIteratons">Maximum number of expand iterations. Default 100.</param>
@@ -51070,7 +51474,7 @@
             <param name="f">The function to find roots from.</param>
             <param name="lowerBound">The low value of the range where the root is supposed to be.</param>
             <param name="upperBound">The high value of the range where the root is supposed to be.</param>
-            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached. Default 1e-8.</param>
+            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached. Default 1e-8. Must be greater than 0.</param>
             <param name="maxIterations">Maximum number of iterations. Default 100.</param>
             <returns>Returns the root with the specified accuracy.</returns>
             <exception cref="T:MathNet.Numerics.NonConvergenceException"></exception>
@@ -51080,7 +51484,7 @@
             <param name="f">The function to find roots from.</param>
             <param name="lowerBound">The low value of the range where the root is supposed to be.</param>
             <param name="upperBound">The high value of the range where the root is supposed to be.</param>
-            <param name="accuracy">Desired accuracy for both the root and the function value at the root. The root will be refined until the accuracy or the maximum number of iterations is reached.</param>
+            <param name="accuracy">Desired accuracy for both the root and the function value at the root. The root will be refined until the accuracy or the maximum number of iterations is reached. Must be greater than 0.</param>
             <param name="maxIterations">Maximum number of iterations. Usually 100.</param>
             <param name="root">The root that was found, if any. Undefined if the function returns false.</param>
             <returns>True if a root with the specified accuracy was found, else false.</returns>
@@ -51096,7 +51500,7 @@
             <param name="f">The function to find roots from.</param>
             <param name="guessLowerBound">Guess for the low value of the range where the root is supposed to be. Will be expanded if needed.</param>
             <param name="guessUpperBound">Guess for the  high value of the range where the root is supposed to be. Will be expanded if needed.</param>
-            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached. Default 1e-8.</param>
+            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached. Default 1e-8. Must be greater than 0.</param>
             <param name="maxIterations">Maximum number of iterations. Default 100.</param>
             <param name="expandFactor">Factor at which to expand the bounds, if needed. Default 1.6.</param>
             <param name="maxExpandIteratons">Maximum number of expand iterations. Default 100.</param>
@@ -51108,7 +51512,7 @@
             <param name="f">The function to find roots from.</param>
             <param name="lowerBound">The low value of the range where the root is supposed to be.</param>
             <param name="upperBound">The high value of the range where the root is supposed to be.</param>
-            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached. Default 1e-8.</param>
+            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached. Default 1e-8. Must be greater than 0.</param>
             <param name="maxIterations">Maximum number of iterations. Default 100.</param>
             <returns>Returns the root with the specified accuracy.</returns>
             <exception cref="T:MathNet.Numerics.NonConvergenceException"></exception>
@@ -51118,7 +51522,7 @@
             <param name="f">The function to find roots from.</param>
             <param name="lowerBound">The low value of the range where the root is supposed to be.</param>
             <param name="upperBound">The high value of the range where the root is supposed to be.</param>
-            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached.</param>
+            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached. Must be greater than 0.</param>
             <param name="maxIterations">Maximum number of iterations. Usually 100.</param>
             <param name="root">The root that was found, if any. Undefined if the function returns false.</param>
             <returns>True if a root with the specified accuracy was found, else false.</returns>
@@ -51137,7 +51541,7 @@
             <summary>Find a solution of the equation f(x)=0.</summary>
             <param name="f">The function to find roots from.</param>
             <param name="initialGuess">Initial guess of the root.</param>
-            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached. Default 1e-8.</param>
+            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached. Default 1e-8. Must be greater than 0.</param>
             <param name="maxIterations">Maximum number of iterations. Default 100.</param>
             <param name="jacobianStepSize">Relative step size for calculating the Jacobian matrix at first step. Default 1.0e-4</param>
             <returns>Returns the root with the specified accuracy.</returns>
@@ -51147,7 +51551,7 @@
             <summary>Find a solution of the equation f(x)=0.</summary>
             <param name="f">The function to find roots from.</param>
             <param name="initialGuess">Initial guess of the root.</param>
-            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached.</param>
+            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached. Must be greater than 0.</param>
             <param name="maxIterations">Maximum number of iterations. Usually 100.</param>
             <param name="jacobianStepSize">Relative step size for calculating the Jacobian matrix at first step.</param>
             <param name="root">The root that was found, if any. Undefined if the function returns false.</param>
@@ -51157,7 +51561,7 @@
             <summary>Find a solution of the equation f(x)=0.</summary>
             <param name="f">The function to find roots from.</param>
             <param name="initialGuess">Initial guess of the root.</param>
-            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached.</param>
+            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached. Must be greater than 0.</param>
             <param name="maxIterations">Maximum number of iterations. Usually 100.</param>
             <param name="root">The root that was found, if any. Undefined if the function returns false.</param>
             <returns>True if a root with the specified accuracy was found, else false.</returns>
@@ -51212,7 +51616,7 @@
             <param name="df">The first derivative of the function to find roots from.</param>
             <param name="lowerBound">The low value of the range where the root is supposed to be. Aborts if it leaves the interval.</param>
             <param name="upperBound">The high value of the range where the root is supposed to be. Aborts if it leaves the interval.</param>
-            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached. Default 1e-8.</param>
+            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached. Default 1e-8. Must be greater than 0.</param>
             <param name="maxIterations">Maximum number of iterations. Default 100.</param>
             <returns>Returns the root with the specified accuracy.</returns>
             <exception cref="T:MathNet.Numerics.NonConvergenceException"></exception>
@@ -51224,7 +51628,7 @@
             <param name="initialGuess">Initial guess of the root.</param>
             <param name="lowerBound">The low value of the range where the root is supposed to be. Aborts if it leaves the interval. Default MinValue.</param>
             <param name="upperBound">The high value of the range where the root is supposed to be. Aborts if it leaves the interval. Default MaxValue.</param>
-            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached. Default 1e-8.</param>
+            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached. Default 1e-8. Must be greater than 0.</param>
             <param name="maxIterations">Maximum number of iterations. Default 100.</param>
             <returns>Returns the root with the specified accuracy.</returns>
             <exception cref="T:MathNet.Numerics.NonConvergenceException"></exception>
@@ -51236,7 +51640,7 @@
             <param name="initialGuess">Initial guess of the root.</param>
             <param name="lowerBound">The low value of the range where the root is supposed to be. Aborts if it leaves the interval.</param>
             <param name="upperBound">The high value of the range where the root is supposed to be. Aborts if it leaves the interval.</param>
-            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached. Example: 1e-14.</param>
+            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached. Example: 1e-14. Must be greater than 0.</param>
             <param name="maxIterations">Maximum number of iterations. Example: 100.</param>
             <param name="root">The root that was found, if any. Undefined if the function returns false.</param>
             <returns>True if a root with the specified accuracy was found, else false.</returns>
@@ -51253,7 +51657,7 @@
             <param name="df">The first derivative of the function to find roots from.</param>
             <param name="lowerBound">The low value of the range where the root is supposed to be.</param>
             <param name="upperBound">The high value of the range where the root is supposed to be.</param>
-            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached. Default 1e-8.</param>
+            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached. Default 1e-8. Must be greater than 0.</param>
             <param name="maxIterations">Maximum number of iterations. Default 100.</param>
             <param name="subdivision">How many parts an interval should be split into for zero crossing scanning in case of lacking bracketing. Default 20.</param>
             <returns>Returns the root with the specified accuracy.</returns>
@@ -51265,7 +51669,7 @@
             <param name="df">The first derivative of the function to find roots from.</param>
             <param name="lowerBound">The low value of the range where the root is supposed to be.</param>
             <param name="upperBound">The high value of the range where the root is supposed to be.</param>
-            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached. Example: 1e-14.</param>
+            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached. Example: 1e-14. Must be greater than 0.</param>
             <param name="maxIterations">Maximum number of iterations. Example: 100.</param>
             <param name="subdivision">How many parts an interval should be split into for zero crossing scanning in case of lacking bracketing. Example: 20.</param>
             <param name="root">The root that was found, if any. Undefined if the function returns false.</param>
@@ -51285,7 +51689,7 @@
             <param name="secondGuess">The second guess of the root within the bounds specified.</param>
             <param name="lowerBound">The low value of the range where the root is supposed to be. Aborts if it leaves the interval. Default MinValue.</param>
             <param name="upperBound">The high value of the range where the root is supposed to be. Aborts if it leaves the interval. Default MaxValue.</param>
-            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached. Default 1e-8.</param>
+            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached. Default 1e-8. Must be greater than 0.</param>
             <param name="maxIterations">Maximum number of iterations. Default 100.</param>
             <returns>Returns the root with the specified accuracy.</returns>
             <exception cref="T:MathNet.Numerics.NonConvergenceException"></exception>
@@ -51297,7 +51701,7 @@
             <param name="secondGuess">The second guess of the root within the bounds specified.</param>
             <param name="lowerBound">The low value of the range where the root is supposed to be. Aborts if it leaves the interval.</param>
             <param name="upperBound">The low value of the range where the root is supposed to be. Aborts if it leaves the interval.</param>
-            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached. Example: 1e-14.</param>
+            <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached. Example: 1e-14. Must be greater than 0.</param>
             <param name="maxIterations">Maximum number of iterations. Example: 100.</param>
             <param name="root">The root that was found, if any. Undefined if the function returns false.</param>
             <returns>True if a root with the specified accuracy was found, else false</returns>

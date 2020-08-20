@@ -8,6 +8,6 @@ namespace AccordHelper.FEA.Results
 {
     public class FeResult_ElementNodalCodeCheck
     {
-        public double Unit { get; set; }
+        public double UtilizationRatio { get; set; }
     }
 }

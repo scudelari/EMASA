@@ -116,3 +116,4 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Debug\EmasaSapToo
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Debug\EmasaSapTools.csproj.CopyComplete
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Debug\EmasaSapTools.exe
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Debug\EmasaSapTools.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Debug\EmasaSapTools.csproj.ResolveComReference.cache

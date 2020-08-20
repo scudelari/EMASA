@@ -48,8 +48,10 @@ namespace AccordHelper.FEA
             base.ResetClassData();
         }
 
-        public override void InitializeSoftware()
+        public override void InitializeSoftware(bool inIsSectionSelection = false)
         {
+            IsSectionAnalysis = inIsSectionSelection;
+
             // Cleans-up the model folder
             if (Directory.Exists(ModelFolder)) Directory.Delete(ModelFolder, true);
             Directory.CreateDirectory(ModelFolder);
@@ -159,10 +161,6 @@ end_exists = 0
         }
 
         internal StringBuilder sb = new StringBuilder();
-        public override void InitialPassForSectionAssignment()
-        {
-            throw new NotImplementedException();
-        }
 
         private void WriteHelper_GeometryAndDefinitions()
         {
@@ -175,7 +173,10 @@ end_exists = 0
             sb.AppendLine("! Model generated using EMASA's Rhino Automator.");
             sb.AppendLine($"/TITLE,{ModelName}");
 
-            sb.AppendLine("/PREP7 ! Going to preprocessing environment").AppendLine().AppendLine();
+            sb.AppendLine("/PREP7 ! Going to preprocessing environment");
+            sb.AppendLine("ANTYPE,STATIC         ! Analysis Type - Static");
+            sb.AppendLine("PSTRES,1         ! Says that we need to store the prestress values because they will be used for the future eigenbuckling.");
+            sb.AppendLine().AppendLine();
 
             sb.AppendLine("! Adding the Element Type");
             sb.AppendLine("ET,1,BEAM189");
@@ -192,6 +193,8 @@ end_exists = 0
 
             sb.AppendLine().AppendLine();
             sb.AppendLine("! Adding Material Definitions");
+
+            sb.AppendLine($"*DIM,mat_prop_table,ARRAY,{Materials.Max(a => a.Id)},10 ! Defines the target array");
             foreach (FeMaterial feMaterial in Materials)
             {
                 sb.AppendLine($"matid_{feMaterial.Name}={feMaterial.Id} ! Saves a variable for future use");
@@ -199,6 +202,9 @@ end_exists = 0
                 sb.AppendLine($"MP,EX,{feMaterial.Id},{feMaterial.YoungModulus:E3} ! Setting Youngs Modulus");
                 sb.AppendLine($"MP,PRXY,{feMaterial.Id},{feMaterial.Poisson} ! Setting Poissons Ratio");
                 sb.AppendLine($"MP,DENS,{feMaterial.Id},{feMaterial.Density} ! Setting Density");
+
+                sb.AppendLine($"mat_prop_table({feMaterial.Id},1) = {feMaterial.Fy} ! Column 1 has the Fy");
+                sb.AppendLine($"mat_prop_table({feMaterial.Id},2) = {feMaterial.Fu} ! Column 2 has the Fu");
             }
 
             sb.AppendLine().AppendLine();
@@ -219,58 +225,8 @@ end_exists = 0
 
             sb.AppendLine().AppendLine();
 
-            #region Defining the Sections Directly in Ansys
-            //            // Prints the table that defines all sections - will be useful for the section automatic definition
-            //            // The sec_array   ! Table Contains [1] Id, [2] MatId, [3] DefP1, [4] DefP2, [5] DefP3, [6] Area, [7] PMod2, [8] PMod3, [9] LeastGyr, [10-15] To Use for Calcs
-            //            // The table has already been sorted by AREA
-            //            sb.AppendLine(FeSectionPipe.GetFullAnsysTable());
-
-            //            // Defining the section of the lines for a first run
-            //            sb.AppendLine($"slend_limit = {SlendernessLimit} ! This is the slenderness limit that was given by the user");
-
-            //            sb.AppendLine("");
-            //            sb.AppendLine("");
-
-
-            //            sb.AppendLine(@"
-            //LSEL,ALL ! Selects all lines
-            //*GET, total_line_count, LINE, 0, COUNT ! Gets count of all lines
-
-            //! Looping the lines to set the preferred section
-            //prevline = 0 !  Declares a start number for the lines
-
-            //*DO,i,1,total_line_count ! loops on all lines
-
-            //	LSEL,ALL ! Reselects all lines
-            //	*GET,currline,LINE,prevline,NXTH ! Gets the number of the next line in the selected set
-
-            //	LSEL,S,LINE,,currline ! Selects the current line
-
-            //    *GET,linelength,LINE,currline,LENG ! Gets the line length
-
-            //    *VFILL,sec_array(1,10),RAMP,linelength                    ! 10- Line Length
-            //    *VOPER,sec_array(1,11),sec_array(1,10),DIV,sec_array(1,9) ! 11- Slenderness Ratio
-            //    *VFILL,sec_array(1,12),RAMP,slend_limit                   ! 12- Selected Slenderness Limit
-            //    *VOPER,sec_array(1,13),sec_array(1,11),LE,sec_array(1,12)   ! 13- Has 1 if the slenderness limit is respected by the section
-
-            //    *MOPER,sortvector,sec_array,SORT,,6 ! Sorts the matrix based on the Area
-
-            //    !!!! *VMASK,sec_array(1,13)         ! Sets the mask to if the slenderness limit is respected
-            //    *VSCFUN,pos,FIRST,sec_array(1,13)   ! Gets the position of the first 1 in the list - lowest area that respects the slenderness limit \o/
-
-            //    ! Defining the section
-            //    SECTYPE,sec_array(pos,1),BEAM,CTUBE           ! Type is Hollow Round Pipe 
-            //    SECDATA,sec_array(pos,3),sec_array(pos,4),8   ! Setting the definitions for the previous SECTYPE command, which are #1: Inner Diameter #2 Outer Diameter #3 Subdivision around pipe
-
-            //    ! Line has already been selected
-            //    LATT,sec_array(pos,2), ,beam_element_type, , , ,sec_array(pos,1) ! Sets the #1 Material; #3 ElementType, #7 Section for all selected lines
-
-            //    prevline = currline ! updates for the next iteration
-            //*ENDDO
-            //"); 
-            #endregion
-
             sb.AppendLine("! Defining the sections");
+            sb.AppendLine($"*DIM,sec_prop_table,ARRAY,{Sections.Max(a => a.Id)},10 ! Defines the target array");
             foreach (FeSection feSection in Sections)
             {
                 sb.AppendLine($"! BEGIN Define Section {feSection.ToString()}");
@@ -283,35 +239,41 @@ end_exists = 0
                     sb.AppendLine($"LSEL,A,LINE,,{feFrame.Value.Id}");
                 }
                 sb.AppendLine($"LATT,{feSection.Material.Id}, ,beam_element_type, , , ,{feSection.Id} ! Sets the #1 Material; #3 ElementType, #7 Section for all selected lines");
+                
+                sb.AppendLine($"sec_prop_table({feSection.Id},1) = {feSection.Area} ! Column 1 has the Area");
+                sb.AppendLine($"sec_prop_table({feSection.Id},2) = {feSection.PlasticModulus2} ! Column 2 has the Plastic Modulus 2");
+                sb.AppendLine($"sec_prop_table({feSection.Id},3) = {feSection.PlasticModulus3} ! Column 3 has the Plastic Modulus 3");
             }
 
             sb.AppendLine().AppendLine();
 
-            sb.AppendLine("! Defining the Groups");
-            foreach (var feGroup in Groups)
-            {
-                sb.AppendLine().AppendLine($"! GroupName: {feGroup.Value.Name}");
-                // Selects the joints
-                sb.AppendLine("KSEL,NONE ! Clearing KP selection");
-                foreach (FeJoint feJoint in feGroup.Value.Joints)
-                {
-                    sb.AppendLine($"KSEL,A,KP,,{feJoint.Id}");
-                }
+            #region Groups Are Deprecated
+            //sb.AppendLine("! Defining the Groups");
+            //foreach (var feGroup in Groups)
+            //{
+            //    sb.AppendLine().AppendLine($"! GroupName: {feGroup.Value.Name}");
+            //    // Selects the joints
+            //    sb.AppendLine("KSEL,NONE ! Clearing KP selection");
+            //    foreach (FeJoint feJoint in feGroup.Value.Joints)
+            //    {
+            //        sb.AppendLine($"KSEL,A,KP,,{feJoint.Id}");
+            //    }
 
-                // Selects the frames
-                sb.AppendLine("LSEL,NONE ! Clearing Line selection");
-                foreach (FeFrame feFrame in feGroup.Value.Frames)
-                {
-                    sb.AppendLine($"LSEL,A,LINE,,{feFrame.Id}");
-                }
+            //    // Selects the frames
+            //    sb.AppendLine("LSEL,NONE ! Clearing Line selection");
+            //    foreach (FeFrame feFrame in feGroup.Value.Frames)
+            //    {
+            //        sb.AppendLine($"LSEL,A,LINE,,{feFrame.Id}");
+            //    }
 
-                // Adds them to the components
-                sb.AppendLine($"CM,{feGroup.Value.Name}_J,KP ! The component that has the Joints of Group {feGroup.Value.Name}");
-                sb.AppendLine($"CM,{feGroup.Value.Name}_L,LINE ! The component that has the Lines of Group {feGroup.Value.Name}");
+            //    // Adds them to the components
+            //    sb.AppendLine($"CM,{feGroup.Value.Name}_J,KP ! The component that has the Joints of Group {feGroup.Value.Name}");
+            //    sb.AppendLine($"CM,{feGroup.Value.Name}_L,LINE ! The component that has the Lines of Group {feGroup.Value.Name}");
 
-                sb.AppendLine($"CMGRP,{feGroup.Value.Name},{feGroup.Value.Name}_J,{feGroup.Value.Name}_L ! Putting the joint and line components into same assembly {feGroup.Value.Name}");
-                sb.AppendLine();
-            }
+            //    sb.AppendLine($"CMGRP,{feGroup.Value.Name},{feGroup.Value.Name}_J,{feGroup.Value.Name}_L ! Putting the joint and line components into same assembly {feGroup.Value.Name}");
+            //    sb.AppendLine();
+            //} 
+            #endregion
 
             sb.AppendLine().AppendLine();
 
@@ -325,7 +287,7 @@ end_exists = 0
             sb.AppendLine("FINISH");
 
         }
-        private void WriteHelper_BoundaryAndLoads(double inAccelerationLoadFactor = 1d)
+        private void WriteHelper_BoundaryLoadStructuralSolve()
         {
             sb.AppendLine("! Going to Solution Context");
 
@@ -334,42 +296,26 @@ end_exists = 0
             sb.AppendLine().AppendLine();
 
             sb.AppendLine("! Defining the Restraints");
-            foreach (var feGroup in Groups.Where(a => a.Value.Restraint != null))
+            List<FeRestraint> distinctRestraints = (from a in Joints select a.Value.Restraint).Distinct().ToList();
+            foreach (FeRestraint r in distinctRestraints.Where(a => a.ExistAny))
             {
+                sb.AppendLine($"! Defining restraint: {r}");
                 sb.AppendLine("KSEL,NONE ! Clearing KP selection");
-
-                sb.AppendLine($"CMSEL,A,{feGroup.Value.Name},KP ! Selecting the Joints that are in the assembly.");
-
-                if (feGroup.Value.Restraint.IsAll)
+                foreach (KeyValuePair<int, FeJoint> kv in Joints.Where(a => a.Value.Restraint == r))
                 {
-                    sb.AppendLine($"DK,ALL,ALL,0 ! Sets all locked for given component");
+                    sb.AppendLine($"KSEL,A,KP,,{kv.Key}");
                 }
+
+                if (r.IsAll) sb.AppendLine($"DK,ALL,ALL,0 ! Sets Fully Fixed for previously selected joints");
+                else if (r.IsPinned) sb.AppendLine($"DK,ALL,UX,0,,,UY,UZ ! Sets Pinned for previously selected joints");
                 else
                 {
-                    if (feGroup.Value.Restraint.DoF[0])
-                    {
-                        sb.AppendLine($"DK,ALL,UX,0 ! Sets UX for previously selected joints");
-                    }
-                    if (feGroup.Value.Restraint.DoF[1])
-                    {
-                        sb.AppendLine($"DK,ALL,UY,0 ! Sets UY for previously selected joints");
-                    }
-                    if (feGroup.Value.Restraint.DoF[2])
-                    {
-                        sb.AppendLine($"DK,ALL,UZ,0 ! Sets UZ for previously selected joints");
-                    }
-                    if (feGroup.Value.Restraint.DoF[3])
-                    {
-                        sb.AppendLine($"DK,ALL,ROTX,0 ! Sets ROTX for previously selected joints");
-                    }
-                    if (feGroup.Value.Restraint.DoF[4])
-                    {
-                        sb.AppendLine($"DK,ALL,ROTY,0 ! Sets ROTY for previously selected joints");
-                    }
-                    if (feGroup.Value.Restraint.DoF[5])
-                    {
-                        sb.AppendLine($"DK,ALL,ROTZ,0 ! Sets ROTZ for previously selected joints");
-                    }
+                    if (r.U1) sb.AppendLine($"DK,ALL,UX,0 ! Sets UX for previously selected joints");
+                    if (r.U2) sb.AppendLine($"DK,ALL,UY,0 ! Sets UY for previously selected joints");
+                    if (r.U3) sb.AppendLine($"DK,ALL,UZ,0 ! Sets UZ for previously selected joints");
+                    if (r.R1) sb.AppendLine($"DK,ALL,ROTX,0 ! Sets ROTX for previously selected joints");
+                    if (r.R2) sb.AppendLine($"DK,ALL,ROTY,0 ! Sets ROTY for previously selected joints");
+                    if (r.R3) sb.AppendLine($"DK,ALL,ROTZ,0 ! Sets ROTZ for previously selected joints");
                 }
 
                 sb.AppendLine();
@@ -378,9 +324,9 @@ end_exists = 0
             sb.AppendLine().AppendLine();
 
             sb.AppendLine("! Defining the Loads");
-            foreach (FeLoadBase feLoadBase in Loads)
+            foreach (FeLoad feLoadBase in Loads)
             {
-                feLoadBase.LoadModel(this, inAccelerationLoadFactor);
+                feLoadBase.LoadModel(this);
             }
 
             sb.AppendLine().AppendLine();
@@ -393,23 +339,26 @@ end_exists = 0
 
             sb.AppendLine().AppendLine();
         }
-        private void WriteHelper_PostProcBasicOutput()
+        private void WriteHelper_PostProcBasicMeshOutput()
         {
-            sb.AppendLine("/POST1 ! Changes to PostProc");
-            sb.AppendLine("SET,LAST ! Gets the result set of the last timestep");
+            sb.AppendLine("! ####################################");
+            sb.AppendLine("! ## PostProc Basic Mesh Output    ###");
+            sb.AppendLine("! ####################################");
+            sb.AppendLine();
 
-            sb.AppendLine("ALLSEL,ALL ! Somehow, and for any weird-ass reason, Ansys will only pass KeyPoints definitions onwards if they are selected.");
+            sb.AppendLine(@"
+/POST1     ! Changes to PostProc
+SET,LAST   ! Gets the result set of the last timestep as DEFAULT (may be overwritten)
+ALLSEL,ALL ! Selects all for output.
 
-            sb.AppendLine().AppendLine();
+/HEADER,OFF,OFF,OFF,OFF,ON,OFF  ! Fixing the formats
+/PAGE,,,-100000000,240,0        ! Fixing the formats
+/FORMAT,10,G,20,6,,,            ! Fixing the formats
+");
 
             // Writing the nodes_locations.ems file
             sb.AppendLine(@"
-! Fixing the formats for list outputs
-/HEADER,OFF,OFF,OFF,OFF,ON,OFF
-/PAGE,,,-100000000,240,0
-/FORMAT,10,G,20,6,,,
-
-! Printing - Nodal data
+! Printing - nodes_locations.ems
 /OUTPUT,'nodes_locations','ems'
 NLIST
 /OUTPUT");
@@ -425,7 +374,7 @@ NLIST
 ! ESEL,ALL ! Selects all elements
 *GET,total_element_count,ELEM,0,COUNT ! Gets count of all elements
 
-*DIM,line_element_match,ARRAY,total_element_count,5 ! Defines the target array
+*DIM,line_element_match,ARRAY,total_element_count,15 ! Defines the target array
 
 ! Makes a loop on the lines
 currentline = 0 !  Declares a start number for the lines
@@ -437,7 +386,8 @@ elemindex = 1 ! The element index in the array
 	*GET,nextline,LINE,currentline,NXTH ! Gets the number of the next line in the selected set
 	
 	LSEL,S,LINE,,nextline,,,1 ! Selects the next line and its associated elements
-	
+	*GET,currentLineMat,LINE,nextline,ATTR,MAT ! Gets the number of the material of this Line
+
 	currentelement = 0 ! Declares a start number for the current element
 	*GET,lecount,ELEM,0,COUNT ! Gets the number of selected elements
 	
@@ -448,6 +398,9 @@ elemindex = 1 ! The element index in the array
 		*GET,e_i,ELEM,nextelement,NODE,1
 		*GET,e_j,ELEM,nextelement,NODE,2
 		*GET,e_k,ELEM,nextelement,NODE,3
+
+        ! Getting the section of the element
+        *GET,elemSection,ELEM,nextelement,ATTR,SECN
 		
 		! Stores into the array
 		line_element_match(elemindex,1) = nextline
@@ -455,6 +408,8 @@ elemindex = 1 ! The element index in the array
 		line_element_match(elemindex,3) = e_i
 		line_element_match(elemindex,4) = e_j
 		line_element_match(elemindex,5) = e_k
+        line_element_match(elemindex,6) = currentLineMat
+        line_element_match(elemindex,7) = elemSection
 		
 		currentelement = nextelement ! updates for the next iteration
 		elemindex = elemindex + 1 ! Increments the element index counter
@@ -475,32 +430,36 @@ elemindex = 1 ! The element index in the array
 %I%C%I%C%I%C%I%C%I
 
 *CFCLOSE");
-
-            sb.AppendLine("ALLSEL,ALL ! Somehow, and for any weird-ass reason, Ansys will only pass KeyPoints definitions onwards if they are selected.");
-
         }
-        private void WriteHelper_PostProcDesiredResults(List<ResultOutput> inDesiredResults)
+        private void WriteHelper_PostProcDesiredResults(List<ResultOutput> inDesiredResults, string inFilenamePrefix = "")
         {
+            sb.AppendLine("! ################################");
+            sb.AppendLine($"! ## PostProc Results ### {inFilenamePrefix}");
+            sb.AppendLine("! ################################");
+
+            sb.AppendLine(@"
+/POST1     ! Changes to PostProc
+SET,LAST   ! Gets the result set of the last timestep as DEFAULT (may be overwritten)
+ALLSEL,ALL ! Selects all for output.
+
+/HEADER,OFF,OFF,OFF,OFF,ON,OFF  ! Fixing the formats
+/PAGE,,,-100000000,240,0        ! Fixing the formats
+/FORMAT,10,G,20,6,,,            ! Fixing the formats
+");
+            sb.AppendLine();
             // Writes the postprocessing of the desired results
             foreach (ResultOutput desiredResult in inDesiredResults)
             {
+                sb.AppendLine($"! Writing output file for {desiredResult}");
+                sb.AppendLine($"!------------------------------------------------------");
+                string outFilename = inFilenamePrefix + desiredResult;
+
                 switch (desiredResult)
                 {
-                    case ResultOutput.Nodal_Reaction:
-                        sb.AppendLine().AppendLine().AppendLine(@"
-! Fixing the formats
-/HEADER,OFF,OFF,OFF,OFF,ON,OFF
-/PAGE,,,-100000000,240,0
-/FORMAT,10,G,20,6,,,
-
-/OUTPUT,'nodes_reactions','ems'
-PRRSOL ! Prints the nodal reactions
-/OUTPUT");
-                        break;
-                    case ResultOutput.Nodal_Displacement:
-                        sb.AppendLine().AppendLine().AppendLine(@"
-*GET,total_node_count,NODE,0,COUNT ! Gets count of all elements
-
+                    case ResultOutput.EigenvalueBuckling_ModeShape1:
+                        sb.AppendLine().AppendLine().AppendLine($@"
+SET,1 ! Points to the desired buckling mode
+*GET,total_node_count,NODE,0,COUNT ! Gets count of all nodes
 *DIM,n_dof,ARRAY,total_node_count,6
 *VGET,n_dof(1,1),NODE,1,U,X  ! Displacement X
 *VGET,n_dof(1,2),NODE,1,U,Y  ! Displacement Y
@@ -509,9 +468,99 @@ PRRSOL ! Prints the nodal reactions
 *VGET,n_dof(1,5),NODE,1,ROT,Y  ! Rotation Y
 *VGET,n_dof(1,6),NODE,1,ROT,Z  ! Rotation Z
 
+! Writes the data to file
+*CFOPEN,'{outFilename}_modeshape1','ems' ! Opens the file
+
+! Writes the header
+*VWRITE,'NODE', ',' ,'UX', ',' , 'UY' , ',' , 'UZ', ',' , 'RX', ',' , 'RY', ',' , 'RZ'
+(A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12)
+
+! Writes the data
+*VWRITE,SEQU, ',' ,n_dof(1,1), ',' , n_dof(1,2) , ',' , n_dof(1,3), ',' , n_dof(1,4), ',' , n_dof(1,5), ',' , n_dof(1,6)
+%I%C%30.6G%C%30.6G%C%30.6G%C%30.6G%C%30.6G%C%30.6G
+
+*CFCLOSE
+");
+                        break;
+                    case ResultOutput.EigenvalueBuckling_ModeShape2:
+                        sb.AppendLine().AppendLine().AppendLine($@"
+SET,2 ! Points to the desired buckling mode
+*GET,total_node_count,NODE,0,COUNT ! Gets count of all nodes
+*DIM,n_dof,ARRAY,total_node_count,6
+*VGET,n_dof(1,1),NODE,1,U,X  ! Displacement X
+*VGET,n_dof(1,2),NODE,1,U,Y  ! Displacement Y
+*VGET,n_dof(1,3),NODE,1,U,Z  ! Displacement Z
+*VGET,n_dof(1,4),NODE,1,ROT,X  ! Rotation X
+*VGET,n_dof(1,5),NODE,1,ROT,Y  ! Rotation Y
+*VGET,n_dof(1,6),NODE,1,ROT,Z  ! Rotation Z
 
 ! Writes the data to file
-*CFOPEN,'result_nodal_displacements','ems' ! Opens the file
+*CFOPEN,'{outFilename}_modeshape2','ems' ! Opens the file
+
+! Writes the header
+*VWRITE,'NODE', ',' ,'UX', ',' , 'UY' , ',' , 'UZ', ',' , 'RX', ',' , 'RY', ',' , 'RZ'
+(A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12)
+
+! Writes the data
+*VWRITE,SEQU, ',' ,n_dof(1,1), ',' , n_dof(1,2) , ',' , n_dof(1,3), ',' , n_dof(1,4), ',' , n_dof(1,5), ',' , n_dof(1,6)
+%I%C%30.6G%C%30.6G%C%30.6G%C%30.6G%C%30.6G%C%30.6G
+
+*CFCLOSE
+");
+                        break;
+                    case ResultOutput.EigenvalueBuckling_ModeShape3:
+                        sb.AppendLine().AppendLine().AppendLine($@"
+SET,3 ! Points to the desired buckling mode
+*GET,total_node_count,NODE,0,COUNT ! Gets count of all nodes
+*DIM,n_dof,ARRAY,total_node_count,6
+*VGET,n_dof(1,1),NODE,1,U,X  ! Displacement X
+*VGET,n_dof(1,2),NODE,1,U,Y  ! Displacement Y
+*VGET,n_dof(1,3),NODE,1,U,Z  ! Displacement Z
+*VGET,n_dof(1,4),NODE,1,ROT,X  ! Rotation X
+*VGET,n_dof(1,5),NODE,1,ROT,Y  ! Rotation Y
+*VGET,n_dof(1,6),NODE,1,ROT,Z  ! Rotation Z
+
+! Writes the data to file
+*CFOPEN,'{outFilename}_modeshape3','ems' ! Opens the file
+
+! Writes the header
+*VWRITE,'NODE', ',' ,'UX', ',' , 'UY' , ',' , 'UZ', ',' , 'RX', ',' , 'RY', ',' , 'RZ'
+(A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12)
+
+! Writes the data
+*VWRITE,SEQU, ',' ,n_dof(1,1), ',' , n_dof(1,2) , ',' , n_dof(1,3), ',' , n_dof(1,4), ',' , n_dof(1,5), ',' , n_dof(1,6)
+%I%C%30.6G%C%30.6G%C%30.6G%C%30.6G%C%30.6G%C%30.6G
+
+*CFCLOSE
+");
+                        break;
+                    case ResultOutput.EigenvalueBuckling_Summary:
+                        sb.AppendLine().AppendLine().AppendLine($@"
+/ OUTPUT, '{inFilenamePrefix}', 'ems'
+SET,LIST
+/ OUTPUT");
+                        // Ignores here - treated at the 
+                        break;
+
+                    case ResultOutput.Nodal_Reaction:
+                        sb.AppendLine().AppendLine().AppendLine($@"
+/OUTPUT,'{outFilename}','ems'
+PRRSOL ! Prints the nodal reactions
+/OUTPUT");
+                        break;
+                    case ResultOutput.Nodal_Displacement:
+                        sb.AppendLine().AppendLine().AppendLine($@"
+*GET,total_node_count,NODE,0,COUNT ! Gets count of all elements
+*DIM,n_dof,ARRAY,total_node_count,6
+*VGET,n_dof(1,1),NODE,1,U,X  ! Displacement X
+*VGET,n_dof(1,2),NODE,1,U,Y  ! Displacement Y
+*VGET,n_dof(1,3),NODE,1,U,Z  ! Displacement Z
+*VGET,n_dof(1,4),NODE,1,ROT,X  ! Rotation X
+*VGET,n_dof(1,5),NODE,1,ROT,Y  ! Rotation Y
+*VGET,n_dof(1,6),NODE,1,ROT,Z  ! Rotation Z
+
+! Writes the data to file
+*CFOPEN,'{outFilename}','ems' ! Opens the file
 
 ! Writes the header
 *VWRITE,'NODE', ',' ,'UX', ',' , 'UY' , ',' , 'UZ', ',' , 'RX', ',' , 'RY', ',' , 'RZ'
@@ -525,32 +574,20 @@ PRRSOL ! Prints the nodal reactions
                         break;
 
                     case ResultOutput.SectionNode_Stress:
-                        sb.AppendLine().AppendLine().AppendLine(@"
-! Fixing the formats
-/HEADER,OFF,OFF,OFF,OFF,ON,OFF
-/PAGE,,,-100000000,240,0
-/FORMAT,10,G,20,6,,,
-
-! Printing - Nodal Stresses
-/OUTPUT,'nodes_stresses','ems'
+                        sb.AppendLine().AppendLine().AppendLine($@"
+/OUTPUT,'{outFilename}','ems'
 PRESOL,S,PRIN
 /OUTPUT");
                         break;
                     case ResultOutput.SectionNode_Strain:
-                        sb.AppendLine().AppendLine().AppendLine(@"
-! Fixing the formats
-/HEADER,OFF,OFF,OFF,OFF,ON,OFF
-/PAGE,,,-100000000,240,0
-/FORMAT,10,G,20,6,,,
-
-! Printing - Nodal Strains
-/OUTPUT,'nodes_strains','ems'
+                        sb.AppendLine().AppendLine().AppendLine($@"
+/OUTPUT,'{outFilename}','ems'
 PRESOL,EPTT,PRIN
 /OUTPUT");
                         break;
 
                     case ResultOutput.Element_StrainEnergy:
-                        sb.AppendLine().AppendLine().AppendLine(@"
+                        sb.AppendLine().AppendLine().AppendLine($@"
 ! Gets the ELEMENTAL strain energy data
 ETABLE, e_StrEn, SENE
 
@@ -559,7 +596,7 @@ ETABLE, e_StrEn, SENE
 *VGET,elem_strain_enery(1,1),ELEM,1,ETAB,e_StrEn
 
 ! Writes the data to file
-*CFOPEN,'result_element_senergy','ems' ! Opens the file
+*CFOPEN,'{outFilename}','ems' ! Opens the file
 
 ! Writes the header
 *VWRITE,'ELEMENT', ',' ,'e_StrEn'
@@ -574,7 +611,7 @@ ETABLE, e_StrEn, SENE
                         break;
 
                     case ResultOutput.ElementNodal_BendingStrain:
-                        sb.AppendLine().AppendLine().AppendLine(@"
+                        sb.AppendLine().AppendLine().AppendLine($@"
 ETABLE, iEPELDIR, SMISC, 41 ! Axial strain at the end
 ETABLE, iEPELByT, SMISC, 42 ! Bending strain on the element +Y side of the beam.
 ETABLE, iEPELByB, SMISC, 43 ! Bending strain on the element -Y side of the beam.
@@ -590,7 +627,7 @@ ETABLE, iEPELBzB, SMISC, 45 ! Bending strain on the element -Z side of the beam.
 *VGET,ibasic_dirstrain(1,5),ELEM,1,ETAB,iEPELBzB
 
 ! Writes the data to file
-*CFOPEN,'result_element_inode_basic_dirstrain','ems' ! Opens the file
+*CFOPEN,'{outFilename}_inode','ems' ! Opens the file
 
 ! Writes the header
 *VWRITE,'ELEMENT', ',' ,'iEPELDIR', ',' , 'iEPELByT' , ',' , 'iEPELByB', ',' , 'iEPELBzT', ',' , 'iEPELBzB'
@@ -617,7 +654,7 @@ ETABLE, jEPELBzB, SMISC, 50 ! Bending strain on the element -Z side of the beam.
 *VGET,jbasic_dirstrain(1,5),ELEM,1,ETAB,jEPELBzB
 
 ! Writes the data to file
-*CFOPEN,'result_element_jnode_basic_dirstrain','ems' ! Opens the file
+*CFOPEN,'{outFilename}_jnode','ems' ! Opens the file
 
 ! Writes the header
 *VWRITE,'ELEMENT', ',' ,'jEPELDIR', ',' , 'jEPELByT' , ',' , 'jEPELByB', ',' , 'jEPELBzT', ',' , 'jEPELBzB'
@@ -632,7 +669,7 @@ ETABLE, jEPELBzB, SMISC, 50 ! Bending strain on the element -Z side of the beam.
                         break;
 
                     case ResultOutput.ElementNodal_Force:
-                        sb.AppendLine().AppendLine().AppendLine(@"
+                        sb.AppendLine().AppendLine().AppendLine($@"
 ETABLE, iFx, SMISC, 1
 ETABLE, iMy, SMISC, 2
 ETABLE, iMz, SMISC, 3
@@ -650,7 +687,7 @@ ETABLE, iSFy, SMISC, 6  ! Shear Force Z
 *VGET,ibasicf(1,6),ELEM,1,ETAB,iSFy
 
 ! Writes the data to file
-*CFOPEN,'result_element_inode_basic_forces','ems' ! Opens the file
+*CFOPEN,'{outFilename}_inode','ems' ! Opens the file
 
 ! Writes the header
 *VWRITE,'ELEMENT', ',' ,'iFx', ',' , 'iMy' , ',' , 'iMz', ',' , 'iTq', ',' , 'iSFz', ',' , 'iSFy'
@@ -679,7 +716,7 @@ ETABLE, jSFy, SMISC, 19  ! Shear Force Z
 *VGET,jbasicf(1,6),ELEM,1,ETAB,jSFy
 
 ! Writes the data to file
-*CFOPEN,'result_element_jnode_basic_forces','ems' ! Opens the file
+*CFOPEN,'{outFilename}_jnode','ems' ! Opens the file
 
 ! Writes the header
 *VWRITE,'ELEMENT', ',' ,'jFx', ',' , 'jMy' , ',' , 'jMz', ',' , 'jTq', ',' , 'jSFz', ',' , 'jSFy'
@@ -695,7 +732,7 @@ ETABLE, jSFy, SMISC, 19  ! Shear Force Z
 
 
                     case ResultOutput.ElementNodal_Strain:
-                        sb.AppendLine().AppendLine().AppendLine(@"
+                        sb.AppendLine().AppendLine().AppendLine($@"
 ETABLE, iEx, SMISC, 7  ! Axial Strain
 ETABLE, iKy, SMISC, 8  ! Curvature Y
 ETABLE, iKz, SMISC, 9  ! Curvature Z
@@ -711,7 +748,7 @@ ETABLE, iSEy, SMISC, 12  ! Strain Y
 *VGET,ibasics(1,5),ELEM,1,ETAB,iSEy
 
 ! Writes the data to file
-*CFOPEN,'result_element_inode_basic_strains','ems' ! Opens the file
+*CFOPEN,'{outFilename}_inode','ems' ! Opens the file
 
 ! Writes the header
 *VWRITE,'ELEMENT', ',' ,'iEx', ',' , 'iKy' , ',' , 'iKz', ',' , 'iSEz', ',' , 'iSEy'
@@ -738,7 +775,7 @@ ETABLE, jSEy, SMISC, 25  ! Strain Y
 *VGET,jbasics(1,5),ELEM,1,ETAB,jSEy
 
 ! Writes the data to file
-*CFOPEN,'result_element_jnode_basic_strains','ems' ! Opens the file
+*CFOPEN,'{outFilename}_jnode','ems' ! Opens the file
 
 ! Writes the header
 *VWRITE,'ELEMENT', ',' ,'jEx', ',' , 'jKy' , ',' , 'jKz', ',' , 'jSEz', ',' , 'jSEy'
@@ -753,7 +790,7 @@ ETABLE, jSEy, SMISC, 25  ! Strain Y
                         break;
 
                     case ResultOutput.ElementNodal_Stress:
-                        sb.AppendLine().AppendLine().AppendLine(@"
+                        sb.AppendLine().AppendLine().AppendLine($@"
 ETABLE, iSDIR, SMISC, 31 ! Axial Direct Stress
 ETABLE, iSByT, SMISC, 32 ! Bending stress on the element +Y side of the beam
 ETABLE, iSByB, SMISC, 33 ! Bending stress on the element -Y side of the beam
@@ -769,7 +806,7 @@ ETABLE, iSBzB, SMISC, 35 ! Bending stress on the element -Z side of the beam
 *VGET,ibasic_dirstress(1,5),ELEM,1,ETAB,iSBzB
 
 ! Writes the data to file
-*CFOPEN,'result_element_inode_basic_dirstress','ems' ! Opens the file
+*CFOPEN,'{outFilename}_inode','ems' ! Opens the file
 
 ! Writes the header
 *VWRITE,'ELEMENT', ',' ,'iSDIR', ',' , 'iSByT' , ',' , 'iSByB', ',' , 'iSBzT', ',' , 'iSBzB'
@@ -796,7 +833,7 @@ ETABLE, jSBzB, SMISC, 40 ! Bending stress on the element -Z side of the beam
 *VGET,jbasic_dirstress(1,5),ELEM,1,ETAB,jSBzB
 
 ! Writes the data to file
-*CFOPEN,'result_element_jnode_basic_dirstress','ems' ! Opens the file
+*CFOPEN,'{outFilename}_jnode','ems' ! Opens the file
 
 ! Writes the header
 *VWRITE,'ELEMENT', ',' ,'jSDIR', ',' , 'jSByT' , ',' , 'jSByB', ',' , 'jSBzT', ',' , 'jSBzB'
@@ -811,22 +848,122 @@ ETABLE, jSBzB, SMISC, 40 ! Bending stress on the element -Z side of the beam
                         break;
 
                     case ResultOutput.ElementNodal_CodeCheck:
-                        sb.AppendLine().AppendLine().AppendLine(@"
+                        sb.AppendLine().AppendLine().AppendLine($@"
+! Reminder: There is a line_element_match array that was created for the line_element_data.ems
+
 ETABLE, iFx, SMISC, 1
 ETABLE, iMy, SMISC, 2
 ETABLE, iMz, SMISC, 3
-ETABLE, iTq, SMISC, 4  ! Torsional Moment
-ETABLE, iSFz, SMISC, 5  ! Shear Force Z
-ETABLE, iSFy, SMISC, 6  ! Shear Force Z
+!ETABLE, iTq, SMISC, 4  ! Torsional Moment
+!ETABLE, iSFz, SMISC, 5  ! Shear Force Z
+!ETABLE, iSFy, SMISC, 6  ! Shear Force Z
+
+ETABLE, jFx, SMISC, 14
+ETABLE, jMy, SMISC, 15
+ETABLE, jMz, SMISC, 16
+!ETABLE, jTq, SMISC, 17 ! Torsional Moment
+!ETABLE, jSFz, SMISC, 18  ! Shear Force Z
+!ETABLE, jSFy, SMISC, 19  ! Shear Force Z
 
 ! WRITE: I NODE BASIC FORCE DATA
-*DIM,ibasicf,ARRAY,total_element_count,6
-*VGET,ibasicf(1,1),ELEM,1,ETAB,iFx
-*VGET,ibasicf(1,2),ELEM,1,ETAB,iMy
-*VGET,ibasicf(1,3),ELEM,1,ETAB,iMz
-*VGET,ibasicf(1,4),ELEM,1,ETAB,iTq
-*VGET,ibasicf(1,5),ELEM,1,ETAB,iSFz
-*VGET,ibasicf(1,6),ELEM,1,ETAB,iSFy
+*DIM,uctable,ARRAY,total_element_count,40
+*VGET,uctable(1,1),ELEM,1,ETAB,iFx
+*VGET,uctable(1,2),ELEM,1,ETAB,iMy
+*VGET,uctable(1,3),ELEM,1,ETAB,iMz
+!*VGET,uctable(1,4),ELEM,1,ETAB,iTq
+!*VGET,uctable(1,5),ELEM,1,ETAB,iSFz
+!*VGET,uctable(1,6),ELEM,1,ETAB,iSFy
+
+*VGET,uctable(1,11),ELEM,1,ETAB,jFx
+*VGET,uctable(1,12),ELEM,1,ETAB,jMy
+*VGET,uctable(1,13),ELEM,1,ETAB,jMz
+!*VGET,uctable(1,14),ELEM,1,ETAB,jTq
+!*VGET,uctable(1,15),ELEM,1,ETAB,jSFz
+!*VGET,uctable(1,16),ELEM,1,ETAB,jSFy
+
+! *MOPER,sort_vec,line_element_match,SORT,,2 ! Sorts the line_element_table based on col 2 
+
+! line_element_match(1,2) => (element number)
+! line_element_match(1,6) => (element material)
+! line_element_match(1,7) => (element section)
+
+*GET,uctable_lines,PARAM,DIM,1
+*DO,i,1,uctable_lines ! loops on all elements at the result array
+    ! i => current element
+    uctable(i,10) = i ! Saves the element number
+    
+    *VFILL,line_element_match(1,10),RAMP,i,0                                             ! Fills col 10 with the current element number
+    *VOPER,line_element_match(1,11),line_element_match(1,10),EQ,line_element_match(1,2)  ! Matches them for first search
+    *VSCFUN,elemLine,FIRST,line_element_match(1,11)                                      ! The line at the line_element_match
+    
+    c_matLine = line_element_match(elemLine,6) ! Grabs the material ID [Matches the line number in the mat_prop_table]
+    c_secLine = line_element_match(elemLine,7) ! Grabs the section ID [Matches the line number in the sec_prop_table]
+
+    c_matFy = mat_prop_table(c_matLine,1)
+    c_matFu = mat_prop_table(c_matLine,2)
+
+    c_secArea = sec_prop_table(c_secLine,1)
+    c_secPlMod2 = sec_prop_table(c_secLine,2)
+    c_secPlMod3 = sec_prop_table(c_secLine,3)
+
+    ! Fills the array for further processing
+    uctable(i,30) = c_matFy
+    uctable(i,31) = c_matFu
+    uctable(i,32) = 0.9  ! Material Partial Factor
+    uctable(i,33) = ( uctable(i,30) * uctable(i,32) ) ! Fy with partial factor
+
+    uctable(i,35) = c_secArea
+    uctable(i,36) = c_secPlMod2
+    uctable(i,37) = c_secPlMod3
+
+    ! Calculating the I Node
+    uctable(i,20) = (uctable(i,1) / uctable(i,35)
+    uctable(i,21) = (uctable(i,2) / uctable(i,36)
+    uctable(i,22) = (uctable(i,3) / uctable(i,37)
+    uctable(i,23) = ( uctable(i,20) + uctable(i,21) + uctable(i,22) )
+    uctable(i,24) = ( uctable(i,23) / uctable(i,33) )     ! I Node Utilization Ratio
+
+    ! Calculating the J Node
+    uctable(i,25) = (uctable(i,11) / uctable(i,35)
+    uctable(i,26) = (uctable(i,12) / uctable(i,36)
+    uctable(i,27) = (uctable(i,13) / uctable(i,37)
+    uctable(i,28) = ( uctable(i,25) + uctable(i,26) + uctable(i,27) )
+    uctable(i,29) = ( uctable(i,28) / uctable(i,33) )     ! J Node Utilization Ratio
+
+*ENDDO
+
+! Puts them in an ETABLE for future data display and acquire
+ETABLE, iUC, SMISC, 1    ! Grabs bogus data to define an ETABLE
+*VPUT,uctable(1,24),ELEM,1,ETAB,iUC  ! Overwrites the element table data for printouts
+ETABLE, jUC, SMISC, 14   ! Grabs bogus data to define an ETABLE
+*VPUT,uctable(1,29),ELEM,1,ETAB,jUC  ! Overwrites the element table data for printouts
+
+! Writes the data to file
+*CFOPEN,'{outFilename}_inode','ems' ! Opens the file
+
+! Writes the header
+*VWRITE,'ELEMENT', ',' ,'P_A', ',' , 'M2_Z2' , ',' , 'M3_Z3', ',' , 'SUM', ',' , 'G_MAT_FY' , ',' , 'RATIO'
+(A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12)
+
+! Writes the data
+*VWRITE,SEQU, ',' ,uctable(1,20), ',' , uctable(1,21) , ',' , uctable(1,22), ',' , uctable(1,23), ',' , uctable(1,33), ',' , uctable(1,24)
+%I%C%30.6G%C%30.6G%C%30.6G%C%30.6G%C%30.6G%C%30.6G
+
+*CFCLOSE
+
+
+! Writes the data to file
+*CFOPEN,'{outFilename}_jnode','ems' ! Opens the file
+
+! Writes the header
+*VWRITE,'ELEMENT', ',' ,'P_A', ',' , 'M2_Z2' , ',' , 'M3_Z3', ',' , 'SUM', ',' , 'G_MAT_FY' , ',' , 'RATIO'
+(A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12)
+
+! Writes the data
+*VWRITE,SEQU, ',' ,uctable(1,25), ',' , uctable(1,26) , ',' , uctable(1,27), ',' , uctable(1,28), ',' , uctable(1,33), ',' , uctable(1,29)
+%I%C%30.6G%C%30.6G%C%30.6G%C%30.6G%C%30.6G%C%30.6G
+
+*CFCLOSE
 ");
                         break;
 
@@ -835,10 +972,10 @@ ETABLE, iSFy, SMISC, 6  ! Shear Force Z
                 }
             }
         }
-
-        private void WriteHelper_PostProcDesiredScreenShots()
+        
+        private void WriteHelper_PostProcDesiredScreenShots(IEnumerable<DesiredScreenShotDefinition> inScreenshots)
         {
-            foreach (DesiredScreenShotDefinition desiredScreenshot in Problem.DesiredScreenShots)
+            foreach (DesiredScreenShotDefinition desiredScreenshot in inScreenshots)
             {
                 if (desiredScreenshot.ShotType == ScreenShotType.RhinoShot) continue;
                 WriteHelper_SetFEAScreenShotOutput(desiredScreenshot);
@@ -905,69 +1042,105 @@ PNGR,TMOD,1
             switch (inDesiredScreenShotDefinitionDef.ShotType)
             {
                 case ScreenShotType.EquivalentVonMisesStressOutput:
+                    sb.AppendLine($"/GLINE,1,-1 ! Hide mesh lines in plots");
                     sb.AppendLine($"PLNSOL, S,EQV, {undefShape},1.0 ");
                     break;
 
                 case ScreenShotType.StrainEnergyOutput:
+                    sb.AppendLine($"/GLINE,1,0 ! Shows mesh lines in plots");
                     sb.AppendLine($"PLESOL, SENE,, {undefShape},1.0 ");
                     break;
 
                 case ScreenShotType.AxialDiagramOutput:
+                    sb.AppendLine($"/GLINE,1,0 ! Shows mesh lines in plots");
                     sb.AppendLine($"ETABLE,PLOT_IFX,SMISC, 1    ! Gets the data at I");
                     sb.AppendLine($"ETABLE,PLOT_JFX,SMISC, 14   ! Gets the data at J");
                     sb.AppendLine($"PLLS,PLOT_IFX,PLOT_JFX,1,{forcePlotOnDeformed},1");
                     break;
 
                 case ScreenShotType.MYDiagramOutput:
+                    sb.AppendLine($"/GLINE,1,0 ! Shows mesh lines in plots");
                     sb.AppendLine($"ETABLE,PLOT_IMY,SMISC, 2    ! Gets the data at I");
                     sb.AppendLine($"ETABLE,PLOT_JMY,SMISC, 15   ! Gets the data at J");
                     sb.AppendLine($"PLLS,PLOT_IMY,PLOT_JMY,1,{forcePlotOnDeformed},1");
                     break;
 
                 case ScreenShotType.MZDiagramOutput:
+                    sb.AppendLine($"/GLINE,1,0 ! Shows mesh lines in plots");
                     sb.AppendLine($"ETABLE,PLOT_IMZ,SMISC, 3    ! Gets the data at I");
                     sb.AppendLine($"ETABLE,PLOT_JMZ,SMISC, 16   ! Gets the data at J");
                     sb.AppendLine($"PLLS,PLOT_IMZ,PLOT_JMZ,1,{forcePlotOnDeformed},1");
                     break;
 
                 case ScreenShotType.TorsionDiagramOutput:
+                    sb.AppendLine($"/GLINE,1,0 ! Shows mesh lines in plots");
                     sb.AppendLine($"ETABLE,PLOT_ITQ,SMISC, 4    ! Gets the data at I");
                     sb.AppendLine($"ETABLE,PLOT_JTQ,SMISC, 17   ! Gets the data at J");
                     sb.AppendLine($"PLLS,PLOT_ITQ,PLOT_JTQ,1,{forcePlotOnDeformed},1");
                     break;
 
                 case ScreenShotType.VYDiagramOutput:
+                    sb.AppendLine($"/GLINE,1,0 ! Shows mesh lines in plots");
                     sb.AppendLine($"ETABLE,PLOT_ISFY,SMISC, 6    ! Gets the data at I");
                     sb.AppendLine($"ETABLE,PLOT_JSFY,SMISC, 19   ! Gets the data at J");
                     sb.AppendLine($"PLLS,PLOT_ISFY,PLOT_JSFY,1,{forcePlotOnDeformed},1");
                     break;
 
                 case ScreenShotType.VZDiagramOutput:
+                    sb.AppendLine($"/GLINE,1,0 ! Shows mesh lines in plots");
                     sb.AppendLine($"ETABLE,PLOT_ISFZ,SMISC, 5    ! Gets the data at I");
                     sb.AppendLine($"ETABLE,PLOT_JSFZ,SMISC, 18   ! Gets the data at J");
                     sb.AppendLine($"PLLS,PLOT_ISFZ,PLOT_JSFZ,1,{forcePlotOnDeformed},1");
                     break;
 
                 case ScreenShotType.EquivalentStrainOutput:
+                    sb.AppendLine($"/GLINE,1,-1 ! Hide mesh lines in plots");
                     sb.AppendLine($"PLNSOL, EPTT,EQV, {undefShape},1.0 ");
                     break;
 
 
                 case ScreenShotType.TotalDisplacementPlot:
+                    sb.AppendLine($"/GLINE,1,-1 ! Hide mesh lines in plots");
                     sb.AppendLine($"PLNSOL, U,SUM, {undefShape},1.0 ");
                     break;
 
 
                 case ScreenShotType.XDisplacementPlot:
+                    sb.AppendLine($"/GLINE,1,-1 ! Hide mesh lines in plots");
                     sb.AppendLine($"PLNSOL, U,X, {undefShape},1.0 ");
                     break;
 
                 case ScreenShotType.YDisplacementPlot:
+                    sb.AppendLine($"/GLINE,1,-1 ! Hide mesh lines in plots");
                     sb.AppendLine($"PLNSOL, U,Y, {undefShape},1.0 ");
                     break;
 
                 case ScreenShotType.ZDisplacementPlot:
+                    sb.AppendLine($"/GLINE,1,-1 ! Hide mesh lines in plots");
                     sb.AppendLine($"PLNSOL, U,Z, {undefShape},1.0 ");
+                    break;
+
+                case ScreenShotType.EigenvalueBuckling1:
+                    sb.AppendLine($"SET,1");
+                    sb.AppendLine($"/GLINE,1,-1 ! Hide mesh lines in plots");
+                    sb.AppendLine($"PLNSOL, U,SUM, {undefShape},1.0 ");
+                    break;
+
+                case ScreenShotType.EigenvalueBuckling2:
+                    sb.AppendLine($"SET,2");
+                    sb.AppendLine($"/GLINE,1,-1 ! Hide mesh lines in plots");
+                    sb.AppendLine($"PLNSOL, U,SUM, {undefShape},1.0 ");
+                    break;
+
+                case ScreenShotType.EigenvalueBuckling3:
+                    sb.AppendLine($"SET,3");
+                    sb.AppendLine($"/GLINE,1,-1 ! Hide mesh lines in plots");
+                    sb.AppendLine($"PLNSOL, U,SUM, {undefShape},1.0 ");
+                    break;
+
+                case ScreenShotType.CodeCheck:
+                    sb.AppendLine($"/GLINE,1,0 ! Shows mesh lines in plots");
+                    sb.AppendLine($"PLLS,iUC,jUC,1,{forcePlotOnDeformed},1");
                     break;
 
                 case ScreenShotType.RhinoShot:
@@ -989,6 +1162,113 @@ PNGR,TMOD,1
             //sb.AppendLine($"---- DEBUG");
 
             sb.AppendLine($"/RENAME,{_jobName}000,png,,{inDesiredScreenShotDefinitionDef.Name},png");
+        }
+
+        private void WriteHelper_TransformIntoEigenvalueBucklingAndSolve()
+        {
+            sb.AppendLine("! ###########################");
+            sb.AppendLine("! ## EIGENVALUE BUCKLING  ###");
+            sb.AppendLine("! ###########################");
+            sb.AppendLine();
+            sb.AppendLine("/SOLU ! Goes back to the Solution Environment");
+            sb.AppendLine("ANTYPE,BUCKLE                 ! Sets the analysis type as Eigenvalue Buckling");
+            sb.AppendLine("BUCOPT,LANB,5,0,1E15,RANGE    ! Sets the options and to capture the first 5 shapes");
+            sb.AppendLine("MXPAND, 5, 0, 500000, 1,,,,1      ! Tells that we want to know the displacements at the nodes and also some energy output");
+            sb.AppendLine().AppendLine();
+            sb.AppendLine("! SOLVING");
+            sb.AppendLine("OUTPR,ALL ! Prints all solution");
+            sb.AppendLine("ALLSEL,ALL ! Somehow, and for any weird-ass reason, Ansys will only pass KeyPoints definitions onwards if they are selected.");
+            sb.AppendLine("SOLVE ! Solves the problem");
+            sb.AppendLine("FINISH");
+        }
+
+        public override void RunAnalysisAndGetResults(List<ResultOutput> inDesiredResults, int inEigenvalueBucklingMode = 0, double inEigenvalueBucklingScaleFactor = double.NaN)
+        {
+            if (_commandLineProcess == null) throw new InvalidOperationException($"You must first initialize the analysis.");
+
+            if (IsSectionAnalysis)
+            {
+                // Writes down the basic model
+                WriteHelper_GeometryAndDefinitions();
+                WriteHelper_BoundaryLoadStructuralSolve();
+                WriteHelper_PostProcBasicMeshOutput();
+
+                // The outputs are standardized in this case
+                List<ResultOutput> sectionCheckStressResults = new List<ResultOutput>()
+                    {
+                    ResultOutput.ElementNodal_Force,
+                    ResultOutput.ElementNodal_CodeCheck,
+                    ResultOutput.SectionNode_Stress,
+                    ResultOutput.Nodal_Displacement,
+                    };
+                WriteHelper_PostProcDesiredResults(sectionCheckStressResults);
+
+                // Lists the desired screenshots for the stress check
+                DesiredScreenShotDefinition codeCheck = new DesiredScreenShotDefinition(ScreenShotType.CodeCheck, "CodeCheck", ImageCaptureViewDirection.Back_Towards_YNeg);
+                codeCheck.LegendAutoScale = false;
+                codeCheck.LegendScale_Min = 0d;
+                codeCheck.LegendScale_Max = 1d;
+                DesiredScreenShotDefinition vonMisesStress = new DesiredScreenShotDefinition(ScreenShotType.EquivalentVonMisesStressOutput, "VonMisesStress", ImageCaptureViewDirection.Back_Towards_YNeg);
+                vonMisesStress.LegendAutoScale = false;
+                vonMisesStress.LegendScale_Min = 0d;
+                vonMisesStress.LegendScale_Max = FeMaterial.GetAllMaterials()[0].Fy;
+                List<DesiredScreenShotDefinition> sectionCheckStressScreenShots = new List<DesiredScreenShotDefinition>()
+                    {
+                    codeCheck, vonMisesStress,
+                    new DesiredScreenShotDefinition(ScreenShotType.AxialDiagramOutput, "Axial", ImageCaptureViewDirection.Back_Towards_YNeg),
+                    new DesiredScreenShotDefinition(ScreenShotType.MYDiagramOutput, "My", ImageCaptureViewDirection.Back_Towards_YNeg),
+                    new DesiredScreenShotDefinition(ScreenShotType.MYDiagramOutput, "Mz", ImageCaptureViewDirection.Back_Towards_YNeg),
+                    new DesiredScreenShotDefinition(ScreenShotType.MYDiagramOutput, "Mz", ImageCaptureViewDirection.Back_Towards_YNeg),
+                    };
+                WriteHelper_PostProcDesiredScreenShots(sectionCheckStressScreenShots);
+
+                WriteHelper_TransformIntoEigenvalueBucklingAndSolve();
+
+                List<DesiredScreenShotDefinition> sectionCheckEigenvalueBucklingScreenShots = new List<DesiredScreenShotDefinition>()
+                    {
+                    new DesiredScreenShotDefinition(ScreenShotType.EigenvalueBuckling1, "EigenvalueBuckling1", ImageCaptureViewDirection.Back_Towards_YNeg),
+                    new DesiredScreenShotDefinition(ScreenShotType.EigenvalueBuckling2, "EigenvalueBuckling2", ImageCaptureViewDirection.Back_Towards_YNeg),
+                    new DesiredScreenShotDefinition(ScreenShotType.EigenvalueBuckling3, "EigenvalueBuckling3", ImageCaptureViewDirection.Back_Towards_YNeg),
+                    };
+                WriteHelper_PostProcDesiredScreenShots(sectionCheckEigenvalueBucklingScreenShots);
+
+                ActionHelper_SendToSolverAndWait();
+
+                ReadHelper_ReadBasicResults();
+                ReadHelper_ReadDesiredResults(sectionCheckStressResults);
+                ReadHelper_ReadDesiredScreenShots(); // Will do a foreach that might be empty 
+            }
+            else
+            {
+                // Fixes the list of results to acquire the results for the screenshots that require them
+
+                // Reminder for only function
+                //if (Problem.CurrentSolverSolution.EvalType == FunctionOrGradientEval.Function)
+                //{
+
+                //}
+            }
+        }
+
+        private void ActionHelper_SendToSolverAndWait()
+        {
+            // Writes the file
+            if (File.Exists(FullFileName)) File.Delete(FullFileName);
+            File.WriteAllText(FullFileName, sb.ToString());
+
+            // Sends a signal to start the analysis
+            string startSignalPath = Path.Combine(ModelFolder, "start_signal.control");
+            if (File.Exists(startSignalPath)) File.Delete(startSignalPath);
+            File.WriteAllText(startSignalPath, " ");
+
+            // Pools for the existence of the finish file
+            string finishFile = Path.Combine(ModelFolder, "iteration_finish.control");
+            while (true)
+            {
+                if (File.Exists(finishFile)) break;
+                Thread.Sleep(50);
+            }
+            File.Delete(finishFile);
         }
 
         private void ReadHelper_ReadBasicResults()
@@ -1061,50 +1341,64 @@ PNGR,TMOD,1
             }
             #endregion
         }
-        private void ReadHelper_ReadDesiredResults(List<ResultOutput> inDesiredResults)
+        private void ReadHelper_ReadDesiredResults(List<ResultOutput> inDesiredResults, string inFilenamePrefix = "")
         {
             foreach (ResultOutput resOut in inDesiredResults)
             {
+                string resFile = inFilenamePrefix + resOut.ToString();
+
                 switch (resOut)
                 {
                     case ResultOutput.Nodal_Reaction:
-                        GetResults_Nodal_Reaction();
+                        GetResults_Nodal_Reaction(resFile);
                         break;
 
                     case ResultOutput.Nodal_Displacement:
-                        GetResults_Nodal_Displacement();
+                        GetResults_Nodal_Displacement(resFile);
                         break;
 
                     case ResultOutput.SectionNode_Stress:
-                        GetResults_SectionNode_Stress();
+                        GetResults_SectionNode_Stress(resFile);
                         break;
 
                     case ResultOutput.SectionNode_Strain:
-                        GetResults_SectionNode_Strain();
+                        GetResults_SectionNode_Strain(resFile);
                         break;
 
                     case ResultOutput.ElementNodal_BendingStrain:
-                        GetResults_ElementNodal_BendingStrain();
+                        GetResults_ElementNodal_BendingStrain(resFile);
                         break;
 
                     case ResultOutput.ElementNodal_Force:
-                        GetResults_ElementNodal_Force();
+                        GetResults_ElementNodal_Force(resFile);
                         break;
 
                     case ResultOutput.ElementNodal_Strain:
-                        GetResults_ElementNodal_Strain();
+                        GetResults_ElementNodal_Strain(resFile);
                         break;
 
                     case ResultOutput.ElementNodal_Stress:
-                        GetResults_ElementNodal_Stress();
+                        GetResults_ElementNodal_Stress(resFile);
                         break;
 
                     case ResultOutput.Element_StrainEnergy:
-                        GetResults_Element_StrainEnergy();
+                        GetResults_Element_StrainEnergy(resFile);
                         break;
 
                     case ResultOutput.ElementNodal_CodeCheck:
-                        GetResults_ElementNodal_CodeCheck();
+                        GetResults_ElementNodal_CodeCheck(resFile);
+                        break;
+
+                    case ResultOutput.EigenvalueBuckling_Summary:
+                        break;
+
+                    case ResultOutput.EigenvalueBuckling_ModeShape1:
+                        break;
+
+                    case ResultOutput.EigenvalueBuckling_ModeShape2:
+                        break;
+
+                    case ResultOutput.EigenvalueBuckling_ModeShape3:
                         break;
 
                     default:
@@ -1113,9 +1407,9 @@ PNGR,TMOD,1
             }
         }
         #region ReadHelper_ReadDesiredResults Pieces
-        private void GetResults_Element_StrainEnergy()
+        private void GetResults_Element_StrainEnergy(string inFilename)
         {
-            string resultFile = Path.Combine(ModelFolder, "result_element_senergy.ems");
+            string resultFile = Path.Combine(ModelFolder, $"{ResultOutput.Element_StrainEnergy}.ems");
             if (!File.Exists(resultFile)) throw new Exception($"Could not find the file {resultFile} that contains the elemental strain energy data.");
 
             using (StreamReader reader = new StreamReader(resultFile))
@@ -1140,7 +1434,7 @@ PNGR,TMOD,1
             }
 
         }
-        private void GetResults_ElementNodal_BendingStrain()
+        private void GetResults_ElementNodal_BendingStrain(string inFilename)
         {
             string iNodeResultFileName = Path.Combine(ModelFolder, "result_element_inode_basic_dirstrain.ems");
             if (!File.Exists(iNodeResultFileName)) throw new Exception($"Could not find the file {iNodeResultFileName} that contains the I nodal bending strain data.");
@@ -1212,7 +1506,7 @@ PNGR,TMOD,1
                 }
             }
         }
-        private void GetResults_ElementNodal_Stress()
+        private void GetResults_ElementNodal_Stress(string inFilename)
         {
             string iNodeResultFileName = Path.Combine(ModelFolder, "result_element_inode_basic_dirstress.ems");
             if (!File.Exists(iNodeResultFileName)) throw new Exception($"Could not find the file {iNodeResultFileName} that contains the I nodal stress data.");
@@ -1284,7 +1578,7 @@ PNGR,TMOD,1
                 }
             }
         }
-        private void GetResults_ElementNodal_Force()
+        private void GetResults_ElementNodal_Force(string inFilename)
         {
             string iNodeResultFileName = Path.Combine(ModelFolder, "result_element_inode_basic_forces.ems");
             if (!File.Exists(iNodeResultFileName)) throw new Exception($"Could not find the file {iNodeResultFileName} that contains the I nodal force data.");
@@ -1361,7 +1655,7 @@ PNGR,TMOD,1
             }
 
         }
-        private void GetResults_ElementNodal_Strain()
+        private void GetResults_ElementNodal_Strain(string inFilename)
         {
             string iNodeResultFileName = Path.Combine(ModelFolder, "result_element_inode_basic_strains.ems");
             if (!File.Exists(iNodeResultFileName)) throw new Exception($"Could not find the file {iNodeResultFileName} that contains the I nodal strain data.");
@@ -1433,7 +1727,7 @@ PNGR,TMOD,1
                 }
             }
         }
-        private void GetResults_Nodal_Displacement()
+        private void GetResults_Nodal_Displacement(string inFilename)
         {
             string nodeResultFileName = Path.Combine(ModelFolder, "result_nodal_displacements.ems");
             if (!File.Exists(nodeResultFileName)) throw new Exception($"Could not find the file {nodeResultFileName} that contains the nodal displacement data.");
@@ -1472,7 +1766,7 @@ PNGR,TMOD,1
                 }
             }
         }
-        private void GetResults_Nodal_Reaction()
+        private void GetResults_Nodal_Reaction(string inFilename)
         {
             string nodalResultFilename = Path.Combine(ModelFolder, "nodes_reactions.ems");
             if (!File.Exists(nodalResultFilename)) throw new Exception($"Could not find the file {nodalResultFilename} that contains the nodal reaction data.");
@@ -1538,7 +1832,7 @@ PNGR,TMOD,1
             }
 
         }
-        private void GetResults_SectionNode_Stress()
+        private void GetResults_SectionNode_Stress(string inFilename)
         {
             string stressResultFile = Path.Combine(ModelFolder, "nodes_stresses.ems");
             if (!File.Exists(stressResultFile)) throw new Exception($"Could not find the file {stressResultFile} that contains the nodal stresses per section point data.");
@@ -1615,7 +1909,7 @@ PNGR,TMOD,1
                 }
             }
         }
-        private void GetResults_SectionNode_Strain()
+        private void GetResults_SectionNode_Strain(string inFilename)
         {
             string strainResultFile = Path.Combine(ModelFolder, "nodes_strains.ems");
             if (!File.Exists(strainResultFile)) throw new Exception($"Could not find the file {strainResultFile} that contains the nodal strains per section point data.");
@@ -1697,7 +1991,7 @@ PNGR,TMOD,1
                 }
             }
         }
-        private void GetResults_ElementNodal_CodeCheck()
+        private void GetResults_ElementNodal_CodeCheck(string inFilename)
         {
             throw new NotImplementedException();
         }
@@ -1715,51 +2009,6 @@ PNGR,TMOD,1
             }
         }
 
-        private void ActionHelper_SendToSolverAndWait()
-        {
-            // Writes the file
-            if (File.Exists(FullFileName)) File.Delete(FullFileName);
-            File.WriteAllText(FullFileName, sb.ToString());
-
-            // Sends a signal to start the analysis
-            string startSignalPath = Path.Combine(ModelFolder, "start_signal.control");
-            if (File.Exists(startSignalPath)) File.Delete(startSignalPath);
-            File.WriteAllText(startSignalPath, " ");
-
-            // Pools for the existence of the finish file
-            string finishFile = Path.Combine(ModelFolder, "iteration_finish.control");
-            while (true)
-            {
-                if (File.Exists(finishFile)) break;
-                Thread.Sleep(50);
-            }
-            File.Delete(finishFile);
-        }
-
-        public override void RunAnalysisAndGetResults(List<ResultOutput> inDesiredResults)
-        {
-            if (_commandLineProcess == null) throw new InvalidOperationException($"You must first initialize the analysis.");
-
-            // Writes down the basic model
-            WriteHelper_GeometryAndDefinitions();
-            WriteHelper_BoundaryAndLoads();
-            WriteHelper_PostProcBasicOutput();
-            WriteHelper_PostProcDesiredResults(inDesiredResults);
-
-            // Writes the postprocessing of the desired screenshots
-            if (Problem.CurrentSolverSolution.EvalType == FunctionOrGradientEval.Function)
-            {
-                WriteHelper_PostProcDesiredScreenShots();
-            }
-
-            ActionHelper_SendToSolverAndWait();
-
-            ReadHelper_ReadBasicResults();
-            ReadHelper_ReadDesiredResults(inDesiredResults);
-            ReadHelper_ReadDesiredScreenShots(); // Will do a foreach that might be empty
-        }
-
-
-
+        
     }
 }
