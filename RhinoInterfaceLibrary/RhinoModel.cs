@@ -256,6 +256,18 @@ namespace RhinoInterfaceLibrary
                 return ghName;
             }
         }
+
+        public string GrasshopperDescription
+        {
+            get
+            {
+                if (!IsGrasshopperOk) throw new InvalidOperationException("Can't get the description of the active Grasshopper file because Grasshopper is not OK.");
+
+                string ghName = _emsPluginReference.GetActiveGrasshopperDocumentDescription();
+                if (ghName == null) throw new InvalidOperationException("Can't get the description of the active Grasshopper file. Please check if there is an open file and if the file is saved.");
+                return ghName;
+            }
+        }
         #endregion
 
         public void Dispose()

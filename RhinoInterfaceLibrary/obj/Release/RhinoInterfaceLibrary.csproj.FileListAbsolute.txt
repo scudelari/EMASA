@@ -8,7 +8,6 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\RhinoInterfaceLibrary\bin\Release\M
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\RhinoInterfaceLibrary\bin\Release\Rhino3dmIO.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\RhinoInterfaceLibrary\bin\Release\MathNet.Numerics.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\RhinoInterfaceLibrary\bin\Release\MathNet.Spatial.xml
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\RhinoInterfaceLibrary\obj\Release\RhinoInterfaceLibrary.csprojAssemblyReference.cache
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\RhinoInterfaceLibrary\obj\Release\RhinoInterfaceLibrary.csproj.CoreCompileInputs.cache
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\RhinoInterfaceLibrary\obj\Release\RhinoInterfaceLibrary.csproj.CopyComplete
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\RhinoInterfaceLibrary\obj\Release\RhinoInterfaceLibrary.dll

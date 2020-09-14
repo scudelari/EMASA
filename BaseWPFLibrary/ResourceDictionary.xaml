@@ -16,6 +16,14 @@
     <Color x:Key="EmsFaintBlueColor">#FFC8C8E3</Color>
     <SolidColorBrush x:Key="EmsFaintBlueSolidBrush" Color="{DynamicResource EmsFaintBlueColor}" />
 
+    <Color x:Key="EmsLightGrayColor">#FFbfbfbf</Color>
+    <SolidColorBrush x:Key="EmsLightGraySolidBrush" Color="{DynamicResource EmsLightGrayColor}" />
+
+    <Color x:Key="EmsFaintGrayColor">#FFf5f5f5</Color>
+    <SolidColorBrush x:Key="EmsFaintGraySolidBrush" Color="{DynamicResource EmsFaintGrayColor}" />
+
+
+
     <Color x:Key="EmsExplanationColor">Gray</Color>
     <SolidColorBrush x:Key="EmsExplanationSolidBrush" Color="{DynamicResource EmsExplanationColor}" />
 
@@ -38,6 +46,7 @@
                 <Setter Property="BorderBrush" Value="DimGray" />
             </Trigger>
         </Style.Triggers>
+        <Setter Property="SnapsToDevicePixels" Value="True" />
         <Setter Property="Margin" Value="5" />
         <Setter Property="Padding" Value="5" />
         <Setter Property="Template">
@@ -72,6 +81,7 @@
                 <Setter Property="Margin" Value="0,5" />
             </Style>
         </Style.Resources>
+        <Setter Property="SnapsToDevicePixels" Value="True" />
         <Setter Property="Margin" Value="5" />
         <Setter Property="Padding" Value="0,3,0,0" />
         <Setter Property="BorderBrush" Value="{DynamicResource EmsDarkBlueSolidBrush}" />
@@ -94,6 +104,7 @@
     </Style>
     <Style TargetType="GroupBox">
         <Setter Property="BorderBrush" Value="{DynamicResource EmsFaintBlueSolidBrush}" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
     </Style>
 
     <Style x:Key="DarkBlue_Border" TargetType="Border">

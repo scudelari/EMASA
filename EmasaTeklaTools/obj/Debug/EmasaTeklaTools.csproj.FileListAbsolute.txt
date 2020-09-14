@@ -78,6 +78,7 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\bin\Debug\Tekla.Str
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\bin\Debug\Newtonsoft.Json.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\bin\Debug\Tekla.BIM.DirectManipulation.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\bin\Debug\Tekla.BIM.Geometry.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\obj\Debug\EmasaTeklaTools.csprojAssemblyReference.cache
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\obj\Debug\MainWindow.baml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\obj\Debug\MainWindow.g.cs
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\obj\Debug\EmasaTeklaTools_Content.g.cs

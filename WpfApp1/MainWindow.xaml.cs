@@ -24,6 +24,13 @@ using Prism.Events;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using Accord.Math;
+using Accord.Math.Differentiation;
+using MathNet.Numerics.Differentiation;
+using Xbim.Common;
+using Xbim.Ifc;
+using Xbim.Ifc4.Interfaces;
+using Xbim.IO;
 
 namespace WpfApp1
 {
@@ -185,6 +192,99 @@ namespace WpfApp1
         private void TestCustomOverlay_Click(object sender, RoutedEventArgs e)
         {
             CustomOverlay.ShowOverlay();
+        }
+
+        private void IfcGenerateButton_Click(object sender, RoutedEventArgs e)
+        {
+            string inputpath = @"C:\Users\EngRafaelSMacedo\Desktop\Revit Test\IfcGen\Project1.ifc";
+            string outputpath = $@"C:\Users\EngRafaelSMacedo\Desktop\Revit Test\IfcGen\Out_{DateTime.Now:dd_MM_HH_mm_ss}.ifc";
+
+            PropertyTranformDelegate semanticFilter = (property, parentObject) =>
+            {
+                //leave out geometry and placement
+                if (parentObject is IIfcProduct &&
+                    (property.PropertyInfo.Name == "Representation" || // nameof() removed to allow for VS2013 compatibility
+                    property.PropertyInfo.Name == "ObjectPlacement")) // nameof() removed to allow for VS2013 compatibility
+                    return null;
+
+                //leave out mapped geometry
+                if (parentObject is IIfcTypeProduct &&
+                    property.PropertyInfo.Name == "RepresentationMaps") // nameof() removed to allow for VS2013 compatibility
+                    return null;
+
+
+                //only bring over IsDefinedBy and IsTypedBy inverse relationships which will take over all properties and types
+                if (property.EntityAttribute.Order < 0 && !(
+                    property.PropertyInfo.Name == "IsDefinedBy" || // nameof() removed to allow for VS2013 compatibility
+                    property.PropertyInfo.Name == "IsTypedBy"      // nameof() removed to allow for VS2013 compatibility
+                    ))
+                    return null;
+
+                return property.PropertyInfo.GetValue(parentObject, null);
+            };
+
+            using (var model = IfcStore.Open(inputpath))
+            {
+                var walls = model.Instances.OfType<IIfcBuildingElementProxy>();
+                using (var iModel = IfcStore.Create(((IModel)model).SchemaVersion, XbimStoreType.InMemoryModel))
+                {
+                    using (var txn = iModel.BeginTransaction("Insert copy"))
+                    {
+                        //single map should be used for all insertions between two models
+                        var map = new XbimInstanceHandleMap(model, iModel);
+
+                        foreach (var wall in walls)
+                        {
+                            iModel.InsertCopy(wall, map, semanticFilter, true, false);
+                        }
+
+                        txn.Commit();
+                    }
+
+                    iModel.SaveAs(outputpath);
+                }
+            }
+        }
+
+        private void TestFiniteDifferences_Click(object sender, RoutedEventArgs e)
+        {
+            double[] point = new[] { 2.0, -1.0 };
+            
+            // Create a new finite differences calculator
+            FiniteDifferences calculator = new FiniteDifferences(2, TestFiniteDifferences_Accord, 1, 0.001);
+
+            double[] accordResult = calculator.Gradient(point);
+
+            // test points
+            NumericalDerivative nd = new NumericalDerivative(2,1);
+
+            double[] MathNetResult = new double[2];
+            double centerVal = TestFiniteDifferences_MathNet(point);
+            for (int i = 0; i < MathNetResult.Length; i++)
+            {
+                MathNetResult[i] = nd.EvaluatePartialDerivative(TestFiniteDifferences_MathNet, point, i, 1, centerVal);
+            }
+
+        }
+
+        private int fd_AccordCount = 0;
+        private List<(double[], double)> fd_AccordPoints = new List<(double[], double)>();
+        
+        private int fd_MathNetCount = 0;
+        private List<(double[], double)> fd_MathNetPoints = new List<(double[], double)>();
+        private double TestFiniteDifferences_Accord(double[] x)
+        {
+            fd_AccordCount++;
+            double d = Math.Pow(x[0], 2) + x[1];
+            fd_AccordPoints.Add((x.Copy(), d));
+            return d;
+        }
+        private double TestFiniteDifferences_MathNet(double[] x)
+        {
+            fd_MathNetCount++;
+            double d = Math.Pow(x[0], 2) + x[1];
+            fd_MathNetPoints.Add((x.Copy(), d));
+            return d;
         }
     }
 

@@ -22,7 +22,6 @@ namespace BaseWPFLibrary.AttachedProperties
                 scrollViewer.ScrollChanged -= ScrollViewer_ScrollChanged;
             }
         }
-
         private static void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
             // Only scroll to bottom when the extent changed. Otherwise you can't scroll up
@@ -32,12 +31,10 @@ namespace BaseWPFLibrary.AttachedProperties
                 scrollViewer?.ScrollToBottom();
             }
         }
-
         public static bool GetAutoScroll(DependencyObject obj)
         {
             return (bool)obj.GetValue(AutoScrollProperty);
         }
-
         public static void SetAutoScroll(DependencyObject obj, bool value)
         {
             obj.SetValue(AutoScrollProperty, value);

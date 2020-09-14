@@ -63,6 +63,8 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Enums.cs" />
+    <Compile Include="GhOptFileManager.cs" />
     <Compile Include="GHEMSStaticMethods.cs" />
     <Compile Include="GHFileInputPointParameter.cs" />
     <Compile Include="GHFileInputDoubleParameter.cs" />

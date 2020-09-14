@@ -1,0 +1,63 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Emasa_Optimizer.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="Default_JointRoundingDecimals" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">3</Value>
+    </Setting>
+    <Setting Name="Default_AddGravityLoad" Type="System.Boolean" Scope="Application">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="Default_Imperfect_Model_EigenvalueBucklingMode" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="Default_Imperfect_Multiplier" Type="System.Double" Scope="Application">
+      <Value Profile="(Default)">0.001</Value>
+    </Setting>
+    <Setting Name="Default_Imperfect_Multiplier_FromJoints_BoundingBox" Type="System.Boolean" Scope="Application">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="Default_FeMaterial_SoftMaterialMultiplier" Type="System.Double" Scope="Application">
+      <Value Profile="(Default)">0.8</Value>
+    </Setting>
+    <Setting Name="Default_Ansys_OptimizationSectionRefinementLevel" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="Default_Mesh_ElementsPerFrame" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">3</Value>
+    </Setting>
+    <Setting Name="Default_LargeDeflections_IsSet" Type="System.Boolean" Scope="Application">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="Default_LargeDeflections_IsCheckBoxEnabled" Type="System.Boolean" Scope="Application">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Default_Model_EigenvalueBuckling_ShapesToCapture" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">5</Value>
+    </Setting>
+    <Setting Name="Default_ImageCapture_Extrude_IsSet" Type="System.Boolean" Scope="Application">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="Default_ImageCapture_Extrude_Multiplier" Type="System.Double" Scope="Application">
+      <Value Profile="(Default)">30</Value>
+    </Setting>
+    <Setting Name="Default_ImageCapture_UndeformedShadow" Type="System.Boolean" Scope="Application">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="Default_ImageCapture_DeformedShape" Type="System.Boolean" Scope="Application">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="Default_ImageCapture_ViewDirections" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Front_Towards_YPos, Perspective_TFL_Corner</Value>
+    </Setting>
+    <Setting Name="Default_FeNlOptSolverType" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Ansys</Value>
+    </Setting>
+    <Setting Name="Default_AddGravityLoad_Direction" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">zPos</Value>
+    </Setting>
+    <Setting Name="Default_AddGravityLoad_Multiplier" Type="System.Double" Scope="Application">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

@@ -51,6 +51,14 @@
                     </StackPanel>
                 </GroupBox>
             </Border>
+            <Button
+                x:Name="IfcGenerateButton"
+                Click="IfcGenerateButton_Click"
+                Content="Test IFC Generation" />
+            <Button
+                x:Name="TestFiniteDifferences"
+                Click="TestFiniteDifferences_Click"
+                Content="Test Accord and MathNet Finite Differences" />
             <Rectangle
                 Width="50"
                 Height="50"

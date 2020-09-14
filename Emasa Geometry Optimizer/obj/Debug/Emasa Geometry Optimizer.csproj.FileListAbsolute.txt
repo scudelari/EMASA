@@ -14,12 +14,12 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\BaseWPFLibrary.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\LibOptimization.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\MathNet.Numerics.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\NLoptNet.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Prism.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Rhino3dmIO.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\RhinoInterfaceLibrary.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\System.Data.SQLite.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\System.ValueTuple.dll
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\NLoptNet.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\CsvHelper.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Sap2000Library.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\MathNet.Spatial.dll
@@ -39,12 +39,12 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\LibOptimization.pdb
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\LibOptimization.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\MathNet.Numerics.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\NLoptNet.pdb
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Prism.pdb
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Prism.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\System.Data.SQLite.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\System.Data.SQLite.dll.config
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\System.ValueTuple.xml
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\NLoptNet.pdb
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\CsvHelper.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Sap2000Library.pdb
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Sap2000Library.dll.config

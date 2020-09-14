@@ -378,6 +378,18 @@ namespace EmasaRhinoPlugin
 
             return Grasshopper.Instances.ActiveCanvas.Document.FilePath;
         }
+
+        public string GetActiveGrasshopperDocumentDescription()
+        {
+            dynamic gh = RhinoApp.GetPlugInObject("Grasshopper");
+
+            if (!gh.IsEditorLoaded()) return null;
+
+            // The document has not been saved or anything else
+            if (Grasshopper.Instances.ActiveCanvas.Document == null) return null;
+
+            return Grasshopper.Instances.ActiveCanvas.Document.Properties.Description;
+        }
         #endregion
 
         #region ImageGeneration

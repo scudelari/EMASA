@@ -177,8 +177,6 @@ namespace EmasaSapTools.Bindings
 
             try
             {
-                Regex grpRegex = new Regex(GroupRegexFilter);
-
                 // Creates the sqlite connection string based on the selected file
                 SQLiteConnectionStringBuilder connectionStringBuilder = new SQLiteConnectionStringBuilder {DataSource = SqliteDatabaseFileName};
 

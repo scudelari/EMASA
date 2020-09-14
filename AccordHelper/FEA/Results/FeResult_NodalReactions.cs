@@ -28,8 +28,7 @@ namespace AccordHelper.FEA.Results
         public double? MX { get; set; }
         public double? MY { get; set; }
         public double? MZ { get; set; }
-
-
+        
         public bool ContainsAnyValue
         {
             get

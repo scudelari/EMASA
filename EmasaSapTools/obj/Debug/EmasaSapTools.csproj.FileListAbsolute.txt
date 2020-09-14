@@ -104,6 +104,7 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\System.Data
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\System.Data.SQLite.dll.config
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\System.ValueTuple.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Debug\EmasaSapTools.csprojAssemblyReference.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Debug\EmasaSapTools.csproj.ResolveComReference.cache
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Debug\MainWindow.baml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Debug\App.baml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Debug\MainWindow.g.cs
@@ -116,4 +117,3 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Debug\EmasaSapToo
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Debug\EmasaSapTools.csproj.CopyComplete
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Debug\EmasaSapTools.exe
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Debug\EmasaSapTools.pdb
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Debug\EmasaSapTools.csproj.ResolveComReference.cache

@@ -11,7 +11,6 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\bin\Release\Prism.xm
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\bin\Release\Prism.Wpf.pdb
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\bin\Release\Prism.Wpf.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\bin\Release\System.ValueTuple.xml
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Release\BaseWPFLibrary.csprojAssemblyReference.cache
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Release\Forms\BusyForm.baml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Release\Forms\CancelOpForm.baml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Release\Forms\ExceptionViewer.baml
@@ -26,8 +25,8 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Release\Generate
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Release\BaseWPFLibrary_MarkupCompile.cache
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Release\BaseWPFLibrary_MarkupCompile.lref
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Release\BusyOverlay.baml
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Release\ResourceDictionary.baml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Release\CustomOverlay.baml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Release\ResourceDictionary.baml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Release\BaseWPFLibrary.g.resources
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Release\BaseWPFLibrary.Properties.Resources.resources
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Release\BaseWPFLibrary.csproj.GenerateResource.cache

@@ -1,0 +1,18 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Emasa_Optimizer.FEA.Results
+{
+    public class FeResultValue_ElementStrainEnergy : FeResultValue
+    {
+        public FeResultValue_ElementStrainEnergy(double inStrainEnergy)
+        {
+            StrainEnergy = inStrainEnergy;
+        }
+
+        public double StrainEnergy { get; set; }
+    }
+}

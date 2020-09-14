@@ -1,0 +1,740 @@
+﻿<Window
+    x:Class="Emasa_Optimizer.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ap="clr-namespace:BaseWPFLibrary.AttachedProperties;assembly=BaseWPFLibrary"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:e="clr-namespace:BaseWPFLibrary;assembly=BaseWPFLibrary"
+    xmlns:eb="clr-namespace:BaseWPFLibrary.Bindings;assembly=BaseWPFLibrary"
+    xmlns:ec="clr-namespace:BaseWPFLibrary.Converters;assembly=BaseWPFLibrary"
+    xmlns:ev="clr-namespace:BaseWPFLibrary.ValidationRules;assembly=BaseWPFLibrary"
+    xmlns:fea="clr-namespace:Emasa_Optimizer.FEA"
+    xmlns:h="clr-namespace:Emasa_Optimizer.WpfResources"
+    xmlns:local="clr-namespace:Emasa_Optimizer"
+    xmlns:localParamDefinitions="clr-namespace:Emasa_Optimizer.Opt.ParamDefinitions"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:nupdown="clr-namespace:NumericUpDownLib;assembly=NumericUpDownLib"
+    xmlns:system="clr-namespace:System;assembly=mscorlib"
+    Title="Emasa Geometry Optimizer"
+    Width="1500"
+    Height="950"
+    Initialized="Window_Initialized"
+    ResizeMode="NoResize"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="WpfResources/GeneralTemplates.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <ec:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+            <h:WpfImageCaptureViewDirectionEnumFlagsValueConverter x:Key="ImageValConv" />
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid x:Name="MainGrid">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <GroupBox Header="Grasshopper Algorithm" Style="{StaticResource Blue_GroupBox}">
+                <Grid SnapsToDevicePixels="True">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Border
+                        Margin="20,0"
+                        HorizontalAlignment="Stretch"
+                        SnapsToDevicePixels="True"
+                        Style="{StaticResource BottomOnly_Border}">
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            FontFamily="Courier New"
+                            FontSize="20"
+                            Text="{Binding SolveManager.Gh_Alg.WpfGrasshopperName, Mode=OneWay, FallbackValue='Grasshopper File Name'}" />
+                    </Border>
+                    <TextBlock
+                        Grid.Row="1"
+                        Margin="20,5,20,0"
+                        HorizontalAlignment="Stretch"
+                        FontFamily="Courier New"
+                        Style="{StaticResource Explanation_TextBlock}"
+                        Text="{Binding SolveManager.Gh_Alg.WpfGrasshopperFileDescription, Mode=OneWay, FallbackValue='Grasshopper Description'}"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap" />
+                </Grid>
+            </GroupBox>
+            <Grid Grid.Row="1" Grid.Column="0">
+                <TabControl TabStripPlacement="Top">
+                    <TabItem Header="Definitions">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="1*" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <GroupBox
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                Grid.ColumnSpan="2"
+                                Header="Grasshopper Input Variables"
+                                Style="{StaticResource Blue_GroupBox}">
+                                <ListView
+                                    ItemsSource="{Binding SolveManager.Gh_Alg.InputDefs_View}"
+                                    ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                    SelectionMode="Single"
+                                    Template="{StaticResource InputParamListView_ControlTemplate}">
+                                    <ListView.ItemContainerStyle>
+                                        <Style TargetType="ListViewItem">
+                                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                        </Style>
+                                    </ListView.ItemContainerStyle>
+                                </ListView>
+                            </GroupBox>
+                            <GroupBox
+                                Grid.Row="0"
+                                Grid.Column="2"
+                                Grid.ColumnSpan="2"
+                                Header="Grasshoper Geometry"
+                                Style="{StaticResource Blue_GroupBox}">
+                                <StackPanel
+                                    CanHorizontallyScroll="False"
+                                    CanVerticallyScroll="True"
+                                    Orientation="Vertical"
+                                    ScrollViewer.VerticalScrollBarVisibility="Visible">
+                                    <GroupBox
+                                        Header="Point Lists"
+                                        Style="{StaticResource CenterHeader_GroupBox}"
+                                        Visibility="{Binding SolveManager.Gh_Alg.HasGeometryDef_PointList}">
+                                        <ListView
+                                            ItemsSource="{Binding SolveManager.Gh_Alg.GeometryDefs_PointList_View}"
+                                            ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                            SelectionMode="Single"
+                                            Template="{StaticResource GeometryPointListView_ControlTemplate}">
+                                            <ListView.ItemContainerStyle>
+                                                <Style TargetType="ListViewItem">
+                                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                                </Style>
+                                            </ListView.ItemContainerStyle>
+                                        </ListView>
+                                    </GroupBox>
+                                    <GroupBox
+                                        Header="Line Lists"
+                                        Style="{StaticResource CenterHeader_GroupBox}"
+                                        Visibility="{Binding SolveManager.Gh_Alg.HasGeometryDef_LineList}">
+                                        <ListView
+                                            ItemsSource="{Binding SolveManager.Gh_Alg.GeometryDefs_LineList_View}"
+                                            ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                            SelectionMode="Single"
+                                            Template="{StaticResource GeometryLineListView_ControlTemplate}">
+                                            <ListView.ItemContainerStyle>
+                                                <Style TargetType="ListViewItem">
+                                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                                </Style>
+                                            </ListView.ItemContainerStyle>
+                                        </ListView>
+                                    </GroupBox>
+                                </StackPanel>
+                            </GroupBox>
+                            <GroupBox
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Header="Finite Element Options"
+                                Style="{StaticResource Blue_GroupBox}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto " />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <GroupBox
+                                        Grid.Row="0"
+                                        Grid.Column="0"
+                                        Margin="0"
+                                        Header="Finite Element Solver"
+                                        Style="{StaticResource CenterHeader_GroupBox}">
+                                        <ComboBox
+                                            Height="20"
+                                            Margin="20,0"
+                                            DisplayMemberPath="Value"
+                                            ItemsSource="{Binding SolveManager.FeOptions.WfpCaption_FeSolverTypeEnum}"
+                                            SelectedValue="{Binding SolveManager.FeOptions.FeSolverType_Selected}"
+                                            SelectedValuePath="Key" />
+                                    </GroupBox>
+                                    <GroupBox
+                                        Grid.Row="0"
+                                        Grid.Column="1"
+                                        Margin="0"
+                                        Header="EV Blk Capture Modes"
+                                        Style="{StaticResource CenterHeader_GroupBox}">
+                                        <nupdown:UIntegerUpDown
+                                            MaxValue="20"
+                                            MinValue="1"
+                                            ToolTip="The number of Eigenvalue Buckling Modes that will be captured.&#x0a;This has to be larger than the mode selected as imperfect shape.&#x0a;Ideally, it should be at least 3 modes higher than desired (FE Solver Precision)."
+                                            Value="{Binding SolveManager.FeOptions.EigenvalueBuckling_ShapesToCapture}" />
+                                    </GroupBox>
+                                    <GroupBox
+                                        Grid.Row="2"
+                                        Grid.Column="0"
+                                        Grid.ColumnSpan="2"
+                                        Margin="0"
+                                        Header="Loads"
+                                        Style="{StaticResource CenterHeader_GroupBox}">
+                                        <GroupBox>
+                                            <GroupBox.Header>
+                                                <CheckBox Content="Gravity" IsChecked="{Binding SolveManager.FeOptions.Gravity_IsLoad}" />
+                                            </GroupBox.Header>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="5" />
+                                                    <ColumnDefinition />
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="20" />
+                                                    <RowDefinition Height="5" />
+                                                    <RowDefinition Height="20" />
+                                                </Grid.RowDefinitions>
+                                                <TextBlock
+                                                    Grid.Row="0"
+                                                    Grid.Column="0"
+                                                    Text="Direction:" />
+                                                <ComboBox
+                                                    Grid.Row="0"
+                                                    Grid.Column="2"
+                                                    DisplayMemberPath="Value"
+                                                    ItemsSource="{Binding SolveManager.FeOptions.WfpCaption_MainAxisDirectionEnum}"
+                                                    SelectedValue="{Binding SolveManager.FeOptions.Gravity_DirectionEnum_Selected}"
+                                                    SelectedValuePath="Key"
+                                                    ToolTip="Direction of the Gravity Load Application.&#x0a;Note: this is applied as inertial loading, thus the orientation of the force is inverted." />
+                                                <TextBlock
+                                                    Grid.Row="2"
+                                                    Grid.Column="0"
+                                                    Text="Multiplier:"
+                                                    ToolTip="Multiplier applied to the standard gravity." />
+                                                <TextBox
+                                                    Grid.Row="2"
+                                                    Grid.Column="2"
+                                                    h:DepObjs.CancelErrorOnLostFocus="true"
+                                                    Text="{Binding SolveManager.FeOptions.Gravity_Multiplier, ValidatesOnExceptions=True}" />
+                                            </Grid>
+                                        </GroupBox>
+                                    </GroupBox>
+                                    <GroupBox
+                                        Grid.Row="3"
+                                        Grid.Column="0"
+                                        Grid.ColumnSpan="2"
+                                        Margin="0"
+                                        Header="Imperfect Shape"
+                                        Style="{StaticResource CenterHeader_GroupBox}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="5" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="20" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="5" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="5" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
+                                                Text="EV Blk Mode:" />
+                                            <nupdown:UIntegerUpDown
+                                                Grid.Column="2"
+                                                MaxValue="20"
+                                                MinValue="1"
+                                                ToolTip="The Eigenvalue Buckling Mode whose deflection will be used as imperfect shape."
+                                                Value="{Binding SolveManager.FeOptions.Imperfect_EigenvalueBucklingMode}" />
+                                            <TextBlock
+                                                Grid.Column="4"
+                                                VerticalAlignment="Center"
+                                                Text="Mult:"
+                                                ToolTip="Multiplier to scale the deformations from the selected Eigenvalue Buckling Mode." />
+                                            <TextBox
+                                                Grid.Column="6"
+                                                Height="20"
+                                                h:DepObjs.CancelErrorOnLostFocus="true"
+                                                IsEnabled="{Binding SolveManager.FeOptions.Imperfect_MultiplierFromBoundingBox, Converter={StaticResource InverseBooleanConverter}}"
+                                                Text="{Binding SolveManager.FeOptions.Imperfect_Multiplier, ValidatesOnExceptions=True}" />
+                                            <CheckBox
+                                                Grid.Column="8"
+                                                VerticalAlignment="Center"
+                                                Content="BB/1000"
+                                                IsChecked="{Binding SolveManager.FeOptions.Imperfect_MultiplierFromBoundingBox}"
+                                                ToolTip="Use the largest length of the model's Bounding Box, divided by 1000, as multiplier." />
+                                        </Grid>
+
+                                    </GroupBox>
+                                    <GroupBox
+                                        Grid.Row="4"
+                                        Grid.Column="0"
+                                        Margin="0"
+                                        Header="Mesh Elements Per Frame"
+                                        Style="{StaticResource CenterHeader_GroupBox}">
+                                        <nupdown:UIntegerUpDown
+                                            MaxValue="10"
+                                            MinValue="1"
+                                            ToolTip="The number of mesh elements per frame."
+                                            Value="{Binding SolveManager.FeOptions.Mesh_ElementsPerFrame}" />
+                                    </GroupBox>
+                                    <GroupBox
+                                        Grid.Row="4"
+                                        Grid.Column="1"
+                                        Margin="0"
+                                        Header="Large Deflections"
+                                        Style="{StaticResource CenterHeader_GroupBox}">
+                                        <CheckBox
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Content="Use Large Deflections"
+                                            IsChecked="{Binding SolveManager.FeOptions.LargeDeflections_IsSet}"
+                                            ToolTip="Calculate the Non-Linear models using large deflections (update stiffness matrix with each Finite Element iteration)." />
+                                    </GroupBox>
+                                </Grid>
+                            </GroupBox>
+                            <GroupBox
+                                Grid.Row="2"
+                                Grid.Column="0"
+                                Header="ScreenShot Options"
+                                Style="{StaticResource Blue_GroupBox}">
+                                <StackPanel>
+                                    <GroupBox Header="Directions">
+                                        <StackPanel Orientation="Vertical">
+                                            <StackPanel.Resources>
+                                                <Style TargetType="CheckBox">
+                                                    <Setter Property="Margin" Value="0,0,5,0" />
+                                                </Style>
+                                            </StackPanel.Resources>
+                                            <TextBlock HorizontalAlignment="Center" Text="Axial" />
+                                            <Border
+                                                HorizontalAlignment="Center"
+                                                BorderBrush="{StaticResource EmsLightGraySolidBrush}"
+                                                BorderThickness="0,1,0,0">
+                                                <WrapPanel Margin="5,2,5,5">
+                                                    <CheckBox Content="Top" IsChecked="{Binding SolveManager.FeOptions.ScreenShotOptions.ImageCapture_ViewDirections, Converter={StaticResource ImageValConv}, ConverterParameter={x:Static fea:ImageCaptureViewDirectionEnum.Top_Towards_ZNeg}}" />
+                                                    <CheckBox Content="Front" IsChecked="{Binding SolveManager.FeOptions.ScreenShotOptions.ImageCapture_ViewDirections, Converter={StaticResource ImageValConv}, ConverterParameter={x:Static fea:ImageCaptureViewDirectionEnum.Front_Towards_YPos}}" />
+                                                    <CheckBox Content="Back" IsChecked="{Binding SolveManager.FeOptions.ScreenShotOptions.ImageCapture_ViewDirections, Converter={StaticResource ImageValConv}, ConverterParameter={x:Static fea:ImageCaptureViewDirectionEnum.Back_Towards_YNeg}}" />
+                                                    <CheckBox Content="Left" IsChecked="{Binding SolveManager.FeOptions.ScreenShotOptions.ImageCapture_ViewDirections, Converter={StaticResource ImageValConv}, ConverterParameter={x:Static fea:ImageCaptureViewDirectionEnum.Left_Towards_XPos}}" />
+                                                    <CheckBox Content="Right" IsChecked="{Binding SolveManager.FeOptions.ScreenShotOptions.ImageCapture_ViewDirections, Converter={StaticResource ImageValConv}, ConverterParameter={x:Static fea:ImageCaptureViewDirectionEnum.Right_Towards_XNeg}}" />
+                                                </WrapPanel>
+                                            </Border>
+                                            <TextBlock HorizontalAlignment="Center" Text="Edges" />
+                                            <Border
+                                                HorizontalAlignment="Center"
+                                                BorderBrush="{StaticResource EmsLightGraySolidBrush}"
+                                                BorderThickness="0,1,0,0">
+                                                <WrapPanel Margin="5,2,5,5">
+                                                    <CheckBox Content="Top-Front" IsChecked="{Binding SolveManager.FeOptions.ScreenShotOptions.ImageCapture_ViewDirections, Converter={StaticResource ImageValConv}, ConverterParameter={x:Static fea:ImageCaptureViewDirectionEnum.Perspective_Top_Front_Edge}}" />
+                                                    <CheckBox Content="Top-Back" IsChecked="{Binding SolveManager.FeOptions.ScreenShotOptions.ImageCapture_ViewDirections, Converter={StaticResource ImageValConv}, ConverterParameter={x:Static fea:ImageCaptureViewDirectionEnum.Perspective_Top_Back_Edge}}" />
+                                                    <CheckBox Content="Top-Left" IsChecked="{Binding SolveManager.FeOptions.ScreenShotOptions.ImageCapture_ViewDirections, Converter={StaticResource ImageValConv}, ConverterParameter={x:Static fea:ImageCaptureViewDirectionEnum.Perspective_Top_Left_Edge}}" />
+                                                    <CheckBox Content="Top-Right" IsChecked="{Binding SolveManager.FeOptions.ScreenShotOptions.ImageCapture_ViewDirections, Converter={StaticResource ImageValConv}, ConverterParameter={x:Static fea:ImageCaptureViewDirectionEnum.Perspective_Top_Right_Edge}}" />
+                                                </WrapPanel>
+                                            </Border>
+                                            <TextBlock HorizontalAlignment="Center" Text="Corners" />
+                                            <Border
+                                                HorizontalAlignment="Center"
+                                                BorderBrush="{StaticResource EmsLightGraySolidBrush}"
+                                                BorderThickness="0,1,0,0">
+                                                <Grid Margin="5,2">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition />
+                                                        <ColumnDefinition />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition />
+                                                        <RowDefinition />
+                                                    </Grid.RowDefinitions>
+                                                    <CheckBox
+                                                        Grid.Row="0"
+                                                        Grid.Column="0"
+                                                        Content="Top-Front-Left"
+                                                        IsChecked="{Binding SolveManager.FeOptions.ScreenShotOptions.ImageCapture_ViewDirections, Converter={StaticResource ImageValConv}, ConverterParameter={x:Static fea:ImageCaptureViewDirectionEnum.Perspective_TFL_Corner}}" />
+                                                    <CheckBox
+                                                        Grid.Row="0"
+                                                        Grid.Column="1"
+                                                        Content="Top-Front-Right"
+                                                        IsChecked="{Binding SolveManager.FeOptions.ScreenShotOptions.ImageCapture_ViewDirections, Converter={StaticResource ImageValConv}, ConverterParameter={x:Static fea:ImageCaptureViewDirectionEnum.Perspective_TFR_Corner}}" />
+                                                    <CheckBox
+                                                        Grid.Row="1"
+                                                        Grid.Column="0"
+                                                        Content="Top-Back-Left"
+                                                        IsChecked="{Binding SolveManager.FeOptions.ScreenShotOptions.ImageCapture_ViewDirections, Converter={StaticResource ImageValConv}, ConverterParameter={x:Static fea:ImageCaptureViewDirectionEnum.Perspective_TBL_Corner}}" />
+                                                    <CheckBox
+                                                        Grid.Row="1"
+                                                        Grid.Column="1"
+                                                        Content="Top-Back-Right"
+                                                        IsChecked="{Binding SolveManager.FeOptions.ScreenShotOptions.ImageCapture_ViewDirections, Converter={StaticResource ImageValConv}, ConverterParameter={x:Static fea:ImageCaptureViewDirectionEnum.Perspective_TBR_Corner}}" />
+                                                </Grid>
+                                            </Border>
+                                        </StackPanel>
+                                    </GroupBox>
+                                    <Grid Margin="0,5">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="5" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="15" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="5" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock
+                                            Grid.Row="0"
+                                            Grid.Column="0"
+                                            Text="Extrude Factor"
+                                            ToolTip="The factor to multiply the extrusion of the sections.&#x0a;No extrusion (lines).&#x0a;Original section size." />
+                                        <TextBox
+                                            Grid.Row="0"
+                                            Grid.Column="2"
+                                            h:DepObjs.CancelErrorOnLostFocus="true"
+                                            Text="{Binding SolveManager.FeOptions.ScreenShotOptions.ImageCapture_Extrude_Multiplier, ValidatesOnExceptions=True}" />
+                                        <CheckBox
+                                            Grid.Row="0"
+                                            Grid.Column="4"
+                                            VerticalAlignment="Center"
+                                            Content="Plot on Deformed"
+                                            IsChecked="{Binding SolveManager.FeOptions.ScreenShotOptions.ImageCapture_DeformedShape}"
+                                            ToolTip="Plot on deformed shape (for supported plots).&#x0a;Multiplied by 5% of the model's largest edge of the bounding box." />
+                                        <CheckBox
+                                            Grid.Row="0"
+                                            Grid.Column="6"
+                                            VerticalAlignment="Center"
+                                            Content="Undef. Shadow"
+                                            IsChecked="{Binding SolveManager.FeOptions.ScreenShotOptions.ImageCapture_UndeformedShadow}"
+                                            ToolTip="Plot a shadow of the undeformed shape (for supported plots)." />
+                                    </Grid>
+                                </StackPanel>
+
+                            </GroupBox>
+                            <GroupBox
+                                Grid.Row="1"
+                                Grid.RowSpan="2"
+                                Grid.Column="1"
+                                Grid.ColumnSpan="3"
+                                Header="Finite Element Result Selection"
+                                Style="{StaticResource Blue_GroupBox}">
+                                <ScrollViewer>
+                                    <ItemsControl
+                                        ItemsSource="{Binding SolveManager.FeOptions.WpfResults.Groups}"
+                                        ScrollViewer.CanContentScroll="True"
+                                        ScrollViewer.VerticalScrollBarVisibility="Visible">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Vertical" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <GroupBox Style="{StaticResource CenterHeader_GroupBox}">
+                                                    <GroupBox.Header>
+                                                        <TextBlock>
+                                                            <Run FontSize="16" Text="{Binding Path=Name, Mode=OneWay, Converter={StaticResource Wpf_EnumToString_Converter}}" />
+                                                            <Run Foreground="{StaticResource EmsExplanationSolidBrush}" Text=" [" />
+                                                            <Run Foreground="{StaticResource EmsExplanationSolidBrush}" Text="{Binding Mode=OneWay, Converter={StaticResource Wpf_FeResultClassificationTreeViewCounter_Converter}}" />
+                                                            <Run Foreground="{StaticResource EmsExplanationSolidBrush}" Text="]" />
+                                                        </TextBlock>
+                                                    </GroupBox.Header>
+                                                    <!--  Second List View - Grouping by Result Family  -->
+                                                    <ItemsControl ItemsSource="{Binding Items}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <WrapPanel HorizontalAlignment="Center" />
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <DockPanel
+                                                                        Width="100"
+                                                                        Margin="5"
+                                                                        LastChildFill="True">
+                                                                        <Border
+                                                                            HorizontalAlignment="Stretch"
+                                                                            BorderBrush="{StaticResource EmsFaintBlueSolidBrush}"
+                                                                            BorderThickness="0,0,0,1"
+                                                                            DockPanel.Dock="Top">
+                                                                            <TextBlock HorizontalAlignment="Center" TextWrapping="Wrap">
+                                                                                <Run Text="{Binding Path=Name, Mode=OneWay, Converter={StaticResource Wpf_EnumToString_Converter}}" />
+                                                                            </TextBlock>
+                                                                        </Border>
+
+                                                                        <Border
+                                                                            HorizontalAlignment="Stretch"
+                                                                            BorderBrush="{StaticResource EmsFaintBlueSolidBrush}"
+                                                                            BorderThickness="1,0,0,0">
+                                                                            <ListView ItemsSource="{Binding Items}">
+                                                                                <ListView.Template>
+                                                                                    <ControlTemplate>
+                                                                                        <ItemsPresenter />
+                                                                                    </ControlTemplate>
+                                                                                </ListView.Template>
+                                                                                <ListView.ItemTemplate>
+                                                                                    <DataTemplate>
+                                                                                        <CheckBox
+                                                                                            Content="{Binding ResultTypeDescription}"
+                                                                                            IsChecked="{Binding OutputData_IsSelected}"
+                                                                                            ToolTip="{Binding ResultTypeExplanation}" />
+                                                                                    </DataTemplate>
+                                                                                </ListView.ItemTemplate>
+                                                                            </ListView>
+                                                                        </Border>
+                                                                    </DockPanel>
+                                                                </StackPanel>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </GroupBox>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </GroupBox>
+                        </Grid>
+                    </TabItem>
+                    <TabItem Header="Optimize">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                            <GroupBox
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                Grid.ColumnSpan="2"
+                                Header="Optimization Solver Options"
+                                Style="{StaticResource Blue_GroupBox}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition />
+                                    </Grid.RowDefinitions>
+                                    <GroupBox Grid.Column="0" Header="Type">
+                                        <ComboBox
+                                            DisplayMemberPath="Value"
+                                            ItemsSource="{Binding SolveManager.NlOptManager.NlOptAlgorithmEnumDescriptions}"
+                                            SelectedValue="{Binding SolveManager.NlOptManager.NlOptSolverType}"
+                                            SelectedValuePath="Key" />
+                                    </GroupBox>
+                                    <GroupBox
+                                        Grid.Row="0"
+                                        Grid.Column="1"
+                                        ToolTip="Set Population Size. If not set, it will be calculated automatically."
+                                        Visibility="{Binding SolveManager.NlOptManager.SolverNeedsPopulationSize}">
+                                        <GroupBox.Header>
+                                            <CheckBox Content="Population Size" IsChecked="{Binding SolveManager.NlOptManager.IsOn_PopulationSize}" />
+                                        </GroupBox.Header>
+                                        <TextBox
+                                            h:DepObjs.CancelErrorOnLostFocus="True"
+                                            IsEnabled="{Binding SolveManager.NlOptManager.IsOn_PopulationSize}"
+                                            Text="{Binding SolveManager.NlOptManager.PopulationSize, ValidatesOnExceptions=True}" />
+                                    </GroupBox>
+                                    <GroupBox
+                                        Grid.Row="1"
+                                        Grid.Column="0"
+                                        Grid.ColumnSpan="2"
+                                        Margin="0,5,0,0"
+                                        Header="Stop Controls"
+                                        Style="{StaticResource CenterHeader_GroupBox}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <GroupBox
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Margin="2,0"
+                                                ToolTip="Stop when an objective value of at least stopval is found.&#x0a;Stop minimizing when an objective value ≤ stopval is found, or stop maximizing a value ≥ stopval is found.">
+                                                <GroupBox.Header>
+                                                    <CheckBox Content="F Stop Value" IsChecked="{Binding SolveManager.NlOptManager.IsOn_StopValueOnObjectiveFunction}" />
+                                                </GroupBox.Header>
+                                                <TextBox
+                                                    h:DepObjs.CancelErrorOnLostFocus="True"
+                                                    IsEnabled="{Binding SolveManager.NlOptManager.IsOn_StopValueOnObjectiveFunction}"
+                                                    Text="{Binding SolveManager.NlOptManager.StopValueOnObjectiveFunction, ValidatesOnExceptions=True}" />
+                                            </GroupBox>
+                                            <GroupBox
+                                                Grid.Row="1"
+                                                Grid.Column="0"
+                                                Margin="2,0"
+                                                ToolTip="Set relative tolerance on function value.&#x0a;Stop when an optimization step (or an estimate of the optimum) changes the objective function value by less than tolerance multiplied&#x0a;by the absolute value of the function value.&#x0a;(If there is any chance that your optimum function value is close to zero, you might want to set an absolute tolerance as well.)">
+                                                <GroupBox.Header>
+                                                    <CheckBox Content="F Relative Tolerance" IsChecked="{Binding SolveManager.NlOptManager.IsOn_RelativeToleranceOnFunctionValue}" />
+                                                </GroupBox.Header>
+                                                <TextBox
+                                                    h:DepObjs.CancelErrorOnLostFocus="True"
+                                                    IsEnabled="{Binding SolveManager.NlOptManager.IsOn_RelativeToleranceOnFunctionValue}"
+                                                    Text="{Binding SolveManager.NlOptManager.RelativeToleranceOnFunctionValue, ValidatesOnExceptions=True}" />
+                                            </GroupBox>
+                                            <GroupBox
+                                                Grid.Row="2"
+                                                Grid.Column="0"
+                                                Margin="2,0"
+                                                ToolTip="Set absolute tolerance on function value.&#x0a;Stop when an optimization step (or an estimate of the optimum) changes the function value by less than tolerance.">
+                                                <GroupBox.Header>
+                                                    <CheckBox Content="F Absolute Tolerance" IsChecked="{Binding SolveManager.NlOptManager.IsOn_AbsoluteToleranceOnFunctionValue}" />
+                                                </GroupBox.Header>
+                                                <TextBox
+                                                    h:DepObjs.CancelErrorOnLostFocus="True"
+                                                    IsEnabled="{Binding SolveManager.NlOptManager.IsOn_AbsoluteToleranceOnFunctionValue}"
+                                                    Text="{Binding SolveManager.NlOptManager.AbsoluteToleranceOnFunctionValue, ValidatesOnExceptions=True}" />
+                                            </GroupBox>
+                                            <GroupBox
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Margin="2,0"
+                                                ToolTip="Set relative tolerance on optimization parameters.&#x0a;Stop when an optimization step (or an estimate of the optimum) causes a relative change the input X by less than tolerance.">
+                                                <GroupBox.Header>
+                                                    <CheckBox Content="X Relative Tolerance" IsChecked="{Binding SolveManager.NlOptManager.IsOn_RelativeToleranceOnParameterValue}" />
+                                                </GroupBox.Header>
+                                                <TextBox
+                                                    h:DepObjs.CancelErrorOnLostFocus="True"
+                                                    IsEnabled="{Binding SolveManager.NlOptManager.IsOn_RelativeToleranceOnParameterValue}"
+                                                    Text="{Binding SolveManager.NlOptManager.RelativeToleranceOnParameterValue, ValidatesOnExceptions=True}" />
+                                            </GroupBox>
+                                            <GroupBox
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Margin="2,0"
+                                                ToolTip="Sets the maximum number of iterations.">
+                                                <GroupBox.Header>
+                                                    <CheckBox Content="Max. Iterations" IsChecked="{Binding SolveManager.NlOptManager.IsOn_MaximumIterations}" />
+                                                </GroupBox.Header>
+                                                <TextBox
+                                                    h:DepObjs.CancelErrorOnLostFocus="True"
+                                                    IsEnabled="{Binding SolveManager.NlOptManager.IsOn_MaximumIterations}"
+                                                    Text="{Binding SolveManager.NlOptManager.MaximumIterations, ValidatesOnExceptions=True}" />
+                                            </GroupBox>
+                                            <GroupBox
+                                                Grid.Row="2"
+                                                Grid.Column="1"
+                                                Margin="2,0"
+                                                ToolTip="Sets the maximum solve time, in seconds.">
+                                                <GroupBox.Header>
+                                                    <CheckBox Content="Max. Time" IsChecked="{Binding SolveManager.NlOptManager.IsOn_MaximumRunTime}" />
+                                                </GroupBox.Header>
+                                                <TextBox
+                                                    h:DepObjs.CancelErrorOnLostFocus="True"
+                                                    IsEnabled="{Binding SolveManager.NlOptManager.IsOn_MaximumRunTime}"
+                                                    Text="{Binding SolveManager.NlOptManager.MaximumRunTime, ValidatesOnExceptions=True}" />
+                                            </GroupBox>
+
+                                            <GroupBox
+                                                Grid.Row="0"
+                                                Grid.RowSpan="1000"
+                                                Grid.Column="2"
+                                                Margin="2,0"
+                                                ToolTip="Set absolute tolerances on optimization parameters.&#x0a;Stop when an optimization step (or an estimate of the optimum) changes every parameter X[i] by less than its assigned tolerance. Criterion is disabled for a parameter X[i] if its tolerance is non-positive.">
+                                                <GroupBox.Header>
+                                                    <CheckBox Content="X Absolute Tolerances" IsChecked="{Binding SolveManager.NlOptManager.IsOn_AbsoluteToleranceOnParameterValue}" />
+                                                </GroupBox.Header>
+                                                <ListView
+                                                    IsEnabled="{Binding SolveManager.NlOptManager.IsOn_AbsoluteToleranceOnParameterValue}"
+                                                    ItemsSource="{Binding SolveManager.NlOptManager.AbsoluteToleranceOnParameterValue}"
+                                                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                                    ScrollViewer.VerticalScrollBarVisibility="Visible">
+                                                    <ListView.ItemContainerStyle>
+                                                        <Style TargetType="ListViewItem">
+                                                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                                        </Style>
+                                                    </ListView.ItemContainerStyle>
+                                                    <ListBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width=".7*" />
+                                                                    <ColumnDefinition />
+                                                                </Grid.ColumnDefinitions>
+                                                                <TextBlock Grid.Column="0" Text="{Binding ParameterName, Mode=OneWay}" />
+                                                                <TextBox
+                                                                    Grid.Column="1"
+                                                                    h:DepObjs.CancelErrorOnLostFocus="True"
+                                                                    Text="{Binding ParameterTolerance, ValidatesOnExceptions=True}" />
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </ListBox.ItemTemplate>
+                                                </ListView>
+                                            </GroupBox>
+
+                                        </Grid>
+                                    </GroupBox>
+                                </Grid>
+                            </GroupBox>
+                        </Grid>
+                    </TabItem>
+                    <TabItem Header="Study Sections">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                        </Grid>
+                    </TabItem>
+                </TabControl>
+            </Grid>
+        </Grid>
+        <e:BusyOverlay x:Name="BusyOverlay" Visibility="Collapsed" />
+        <e:CustomOverlay
+            x:Name="CustomOverlay"
+            BackgroundOpacity=".3"
+            ContentHorizontalAlignment="Stretch"
+            ContentMargin="10"
+            ContentVerticalAlignment="Top"
+            CurrentResidual="{Binding ElementName=MainGrid, Path=DataContext.CurrentProblem.ObjectiveFunction.CurrentEval, Mode=OneWay}"
+            TargetResidual="{Binding ElementName=MainGrid, Path=DataContext.CurrentProblem.TargetResidual, Mode=OneWay}"
+            Visibility="Collapsed">
+            <e:CustomOverlay.AdditionalContent>
+                <Button
+                    Margin="10"
+                    Click="CancelSolveButton_Click"
+                    Content="Stop Solver" />
+            </e:CustomOverlay.AdditionalContent>
+        </e:CustomOverlay>
+    </Grid>
+</Window>
