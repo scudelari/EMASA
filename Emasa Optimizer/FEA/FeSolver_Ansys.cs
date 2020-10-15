@@ -1,15 +1,21 @@
-﻿using System;
+﻿extern alias r3dm;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using BaseWPFLibrary;
 using BaseWPFLibrary.Annotations;
+using BaseWPFLibrary.Extensions;
+using BaseWPFLibrary.Others;
 using CsvHelper;
 using CsvHelper.Configuration;
 using Emasa_Optimizer.FEA.Items;
@@ -17,6 +23,7 @@ using Emasa_Optimizer.FEA.Loads;
 using Emasa_Optimizer.FEA.Results;
 using Emasa_Optimizer.Opt;
 using Prism.Modularity;
+using r3dm::Rhino.Geometry;
 
 namespace Emasa_Optimizer.FEA
 {
@@ -29,9 +36,55 @@ namespace Emasa_Optimizer.FEA
         {
         }
 
+        public override void CleanUpDirectory()
+        {
+            try
+            {
+                if (Directory.Exists(FeWorkFolder)) Directory.Delete(FeWorkFolder, true);
+            }
+            catch
+            {
+                try // Tries again?
+                {
+                    if (Directory.Exists(FeWorkFolder)) Directory.Delete(FeWorkFolder, true);
+                }
+                catch (Exception e)
+                {
+                     // Bummer, it really failed
+                    throw e;
+                }
+            }
+
+            int count = 0;
+            while (true)
+            {
+                // Waits until the directory is really deleted - the Directory.Delete just marks the directory for deletion by the OS.
+                if (!Directory.Exists(FeWorkFolder)) break;
+
+                Thread.Sleep(50);
+                count++;
+                if (count > 100) throw new IOException($"Could not clean-up the folder to be used as Ansys's buffer: {FeWorkFolder}");
+            }
+        }
+
         private Process _commandLineProcess = null;
         public override void InitializeSoftware()
         {
+            // Closes an old instance if it exists
+            {
+                Process[] allOldProcs = Process.GetProcesses();
+                Process oldPro = allOldProcs.FirstOrDefault(a => a.ProcessName.Contains(Path.GetFileNameWithoutExtension(_ansysExeLocation)));
+                if (oldPro != null)
+                {
+                    Process parent = oldPro.Parent();
+                    if (parent != null && parent.ProcessName == ("cmd"))
+                    {
+                        parent.KillProcessAndChildren();
+                        parent.WaitForExit();
+                    }
+                }
+            }
+
             CleanUpDirectory();
 
             string jobEaterString = $@"! JOB EATER
@@ -61,8 +114,8 @@ end_exists = 0
 
 /WAIT,0.050 ! Waits on the iteration
 
-/INQUIRE,start_exists,EXIST,'ems_signal_start','control'       ! Gets the file exist info
-/INQUIRE,end_exists,EXIST,'ems_signal_terminate','control'           ! Gets the file exist info
+/INQUIRE,start_exists,EXIST,'ems_signal_start','control'            ! Gets the file exist info
+/INQUIRE,end_exists,EXIST,'ems_signal_terminate','control'          ! Gets the file exist info
 
 *IF,start_exists,EQ,1,THEN ! Start signal received
 	/DELETE,'ems_signal_start','control'                       ! Deletes the signal file
@@ -77,9 +130,16 @@ end_exists = 0
 *ENDIF
 
 *IF,end_exists,EQ,0,:BEGIN                                 ! If the end signal file does not exist, jumps to the beginning
+
 /DELETE,'ems_signal_terminate','control'                             ! Deletes the signal file";
             string jobEaterFileName = Path.Combine(FeWorkFolder, "Job_Eater.dat");
 
+            // Writes the output file. Tries twice
+            if (!Directory.Exists(FeWorkFolder))
+            {
+                Directory.CreateDirectory(FeWorkFolder);
+                // wait until directory exists
+            }
             File.WriteAllText(jobEaterFileName, jobEaterString);
 
             _commandLineProcess = new Process
@@ -116,19 +176,31 @@ end_exists = 0
         }
         public override void CloseApplication()
         {
-            // Writes the termination signal file
-            string endSignalPath = Path.Combine(FeWorkFolder, "ems_signal_terminate.control");
-            if (File.Exists(endSignalPath)) File.Delete(endSignalPath);
-            File.WriteAllText(endSignalPath, " ");
+            if (_commandLineProcess == null) // Tries to find the process
+            {
+                Process[] allProcs = Process.GetProcesses();
+                _commandLineProcess = allProcs.FirstOrDefault(a => a.ProcessName.Contains(Path.GetFileNameWithoutExtension(_ansysExeLocation)));
+            }
 
-            _commandLineProcess.StandardInput.Close();
-            _commandLineProcess.WaitForExit();
+            if (_commandLineProcess != null)
+            {
+                // Writes the termination signal file
+                string endSignalPath = Path.Combine(FeWorkFolder, "ems_signal_terminate.control");
+                if (File.Exists(endSignalPath)) File.Delete(endSignalPath);
+                File.WriteAllText(endSignalPath, " ");
 
-            _commandLineProcess.Dispose();
+                try
+                {
+                    // This will be available only if Ansys had been already opened before
+                    _commandLineProcess.StandardInput.Close();
+                }
+                catch { }
 
-            _commandLineProcess = null;
+                _commandLineProcess.WaitForExit();
+                _commandLineProcess.Dispose();
 
-            // Should we also delete the model folder
+                _commandLineProcess = null; 
+            }
         }
 
         public override void ResetSoftwareData()
@@ -158,255 +230,366 @@ end_exists = 0
         internal readonly StringBuilder Sb = new StringBuilder();
         private FeModel _model = null;
 
+        private HashSet<string> ExpectedOutputNotConsumedList = new HashSet<string>();
+
         public override void RunAnalysisAndCollectResults([NotNull] FeModel inModel)
         {
             if (inModel == null) throw new ArgumentNullException(nameof(inModel));
-            if (_commandLineProcess == null) throw new InvalidOperationException($"You must first initialize the analysis software by calling {nameof(InitializeSoftware)}.");
+            if (_commandLineProcess == null || _commandLineProcess.HasExited)
+            {
+                string message = $"The Ansys process is not running.";
+                inModel.Owner.RuntimeMessages.Add(new SolutionPoint_Message(message, SolutionPoint_MessageSourceEnum.FiniteElementSolver, SolutionPoint_MessageLevelEnum.Error));
+                throw new AnsysSolverException(message);
+            }
 
             // Cleanup of previous analysis
-            ResetSoftwareData();
+            try
+            {
+                ResetSoftwareData();
+            }
+            catch (Exception e)
+            {
+                string message = $"Error while resetting the Ansys software data. {e.Message}";
+                inModel.Owner.RuntimeMessages.Add(new SolutionPoint_Message(message, SolutionPoint_MessageSourceEnum.FiniteElementSolver, SolutionPoint_MessageLevelEnum.Error, e));
+                throw new AnsysSolverException(message);
+            }
+            _errorLogLines.Clear();
             Sb.Clear();
             _model = null;
+            ExpectedOutputNotConsumedList.Clear();
 
             // Saves temporarily a reference to the model for simpler access in the helper functions
             _model = inModel;
-
-            #region Writes the Input File
-            #region Perfect Shape Static Analysis
-
-            // Writes the commands for the perfect analysis
-            File_AppendHeader("Model generated using EMASA's Rhino Automator.", $"SolutionPoint: {_model.Owner.PointIndex} - {_model.Owner.EvalType}", "Perfect Shape - Static Analysis Setup And Run");
-            WriteHelper_PerfectAnalysis();
-
-            // Writes the Perfect Analysis' Results - with the exception of the Eigenvalue Buckling
-            File_AppendHeader("Perfect Shape - Static Analysis Results Data");
-            foreach (FeResultClassification feResultSelectStatusClass in
-                _owner.FeOptions.SelectedOutputResults.Where(a => a.TargetShape == FeAnalysisShapeEnum.PerfectShape &&
-                                                                  !a.IsEigenValueBuckling))
+            try
             {
+                #region Writes the Input File
+
+                #region Perfect Shape Static Analysis
+
+                // Writes the commands for the perfect analysis
+                File_AppendHeader("Model generated using EMASA's Rhino Automator.", $"SolutionPoint: {_model.Owner.PointIndex} - {_model.Owner.SolutionPointCalcType}", "Perfect Shape - Static Analysis Setup And Run");
+                WriteHelper_PerfectAnalysis();
+
+                // Writes the Perfect Analysis' Results - with the exception of the Eigenvalue Buckling
+                File_AppendHeader("Perfect Shape - Static Analysis Results Data");
+
                 // Clears the buffer of the touched families
                 _writeResultTouchedTypes.Clear();
 
-                WriteHelper_WriteResults(feResultSelectStatusClass);
-            }
-
-            // Writes the ScreenShot for the Perfect Analysis' Results - with the exception of the Eigenvalue Buckling
-            File_AppendHeader("Perfect Shape - Static Analysis Results ScreenShots");
-            foreach (FeResultClassification feResultSelectStatusClass in
-                _owner.FeOptions.SelectedOutputResults.Where(a => a.TargetShape == FeAnalysisShapeEnum.PerfectShape &&
-                                                                  !a.IsEigenValueBuckling))
-            {
-                WriteHelper_WriteScreenShots(feResultSelectStatusClass);
-            }
-
-            #endregion
-
-            // Should we add more analysis and results?
-            if (_owner.FeOptions.WpfIsPerfectShape_EigenvalueBucking_Required ||
-                _owner.FeOptions.WpfIsImperfectShapeFullStiffness_StaticAnalysis_Required ||
-                _owner.FeOptions.WpfIsImperfectShapeSoftened_StaticAnalysis_Required)
-            {
-
-                #region Perfect Shape Eigenvalue Buckling Analysis
-                // Sets and runs the Eigenvalue Buckling
-                File_AppendHeader("Perfect Shape - Eigenvalue Buckling Setup And Run");
-                WriteHelper_EigenvalueBucklingAnalysis();
-
-                // Output results for the Eigenvalue Buckling analysis
-                File_AppendHeader("Perfect Shape - Eigenvalue Buckling Results Data");
                 foreach (FeResultClassification feResultSelectStatusClass in
                     _owner.FeOptions.SelectedOutputResults.Where(a => a.TargetShape == FeAnalysisShapeEnum.PerfectShape &&
-                                                                      a.IsEigenValueBuckling))
+                                                                      !a.IsEigenValueBuckling))
                 {
-                    // Clears the buffer of the touched families
-                    _writeResultTouchedTypes.Clear();
-
                     WriteHelper_WriteResults(feResultSelectStatusClass);
                 }
 
-                // Outputs the Screenshots for the Eigenvalue Buckling analysis
-                File_AppendHeader("Perfect Shape - Eigenvalue Buckling Results ScreenShots");
+                // Writes the ScreenShot for the Perfect Analysis' Results - with the exception of the Eigenvalue Buckling
+                File_AppendHeader("Perfect Shape - Static Analysis Results ScreenShots");
                 foreach (FeResultClassification feResultSelectStatusClass in
                     _owner.FeOptions.SelectedOutputResults.Where(a => a.TargetShape == FeAnalysisShapeEnum.PerfectShape &&
-                                                                      a.IsEigenValueBuckling))
+                                                                      !a.IsEigenValueBuckling))
                 {
                     WriteHelper_WriteScreenShots(feResultSelectStatusClass);
                 }
+
                 #endregion
 
-                if (_owner.FeOptions.WpfIsImperfectShapeFullStiffness_StaticAnalysis_Required ||
+                // Should we add more analysis and results?
+                if (_owner.FeOptions.WpfIsPerfectShape_EigenvalueBucking_Required ||
+                    _owner.FeOptions.WpfIsImperfectShapeFullStiffness_StaticAnalysis_Required ||
                     _owner.FeOptions.WpfIsImperfectShapeSoftened_StaticAnalysis_Required)
                 {
-                    // Uses the selected eigenvalue buckling shape to deform the original geometry
-                    File_AppendHeader("Imperfect Shape - Update Geometry With Eigenvalue Buckling Analysis' Deformations");
-                    WriteHelper_ImperfectAnalysis_UpdateGeometryUsingEigenvalueBucklingShape();
 
-                    #region Imperfect Shape Static Analysis - Full Stiffness
-                    if (_owner.FeOptions.WpfIsImperfectShapeFullStiffness_StaticAnalysis_Required)
+                    #region Perfect Shape Eigenvalue Buckling Analysis
+
+                    // Sets and runs the Eigenvalue Buckling
+                    File_AppendHeader("Perfect Shape - Eigenvalue Buckling Setup And Run");
+                    WriteHelper_EigenvalueBucklingAnalysis();
+
+                    // Output results for the Eigenvalue Buckling analysis
+                    File_AppendHeader("Perfect Shape - Eigenvalue Buckling Results Data");
+                    foreach (FeResultClassification feResultSelectStatusClass in
+                        _owner.FeOptions.SelectedOutputResults.Where(a => a.TargetShape == FeAnalysisShapeEnum.PerfectShape &&
+                                                                          a.IsEigenValueBuckling))
                     {
-                        // Runs the new Imperfect Geometry 
-                        File_AppendHeader("Imperfect Shape - Full Stiffness - Static Analysis Setup And Run");
-                        WriteHelper_ImperfectAnalysis_Solve();
-
-                        // Writes the Imperfect Analysis' Results - with the exception of the Eigenvalue Buckling
-                        File_AppendHeader("Imperfect Shape - Full Stiffness - Static Analysis Results Data");
-                        foreach (FeResultClassification feResultSelectStatusClass in
-                            _owner.FeOptions.SelectedOutputResults.Where(a => a.TargetShape == FeAnalysisShapeEnum.ImperfectShape_FullStiffness &&
-                                                                              !a.IsEigenValueBuckling))
-                        {
-                            // Clears the buffer of the touched families
-                            _writeResultTouchedTypes.Clear();
-
-                            WriteHelper_WriteResults(feResultSelectStatusClass);
-                        }
-
-                        // Writes the ScreenShot for the Imperfect Analysis' Results - with the exception of the Eigenvalue Buckling
-                        File_AppendHeader("Imperfect Shape - Full Stiffness - Static Analysis Results ScreenShots");
-                        foreach (FeResultClassification feResultSelectStatusClass in
-                            _owner.FeOptions.SelectedOutputResults.Where(a => a.TargetShape == FeAnalysisShapeEnum.ImperfectShape_FullStiffness &&
-                                                                              !a.IsEigenValueBuckling))
-                        {
-                            WriteHelper_WriteScreenShots(feResultSelectStatusClass);
-                        }
+                        WriteHelper_WriteResults(feResultSelectStatusClass);
                     }
+
+                    // Outputs the Screenshots for the Eigenvalue Buckling analysis
+                    File_AppendHeader("Perfect Shape - Eigenvalue Buckling Results ScreenShots");
+                    foreach (FeResultClassification feResultSelectStatusClass in
+                        _owner.FeOptions.SelectedOutputResults.Where(a => a.TargetShape == FeAnalysisShapeEnum.PerfectShape &&
+                                                                          a.IsEigenValueBuckling))
+                    {
+                        WriteHelper_WriteScreenShots(feResultSelectStatusClass);
+                    }
+
                     #endregion
 
-                    #region Imperfect Shape Eigenvalue Buckling Analysis - Full Stiffness
-                    if (_owner.FeOptions.WpfIsImperfectShapeFullStiffness_EigenvalueBuckling_Required)
+                    if (_owner.FeOptions.WpfIsImperfectShapeFullStiffness_StaticAnalysis_Required ||
+                        _owner.FeOptions.WpfIsImperfectShapeSoftened_StaticAnalysis_Required)
                     {
-                        // Sets and runs the Eigenvalue Buckling
-                        File_AppendHeader("Imperfect Shape - Full Stiffness - Eigenvalue Buckling Setup And Run");
-                        WriteHelper_EigenvalueBucklingAnalysis();
+                        // Uses the selected eigenvalue buckling shape to deform the original geometry
+                        File_AppendHeader("Imperfect Shape - Update Geometry With Eigenvalue Buckling Analysis' Deformations");
+                        WriteHelper_ImperfectAnalysis_UpdateGeometryUsingEigenvalueBucklingShape();
 
-                        // Output results for the Eigenvalue Buckling analysis
-                        File_AppendHeader("Imperfect Shape - Full Stiffness - Eigenvalue Buckling Results Data");
-                        foreach (FeResultClassification feResultSelectStatusClass in
-                            _owner.FeOptions.SelectedOutputResults.Where(a => a.TargetShape == FeAnalysisShapeEnum.ImperfectShape_FullStiffness &&
-                                                                              a.IsEigenValueBuckling))
+                        #region Imperfect Shape Static Analysis - Full Stiffness
+
+                        if (_owner.FeOptions.WpfIsImperfectShapeFullStiffness_StaticAnalysis_Required)
                         {
+                            // Runs the new Imperfect Geometry 
+                            File_AppendHeader("Imperfect Shape - Full Stiffness - Static Analysis Setup And Run");
+                            WriteHelper_ImperfectAnalysis_Solve();
+
+                            // Writes the Imperfect Analysis' Results - with the exception of the Eigenvalue Buckling
+                            File_AppendHeader("Imperfect Shape - Full Stiffness - Static Analysis Results Data");
                             // Clears the buffer of the touched families
                             _writeResultTouchedTypes.Clear();
+                            foreach (FeResultClassification feResultSelectStatusClass in
+                                _owner.FeOptions.SelectedOutputResults.Where(a => a.TargetShape == FeAnalysisShapeEnum.ImperfectShape_FullStiffness &&
+                                                                                  !a.IsEigenValueBuckling))
+                            {
+                                WriteHelper_WriteResults(feResultSelectStatusClass);
+                            }
 
-                            WriteHelper_WriteResults(feResultSelectStatusClass);
+                            // Writes the ScreenShot for the Imperfect Analysis' Results - with the exception of the Eigenvalue Buckling
+                            File_AppendHeader("Imperfect Shape - Full Stiffness - Static Analysis Results ScreenShots");
+                            foreach (FeResultClassification feResultSelectStatusClass in
+                                _owner.FeOptions.SelectedOutputResults.Where(a => a.TargetShape == FeAnalysisShapeEnum.ImperfectShape_FullStiffness &&
+                                                                                  !a.IsEigenValueBuckling))
+                            {
+                                WriteHelper_WriteScreenShots(feResultSelectStatusClass);
+                            }
                         }
 
-                        // Outputs the Screenshots for the Eigenvalue Buckling analysis
-                        File_AppendHeader("Imperfect Shape - Full Stiffness - Eigenvalue Buckling Results ScreenShots");
-                        foreach (FeResultClassification feResultSelectStatusClass in
-                            _owner.FeOptions.SelectedOutputResults.Where(a => a.TargetShape == FeAnalysisShapeEnum.ImperfectShape_FullStiffness &&
-                                                                              a.IsEigenValueBuckling))
+                        #endregion
+
+                        #region Imperfect Shape Eigenvalue Buckling Analysis - Full Stiffness
+
+                        if (_owner.FeOptions.WpfIsImperfectShapeFullStiffness_EigenvalueBuckling_Required)
                         {
-                            WriteHelper_WriteScreenShots(feResultSelectStatusClass);
+                            // Sets and runs the Eigenvalue Buckling
+                            File_AppendHeader("Imperfect Shape - Full Stiffness - Eigenvalue Buckling Setup And Run");
+                            WriteHelper_EigenvalueBucklingAnalysis();
+
+                            // Output results for the Eigenvalue Buckling analysis
+                            File_AppendHeader("Imperfect Shape - Full Stiffness - Eigenvalue Buckling Results Data");
+                            foreach (FeResultClassification feResultSelectStatusClass in
+                                _owner.FeOptions.SelectedOutputResults.Where(a => a.TargetShape == FeAnalysisShapeEnum.ImperfectShape_FullStiffness &&
+                                                                                  a.IsEigenValueBuckling))
+                            {
+                                WriteHelper_WriteResults(feResultSelectStatusClass);
+                            }
+
+                            // Outputs the Screenshots for the Eigenvalue Buckling analysis
+                            File_AppendHeader("Imperfect Shape - Full Stiffness - Eigenvalue Buckling Results ScreenShots");
+                            foreach (FeResultClassification feResultSelectStatusClass in
+                                _owner.FeOptions.SelectedOutputResults.Where(a => a.TargetShape == FeAnalysisShapeEnum.ImperfectShape_FullStiffness &&
+                                                                                  a.IsEigenValueBuckling))
+                            {
+                                WriteHelper_WriteScreenShots(feResultSelectStatusClass);
+                            }
                         }
-                    }
-                    #endregion
 
-                    #region Imperfect Shape Static Analysis - Softened
-                    if (_owner.FeOptions.WpfIsImperfectShapeSoftened_StaticAnalysis_Required)
-                    {
-                        // Runs the new Imperfect Geometry 
-                        File_AppendHeader("Imperfect Shape - Softened - Static Analysis Setup And Run");
-                        WriteHelper_ImperfectAnalysis_Soften();
-                        WriteHelper_ImperfectAnalysis_Solve();
+                        #endregion
 
-                        // Writes the Imperfect Analysis' Results - with the exception of the Eigenvalue Buckling
-                        File_AppendHeader("Imperfect Shape - Softened - Static Analysis Results Data");
-                        foreach (FeResultClassification feResultSelectStatusClass in
-                            _owner.FeOptions.SelectedOutputResults.Where(a => a.TargetShape == FeAnalysisShapeEnum.ImperfectShape_Softened &&
-                                                                              !a.IsEigenValueBuckling))
+                        #region Imperfect Shape Static Analysis - Softened
+
+                        if (_owner.FeOptions.WpfIsImperfectShapeSoftened_StaticAnalysis_Required)
                         {
+                            // Runs the new Imperfect Geometry 
+                            File_AppendHeader("Imperfect Shape - Softened - Static Analysis Setup And Run");
+                            WriteHelper_ImperfectAnalysis_Soften();
+                            WriteHelper_ImperfectAnalysis_Solve();
+
+                            // Writes the Imperfect Analysis' Results - with the exception of the Eigenvalue Buckling
+                            File_AppendHeader("Imperfect Shape - Softened - Static Analysis Results Data");
                             // Clears the buffer of the touched families
                             _writeResultTouchedTypes.Clear();
+                            foreach (FeResultClassification feResultSelectStatusClass in
+                                _owner.FeOptions.SelectedOutputResults.Where(a => a.TargetShape == FeAnalysisShapeEnum.ImperfectShape_Softened &&
+                                                                                  !a.IsEigenValueBuckling))
+                            {
+                                WriteHelper_WriteResults(feResultSelectStatusClass);
+                            }
 
-                            WriteHelper_WriteResults(feResultSelectStatusClass);
+                            // Writes the ScreenShot for the Imperfect Analysis' Results - with the exception of the Eigenvalue Buckling
+                            File_AppendHeader("Imperfect Shape - Softened - Static Analysis Results ScreenShots");
+                            foreach (FeResultClassification feResultSelectStatusClass in
+                                _owner.FeOptions.SelectedOutputResults.Where(a => a.TargetShape == FeAnalysisShapeEnum.ImperfectShape_Softened &&
+                                                                                  !a.IsEigenValueBuckling))
+                            {
+                                WriteHelper_WriteScreenShots(feResultSelectStatusClass);
+                            }
                         }
 
-                        // Writes the ScreenShot for the Imperfect Analysis' Results - with the exception of the Eigenvalue Buckling
-                        File_AppendHeader("Imperfect Shape - Softened - Static Analysis Results ScreenShots");
-                        foreach (FeResultClassification feResultSelectStatusClass in
-                            _owner.FeOptions.SelectedOutputResults.Where(a => a.TargetShape == FeAnalysisShapeEnum.ImperfectShape_Softened &&
-                                                                              !a.IsEigenValueBuckling))
+                        #endregion
+
+                        #region Imperfect Shape Eigenvalue Buckling Analysis - Softened
+
+                        if (_owner.FeOptions.WpfIsImperfectShapeSoftened_EigenvalueBuckling_Required)
                         {
-                            WriteHelper_WriteScreenShots(feResultSelectStatusClass);
+                            // Sets and runs the Eigenvalue Buckling
+                            File_AppendHeader("Imperfect Shape - Softened - Eigenvalue Buckling Setup And Run");
+                            WriteHelper_EigenvalueBucklingAnalysis();
+
+                            // Output results for the Eigenvalue Buckling analysis
+                            File_AppendHeader("Imperfect Shape - Softened - Eigenvalue Buckling Results Data");
+                            foreach (FeResultClassification feResultSelectStatusClass in
+                                _owner.FeOptions.SelectedOutputResults.Where(a => a.TargetShape == FeAnalysisShapeEnum.ImperfectShape_Softened &&
+                                                                                  a.IsEigenValueBuckling))
+                            {
+                                WriteHelper_WriteResults(feResultSelectStatusClass);
+                            }
+
+                            // Outputs the Screenshots for the Eigenvalue Buckling analysis
+                            File_AppendHeader("Imperfect Shape - Softened - Eigenvalue Buckling Results ScreenShots");
+                            foreach (FeResultClassification feResultSelectStatusClass in
+                                _owner.FeOptions.SelectedOutputResults.Where(a => a.TargetShape == FeAnalysisShapeEnum.ImperfectShape_Softened &&
+                                                                                  a.IsEigenValueBuckling))
+                            {
+                                WriteHelper_WriteScreenShots(feResultSelectStatusClass);
+                            }
                         }
+
+                        #endregion
                     }
-                    #endregion
-
-                    #region Imperfect Shape Eigenvalue Buckling Analysis - Softened
-                    if (_owner.FeOptions.WpfIsImperfectShapeSoftened_EigenvalueBuckling_Required)
-                    {
-                        // Sets and runs the Eigenvalue Buckling
-                        File_AppendHeader("Imperfect Shape - Softened - Eigenvalue Buckling Setup And Run");
-                        WriteHelper_EigenvalueBucklingAnalysis();
-
-                        // Output results for the Eigenvalue Buckling analysis
-                        File_AppendHeader("Imperfect Shape - Softened - Eigenvalue Buckling Results Data");
-                        foreach (FeResultClassification feResultSelectStatusClass in
-                            _owner.FeOptions.SelectedOutputResults.Where(a => a.TargetShape == FeAnalysisShapeEnum.ImperfectShape_Softened &&
-                                                                              a.IsEigenValueBuckling))
-                        {
-                            // Clears the buffer of the touched families
-                            _writeResultTouchedTypes.Clear();
-
-                            WriteHelper_WriteResults(feResultSelectStatusClass);
-                        }
-
-                        // Outputs the Screenshots for the Eigenvalue Buckling analysis
-                        File_AppendHeader("Imperfect Shape - Softened - Eigenvalue Buckling Results ScreenShots");
-                        foreach (FeResultClassification feResultSelectStatusClass in
-                            _owner.FeOptions.SelectedOutputResults.Where(a => a.TargetShape == FeAnalysisShapeEnum.ImperfectShape_Softened &&
-                                                                              a.IsEigenValueBuckling))
-                        {
-                            WriteHelper_WriteScreenShots(feResultSelectStatusClass);
-                        }
-                    }
-                    #endregion
                 }
+
+                #endregion
             }
-            #endregion
-
-            #region Sending the Input File to Ansys
-            // Writes the file
-            File.WriteAllText(Path.Combine(FeWorkFolder, "model_input_file.dat"), Sb.ToString());
-
-            // Sends a signal to start the analysis
-            string startSignalPath = Path.Combine(FeWorkFolder, "ems_signal_start.control");
-            if (File.Exists(startSignalPath)) File.Delete(startSignalPath);
-            File.WriteAllText(startSignalPath, " ");
-
-            // Pools for the existence of the finish file
-            string finishFile = Path.Combine(FeWorkFolder, "ems_signal_iteration_finish.control");
-            while (true)
+            catch (Exception e)
             {
-                // Gets the list of files in the directory - the files will be consumed (deleted) as they appear in each waiting iteration
-                string[] files = Directory.GetFiles(FeWorkFolder); // Includes the Path!
-                foreach (string file in files)
+                string message = $"Could not create the input file text. {e.Message}";
+                inModel.Owner.RuntimeMessages.Add(new SolutionPoint_Message(message, SolutionPoint_MessageSourceEnum.FiniteElementSolver, SolutionPoint_MessageLevelEnum.Error, e));
+                throw new AnsysSolverException(message);
+            }
+
+            try
+            {
+                // Writes the file
+                File.WriteAllText(Path.Combine(FeWorkFolder, "model_input_file.dat"), Sb.ToString());
+            }
+            catch (Exception e)
+            {
+                string message = $"Could not write the input file to the disk. {e.Message}";
+                inModel.Owner.RuntimeMessages.Add(new SolutionPoint_Message(message, SolutionPoint_MessageSourceEnum.FiniteElementSolver, SolutionPoint_MessageLevelEnum.Error, e));
+                throw new AnsysSolverException(message);
+            }
+
+            #region Sends a signal to start the analysis
+            try
+            {
+                string startSignalPath = Path.Combine(FeWorkFolder, "ems_signal_start.control");
+                if (File.Exists(startSignalPath)) File.Delete(startSignalPath);
+                File.WriteAllText(startSignalPath, " ");
+            }
+            catch (Exception e)
+            {
+                string message = $"Could not send (write to disk) the ems_signal_start.control signal. {e.Message}";
+                inModel.Owner.RuntimeMessages.Add(new SolutionPoint_Message(message, SolutionPoint_MessageSourceEnum.FiniteElementSolver, SolutionPoint_MessageLevelEnum.Error, e));
+                throw new AnsysSolverException(message);
+            }
+            #endregion
+
+            try
+            {
+                #region Reading the results
+
+                // Pools for the existence of the nodal locations
+                string nodalLocationsFile = Path.Combine(FeWorkFolder, "ems_output_meshinfo_nodal_locations.txt");
+                while (true)
                 {
-                    if (Path.GetFileName(file).Contains("ems_output_"))
+                    if (File.Exists(nodalLocationsFile))
                     {
-                        if (ReadHelper_ReadResultFile(file))
-                        { // The file matched a result and was read
-                            File.Delete(file);
+                        if (ReadHelper_ReadResultFile(nodalLocationsFile))
+                        {
+                            // The file matched a result and was read
+                            ExpectedOutputNotConsumedList.Remove(Path.GetFileName(nodalLocationsFile));
+                            File.Delete(nodalLocationsFile);
+                            break;
                         }
+
+                        throw new AnsysSolverException($"Problem reading the ems_output_meshinfo_nodal_locations file.txt");
                     }
-                    else if (Path.GetFileName(file).Contains("ems_image_"))
-                    {
-                        if (ReadHelper_ReadScreenShotFile(file))
-                        { // The file matched an image and was read
-                            File.Delete(file);
-                        }
-                    }
+
+                    GetErrorsAndThrow();
+                    Thread.Sleep(50);
                 }
 
-                // Waits a little bit
-                Thread.Sleep(50);
+                // Pools for the existence of the ems_output_meshinfo_elements_of_lines
+                string elementOfLinesFile = Path.Combine(FeWorkFolder, "ems_output_meshinfo_elements_of_lines.txt");
+                while (true)
+                {
+                    if (File.Exists(elementOfLinesFile))
+                    {
+                        if (ReadHelper_ReadResultFile(elementOfLinesFile))
+                        {
+                            // The file matched a result and was read
+                            ExpectedOutputNotConsumedList.Remove(Path.GetFileName(elementOfLinesFile));
+                            File.Delete(elementOfLinesFile);
+                            break;
+                        }
 
-                // If the result file exists in the list gotten at the beginning (ensures that we will grab all results).
-                if (File.Exists(finishFile)) break;
+                        throw new AnsysSolverException($"Problem reading the ems_output_meshinfo_elements_of_lines file.txt");
+                    }
+
+                    GetErrorsAndThrow();
+                    Thread.Sleep(50);
+                }
+
+                // Pools for the existence of the finish file
+                string finishFile = Path.Combine(FeWorkFolder, "ems_signal_iteration_finish.control");
+                while (true)
+                {
+                    // Gets the list of files in the directory - the files will be consumed (deleted) as they appear in each waiting iteration
+                    string[] files = Directory.GetFiles(FeWorkFolder); // Includes the Path!
+                    foreach (string file in files)
+                    {
+                        if (Path.GetFileName(file).Contains("ems_output_"))
+                        {
+                            if (ReadHelper_ReadResultFile(file))
+                            {
+                                // The file matched a result and was read
+                                ExpectedOutputNotConsumedList.Remove(Path.GetFileName(file));
+                                File.Delete(file);
+                            }
+                        }
+                        else if (Path.GetFileName(file).Contains("ems_image_"))
+                        {
+                            if (ReadHelper_ReadScreenShotFile(file))
+                            {
+                                // The file matched an image and was read
+                                ExpectedOutputNotConsumedList.Remove(Path.GetFileName(file));
+                                File.Delete(file);
+                            }
+                        }
+                    }
+
+                    // Waits a little bit
+                    GetErrorsAndThrow();
+                    Thread.Sleep(50);
+
+                    // If the result file exists in the list gotten at the beginning (ensures that we will grab all results).
+                    if (ExpectedOutputNotConsumedList.Count == 0 && File.Exists(finishFile)) break;
+                }
+
+                // Cleans-up the signal file
+                File.Delete(finishFile);
+
+                #endregion
             }
-            // Cleans-up the signal file
-            File.Delete(finishFile);
-            #endregion
+            catch (AnsysSolverException ase)
+            {
+                inModel.Owner.RuntimeMessages.Add(new SolutionPoint_Message(ase.Message, SolutionPoint_MessageSourceEnum.FiniteElementSolver, SolutionPoint_MessageLevelEnum.Error, ase));
+                throw ase;
+            }
+            catch (Exception e)
+            {
+                string message = $"Failed to read results. {e.Message}";
+                inModel.Owner.RuntimeMessages.Add(new SolutionPoint_Message(message, SolutionPoint_MessageSourceEnum.FiniteElementSolver, SolutionPoint_MessageLevelEnum.Error, e));
+                throw new AnsysSolverException(message, e);
+            }
         }
 
         #region Ansys Functions to Write the Input File
@@ -417,10 +600,6 @@ end_exists = 0
             File_StartSection("Setting-up Basic Configuration");
             Sb.AppendLine($"/TITLE,'{_model.ModelName}'");
             File_AppendCommandWithComment("/PREP7", "Preprocessing Environment");
-
-            if (_owner.FeOptions.LargeDeflections_IsSet) File_AppendCommandWithComment("NLGEOM,ON", "Large Deflections = ENABLED");
-            else File_AppendCommandWithComment("NLGEOM,OFF", "Large Deflections = DISABLED");
-
             File_EndSection();
 
             File_StartSection("Element Type");
@@ -547,10 +726,15 @@ end_exists = 0
             File_EndSection();
 
             File_StartSection("Perfect Shape - Solving");
-            File_AppendCommandWithComment("ANTYPE,STATIC", "Analysis Type - Static");
+            File_AppendCommandWithComment("ANTYPE,STATIC,NEW", "Analysis Type - Static");
+
+            if (_owner.FeOptions.LargeDeflections_IsSet) File_AppendCommandWithComment("NLGEOM,ON", "Large Deflections = ENABLED");
+            else File_AppendCommandWithComment("NLGEOM,OFF", "Large Deflections = DISABLED");
+
             File_AppendCommandWithComment("PSTRES,1", "Stores the pre-stress values because they will be used for the future eigenvalue buckling analysis.");
             File_AppendCommandWithComment("OUTPR,ALL", "Prints all solution");
             File_AppendCommandWithComment("ALLSEL,ALL", "Somehow, and for any weird-ass reason, Ansys will only pass KeyPoints definitions onwards if they are selected.");
+            File_AppendCommandWithComment("DELTIM, 1, 1, 50", "Sets the number of time steps for this analysis.");
             File_AppendCommandWithComment("SOLVE", "Solves the problem");
             File_EndSection();
 
@@ -572,6 +756,7 @@ NLIST
 /OUTPUT
 ");
             File_EndSection();
+            ExpectedOutputNotConsumedList.Add("ems_output_meshinfo_nodal_locations.txt");
 
             File_StartSection("Post-Process - Write Mesh Information: BEAM Elements of each Line - File <ems_output_meshinfo_elements_of_lines.txt>");
             Sb.AppendLine(@"
@@ -640,16 +825,36 @@ elemindex = 1 ! The element index in the array
 
 *CFCLOSE");
             File_EndSection();
+            ExpectedOutputNotConsumedList.Add("ems_output_meshinfo_elements_of_lines.txt");
         }
         private void WriteHelper_EigenvalueBucklingAnalysis()
         {
             File_StartSection("Setting and running the Eigenvalue Buckling Analysis");
+
+            // Eigenvalue Buckling analysis cannot start from a static analysis where the NLGEOM was turned on
+            if (_owner.FeOptions.LargeDeflections_IsSet)
+            {
+                File_AppendCommentLine("NLGEOM was turned on - turns it off and re-run to create the basis for the eigenvalue buckling");
+                File_AppendCommandWithComment("/SOLU", "Solution Environment");
+                File_AppendCommandWithComment("ANTYPE,STATIC,NEW", "Analysis Type - Static");
+                File_AppendCommandWithComment("NLGEOM,OFF", "Large Deflections = DISABLED");
+                File_AppendCommandWithComment("PSTRES,1", "Stores the pre-stress values because they will be used for the future eigenvalue buckling analysis.");
+                File_AppendCommandWithComment("OUTPR,ALL", "Prints all solution");
+                File_AppendCommandWithComment("ALLSEL,ALL", "Somehow, and for any weird-ass reason, Ansys will only pass KeyPoints definitions onwards if they are selected.");
+                File_AppendCommandWithComment("DELTIM, 1, 1, 50", "Sets the number of time steps for this analysis.");
+                File_AppendCommandWithComment("SOLVE", "Solves the problem - without NLGEOM to be used in the Eigenvalue Buckling analysis");
+
+            }
+
+            File_AppendCommandWithComment("/POST1", "Post-Processing Environment");
+            File_AppendCommandWithComment("SET,LAST", "Makes the last solution set to be used as buckling input");
             File_AppendCommandWithComment("/SOLU", "Goes back to the Solution Environment");
-            File_AppendCommandWithComment("ANTYPE,BUCKLE", "Sets the analysis type as Eigenvalue Buckling");
+            File_AppendCommandWithComment("ANTYPE,BUCKLE,NEW", "Sets the analysis type as Eigenvalue Buckling");
             File_AppendCommandWithComment($"BUCOPT,LANB,{_owner.FeOptions.EigenvalueBuckling_ShapesToCapture},,,RANGE", $"Sets the options and to capture the first {_owner.FeOptions.EigenvalueBuckling_ShapesToCapture} shapes");
             File_AppendCommandWithComment("MXPAND, ALL, , , 1,,,,", "Tells that we want to know the displacements at the nodes. Energy outputs may also be given, if required. TODO");
             File_AppendCommandWithComment("OUTPR,ALL", "Prints all solution");
             File_AppendCommandWithComment("ALLSEL,ALL", "Somehow, and for any weird-ass reason, Ansys will only pass KeyPoints definitions onwards if they are selected.");
+            File_AppendCommandWithComment("DELTIM, 1, 1, 50", "Sets the number of time steps for this analysis.");
             File_AppendCommandWithComment("SOLVE", "Solves the problem");
             File_AppendCommandWithComment("/POST1", "Post-Processing Environment");
             File_EndSection();
@@ -657,21 +862,27 @@ elemindex = 1 ! The element index in the array
         private void WriteHelper_ImperfectAnalysis_UpdateGeometryUsingEigenvalueBucklingShape()
         {
             // Decides on the factor to be used
-            double eigenModeScale = _owner.FeOptions.Imperfect_MultiplierFromBoundingBox ? _model.Joints_BoundingBox_MaxLength : _owner.FeOptions.Imperfect_Multiplier;
+            double eigenModeScale = _owner.FeOptions.Imperfect_MultiplierFromBoundingBox ? (_model.Joints_BoundingBox_MaxLength / 1000d) : _owner.FeOptions.Imperfect_Multiplier;
 
             File_StartSection("Add the deformations from the Eigenvalue Buckling");
             File_AppendCommandWithComment("/PREP7", "Preprocessing Environment");
-            File_AppendCommandWithComment($"UPGEOM,{eigenModeScale},{_owner.FeOptions.Imperfect_EigenvalueBucklingMode},,{_jobName},rst", $"Adds displacements from a previous analysis and updates the geometry of the finite element model to the deformed configuration.");
+            File_AppendCommandWithComment($"UPGEOM,{eigenModeScale},1,{_owner.FeOptions.Imperfect_EigenvalueBucklingMode},{_jobName},rst", $"Adds displacements from a previous analysis and updates the geometry of the finite element model to the deformed configuration.");
             File_EndSection();
         }
         private void WriteHelper_ImperfectAnalysis_Solve()
         {
             File_StartSection("Imperfect Shape - Solve");
+
             File_AppendCommandWithComment("/SOLU", "Solution Environment");
-            File_AppendCommandWithComment("ANTYPE,STATIC", "Analysis Type - Static");
+            File_AppendCommandWithComment("ANTYPE,STATIC,NEW", "Analysis Type - Static");
+
+            if (_owner.FeOptions.LargeDeflections_IsSet) File_AppendCommandWithComment("NLGEOM,ON", "Large Deflections = ENABLED");
+            else File_AppendCommandWithComment("NLGEOM,OFF", "Large Deflections = DISABLED");
+
             File_AppendCommandWithComment("PSTRES,1", "Stores the pre-stress values because they will be used for the future eigenvalue buckling analysis.");
             File_AppendCommandWithComment("OUTPR,ALL", "Prints all solution");
             File_AppendCommandWithComment("ALLSEL,ALL", "Somehow, and for any weird-ass reason, Ansys will only pass KeyPoints definitions onwards if they are selected.");
+            File_AppendCommandWithComment("DELTIM, 1, 1, 50", "Sets the number of time steps for this analysis.");
             File_AppendCommandWithComment("SOLVE", "Solves the problem");
             File_EndSection();
 
@@ -690,8 +901,7 @@ elemindex = 1 ! The element index in the array
             File_AppendCommandWithComment("/PREP7", "Preprocessing Environment");
             foreach (FeMaterial feMaterial in _model.Materials)
             {
-                File_AppendCommandWithComment($"MPDELE,EX,{feMaterial.Id}", "Deletes the EX material property Definition");
-                File_AppendCommandWithComment($"MPDATA,EX,{feMaterial.Id},,{feMaterial.YoungModulus_Soft}", "Sets the Young's Modulus - Softer");
+                File_AppendCommandWithComment($"MP,EX,{feMaterial.Id},{feMaterial.YoungModulus_Soft}", "Setting Young's Modulus");
                 Sb.AppendLine();
             }
 
@@ -707,7 +917,8 @@ elemindex = 1 ! The element index in the array
             string outFileName = inRes.ResultFileName;
             string tempFileName = $"result_temp";
 
-            File_StartSection($"Post-Process - Results {inRes.ResultFamily} - File <{tempFileName}.txt>");
+            File_StartSection($"Post-Process - Results {inRes.ResultFamily} - File <{outFileName}.txt>");
+            File_AppendCommandWithComment("ALLSEL,ALL", "Selects Everything");
             switch (inRes.ResultFamily)
             {
                 case FeResultFamilyEnum.Nodal_Reaction:
@@ -715,11 +926,14 @@ elemindex = 1 ! The element index in the array
 PRRSOL
 /OUTPUT");
 
+                    File_AppendCommandWithComment($"/RENAME,{tempFileName},txt,,{outFileName},txt", "Renames the result file");
+                    ExpectedOutputNotConsumedList.Add($"{outFileName}.txt");
+
                     // Adds to the treated hashset
                     _writeResultTouchedTypes.Add(FeResultTypeEnum.Nodal_Reaction_Fx);
-                    _writeResultTouchedTypes.Add(FeResultTypeEnum.Nodal_Reaction_SFy);
-                    _writeResultTouchedTypes.Add(FeResultTypeEnum.Nodal_Reaction_SFz);
-                    _writeResultTouchedTypes.Add(FeResultTypeEnum.Nodal_Reaction_Tq);
+                    _writeResultTouchedTypes.Add(FeResultTypeEnum.Nodal_Reaction_Fy);
+                    _writeResultTouchedTypes.Add(FeResultTypeEnum.Nodal_Reaction_Fz);
+                    _writeResultTouchedTypes.Add(FeResultTypeEnum.Nodal_Reaction_Mx);
                     _writeResultTouchedTypes.Add(FeResultTypeEnum.Nodal_Reaction_My);
                     _writeResultTouchedTypes.Add(FeResultTypeEnum.Nodal_Reaction_Mz);
                     break;
@@ -747,6 +961,9 @@ PRRSOL
 %I%C%30.6G%C%30.6G%C%30.6G%C%30.6G%C%30.6G%C%30.6G
 
 *CFCLOSE");
+                    
+                    File_AppendCommandWithComment($"/RENAME,{tempFileName},txt,,{outFileName},txt", "Renames the result file");
+                    ExpectedOutputNotConsumedList.Add($"{outFileName}.txt");
 
                     _writeResultTouchedTypes.Add(FeResultTypeEnum.Nodal_Displacement_Ux);
                     _writeResultTouchedTypes.Add(FeResultTypeEnum.Nodal_Displacement_Uy);
@@ -763,6 +980,9 @@ PRRSOL
 PRESOL,S,PRIN
 /OUTPUT");
 
+                    File_AppendCommandWithComment($"/RENAME,{tempFileName},txt,,{outFileName},txt", "Renames the result file");
+                    ExpectedOutputNotConsumedList.Add($"{outFileName}.txt");
+
                     _writeResultTouchedTypes.Add(FeResultTypeEnum.SectionNode_Stress_S1);
                     _writeResultTouchedTypes.Add(FeResultTypeEnum.SectionNode_Stress_S2);
                     _writeResultTouchedTypes.Add(FeResultTypeEnum.SectionNode_Stress_S3);
@@ -775,6 +995,9 @@ PRESOL,S,PRIN
 /OUTPUT,'{tempFileName}','txt'
 PRESOL,EPTT,PRIN
 /OUTPUT");
+
+                    File_AppendCommandWithComment($"/RENAME,{tempFileName},txt,,{outFileName},txt", "Renames the result file");
+                    ExpectedOutputNotConsumedList.Add($"{outFileName}.txt");
 
                     _writeResultTouchedTypes.Add(FeResultTypeEnum.SectionNode_Strain_EPTT1);
                     _writeResultTouchedTypes.Add(FeResultTypeEnum.SectionNode_Strain_EPTT2);
@@ -839,6 +1062,11 @@ ETABLE, jEPELBzB, SMISC, 50 ! Bending strain on the element -Z side of the beam.
 
 *CFCLOSE
 ");
+
+                    File_AppendCommandWithComment($"/RENAME,{tempFileName}_inode,txt,,{outFileName}_inode,txt", "Renames the result file");
+                    File_AppendCommandWithComment($"/RENAME,{tempFileName}_jnode,txt,,{outFileName}_jnode,txt", "Renames the result file");
+                    ExpectedOutputNotConsumedList.Add($"{outFileName}_inode.txt");
+                    ExpectedOutputNotConsumedList.Add($"{outFileName}_jnode.txt");
 
                     _writeResultTouchedTypes.Add(FeResultTypeEnum.ElementNodal_BendingStrain_EPELDIR);
                     _writeResultTouchedTypes.Add(FeResultTypeEnum.ElementNodal_BendingStrain_EPELByT);
@@ -908,6 +1136,11 @@ ETABLE, jSFy, SMISC, 19  ! Shear Force Z
 *CFCLOSE
 ");
 
+                    File_AppendCommandWithComment($"/RENAME,{tempFileName}_inode,txt,,{outFileName}_inode,txt", "Renames the result file");
+                    File_AppendCommandWithComment($"/RENAME,{tempFileName}_jnode,txt,,{outFileName}_jnode,txt", "Renames the result file");
+                    ExpectedOutputNotConsumedList.Add($"{outFileName}_inode.txt");
+                    ExpectedOutputNotConsumedList.Add($"{outFileName}_jnode.txt");
+
                     _writeResultTouchedTypes.Add(FeResultTypeEnum.ElementNodal_Force_Fx);
                     _writeResultTouchedTypes.Add(FeResultTypeEnum.ElementNodal_Force_SFy);
                     _writeResultTouchedTypes.Add(FeResultTypeEnum.ElementNodal_Force_SFz);
@@ -973,6 +1206,11 @@ ETABLE, jSEy, SMISC, 25  ! Strain Y
 *CFCLOSE
 ");
 
+                    File_AppendCommandWithComment($"/RENAME,{tempFileName}_inode,txt,,{outFileName}_inode,txt", "Renames the result file");
+                    File_AppendCommandWithComment($"/RENAME,{tempFileName}_jnode,txt,,{outFileName}_jnode,txt", "Renames the result file");
+                    ExpectedOutputNotConsumedList.Add($"{outFileName}_inode.txt");
+                    ExpectedOutputNotConsumedList.Add($"{outFileName}_jnode.txt");
+
                     _writeResultTouchedTypes.Add(FeResultTypeEnum.ElementNodal_Strain_Ex);
                     _writeResultTouchedTypes.Add(FeResultTypeEnum.ElementNodal_Strain_Ky);
                     _writeResultTouchedTypes.Add(FeResultTypeEnum.ElementNodal_Strain_Kz);
@@ -1037,6 +1275,11 @@ ETABLE, jSBzB, SMISC, 40 ! Bending stress on the element -Z side of the beam
 *CFCLOSE
 ");
 
+                    File_AppendCommandWithComment($"/RENAME,{tempFileName}_inode,txt,,{outFileName}_inode,txt", "Renames the result file");
+                    File_AppendCommandWithComment($"/RENAME,{tempFileName}_jnode,txt,,{outFileName}_jnode,txt", "Renames the result file");
+                    ExpectedOutputNotConsumedList.Add($"{outFileName}_inode.txt");
+                    ExpectedOutputNotConsumedList.Add($"{outFileName}_jnode.txt");
+
                     _writeResultTouchedTypes.Add(FeResultTypeEnum.ElementNodal_Stress_SDir);
                     _writeResultTouchedTypes.Add(FeResultTypeEnum.ElementNodal_Stress_SByT);
                     _writeResultTouchedTypes.Add(FeResultTypeEnum.ElementNodal_Stress_SByB);
@@ -1087,7 +1330,7 @@ ETABLE, jMz, SMISC, 16
 ! line_element_match(1,6) => (element material)
 ! line_element_match(1,7) => (element section)
 
-*GET,uctable_lines,PARAM,DIM,1
+*GET,uctable_lines,PARM,uctable,DIM,1
 *DO,i,1,uctable_lines ! loops on all elements at the result array
     ! i => current element
     uctable(i,10) = i ! Saves the element number
@@ -1110,25 +1353,25 @@ ETABLE, jMz, SMISC, 16
     uctable(i,30) = c_matFy
     uctable(i,31) = c_matFu
     uctable(i,32) = 0.9  ! Material Partial Multiplier
-    uctable(i,33) = ( uctable(i,30) * uctable(i,32) ) ! Fy with partial factor
+    uctable(i,33) = uctable(i,30)*uctable(i,32) ! G_MAT_FY = Fy * gamma_mat Fy with partial factor
 
     uctable(i,35) = c_secArea
     uctable(i,36) = c_secPlMod2
     uctable(i,37) = c_secPlMod3
 
     ! Calculating the I Node
-    uctable(i,20) = (uctable(i,1) / uctable(i,35)
-    uctable(i,21) = (uctable(i,2) / uctable(i,36)
-    uctable(i,22) = (uctable(i,3) / uctable(i,37)
-    uctable(i,23) = ( uctable(i,20) + uctable(i,21) + uctable(i,22) )
-    uctable(i,24) = ( uctable(i,23) / uctable(i,33) )     ! I Node Utilization Ratio
+    uctable(i,20) = (uctable(i,1) / uctable(i,35))  ! P_A = Fx / c_secArea
+    uctable(i,21) = (uctable(i,2) / uctable(i,36))  ! M2_Z2 = My / c_secPlMod2
+    uctable(i,22) = (uctable(i,3) / uctable(i,37))  ! M3_Z3 = Mz / c_secPlMod3
+    uctable(i,23) = (uctable(i,20) + uctable(i,21) + uctable(i,22) )  ! SUM
+    uctable(i,24) = (uctable(i,23) / uctable(i,33) )     ! I Node Utilization Ratio
 
     ! Calculating the J Node
-    uctable(i,25) = (uctable(i,11) / uctable(i,35)
-    uctable(i,26) = (uctable(i,12) / uctable(i,36)
-    uctable(i,27) = (uctable(i,13) / uctable(i,37)
-    uctable(i,28) = ( uctable(i,25) + uctable(i,26) + uctable(i,27) )
-    uctable(i,29) = ( uctable(i,28) / uctable(i,33) )     ! J Node Utilization Ratio
+    uctable(i,25) = (uctable(i,11) / uctable(i,35))
+    uctable(i,26) = (uctable(i,12) / uctable(i,36))
+    uctable(i,27) = (uctable(i,13) / uctable(i,37))
+    uctable(i,28) = (uctable(i,25) + uctable(i,26) + uctable(i,27))
+    uctable(i,29) = (uctable(i,28) / uctable(i,33) )     ! J Node Utilization Ratio
 
 *ENDDO
 
@@ -1166,6 +1409,11 @@ ETABLE, jUC, SMISC, 14   ! Grabs bogus data to define an ETABLE
 *CFCLOSE
 ");
 
+                            File_AppendCommandWithComment($"/RENAME,{tempFileName}_inode,txt,,{outFileName}_inode,txt", "Renames the result file");
+                            File_AppendCommandWithComment($"/RENAME,{tempFileName}_jnode,txt,,{outFileName}_jnode,txt", "Renames the result file");
+                            ExpectedOutputNotConsumedList.Add($"{outFileName}_inode.txt");
+                            ExpectedOutputNotConsumedList.Add($"{outFileName}_jnode.txt");
+
                             _writeResultTouchedTypes.Add(FeResultTypeEnum.ElementNodal_CodeCheck);
                             break;
 
@@ -1192,6 +1440,9 @@ ETABLE, e_StrEn, SENE
 *CFCLOSE
 ");
 
+                            File_AppendCommandWithComment($"/RENAME,{tempFileName},txt,,{outFileName},txt", "Renames the result file");
+                            ExpectedOutputNotConsumedList.Add($"{outFileName}.txt");
+
                             _writeResultTouchedTypes.Add(FeResultTypeEnum.Element_StrainEnergy);
                             break;
 
@@ -1201,7 +1452,10 @@ ETABLE, e_StrEn, SENE
                             Sb.AppendLine($@"
 / OUTPUT, '{tempFileName}', 'txt'
 SET,LIST
-/ OUTPUT");
+/OUTPUT");
+
+                            File_AppendCommandWithComment($"/RENAME,{tempFileName},txt,,{outFileName},txt", "Renames the result file");
+                            ExpectedOutputNotConsumedList.Add($"{outFileName}.txt");
 
                             _writeResultTouchedTypes.Add(FeResultTypeEnum.Model_EigenvalueBuckling_Mode1Factor);
                             _writeResultTouchedTypes.Add(FeResultTypeEnum.Model_EigenvalueBuckling_Mode2Factor);
@@ -1216,7 +1470,6 @@ SET,LIST
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            File_AppendCommandWithComment($"/RENAME,{tempFileName},txt,,{outFileName},txt", "Renames the result file");
 
             File_EndSection();
         }
@@ -1229,11 +1482,12 @@ SET,LIST
 
                 File_StartSection($"Post-Process - ScreenShot {inRes.ResultType} | {FeScreenShotOptions.GetFriendlyEnumName(imageCaptureViewDirectionEnum)} - File <{outFilename}.png>");
 
+                File_AppendCommandWithComment("ALLSEL,ALL", "Selects Everything");
                 File_AppendCommandWithComment("/VUP,1,Z", "Sets the view up-down to match Rhino");
                 File_AppendCommandWithComment("/ANG,1", "Resets screen angle");
 
-                File_AppendCommandWithComment($"/VIEW,1,{_owner.FeOptions.ScreenShotOptions.ImageCapture_AnsysHelper_XDir},{_owner.FeOptions.ScreenShotOptions.ImageCapture_AnsysHelper_YDir},{_owner.FeOptions.ScreenShotOptions.ImageCapture_AnsysHelper_ZDir}", "Sets the view from given point to the origin");
-                if (!double.IsNaN(_owner.FeOptions.ScreenShotOptions.ImageCapture_AnsysHelper_RotateToAlign)) File_AppendCommandWithComment($"/ANG,1,{_owner.FeOptions.ScreenShotOptions.ImageCapture_AnsysHelper_RotateToAlign},ZS,1", "Rotates screen to align axes");
+                File_AppendCommandWithComment($"/VIEW,1,{_owner.FeOptions.ScreenShotOptions.ImageCapture_AnsysHelper_XDir(imageCaptureViewDirectionEnum)},{_owner.FeOptions.ScreenShotOptions.ImageCapture_AnsysHelper_YDir(imageCaptureViewDirectionEnum)},{_owner.FeOptions.ScreenShotOptions.ImageCapture_AnsysHelper_ZDir(imageCaptureViewDirectionEnum)}", "Sets the view from given point to the origin");
+                if (!double.IsNaN(_owner.FeOptions.ScreenShotOptions.ImageCapture_AnsysHelper_RotateToAlign(imageCaptureViewDirectionEnum))) File_AppendCommandWithComment($"/ANG,1,{_owner.FeOptions.ScreenShotOptions.ImageCapture_AnsysHelper_RotateToAlign(imageCaptureViewDirectionEnum)},ZS,1", "Rotates screen to align axes");
 
                 // Sets the other plot parameters
                 File_AppendCommandWithComment("/SHRINK,0", "0 => No Shrinkage. Shrinks elements, lines, areas, and volumes for display clarity.");
@@ -1246,6 +1500,8 @@ SET,LIST
 
                 //sb.AppendLine("QUALITY,1,0,0,0,4,0 ");
                 File_AppendCommandWithComment("/AUTO,1", "Resets the focus and distance specifications to automatically calculated.");
+
+                File_AppendCommandWithComment("/PBC,DEFA", "Resets to Default. Degree of freedom constraint, force load, and other symbols to displays.");
 
                 //Configures the deformed shape
                 if (_owner.FeOptions.ScreenShotOptions.ImageCapture_DeformedShape)
@@ -1264,7 +1520,7 @@ PNGR,COMP,1,-1
 PNGR,ORIENT,HORIZ   
 PNGR,COLOR,2
 PNGR,TMOD,1 
-/GFILE,800,
+/GFILE,600
 /CMAP,_TEMPCMAP_,CMP,,SAVE  
 /RGB,INDEX,100,100,100,0
 /RGB,INDEX,0,0,0,15 ");
@@ -1391,17 +1647,17 @@ PNGR,TMOD,1
 
 
                     case FeResultTypeEnum.Model_EigenvalueBuckling_Mode1Factor:
-                        Sb.AppendLine($"SET,1");
+                        Sb.AppendLine($"SET,1,1");
                         File_AppendCommandWithComment($"/GLINE,1,-1", "Hide mesh lines in plots");
                         Sb.AppendLine($"PLNSOL, U,SUM, {undefShape},1.0 ");
                         break;
                     case FeResultTypeEnum.Model_EigenvalueBuckling_Mode2Factor:
-                        Sb.AppendLine($"SET,2");
+                        Sb.AppendLine($"SET,1,2");
                         File_AppendCommandWithComment($"/GLINE,1,-1", "Hide mesh lines in plots");
                         Sb.AppendLine($"PLNSOL, U,SUM, {undefShape},1.0 ");
                         break;
                     case FeResultTypeEnum.Model_EigenvalueBuckling_Mode3Factor:
-                        Sb.AppendLine($"SET,3");
+                        Sb.AppendLine($"SET,1,3");
                         File_AppendCommandWithComment($"/GLINE,1,-1", "Hide mesh lines in plots");
                         Sb.AppendLine($"PLNSOL, U,SUM, {undefShape},1.0 ");
                         break;
@@ -1418,34 +1674,93 @@ PNGR,TMOD,1
 
 
                     case FeResultTypeEnum.Nodal_Reaction_Fx:
+                    case FeResultTypeEnum.Nodal_Reaction_Fz:
+                    case FeResultTypeEnum.Nodal_Reaction_Fy:
+                        File_AppendCommandWithComment($"/PBC,U,1", "Displays the boundary Conditions - Translation");
+                        File_AppendCommandWithComment($"/PBC,ROT,1", "Displays the boundary Conditions - Rotation");
+                        File_AppendCommandWithComment($"/PBC,RFOR,1", "Displays the Reaction Forces");
+                        File_AppendCommandWithComment($"/SHRINK,0", "Display onto lines");
+                        File_AppendCommandWithComment($"/ESHAPE,0.0", "Display onto lines");
+                        File_AppendCommandWithComment($"/EFACET,1", "Display onto lines");
+                        File_AppendCommandWithComment($"EPLOT", "Plots elements with the symbols");
+                        break;
+
                     case FeResultTypeEnum.Nodal_Reaction_My:
                     case FeResultTypeEnum.Nodal_Reaction_Mz:
-                    case FeResultTypeEnum.Nodal_Reaction_Tq:
-                    case FeResultTypeEnum.Nodal_Reaction_SFz:
-                    case FeResultTypeEnum.Nodal_Reaction_SFy:
-
+                    case FeResultTypeEnum.Nodal_Reaction_Mx:
+                        File_AppendCommandWithComment($"/PBC,U,1", "Displays the boundary Conditions - Translation");
+                        File_AppendCommandWithComment($"/PBC,ROT,1", "Displays the boundary Conditions - Rotation");
+                        File_AppendCommandWithComment($"/PBC,RMOM,1", "Displays the Reaction Moments");
+                        File_AppendCommandWithComment($"/SHRINK,0", "Display onto lines");
+                        File_AppendCommandWithComment($"/ESHAPE,0.0", "Display onto lines");
+                        File_AppendCommandWithComment($"/EFACET,1", "Display onto lines");
+                        File_AppendCommandWithComment($"EPLOT", "Plots elements with the symbols");
+                        break;
 
                     case FeResultTypeEnum.ElementNodal_BendingStrain_EPELDIR:
+                        File_AppendCommandWithComment($"/GLINE,1,0", "Show mesh lines in plots");
+                        Sb.AppendLine($"PLLS,iEPELDIR,jEPELDIR,1,{forcePlotOnDeformed},1");
+                        break;
                     case FeResultTypeEnum.ElementNodal_BendingStrain_EPELByT:
+                        File_AppendCommandWithComment($"/GLINE,1,0", "Show mesh lines in plots");
+                        Sb.AppendLine($"PLLS,iEPELByT,jEPELByT,1,{forcePlotOnDeformed},1");
+                        break;
                     case FeResultTypeEnum.ElementNodal_BendingStrain_EPELByB:
+                        File_AppendCommandWithComment($"/GLINE,1,0", "Show mesh lines in plots");
+                        Sb.AppendLine($"PLLS,iEPELByB,jEPELByB,1,{forcePlotOnDeformed},1");
+                        break;
                     case FeResultTypeEnum.ElementNodal_BendingStrain_EPELBzT:
+                        File_AppendCommandWithComment($"/GLINE,1,0", "Show mesh lines in plots");
+                        Sb.AppendLine($"PLLS,iEPELBzT,jEPELBzT,1,{forcePlotOnDeformed},1");
+                        break;
                     case FeResultTypeEnum.ElementNodal_BendingStrain_EPELBzB:
+                        File_AppendCommandWithComment($"/GLINE,1,0", "Show mesh lines in plots");
+                        Sb.AppendLine($"PLLS,iEPELBzB,jEPELBzB,1,{forcePlotOnDeformed},1");
+                        break;
 
 
 
                     case FeResultTypeEnum.ElementNodal_Strain_Ex:
+                        File_AppendCommandWithComment($"/GLINE,1,0", "Show mesh lines in plots");
+                        Sb.AppendLine($"PLLS,iEx,jEx,1,{forcePlotOnDeformed},1");
+                        break;
                     case FeResultTypeEnum.ElementNodal_Strain_Ky:
+                        File_AppendCommandWithComment($"/GLINE,1,0", "Show mesh lines in plots");
+                        Sb.AppendLine($"PLLS,iKy,jKy,1,{forcePlotOnDeformed},1");
+                        break;
                     case FeResultTypeEnum.ElementNodal_Strain_Kz:
+                        File_AppendCommandWithComment($"/GLINE,1,0", "Show mesh lines in plots");
+                        Sb.AppendLine($"PLLS,iKz,jKz,1,{forcePlotOnDeformed},1");
+                        break;
                     case FeResultTypeEnum.ElementNodal_Strain_SEz:
+                        File_AppendCommandWithComment($"/GLINE,1,0", "Show mesh lines in plots");
+                        Sb.AppendLine($"PLLS,iSEz,jSEz,1,{forcePlotOnDeformed},1");
+                        break;
                     case FeResultTypeEnum.ElementNodal_Strain_SEy:
+                        File_AppendCommandWithComment($"/GLINE,1,0", "Show mesh lines in plots");
+                        Sb.AppendLine($"PLLS,iSEy,jSEy,1,{forcePlotOnDeformed},1");
+                        break;
+
 
                     case FeResultTypeEnum.ElementNodal_Stress_SDir:
+                        File_AppendCommandWithComment($"/GLINE,1,0", "Show mesh lines in plots");
+                        Sb.AppendLine($"PLLS,iSDIR,jSDIR,1,{forcePlotOnDeformed},1");
+                        break;
                     case FeResultTypeEnum.ElementNodal_Stress_SByT:
+                        File_AppendCommandWithComment($"/GLINE,1,0", "Show mesh lines in plots");
+                        Sb.AppendLine($"PLLS,iSByT,jSByT,1,{forcePlotOnDeformed},1");
+                        break;
                     case FeResultTypeEnum.ElementNodal_Stress_SByB:
+                        File_AppendCommandWithComment($"/GLINE,1,0", "Show mesh lines in plots");
+                        Sb.AppendLine($"PLLS,iSByB,jSByB,1,{forcePlotOnDeformed},1");
+                        break;
                     case FeResultTypeEnum.ElementNodal_Stress_SBzT:
+                        File_AppendCommandWithComment($"/GLINE,1,0", "Show mesh lines in plots");
+                        Sb.AppendLine($"PLLS,iSBzT,jSBzT,1,{forcePlotOnDeformed},1");
+                        break;
                     case FeResultTypeEnum.ElementNodal_Stress_SBzB:
-
-                        Sb.AppendLine("Code for Image Saving Needs to be Written.");
+                        File_AppendCommandWithComment($"/GLINE,1,0", "Show mesh lines in plots");
+                        Sb.AppendLine($"PLLS,iSBzB,jSBzB,1,{forcePlotOnDeformed},1");
                         break;
 
                     default:
@@ -1459,6 +1774,7 @@ PNGR,TMOD,1
 /DEVICE,VECTOR,0");
 
                 File_AppendCommandWithComment($"/RENAME,{_jobName}000,png,,{outFilename},png", "Renames the image file");
+                ExpectedOutputNotConsumedList.Add($"{outFilename}.png");
 
                 File_EndSection();
             }
@@ -1466,8 +1782,85 @@ PNGR,TMOD,1
         #endregion
 
         #region Read Functions - From the Output Files
+        private readonly HashSet<string> _errorLogLines = new HashSet<string>(); 
+        private readonly Regex _errorMessageRegex = new Regex(@"\s*\*\*\*(?<kind>.*)\*\*\*\s*CP\s*=\s*(?<cp>[\d\.\+\-eE]*)\s*TIME\s*=\s*(?<time>[\d:]*)\s*(?<message>([^\r\n]+\r\n)*)");
+        private void GetErrorsAndThrow()
+        {
+            string errorFileLogFilePath = Path.Combine(FeWorkFolder, $"{_jobName}0.err");
+
+            // Found new lines
+            string accumulatedErrors = string.Empty;
+
+            try
+            {
+                // Reads the lines from the log file
+                StringBuilder sbNewLinesInFile = new StringBuilder();
+                using (FileStream fs = File.Open(errorFileLogFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                {
+                    using (StreamReader reader = new StreamReader(fs))
+                    {
+                        string fullText = reader.ReadToEnd();
+                        if (!fullText.EndsWith(Environment.NewLine)) return; // Aborts - it must end with a new line
+
+                        // Breaks the fulltext line by line
+                        string[] lines = fullText.Split('\n');
+
+                        foreach (string l in lines)
+                        {
+                            // If it is a new line, adds it to the StringBuilder
+                            if (_errorLogLines.Add(l)) sbNewLinesInFile.AppendLine(l.Trim(new char[] { '\n', '\r' }));
+                        }
+                    }
+                }
+
+                if (sbNewLinesInFile.Length > 0)
+                {
+                    foreach (Match m in _errorMessageRegex.Matches(sbNewLinesInFile.ToString()))
+                    {
+                        if (m.Success)
+                        {
+                            switch (m.Groups["kind"].Value.Trim())
+                            {
+                                case "ERROR":
+                                    accumulatedErrors += $"{m.Groups["message"].Value}{Environment.NewLine}";
+                                    _model.Owner.RuntimeMessages.Add(new SolutionPoint_Message(m.Groups["message"].Value, SolutionPoint_MessageSourceEnum.FiniteElementSolver, SolutionPoint_MessageLevelEnum.Error));
+                                    break;
+
+                                case "WARNING":
+                                    _model.Owner.RuntimeMessages.Add(new SolutionPoint_Message(m.Groups["message"].Value, SolutionPoint_MessageSourceEnum.FiniteElementSolver, SolutionPoint_MessageLevelEnum.Warning));
+                                    break;
+
+                                default:
+                                    accumulatedErrors += $"Could not find the type of Ansys message given by {m.Groups["kind"].Value}.{Environment.NewLine}";
+                                    _model.Owner.RuntimeMessages.Add(new SolutionPoint_Message($"Could not find the type of Ansys message given by {m.Groups["kind"].Value}.", SolutionPoint_MessageSourceEnum.FiniteElementSolver, SolutionPoint_MessageLevelEnum.Error));
+                                    break;
+                            }
+                        }
+                    }
+                    
+
+                }
+            }
+            catch 
+            {
+                // Ignores the errors while reading the log file.
+            }
+            
+            // Checks if the solver process is still alive
+            if (_commandLineProcess.HasExited)
+            {
+                string message = $"The Ansys process has terminated.{Environment.NewLine}";
+                _model.Owner.RuntimeMessages.Add(new SolutionPoint_Message(message, SolutionPoint_MessageSourceEnum.FiniteElementSolver, SolutionPoint_MessageLevelEnum.Error));
+                accumulatedErrors += message;
+            }
+
+            if (!string.IsNullOrWhiteSpace(accumulatedErrors)) throw new AnsysSolverException(accumulatedErrors);
+        }
+
         private bool ReadHelper_ReadResultFile(string inFullFileName)
         {
+            // Checks if the file is locked
+            if (EmasaWPFLibraryStaticMethods.IsFileLocked(new FileInfo(inFullFileName))) return false;
             string fileName = Path.GetFileNameWithoutExtension(inFullFileName);
 
             // Mesh Info - Nodal Locations
@@ -1487,22 +1880,26 @@ PNGR,TMOD,1
 
                             int nodeId = int.Parse(m.Groups["NODE"].Value);
 
-                            _model.MeshNodes.Add(nodeId,
-                                new FeMeshNode(nodeId,
-                                    double.Parse(m.Groups["X"].Value),
-                                    double.Parse(m.Groups["Y"].Value),
-                                    double.Parse(m.Groups["Z"].Value)));
+                            // Do we have a matching joint?
+                            Point3d nodeCoords = new Point3d(double.Parse(m.Groups["X"].Value), double.Parse(m.Groups["Y"].Value), double.Parse(m.Groups["Z"].Value));
+                            nodeCoords = _model.RoundedPoint3d(nodeCoords);
+
+                            _model.MeshNodes.Add(nodeId, new FeMeshNode(nodeId, nodeCoords, _model.Get_JointByCoordinate(nodeCoords)));
                         }
                     }
                     catch (Exception)
                     {
-                        throw new Exception($"Could not parse the line {line} into a FeMeshNode while reading the results.");
+                        throw new AnsysSolverException($"Could not parse the line {line} into a FeMeshNode while reading the results.");
                     }
                 }
 
+                _model.HasMeshNodes = true;
                 return true;
             }
 
+            // Aborts subsequent - the nodal locations must be read first!
+            if (!_model.HasMeshNodes) return false;
+            
             // Mesh Info - Elements of Lines
             else if (fileName == "ems_output_meshinfo_elements_of_lines")
             {
@@ -1526,28 +1923,47 @@ PNGR,TMOD,1
                         HashSet<int> addedList = new HashSet<int>();
                         foreach (var r in records)
                         {
-                            if (addedList.Add(r.ELEM)) _model.MeshBeamElements.Add(r.ELEM, new FeMeshBeamElement(r.ELEM, _model.MeshNodes[r.INODE], _model.MeshNodes[r.JNODE], _model.MeshNodes[r.KNODE]));
+                            if (addedList.Add(r.ELEM))
+                            {
+                                FeMeshBeamElement feBeamElement = new FeMeshBeamElement(r.ELEM, _model.MeshNodes[r.INODE], _model.MeshNodes[r.JNODE], _model.MeshNodes[r.KNODE]);
+
+                                _model.MeshBeamElements.Add(r.ELEM, feBeamElement);
+
+                                // Saves a CROSS reference to the Frame what owns this Mesh Element
+                                feBeamElement.OwnerFrame = _model.Frames[r.LINE];
+                                _model.Frames[r.LINE].MeshBeamElements.Add(feBeamElement);
+
+                                // Saves the reference of this Beam Element into its MeshNodes
+                                _model.MeshNodes[r.INODE].LinkedElements.Add(feBeamElement);
+                                _model.MeshNodes[r.JNODE].LinkedElements.Add(feBeamElement);
+                                _model.MeshNodes[r.KNODE].LinkedElements.Add(feBeamElement);
+                            }
                         }
 
                         // Links them to the frames
                         foreach (var r in records)
                         {
                             FeFrame frame = _model.Frames[r.LINE];
-                            frame.MeshElements.Add(_model.MeshBeamElements[r.ELEM]);
+                            frame.MeshBeamElements.Add(_model.MeshBeamElements[r.ELEM]);
                         }
                     }
                 }
 
+                _model.HasMeshBeams = true;
                 return true;
             }
+
+            // Aborts subsequent - the Elements of Lines must be read first!
+            if (!_model.HasMeshBeams) return false;
 
             // Checks the Selected Results
             foreach (FeResultClassification feResult in _owner.FeOptions.SelectedOutputResults)
             {
                 // The result file name does not match this selected result - skip
                 if (!fileName.Contains(feResult.ResultFileName)) continue;
+                // We found the result we wanted!
 
-                // We found the result we wanted
+                // Switch by result family
                 switch (feResult.ResultFamily)
                 {
                     case FeResultFamilyEnum.Nodal_Reaction:
@@ -1601,7 +2017,7 @@ PNGR,TMOD,1
                                         {
                                             _model.Results.Add(new FeResultItem(
                                                 inResultClass: feResult, 
-                                                inFeEntity: _model.MeshNodes[nodeId.Value], 
+                                                inFeLocation: FeResultLocation.CreateMeshNodeLocation(_model, _model.MeshNodes[nodeId.Value]), 
                                                 inResultValue: react));
                                         }
 
@@ -1611,7 +2027,7 @@ PNGR,TMOD,1
                             }
                             catch (Exception)
                             {
-                                throw new Exception($"Could not parse file {inFullFileName} to read the Nodal Results.");
+                                throw new AnsysSolverException($"Could not parse file {inFullFileName} to read the Nodal Results.");
                             }
                         }
                     }
@@ -1641,7 +2057,7 @@ PNGR,TMOD,1
                                 {
                                     _model.Results.Add(new FeResultItem(
                                         inResultClass: feResult,
-                                        inFeEntity: _model.MeshNodes[r.NODE],
+                                        inFeLocation: FeResultLocation.CreateMeshNodeLocation(_model, _model.MeshNodes[r.NODE]),
                                         inResultValue: new FeResultValue_NodalDisplacements()
                                             {
                                             UX = r.UX,
@@ -1665,8 +2081,6 @@ PNGR,TMOD,1
 
                         using (StreamReader reader = new StreamReader(inFullFileName))
                         {
-                            double tableDiscrepancyTolerance = 0.0001d;
-
                             try
                             {
                                 string line = null;
@@ -1698,7 +2112,9 @@ PNGR,TMOD,1
                                         double d4 = double.Parse(dataMatch.Groups["D4"].Value);
                                         double d5 = double.Parse(dataMatch.Groups["D5"].Value);
 
-                                        FeMeshNode_SectionNode e = _model.MeshBeamElements[currentElementId].GetNodeById(currentNodeId).SectionNodes_AddNewOrGet(secNodeId);
+                                        FeMeshBeamElement beam = _model.MeshBeamElements[currentElementId];
+                                        FeMeshNode node = _model.MeshBeamElements[currentElementId].GetNodeById(currentNodeId);
+                                        FeMeshNode_SectionNode e = node.SectionNodes_AddNewOrGet(secNodeId);
 
                                         FeResultValue_SectionNodalStress secNodeRes = new FeResultValue_SectionNodalStress()
                                             {
@@ -1711,14 +2127,14 @@ PNGR,TMOD,1
 
                                         _model.Results.Add(new FeResultItem(
                                             inResultClass: feResult,
-                                            inFeEntity: e,
+                                            inFeLocation: FeResultLocation.CreateSectionNodeLocation(_model, beam, node, e),
                                             inResultValue: secNodeRes));
                                     }
                                 }
                             }
                             catch (Exception e)
                             {
-                                throw new Exception($"Could not parse file {inFullFileName} to read the Nodal Stress Results by OptimizationSection Point.", e);
+                                throw new AnsysSolverException($"Could not parse file {inFullFileName} to read the Nodal Stress Results by OptimizationSection Point.", e);
                             }
                         }
                     }
@@ -1765,9 +2181,11 @@ PNGR,TMOD,1
                                         double d4 = double.Parse(dataMatch.Groups["D4"].Value);
                                         double d5 = double.Parse(dataMatch.Groups["D5"].Value);
 
-                                        FeMeshNode_SectionNode e = _model.MeshBeamElements[currentElementId].GetNodeById(currentNodeId).SectionNodes_AddNewOrGet(secNodeId);
+                                        FeMeshBeamElement beam = _model.MeshBeamElements[currentElementId];
+                                        FeMeshNode node = _model.MeshBeamElements[currentElementId].GetNodeById(currentNodeId);
+                                        FeMeshNode_SectionNode e = node.SectionNodes_AddNewOrGet(secNodeId);
 
-                                        FeResultValue_SectionNodalStrain secNodeRes = new FeResultValue_SectionNodalStrain()
+                                            FeResultValue_SectionNodalStrain secNodeRes = new FeResultValue_SectionNodalStrain()
                                             {
                                             EPTT1 = d1,
                                             EPTT2 = d2,
@@ -1778,14 +2196,14 @@ PNGR,TMOD,1
 
                                         _model.Results.Add(new FeResultItem(
                                             inResultClass: feResult,
-                                            inFeEntity: e,
+                                            inFeLocation: FeResultLocation.CreateSectionNodeLocation(_model, beam, node, e),
                                             inResultValue: secNodeRes));
                                     }
                                 }
                             }
                             catch (Exception ex)
                             {
-                                throw new Exception($"Could not parse file {inFullFileName} to read the Nodal Strain Results by OptimizationSection Point.", ex);
+                                throw new AnsysSolverException($"Could not parse file {inFullFileName} to read the Nodal Strain Results by OptimizationSection Point.", ex);
                             }
                         }
                     }
@@ -1814,9 +2232,12 @@ PNGR,TMOD,1
 
                                     foreach (var r in records)
                                     {
+                                        FeMeshBeamElement beam = _model.MeshBeamElements[r.ELEMENT];
+                                        FeMeshNode node = beam.INode;
+
                                         _model.Results.Add(new FeResultItem(
                                             inResultClass: feResult,
-                                            inFeEntity: _model.MeshBeamElements[r.ELEMENT].INode,
+                                            inFeLocation: FeResultLocation.CreateElementNodeLocation(_model, beam, node), 
                                             inResultValue: new FeResultValue_ElementNodalBendingStrain()
                                                 {
                                                 EPELDIR = r.iEPELDIR,
@@ -1850,9 +2271,12 @@ PNGR,TMOD,1
 
                                     foreach (var r in records)
                                     {
-                                        _model.Results.Add(new FeResultItem(
+                                        FeMeshBeamElement beam = _model.MeshBeamElements[r.ELEMENT];
+                                        FeMeshNode node = beam.JNode;
+
+                                            _model.Results.Add(new FeResultItem(
                                             inResultClass: feResult,
-                                            inFeEntity: _model.MeshBeamElements[r.ELEMENT].JNode,
+                                            inFeLocation: FeResultLocation.CreateElementNodeLocation(_model, beam, node),
                                             inResultValue: new FeResultValue_ElementNodalBendingStrain()
                                                 {
                                                 EPELDIR = r.jEPELDIR,
@@ -1892,9 +2316,12 @@ PNGR,TMOD,1
 
                                     foreach (var r in records)
                                     {
+                                        FeMeshBeamElement beam = _model.MeshBeamElements[r.ELEMENT];
+                                        FeMeshNode node = beam.INode;
+
                                         _model.Results.Add(new FeResultItem(
                                             inResultClass: feResult,
-                                            inFeEntity: _model.MeshBeamElements[r.ELEMENT].INode,
+                                            inFeLocation: FeResultLocation.CreateElementNodeLocation(_model, beam, node),
                                             inResultValue: new FeResultValue_ElementNodalForces()
                                                 {
                                                 Fx = r.iFx,
@@ -1930,9 +2357,12 @@ PNGR,TMOD,1
 
                                     foreach (var r in records)
                                     {
+                                        FeMeshBeamElement beam = _model.MeshBeamElements[r.ELEMENT];
+                                        FeMeshNode node = beam.JNode;
+
                                         _model.Results.Add(new FeResultItem(
                                             inResultClass: feResult,
-                                            inFeEntity: _model.MeshBeamElements[r.ELEMENT].JNode,
+                                            inFeLocation: FeResultLocation.CreateElementNodeLocation(_model, beam, node),
                                             inResultValue: new FeResultValue_ElementNodalForces()
                                                 {
                                                 Fx = r.jFx,
@@ -1972,9 +2402,12 @@ PNGR,TMOD,1
 
                                     foreach (var r in records)
                                     {
+                                        FeMeshBeamElement beam = _model.MeshBeamElements[r.ELEMENT];
+                                        FeMeshNode node = beam.INode;
+
                                         _model.Results.Add(new FeResultItem(
                                             inResultClass: feResult,
-                                            inFeEntity: _model.MeshBeamElements[r.ELEMENT].INode,
+                                            inFeLocation: FeResultLocation.CreateElementNodeLocation(_model, beam, node),
                                             inResultValue: new FeResultValue_ElementNodalStrain()
                                                 {
                                                 Ex = r.iEx,
@@ -2008,9 +2441,12 @@ PNGR,TMOD,1
 
                                     foreach (var r in records)
                                     {
+                                        FeMeshBeamElement beam = _model.MeshBeamElements[r.ELEMENT];
+                                        FeMeshNode node = beam.JNode;
+
                                         _model.Results.Add(new FeResultItem(
                                             inResultClass: feResult,
-                                            inFeEntity: _model.MeshBeamElements[r.ELEMENT].JNode,
+                                            inFeLocation: FeResultLocation.CreateElementNodeLocation(_model, beam, node),
                                             inResultValue: new FeResultValue_ElementNodalStrain()
                                                 {
                                                 Ex = r.jEx,
@@ -2049,9 +2485,12 @@ PNGR,TMOD,1
 
                                     foreach (var r in records)
                                     {
+                                        FeMeshBeamElement beam = _model.MeshBeamElements[r.ELEMENT];
+                                        FeMeshNode node = beam.INode;
+
                                         _model.Results.Add(new FeResultItem(
                                             inResultClass: feResult,
-                                            inFeEntity: _model.MeshBeamElements[r.ELEMENT].INode,
+                                            inFeLocation: FeResultLocation.CreateElementNodeLocation(_model, beam, node),
                                             inResultValue: new FeResultValue_ElementNodalStress()
                                                 {
                                                 SDIR = r.iSDIR,
@@ -2085,9 +2524,12 @@ PNGR,TMOD,1
 
                                     foreach (var r in records)
                                     {
+                                        FeMeshBeamElement beam = _model.MeshBeamElements[r.ELEMENT];
+                                        FeMeshNode node = beam.JNode;
+
                                         _model.Results.Add(new FeResultItem(
                                             inResultClass: feResult,
-                                            inFeEntity: _model.MeshBeamElements[r.ELEMENT].JNode,
+                                            inFeLocation: FeResultLocation.CreateElementNodeLocation(_model, beam, node),
                                             inResultValue: new FeResultValue_ElementNodalStress()
                                                 {
                                                 SDIR = r.jSDIR,
@@ -2109,16 +2551,91 @@ PNGR,TMOD,1
                         {
                             case FeResultTypeEnum.ElementNodal_CodeCheck:
                             {
-                                // TODO: Read the Code Check File Format
-                                if (fileName.Contains("_inode"))
-                                {
+                                        {
+                                            if (fileName.Contains("_inode"))
+                                            {
+                                                using (StreamReader reader = new StreamReader(inFullFileName))
+                                                {
+                                                    using (CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+                                                    {
+                                                        csv.Configuration.TrimOptions = TrimOptions.Trim;
 
-                                }
-                                else if (fileName.Contains("_jnode"))
-                                {
+                                                        var anonymousTypeDef = new
+                                                        {
+                                                            ELEMENT = default(int),
+                                                            P_A = default(double),
+                                                            M2_Z2 = default(double),
+                                                            M3_Z3 = default(double),
+                                                            SUM = default(double),
+                                                            G_MAT_FY = default(double),
+                                                            RATIO = default(double),
+                                                        };
+                                                        var records = csv.GetRecords(anonymousTypeDef);
 
-                                }
-                            }
+                                                        foreach (var r in records)
+                                                        {
+                                                            FeMeshBeamElement beam = _model.MeshBeamElements[r.ELEMENT];
+                                                            FeMeshNode node = beam.INode;
+
+                                                            _model.Results.Add(new FeResultItem(
+                                                                inResultClass: feResult,
+                                                                inFeLocation: FeResultLocation.CreateElementNodeLocation(_model, beam, node),
+                                                                inResultValue: new FeResultValue_ElementNodalCodeCheck()
+                                                                {
+                                                                    P_A = r.P_A,
+                                                                    M2_Z2 = r.M2_Z2,
+                                                                    M3_Z3 = r.M3_Z3,
+                                                                    SUM = r.SUM,
+                                                                    G_MAT_FY = r.G_MAT_FY,
+                                                                    RATIO = r.RATIO
+                                                                }));
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            else if (fileName.Contains("_jnode"))
+                                            {
+                                                using (StreamReader reader = new StreamReader(inFullFileName))
+                                                {
+                                                    using (CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+                                                    {
+                                                        csv.Configuration.TrimOptions = TrimOptions.Trim;
+
+                                                        var anonymousTypeDef = new
+                                                        {
+                                                            ELEMENT = default(int),
+                                                            P_A = default(double),
+                                                            M2_Z2 = default(double),
+                                                            M3_Z3 = default(double),
+                                                            SUM = default(double),
+                                                            G_MAT_FY = default(double),
+                                                            RATIO = default(double),
+                                                        };
+                                                        var records = csv.GetRecords(anonymousTypeDef);
+
+                                                        foreach (var r in records)
+                                                        {
+                                                            FeMeshBeamElement beam = _model.MeshBeamElements[r.ELEMENT];
+                                                            FeMeshNode node = beam.INode;
+
+                                                            _model.Results.Add(new FeResultItem(
+                                                                inResultClass: feResult,
+                                                                inFeLocation: FeResultLocation.CreateElementNodeLocation(_model, beam, node),
+                                                                inResultValue: new FeResultValue_ElementNodalCodeCheck()
+                                                                    {
+                                                                    P_A = r.P_A,
+                                                                    M2_Z2 = r.M2_Z2,
+                                                                    M3_Z3 = r.M3_Z3,
+                                                                    SUM = r.SUM,
+                                                                    G_MAT_FY = r.G_MAT_FY,
+                                                                    RATIO = r.RATIO
+                                                                    }));
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
                                     break;
 
                                 case FeResultTypeEnum.Element_StrainEnergy:
@@ -2140,7 +2657,7 @@ PNGR,TMOD,1
                                             {
                                                 _model.Results.Add(new FeResultItem(
                                                     inResultClass: feResult,
-                                                    inFeEntity: _model.MeshBeamElements[r.ELEMENT],
+                                                    inFeLocation: FeResultLocation.CreateElementLocation(_model, _model.MeshBeamElements[r.ELEMENT]), 
                                                     inResultValue: new FeResultValue_ElementStrainEnergy(r.e_StrEn)));
                                             }
                                         }
@@ -2152,7 +2669,42 @@ PNGR,TMOD,1
                                 case FeResultTypeEnum.Model_EigenvalueBuckling_Mode2Factor:
                                 case FeResultTypeEnum.Model_EigenvalueBuckling_Mode3Factor:
                                 {
-                                    // TODO: Read the Code Check File Format
+                                    Regex dataRegex = new Regex(@"^\s*(?<mode>\d+)\s*(?<mult>[\-\+\.\deE]+)");
+
+                                    using (StreamReader reader = new StreamReader(inFullFileName))
+                                    {
+                                        try
+                                        {
+                                            string line = null;
+
+                                            FeResultValue_EigenvalueBucklingSummary eigenvalue = new FeResultValue_EigenvalueBucklingSummary();
+
+                                            while ((line = reader.ReadLine()) != null)
+                                            {
+                                                Match dataMatch = dataRegex.Match(line);
+                                                if (dataMatch.Success)
+                                                {
+                                                    int mode = int.Parse(dataMatch.Groups["mode"].Value);
+                                                    double mult = double.Parse(dataMatch.Groups["mult"].Value);
+
+                                                    eigenvalue.EigenvalueBucklingMultipliers.Add(mode,mult);
+                                                        
+                                                }
+                                            }
+
+                                            if (eigenvalue.EigenvalueBucklingMultipliers.Count == 0) throw new AnsysSolverException($"The eigenvalue summary came out empty.");
+      
+                                            // adds to the result list
+                                            _model.Results.Add(new FeResultItem(
+                                                inResultClass: feResult,
+                                                inFeLocation: FeResultLocation.CreateModelLocation(_model),
+                                                inResultValue: eigenvalue));
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            throw new AnsysSolverException($"Could not parse file {inFullFileName} to read the Nodal Stress Results by OptimizationSection Point.", e);
+                                        }
+                                    }
                                 }
                                     break;
 
@@ -2175,6 +2727,7 @@ PNGR,TMOD,1
         }
         private bool ReadHelper_ReadScreenShotFile(string inFullFileName)
         {
+            if (EmasaWPFLibraryStaticMethods.IsFileLocked(new FileInfo(inFullFileName))) return false;
             string fileName = Path.GetFileNameWithoutExtension(inFullFileName);
 
             // Checks the Selected Results
@@ -2214,36 +2767,36 @@ PNGR,TMOD,1
         private void File_AppendHeader(string inHeader)
         {
             File_AppendSpacingLines(2);
-            Sb.AppendLine("!\t\t┌─────────────────────────────────────────────────────────────┐");
-            Sb.Append("!\t\t│   ");
+            Sb.AppendLine("!***************************************************************************************************************************");
+            Sb.Append("!*   ");
             Sb.AppendLine(inHeader);
-            Sb.AppendLine("!\t\t└─────────────────────────────────────────────────────────────┘");
+            Sb.AppendLine("!***************************************************************************************************************************");
         }
         private void File_AppendHeader(IEnumerable<string> inHeaderLines)
         {
-            Sb.AppendLine("!\t\t┌─────────────────────────────────────────────────────────────┐");
+            Sb.AppendLine("!┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────");
             foreach (string item in inHeaderLines)
             {
-                Sb.Append("!\t\t│   ");
+                Sb.Append("!│   ");
                 Sb.AppendLine(item);
             }
-            Sb.AppendLine("!\t\t└─────────────────────────────────────────────────────────────┘");
+            Sb.AppendLine("!└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────");
         }
         private void File_AppendHeader(params string[] inHeaderLines)
         {
-            File_AppendHeader(inHeaderLines);
+            File_AppendHeader((IEnumerable<string>)inHeaderLines);
         }
 
         private void File_StartSection(string inSectionName, int inSpacingLines = 2)
         {
             if (inSpacingLines > 0) File_AppendSpacingLines(inSpacingLines);
-            Sb.Append("!\t\t   ");
+            Sb.Append("!\t\t|   ");
             Sb.AppendLine(inSectionName);
-            Sb.AppendLine("!\t\t─────────────────────────────────────────────────────────────");
+            Sb.AppendLine("!└─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────");
         }
         private void File_EndSection()
         {
-            Sb.AppendLine("!\t\t─────────────────────────────────────────────────────────────");
+            Sb.AppendLine("!──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────");
         }
 
         private void File_AppendCommentLine(string inLine)
@@ -2267,5 +2820,24 @@ PNGR,TMOD,1
             Sb.AppendLine(inComment);
         }
         #endregion
+    }
+
+    public class AnsysSolverException : Exception
+    {
+        public AnsysSolverException()
+        {
+        }
+
+        public AnsysSolverException(string message) : base(message)
+        {
+        }
+
+        public AnsysSolverException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
+        protected AnsysSolverException([NotNull] SerializationInfo info, StreamingContext context) : base(info, context)
+        {
+        }
     }
 }

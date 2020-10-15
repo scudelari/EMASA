@@ -212,6 +212,8 @@ namespace Emasa_Optimizer.FEA.Items
         {
             return NameFixed.Split(new[] { inSeparator }, StringSplitOptions.RemoveEmptyEntries)[inIndex];
         }
+
+        public string WpfName => $"{GetType().Name} - {Id}";
     }
 
     public class FeSection_ComparerByFirstNameChunk : IEqualityComparer<FeSection>

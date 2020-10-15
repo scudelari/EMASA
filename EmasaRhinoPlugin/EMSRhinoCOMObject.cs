@@ -12,6 +12,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Windows.Forms;
 using System.Xml;
+using Grasshopper.Kernel;
 using Rhino.Commands;
 using Rhino.Display;
 using Rhino.FileIO;
@@ -389,6 +390,56 @@ namespace EmasaRhinoPlugin
             if (Grasshopper.Instances.ActiveCanvas.Document == null) return null;
 
             return Grasshopper.Instances.ActiveCanvas.Document.Properties.Description;
+        }
+
+        public string[,] Grasshopper_GetDocumentMessages()
+        {
+            dynamic gh = RhinoApp.GetPlugInObject("Grasshopper");
+
+            if (!gh.IsEditorLoaded()) return new string[1,2] { {"Error", "Grasshopper editor is nor loaded."}};
+
+            // The document has not been saved or anything else
+            if (Grasshopper.Instances.ActiveCanvas.Document == null) return new string[,] { { "Error", "The document has not been saved." } };
+
+            // Gets the messages from the document's ActiveObjects - which includes components
+            List<IGH_ActiveObject> activeObjects = Grasshopper.Instances.ActiveCanvas.Document.ActiveObjects(); // Includes Params and Components
+            
+            List<(string,string)> listOfErrors = new List<(string, string)>();
+            foreach (IGH_ActiveObject gh_ActiveObject in activeObjects)
+            {
+                if (gh_ActiveObject.RuntimeMessageLevel == GH_RuntimeMessageLevel.Blank) continue;
+
+                // Gets the error messages
+                foreach (string message in gh_ActiveObject.RuntimeMessages(GH_RuntimeMessageLevel.Error))
+                {
+                    listOfErrors.Add(("Error", $"{gh_ActiveObject.NickName}: {message}"));
+                }
+
+                // Gets the error warning
+                foreach (string message in gh_ActiveObject.RuntimeMessages(GH_RuntimeMessageLevel.Warning))
+                {
+                    listOfErrors.Add(("Warning", $"{gh_ActiveObject.NickName}: {message}"));
+                }
+
+                // Gets the error remark
+                foreach (string message in gh_ActiveObject.RuntimeMessages(GH_RuntimeMessageLevel.Remark))
+                {
+                    listOfErrors.Add(("Remark", $"{gh_ActiveObject.NickName}: {message}"));
+                }
+            }
+
+            if (listOfErrors.Count == 0) return null;
+             
+            // Establishes the return array
+            string[,] toRet = new string[listOfErrors.Count, 2];
+            for (int i = 0; i < listOfErrors.Count; i++)
+            {
+                (string, string) val = listOfErrors[i];
+                toRet[i, 0] = val.Item1;
+                toRet[i, 1] = val.Item2;
+            }
+
+            return toRet; 
         }
         #endregion
 

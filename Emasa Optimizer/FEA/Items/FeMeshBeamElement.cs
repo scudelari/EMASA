@@ -7,7 +7,7 @@ using Emasa_Optimizer.FEA.Results;
 
 namespace Emasa_Optimizer.FEA.Items
 {
-    public class FeMeshBeamElement : IFeEntity
+    public class FeMeshBeamElement : IFeEntity, IEquatable<FeMeshBeamElement>
     {
         public FeMeshBeamElement(int inId, FeMeshNode inINode, FeMeshNode inJNode, FeMeshNode inKNode)
         {
@@ -23,6 +23,8 @@ namespace Emasa_Optimizer.FEA.Items
             get => _id;
             set => _id = value;
         }
+
+        public FeFrame OwnerFrame { get; set; }
 
         private FeMeshNode _iNode;
         public FeMeshNode INode
@@ -46,6 +48,8 @@ namespace Emasa_Optimizer.FEA.Items
             set => _kNode = value;
         }
 
+        public List<FeMeshNode> MeshNodes => new List<FeMeshNode>() {INode, KNode, JNode};
+
         public FeMeshNode GetNodeById(int inNodeId)
         {
             if (INode.Id == inNodeId) return INode;
@@ -54,5 +58,40 @@ namespace Emasa_Optimizer.FEA.Items
 
             throw new Exception($"None of the nodes of element {this.Id} has the given Id {inNodeId}.");
         }
+
+        #region Equality = Based on the ID
+        public bool Equals(FeMeshBeamElement other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return _id == other._id;
+        }
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((FeMeshBeamElement)obj);
+        }
+        public override int GetHashCode()
+        {
+            return (GetType(), Id).GetHashCode();
+        }
+        public static bool operator ==(FeMeshBeamElement left, FeMeshBeamElement right)
+        {
+            return Equals(left, right);
+        }
+        public static bool operator !=(FeMeshBeamElement left, FeMeshBeamElement right)
+        {
+            return !Equals(left, right);
+        }
+        #endregion
+
+        public override string ToString()
+        {
+            return $"MeshBeamElement {Id} - I:{INode.Id} - J:{JNode.Id} - K:{KNode.Id}";
+        }
+
+        public string WpfName => $"{GetType().Name} - {Id}";
     }
 }

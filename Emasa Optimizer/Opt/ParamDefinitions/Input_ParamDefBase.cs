@@ -22,7 +22,7 @@ namespace Emasa_Optimizer.Opt.ParamDefinitions
     {
         protected Input_ParamDefBase(string inName) : base(inName)
         {
-            StartPositionType = StartPositionTypeEnum.CenterOfRange;
+            StartPositionType = StartPositionTypeEnum.Random;
         }
 
         public static double[] GetLowerBounds(FastObservableCollection<Input_ParamDefBase> inInputParams)

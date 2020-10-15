@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,6 +19,7 @@ using BaseWPFLibrary.Events;
 using BaseWPFLibrary.Forms;
 using Emasa_Optimizer.Bindings;
 using Emasa_Optimizer.Opt.ParamDefinitions;
+using Emasa_Optimizer.WpfResources;
 using Prism.Events;
 
 namespace Emasa_Optimizer
@@ -100,23 +102,66 @@ namespace Emasa_Optimizer
         }
         #endregion
 
-        private void Input_ListViewItem_LostFocus(object sender, RoutedEventArgs e)
+        private async void Solve_Click(object sender, RoutedEventArgs e)
         {
-            Control cSender = (Control)sender;
-
-            // Did the ListViewItem lose its focus?
-            if (!cSender.GetAnyChildHasFocus(inIncludeSelf: true))
+            try
             {
+                CustomOverlay.ShowOverlay();
+
+                void lf_Work()
+                {
+                    // Starts the Solve Manager, initializing the connection with GrassHopper and other variables
+                    CustomOverlayBindings.I.Title = "Solving";
+                    CustomOverlayBindings.I.MessageText = "Please Wait";
+
+                    FormGeneralBindings.I.SolveMgr.NlOpt_SolveSelectedProblem();
+                }
+
+                // Runs the job async
+                Task task = new Task(lf_Work);
+                task.Start();
+                await task;
+            }
+            catch (Exception ex)
+            {
+                ExceptionViewer.Show(ex);
+            }
+            finally
+            {
+                CustomOverlay.HideOverlayAndReset();
             }
         }
+
         private void CancelSolveButton_Click(object sender, RoutedEventArgs e)
         {
-            
+            // Sends the cancel signal
+            FormGeneralBindings.I.SolveMgr.NlOptManager.CancelSource.Cancel();
         }
 
-        private void DebugButton_Click(object sender, RoutedEventArgs e)
+        private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (e.AddedItems.Count == 1 && e.AddedItems[0] is TabItem tab)
+            {
+                if (tab.HasHeader && tab.Header is string tabString && tabString == "Optimize")
+                {
+                    FormGeneralBindings.I.SolveMgr.FeOptions.WpfAllSelectedOutputResults.Refresh();
+                    // TODO: Checks if the added list has items that are not in the selected output list
+                }
+            }
+        }
 
+
+        private void DataGrid_AutoGeneratingColumn_AddDoubleFormats(object sender, DataGridAutoGeneratingColumnEventArgs e)
+        {
+            // Handles the event of creating the columns of the Result Data - Table DataGrid
+            // Sets the custom converter to the Columns
+            if (e.Column is DataGridTextColumn textCol)
+            {
+                if (textCol.Binding is Binding binding)
+                {
+                    binding.Converter = new DefaultNumberConverter();
+                }
+            }
         }
     }
 }

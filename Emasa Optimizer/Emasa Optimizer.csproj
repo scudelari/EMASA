@@ -80,6 +80,7 @@
     <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
     </Reference>
+    <Reference Include="System.Windows" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Prism.Wpf.7.2.0.1422\lib\net45\System.Windows.Interactivity.dll</HintPath>
     </Reference>
@@ -130,6 +131,7 @@
     <Compile Include="FEA\Loads\FeLoad_Inertial.cs" />
     <Compile Include="FEA\Results\FeResultClassification.cs" />
     <Compile Include="FEA\Results\FeResultItem.cs" />
+    <Compile Include="FEA\Results\FeResultLocation.cs" />
     <Compile Include="FEA\Results\FeResultValue.cs" />
     <Compile Include="FEA\Results\FeResultValue_EigenvalueBucklingSummary.cs" />
     <Compile Include="FEA\Results\FeResultValue_ElementNodalBendingStrain.cs" />
@@ -142,13 +144,16 @@
     <Compile Include="FEA\Results\FeResultValue_NodalReactions.cs" />
     <Compile Include="FEA\Results\FeResultValue_SectionNodalStrain.cs" />
     <Compile Include="FEA\Results\FeResultValue_SectionNodalStress.cs" />
-    <Compile Include="FEA\Results\FeResultValue_SectionNode.cs" />
     <Compile Include="Helpers\Accord\ByteRange.cs" />
     <Compile Include="Helpers\Accord\DoubleRange.cs" />
     <Compile Include="Helpers\Accord\IntRange.cs" />
     <Compile Include="Helpers\Accord\IRange.cs" />
     <Compile Include="Helpers\Accord\Range.cs" />
     <Compile Include="Helpers\Accord\ScaleStatic.cs" />
+    <Compile Include="Opt\ProbQuantity\ProblemQuantity.cs" />
+    <Compile Include="Opt\ProbQuantity\IProblemQuantitySource.cs" />
+    <Compile Include="Opt\ProbQuantity\ProblemQuantityAggregator.cs" />
+    <Compile Include="Opt\ProbQuantity\SolutionPoint_ProblemQuantity_Output.cs" />
     <Compile Include="WpfResources\ListDescriptionStaticHolder.cs" />
     <Compile Include="WpfResources\WpfHelpers.cs" />
     <Compile Include="Opt\GhAlgorithm.cs" />
@@ -163,11 +168,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Opt\NloptManager.cs" />
-    <Compile Include="Opt\OptFunction\GeneralFeaFunction.cs" />
     <Compile Include="Opt\ParamDefinitions\DoubleList_GhGeom_ParamDef.cs" />
     <Compile Include="Opt\ParamDefinitions\DoubleValueRange.cs" />
     <Compile Include="Opt\ParamDefinitions\Double_Input_ParamDef.cs" />
-    <Compile Include="Opt\ParamDefinitions\Double_GhGeom_ParamDef.cs" />
     <Compile Include="Opt\ParamDefinitions\Input_ParamDefBase.cs" />
     <Compile Include="Opt\ParamDefinitions\IntegerValueRange.cs" />
     <Compile Include="Opt\ParamDefinitions\Integer_Input_ParamDef.cs" />
@@ -199,6 +202,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="FEA\FeModel_ClassDiagram.cd" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

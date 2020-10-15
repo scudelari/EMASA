@@ -10,20 +10,23 @@ namespace Emasa_Optimizer.FEA.Results
 {
     public class FeResultItem
     {
-        public FeResultItem([NotNull] FeResultClassification inResultClass, [NotNull] IFeEntity inFeEntity, [NotNull] FeResultValue inResultValue)
+        public FeResultItem([NotNull] FeResultClassification inResultClass, [NotNull] FeResultLocation inFeLocation, [NotNull] FeResultValue inResultValue)
         {
-            _feEntity = inFeEntity ?? throw new ArgumentNullException(nameof(inFeEntity));
+            _feLocation = inFeLocation ?? throw new ArgumentNullException(nameof(inFeLocation));
             _resultValue = inResultValue ?? throw new ArgumentNullException(nameof(inResultValue));
             _resultClass = inResultClass ?? throw new ArgumentNullException(nameof(inResultClass));
         }
 
-        private IFeEntity _feEntity;
-        public IFeEntity FeEntity
+        private FeResultLocation _feLocation;
+        public FeResultLocation FeLocation
         {
-            get => _feEntity;
-            set => _feEntity = value;
+            get => _feLocation;
+            set => _feLocation = value;
         }
 
+        /// <summary>
+        /// Mutable Data Class that contains the values of the result
+        /// </summary>
         private FeResultValue _resultValue;
         public FeResultValue ResultValue
         {

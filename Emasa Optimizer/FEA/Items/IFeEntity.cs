@@ -8,5 +8,8 @@ namespace Emasa_Optimizer.FEA.Items
 {
     public interface IFeEntity
     {
+        #region Wpf Helpers
+        string WpfName { get; }
+        #endregion
     }
 }

@@ -9,8 +9,10 @@ using Prism.Mvvm;
 namespace Emasa_Optimizer.Opt.ParamDefinitions
 {
     [Serializable]
-    public class DoubleValueRange : ValueRangeBase
+    public class DoubleValueRange : ValueRangeBase, IEquatable<DoubleValueRange>
     {
+
+
         public DoubleValueRange(double inMin, double inMax) : this(new DoubleRange(inMin, inMax))
         {
         }
@@ -24,7 +26,7 @@ namespace Emasa_Optimizer.Opt.ParamDefinitions
         public DoubleRange Range
         {
             get => _range;
-            set
+            private set
             {
                 SetProperty(ref _range, value);
                 DisplayVariablesChanged();
@@ -69,5 +71,38 @@ namespace Emasa_Optimizer.Opt.ParamDefinitions
             if (IsInside(inValue)) return 0d;
             return Math.Max(inValue - Range.Max, Range.Min - inValue);
         }
+
+
+        #region IEquality based on the Double Range, which is based on the min and max
+        public bool Equals(DoubleValueRange other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return _range.Equals(other._range);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((DoubleValueRange)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return _range.GetHashCode();
+        }
+
+        public static bool operator ==(DoubleValueRange left, DoubleValueRange right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(DoubleValueRange left, DoubleValueRange right)
+        {
+            return !Equals(left, right);
+        } 
+        #endregion
     }
 }

@@ -1,27 +1,46 @@
-﻿using System;
+﻿extern alias r3dm;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Emasa_Optimizer.FEA.Results;
+using r3dm::Rhino.Geometry;
 
 namespace Emasa_Optimizer.FEA.Items
 {
     public class FeMeshNode : IEquatable<FeMeshNode>, IFeEntity
     {
-        public FeMeshNode(int inId, double inX, double inY, double inZ)
+        public FeMeshNode(int inId, Point3d inPoint, FeJoint inMatchingJoint = null)
         {
             Id = inId;
-            X = inX;
-            Y = inY;
-            Z = inZ;
+            Point = inPoint;
+            if (inMatchingJoint != null) MatchingJoint = inMatchingJoint;
         }
 
         public int Id { get; set; }
 
-        public double X { get; set; }
-        public double Y { get; set; }
-        public double Z { get; set; }
+        private Point3d _point;
+        public Point3d Point
+        {
+            get => _point;
+            set => _point = value;
+        }
+
+        public FeJoint MatchingJoint { get; set; }
+
+        public HashSet<FeMeshBeamElement> LinkedElements { get; set; } = new HashSet<FeMeshBeamElement>();
+
+        public string LinkedElementsString
+        {
+            get
+            {
+                string s = "";
+                LinkedElements.Aggregate(s, (inS, inElement) => s += inElement + " | ");
+                s = s.Substring(0, s.Length - 3);
+                return s;
+            }
+        }
 
         public List<FeMeshNode_SectionNode> SectionNodes { get; } = new List<FeMeshNode_SectionNode>();
         public FeMeshNode_SectionNode GetSectionNodebyId(int inId)
@@ -34,7 +53,9 @@ namespace Emasa_Optimizer.FEA.Items
 
             if (sn == null)
             {
-                sn = new FeMeshNode_SectionNode(inId);
+                sn = new FeMeshNode_SectionNode(inId)
+                        {OwnerMeshNode = this};
+
                 SectionNodes.Add(sn);
             }
 
@@ -57,7 +78,7 @@ namespace Emasa_Optimizer.FEA.Items
         }
         public override int GetHashCode()
         {
-            return Id;
+            return (GetType(),Id).GetHashCode();
         }
         public static bool operator ==(FeMeshNode left, FeMeshNode right)
         {
@@ -68,5 +89,15 @@ namespace Emasa_Optimizer.FEA.Items
             return !Equals(left, right);
         } 
         #endregion
+
+        public override string ToString()
+        {
+            string s = "";
+            LinkedElements.Aggregate(s, (inS, inElement) => s += inElement + " | ");
+            s = s.Substring(0, s.Length - 3);
+            return $"MeshNode {Id}: Linked BeamElements: [ {LinkedElementsString} ]";
+        }
+
+        public string WpfName => $"{GetType().Name} - {Id}";
     }
 }

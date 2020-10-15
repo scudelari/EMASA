@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="Emasa_Optimizer.FEA.FeModel">
+    <Position X="1.75" Y="2.25" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>BEAAAESABIAAAAAAAAAAAAAACAAABgAAAEBASAqAIEE=</HashCode>
+      <FileName>FEA\FeModel.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="Frames" />
+      <Property Name="Joints" />
+      <Property Name="MeshNodes" />
+      <Property Name="Results" />
+      <Property Name="MeshBeamElements" />
+    </ShowAsCollectionAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Emasa_Optimizer.FEA.Results.FeResultItem" Collapsed="true">
+    <Position X="6.5" Y="4.5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AASABAAAAAAAAEAAACAAAAAAAAAAAAAAAAACAAAAAAA=</HashCode>
+      <FileName>FEA\Results\FeResultItem.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Emasa_Optimizer.FEA.Items.FeFrame" Collapsed="true">
+    <Position X="11" Y="5.5" Width="1.5" />
+    <AssociationLine Name="Joints" Type="Emasa_Optimizer.FEA.Items.FeJoint" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="12" Y="6.062" />
+        <Point X="12" Y="6.387" />
+        <Point X="12.323" Y="6.387" />
+        <Point X="12.323" Y="8.062" />
+        <Point X="11.5" Y="8.062" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAAGBAAAAAAAAAAEgABAAAAAAIAAAoAAAAAgAICAAiA=</HashCode>
+      <FileName>FEA\Items\FeFrame.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="Joints" />
+      <Property Name="MeshBeamElements" />
+    </ShowAsCollectionAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Emasa_Optimizer.FEA.Items.FeJoint" Collapsed="true">
+    <Position X="10" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQCAAAAAAAAgAQEgABAAAAAAAAAAIAAAACAAAAAAiQ=</HashCode>
+      <FileName>FEA\Items\FeJoint.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Emasa_Optimizer.FEA.Items.FeMeshNode" Collapsed="true">
+    <Position X="6.5" Y="3.75" Width="1.75" />
+    <AssociationLine Name="LinkedElements" Type="Emasa_Optimizer.FEA.Items.FeMeshBeamElement" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="8.25" Y="3.812" />
+        <Point X="8.5" Y="3.812" />
+        <Point X="8.5" Y="3.147" />
+        <Point X="7.187" Y="3.147" />
+        <Point X="7.187" Y="2.562" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAACABAAAAAAAAQEgAAAAAAAAAQAAIAAAAAAIAAAYiE=</HashCode>
+      <FileName>FEA\Items\FeMeshNode.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="LinkedElements" />
+    </ShowAsCollectionAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Emasa_Optimizer.FEA.Items.FeMeshBeamElement" Collapsed="true">
+    <Position X="6.5" Y="2" Width="1.75" />
+    <AssociationLine Name="OwnerFrame" Type="Emasa_Optimizer.FEA.Items.FeFrame" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="8.25" Y="2.453" />
+        <Point X="11.625" Y="2.453" />
+        <Point X="11.625" Y="5.5" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="0.116" Y="0.525" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <AssociationLine Name="MeshNodes" Type="Emasa_Optimizer.FEA.Items.FeMeshNode" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="7.938" Y="2.562" />
+        <Point X="7.938" Y="2.658" />
+        <Point X="9.433" Y="2.658" />
+        <Point X="9.433" Y="4.125" />
+        <Point X="8.25" Y="4.125" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>CAACIABAAAAAAAAEgCBAAAAAEACAAIAAAAACCAAAAyA=</HashCode>
+      <FileName>FEA\Items\FeMeshBeamElement.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="OwnerFrame" />
+    </ShowAsAssociation>
+    <ShowAsCollectionAssociation>
+      <Property Name="MeshNodes" />
+    </ShowAsCollectionAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Emasa_Optimizer.FEA.Items.FeGroup">
+    <Position X="14" Y="1.5" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAABAAAAgAAAAAQAAAAAAoAAAAAAAAAAAiE=</HashCode>
+      <FileName>FEA\Items\FeGroup.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

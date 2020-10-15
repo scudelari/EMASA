@@ -41,9 +41,9 @@ namespace Emasa_Optimizer.FEA.Items
             set => _jJoint = value;
         }
 
-        public List<FeJoint> Joints { get => new List<FeJoint>() {IJoint, JJoint}; }
+        public List<FeJoint> Joints => new List<FeJoint>() {IJoint, JJoint};
 
-        public List<FeMeshBeamElement> MeshElements { get; private set; } = new List<FeMeshBeamElement>();
+        public List<FeMeshBeamElement> MeshBeamElements { get; } = new List<FeMeshBeamElement>();
 
         #region Equality - Based on ID
         public bool Equals(FeFrame other)
@@ -61,7 +61,7 @@ namespace Emasa_Optimizer.FEA.Items
         }
         public override int GetHashCode()
         {
-            return _id;
+            return (GetType(), Id).GetHashCode();
         }
         public static bool operator ==(FeFrame left, FeFrame right)
         {
@@ -76,8 +76,9 @@ namespace Emasa_Optimizer.FEA.Items
 
         public override string ToString()
         {
-            return $"{Id}<{Section}>: From [{IJoint}] To [{JJoint}]";
+            return $"Frame {Id}<{Section}>: From [{IJoint}] To [{JJoint}]";
         }
 
+        public string WpfName => $"{GetType().Name} - {Id}";
     }
 }

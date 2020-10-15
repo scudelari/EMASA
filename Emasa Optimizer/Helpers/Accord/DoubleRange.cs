@@ -64,7 +64,10 @@ namespace Emasa_Optimizer.Helpers.Accord
         public double Min
         {
             get { return min; }
-            set { min = value; }
+            set
+            {
+                SetValues(value, max);
+            }
         }
 
         /// <summary>
@@ -78,7 +81,10 @@ namespace Emasa_Optimizer.Helpers.Accord
         public double Max
         {
             get { return max; }
-            set { max = value; }
+            set
+            {
+                SetValues(min, value);
+            }
         }
 
         /// <summary>
@@ -99,8 +105,26 @@ namespace Emasa_Optimizer.Helpers.Accord
         /// 
         public DoubleRange(double min, double max)
         {
-            this.min = min;
-            this.max = max;
+            this.min = double.MinValue;
+            this.max = double.MaxValue;
+
+            SetValues(min, max);
+        }
+
+        private void SetValues(double inMin, double inMax)
+        {
+            // Fixes the min/max order
+            if (inMin == inMax) throw new InvalidOperationException($"DoubleRange does not accept equal values for the minimum and maximum.");
+
+            if (inMin > inMax)
+            {
+                double tmp = inMax;
+                inMax = inMin;
+                inMin = tmp;
+            }
+
+            min = inMin;
+            max = inMax;
         }
 
         /// <summary>

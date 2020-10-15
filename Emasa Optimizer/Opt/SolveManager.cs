@@ -12,7 +12,10 @@ using System.Windows.Data;
 using BaseWPFLibrary.Annotations;
 using BaseWPFLibrary.Others;
 using Emasa_Optimizer.FEA;
+using Emasa_Optimizer.FEA.Results;
 using Emasa_Optimizer.Opt;
+using Emasa_Optimizer.Opt.ParamDefinitions;
+using Emasa_Optimizer.Opt.ProbQuantity;
 using Emasa_Optimizer.ProblemDefs;
 using NLoptNet;
 using Prism.Mvvm;
@@ -74,33 +77,37 @@ namespace Emasa_Optimizer.Opt
 
             // Sets the views for the function points
             CollectionViewSource functionPnts_cvs = new CollectionViewSource() {Source = _solPoints };
-            functionPnts_cvs.Filter += (inSender, inArgs) =>
-            {
-                if (inArgs.Item is SolutionPoint sPnt && sPnt.EvalType == EvalTypeEnum.ObjectiveFunction) inArgs.Accepted = true;
-            };
             WpfFunctionPoints = functionPnts_cvs.View;
+            WpfFunctionPoints.Filter += inO => inO is SolutionPoint sPnt && sPnt.SolutionPointCalcType == SolutionPointCalcTypeEnum.ObjectiveFunction;
+
 
             // Sets the views for the gradient points
             CollectionViewSource gradientPnts_cvs = new CollectionViewSource() { Source = _solPoints };
-            gradientPnts_cvs.Filter += (inSender, inArgs) =>
-            {
-                if (inArgs.Item is SolutionPoint sPnt && sPnt.EvalType == EvalTypeEnum.Gradient) inArgs.Accepted = true;
-            };
             WpfGradientPoints = gradientPnts_cvs.View;
-
-            // Sets the views for the section definition points
-            CollectionViewSource sectionDefPnts_cvs = new CollectionViewSource() { Source = _solPoints };
-            sectionDefPnts_cvs.Filter += (inSender, inArgs) =>
-            {
-                if (inArgs.Item is SolutionPoint sPnt && sPnt.EvalType == EvalTypeEnum.SectionDefinition) inArgs.Accepted = true;
-            };
-            WpfSectionPoints = sectionDefPnts_cvs.View;
+            WpfGradientPoints.Filter += inO => inO is SolutionPoint sPnt && sPnt.SolutionPointCalcType == SolutionPointCalcTypeEnum.Gradient;
 
             #endregion
 
-            #region Initializes the Wpf Helpers
-            
+            #region Initializes the Problem Quantities Views
+            CollectionViewSource problemQuantities_All_cvs = new CollectionViewSource() { Source = _problemQuantities};
+            WpfProblemQuantities_All = problemQuantities_All_cvs.View;
+
+            CollectionViewSource problemQuantities_OutputOnly_cvs = new CollectionViewSource() { Source = _problemQuantities };
+            WpfProblemQuantities_OutputOnly = problemQuantities_OutputOnly_cvs.View;
+            WpfProblemQuantities_OutputOnly.Filter += inO => (inO is ProblemQuantity pq && pq.IsOutputOnly);
+
+            CollectionViewSource problemQuantities_ObjectiveFunction_cvs = new CollectionViewSource() { Source = _problemQuantities };
+            WpfProblemQuantities_ObjectiveFunction = problemQuantities_ObjectiveFunction_cvs.View;
+            WpfProblemQuantities_ObjectiveFunction.Filter += inO => (inO is ProblemQuantity pq && pq.IsObjectiveFunctionMinimize);
+
+            CollectionViewSource problemQuantities_Constraints_cvs = new CollectionViewSource() { Source = _problemQuantities };
+            WpfProblemQuantities_Constraint = problemQuantities_Constraints_cvs.View;
+            WpfProblemQuantities_Constraint.Filter += inO => (inO is ProblemQuantity pq && pq.IsConstraint);
             #endregion
+
+            CollectionViewSource problemQuantities_AvailableTypes_cvs = new CollectionViewSource() { Source = ProblemQuantityAvailableTypes };
+            WpfProblemQuantityAvailableTypes = problemQuantities_AvailableTypes_cvs.View;
+            WpfProblemQuantityAvailableTypes.SortDescriptions.Add(new SortDescription("IsFiniteElementData", ListSortDirection.Ascending));
         }
         
         #region Finite Element Problem Options
@@ -111,7 +118,6 @@ namespace Emasa_Optimizer.Opt
             set => SetProperty(ref _feOptions, value);
         }
         #endregion
-
 
         #region Available Problem Management
         private readonly List<GeneralProblem> _availableProblems;
@@ -139,20 +145,25 @@ namespace Emasa_Optimizer.Opt
         }
         public ICollectionView WpfFunctionPoints { get; }
         public ICollectionView WpfGradientPoints { get; }
-        public ICollectionView WpfSectionPoints { get; }
         #endregion
 
         #region Actions!
         public void NlOpt_SolveSelectedProblem(bool inUpdateInterface = false)
         {
-            Stopwatch sw = Stopwatch.StartNew();
+            // Clears the current solution list
+            _solPoints.Clear();
 
             // Starts the Fe Solver software
+            FeOptions.EvaluateRequiredFeOutputs();
             string nlOpt_Folder = Path.Combine(Gh_Alg.GhDataDirPath, "NlOpt", "FeWork");
             switch (FeOptions.FeSolverType_Selected)
             {
                 case FeSolverTypeEnum.Ansys:
                     FeSolver = new FeSolver_Ansys(nlOpt_Folder, this);
+                    break;
+
+                case FeSolverTypeEnum.NotFeProblem:
+                    FeSolver = null;
                     break;
 
                 default:
@@ -169,17 +180,80 @@ namespace Emasa_Optimizer.Opt
                 FeSolver = null;
             }
 
-            sw.Stop();
-            NlOpt_TotalSolveTimeSpan = sw.Elapsed;
+
         }
         #endregion
 
-        #region TimeSpans
-        private TimeSpan _nlOpt_TotalSolveTimeSpan = TimeSpan.Zero;
-        public TimeSpan NlOpt_TotalSolveTimeSpan
+
+
+
+
+        #region Problem Quantity Available Types
+        public FastObservableCollection<IProblemQuantitySource> ProblemQuantityAvailableTypes { get; } = new FastObservableCollection<IProblemQuantitySource>();
+        public ICollectionView WpfProblemQuantityAvailableTypes { get; }
+        #endregion
+
+        #region Problem Quantities Selection
+
+        public int ProblemQuantityMaxIndex { get; set; } = 1;
+
+        private readonly FastObservableCollection<ProblemQuantity> _problemQuantities = new FastObservableCollection<ProblemQuantity>();
+        public ICollectionView WpfProblemQuantities_OutputOnly { get; }
+        public ICollectionView WpfProblemQuantities_ObjectiveFunction { get; }
+        public ICollectionView WpfProblemQuantities_Constraint { get; }
+        public ICollectionView WpfProblemQuantities_All { get; }
+        public void AddProblemQuantity(ProblemQuantity inProblemQuantity)
         {
-            get => _nlOpt_TotalSolveTimeSpan;
-            set => SetProperty(ref _nlOpt_TotalSolveTimeSpan, value);
+            _problemQuantities.Add(inProblemQuantity);
+            //WpfProblemQuantities_ObjectiveFunction.Refresh();
+        }
+        public void DeleteProblemQuantity(ProblemQuantity inProblemQuantity)
+        {
+            _problemQuantities.Remove(inProblemQuantity);
+            //WpfProblemQuantities_ObjectiveFunction.Refresh();
+        }
+
+        public void AddAllProblemQuantity_OutputOnly()
+        {
+            // Adds one for each Grasshopper double list
+            foreach (DoubleList_GhGeom_ParamDef ghDoubleList in Gh_Alg.GeometryDefs_DoubleList_View.OfType<DoubleList_GhGeom_ParamDef>())
+            {
+                ghDoubleList.AddProblemQuantity_OutputOnly(this);
+            }
+
+            // Adds one for each selected output results
+            foreach (FeResultClassification feResultClassification in FeOptions.WpfAllSelectedOutputResults.OfType<FeResultClassification>())
+            {
+                feResultClassification.AddProblemQuantity_OutputOnly(this);
+            }
+        }
+        public void AddAllProblemQuantity_ConstraintObjective()
+        {
+            // Adds one for each Grasshopper double list
+            foreach (DoubleList_GhGeom_ParamDef ghDoubleList in Gh_Alg.GeometryDefs_DoubleList_View.OfType<DoubleList_GhGeom_ParamDef>())
+            {
+                ghDoubleList.AddProblemQuantity_ConstraintObjective(this);
+            }
+
+            // Adds one for each selected output results
+            foreach (FeResultClassification feResultClassification in FeOptions.WpfAllSelectedOutputResults.OfType<FeResultClassification>())
+            {
+                feResultClassification.AddProblemQuantity_ConstraintObjective(this);
+            }
+        }
+        public void AddAllProblemQuantity_FunctionObjective()
+        {
+            // Adds one for each Grasshopper double list
+            foreach (DoubleList_GhGeom_ParamDef ghDoubleList in Gh_Alg.GeometryDefs_DoubleList_View.OfType<DoubleList_GhGeom_ParamDef>())
+            {
+                ghDoubleList.AddProblemQuantity_FunctionObjective(this);
+            }
+
+            // Adds one for each selected output results
+            foreach (FeResultClassification feResultClassification in FeOptions.WpfAllSelectedOutputResults.OfType<FeResultClassification>())
+            {
+                feResultClassification.AddProblemQuantity_FunctionObjective(this);
+            }
         }
         #endregion
     }

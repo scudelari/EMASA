@@ -94,21 +94,20 @@ namespace Beams_Tekla_to_S2K
             string sapFileName = Path.ChangeExtension(TextBoxXMLFileName.Text, "sdb");
             S2KModel.SM.SaveFile(sapFileName);
             S2KModel.SM.CloseApplication(false);
+
+            // Saves the log
+            string logFileName = Path.ChangeExtension(TextBoxXMLFileName.Text, "SapImportLog");
+            if (File.Exists(logFileName)) File.Delete(logFileName);
+            File.WriteAllText(logFileName, LogTextBox.Text);
         }
 
         private void BwGenerateSap2000_DoWork(object sender, DoWorkEventArgs e)
         {
             // The first thing is to remove from the table the rows that have PL as the frame section
-            //bwGenerateSap2000.ReportProgress(0, "Cleaning up Tekla Table.");
-            //foreach (DataRow row in this.beamTable.Rows)
-            //    if (row.Field<string>("Profile").StartsWith("PL")) row.Delete();
-            //this.beamTable.AcceptChanges();
-            //bwGenerateSap2000.ReportProgress(100, "Tekla Table Cleaned Up.");
-
+            
             // First of all, manipulates the data so that we can work with it in a better way
             HashSet<string> uniqueMaterials = new HashSet<string>();
             HashSet<(string Section, string Material)> uniqueFrameSections = new HashSet<(string Section, string Material)>();
-            HashSet<Point3D> uniquePoints = new HashSet<Point3D>();
 
             bwGenerateSap2000.ReportProgress(0, "Getting unique Materials, Profiles and Points from the Tekla Table.");
             int counter = 0;
@@ -116,28 +115,13 @@ namespace Beams_Tekla_to_S2K
             {
                 uniqueMaterials.Add(row.Field<string>("Material"));
                 uniqueFrameSections.Add((row.Field<string>("Profile"), row.Field<string>("Material")));
-
-                // Gets the start point
-                string startPoint = row.Field<string>("StartPoint");
-                startPoint = startPoint.Trim(new char[] { '(', ')' });
-                double[] startPointValues = (from a in startPoint.Split(new char[] { ',' })
-                                             select Math.Round(double.Parse(a) / 25.4, 3)).ToArray();
-                uniquePoints.Add(new Point3D(startPointValues[0], startPointValues[1], startPointValues[2]));
-
-                // Gets the end point
-                string endPoint = row.Field<string>("EndPoint");
-                endPoint = endPoint.Trim(new char[] { '(', ')' });
-                double[] endPointValues = (from a in endPoint.Split(new char[] { ',' })
-                                           select Math.Round(double.Parse(a) / 25.4, 3)).ToArray();
-                uniquePoints.Add(new Point3D(endPointValues[0], endPointValues[1], endPointValues[2]));
-
-                bwGenerateSap2000.ReportProgress(S2KStaticMethods.ProgressPercent(counter++,beamTable.Rows.Count));
             }
-            bwGenerateSap2000.ReportProgress(100, "Got unique Materials, Profiles and Points from the Tekla Table.");
+            bwGenerateSap2000.ReportProgress(100, "Got unique Materials and Profiles.");
 
             bwGenerateSap2000.ReportProgress(0, "Opening SAP2000 Software.");
             // Opens a new Sap2000 empty model
             S2KModel.InitSingleton_NewInstance(UnitsEnum.kip_in_F, false );
+            S2KModel.SM.NewModelBlank(false, UnitsEnum.kip_in_F);
             bwGenerateSap2000.ReportProgress(0, "SAP2000 Software Open.");
 
             // Adds the Materials to Sap2000
@@ -198,7 +182,7 @@ namespace Beams_Tekla_to_S2K
                 }
                 TeklaToSapMatTranslate.Add(TeklaMatName, SapMatName);
 
-                bwGenerateSap2000.ReportProgress(S2KStaticMethods.ProgressPercent(counter++,uniqueMaterials.Count));
+                bwGenerateSap2000.ReportProgress(S2KStaticMethods.ProgressPercent(counter++, uniqueMaterials.Count));
             }
             bwGenerateSap2000.ReportProgress(counter = 100, "Sent the Material Definitions to SAP2000.");
 
@@ -218,7 +202,7 @@ namespace Beams_Tekla_to_S2K
                     string[] chunks = tempSectionName.Split(new char[] { '-', '*' });
 
                     ret = S2KModel.SM.FrameSecMan.SetOrAddISection(Section + "_" + TeklaToSapMatTranslate[Material], TeklaToSapMatTranslate[Material],
-                        double.Parse(chunks[0])/25.4, double.Parse(chunks[3]) / 25.4, double.Parse(chunks[2]) / 25.4, double.Parse(chunks[1]) / 25.4, double.Parse(chunks[3]) / 25.4, double.Parse(chunks[2]) / 25.4);
+                        double.Parse(chunks[0]) / 25.4, double.Parse(chunks[3]) / 25.4, double.Parse(chunks[2]) / 25.4, double.Parse(chunks[1]) / 25.4, double.Parse(chunks[3]) / 25.4, double.Parse(chunks[2]) / 25.4);
                 }
                 else if (HSSPipeTeklaRegex.IsMatch(Section))
                 {
@@ -227,7 +211,7 @@ namespace Beams_Tekla_to_S2K
                             "AISC15.pro",
                             Section.Replace("X0.", "X."));
                 }
-                else 
+                else
                 {
                     ret = S2KModel.SM.FrameSecMan.ImportFrameSection(Section + "_" + TeklaToSapMatTranslate[Material],
                             TeklaToSapMatTranslate[Material],
@@ -240,13 +224,15 @@ namespace Beams_Tekla_to_S2K
                     bwGenerateSap2000.ReportProgress(-1, $"Could not Add Section: {Section}_{TeklaToSapMatTranslate[Material]}{Environment.NewLine}");
                 }
 
-                bwGenerateSap2000.ReportProgress(S2KStaticMethods.ProgressPercent(counter++ ,uniqueFrameSections.Count));
+                bwGenerateSap2000.ReportProgress(S2KStaticMethods.ProgressPercent(counter++, uniqueFrameSections.Count));
             }
             bwGenerateSap2000.ReportProgress(counter = 100, "Sent the Section Definitions to SAP2000.");
 
+            S2KModel.SM.WindowVisible = true;
+
             // Adds the points and the frames
-            bwGenerateSap2000.ReportProgress(counter = 0, "Sending the Frames to SAP2000.");
-            Dictionary<Point3D, SapPoint> pointsInModel = new Dictionary<Point3D, SapPoint>();
+            Dictionary<Point3D, SapPoint> uniquePoints = new Dictionary<Point3D, SapPoint>();
+            bwGenerateSap2000.ReportProgress(counter = 0, "Sending the Points and Frames to SAP2000.");
             foreach (DataRow row in beamTable.Rows)
             {
                 // Gets the start point
@@ -255,35 +241,37 @@ namespace Beams_Tekla_to_S2K
                 double[] startPointValues = (from a in startPointStr.Split(new char[] { ',' })
                                              select Math.Round(double.Parse(a) / 25.4, 3)).ToArray();
                 Point3D startPoint = new Point3D(startPointValues[0], startPointValues[1], startPointValues[2]);
-
                 SapPoint sapStartPoint = null;
-                if (!pointsInModel.ContainsKey(startPoint))
+
+                // Add to the model or get
+                if (uniquePoints.ContainsKey(startPoint)) sapStartPoint = uniquePoints[startPoint];
+                else
                 {
                     sapStartPoint = S2KModel.SM.PointMan.AddByPoint3D_ReturnSapEntity(startPoint);
-                    pointsInModel.Add(startPoint, sapStartPoint);
+                    if (sapStartPoint == null) throw new Exception($"Point located at {startPointStr} could not be added to the Sap2000 model.");
+                    uniquePoints.Add(startPoint, sapStartPoint);
                 }
-                else
-                {
-                    sapStartPoint = pointsInModel[startPoint];
-                }
+
 
                 // Gets the end point
-                string endPointStr = row.Field<string>("EndPoint");
+                string endPointStr = row.Field<string>("endPoint");
                 endPointStr = endPointStr.Trim(new char[] { '(', ')' });
                 double[] endPointValues = (from a in endPointStr.Split(new char[] { ',' })
-                                           select Math.Round(double.Parse(a) / 25.4, 3)).ToArray();
+                                             select Math.Round(double.Parse(a) / 25.4, 3)).ToArray();
                 Point3D endPoint = new Point3D(endPointValues[0], endPointValues[1], endPointValues[2]);
-
                 SapPoint sapEndPoint = null;
-                if (!pointsInModel.ContainsKey(endPoint))
-                {
-                    sapEndPoint = S2KModel.SM.PointMan.AddByPoint3D_ReturnSapEntity(endPoint);
-                    pointsInModel.Add(endPoint, sapEndPoint);
-                }
+
+                // Add to the model or get
+                if (uniquePoints.ContainsKey(endPoint)) sapEndPoint = uniquePoints[endPoint];
                 else
                 {
-                    sapEndPoint = pointsInModel[endPoint];
+                    sapEndPoint = S2KModel.SM.PointMan.AddByPoint3D_ReturnSapEntity(endPoint);
+                    if (sapEndPoint == null) throw new Exception($"Point located at {endPointStr} could not be added to the Sap2000 model.");
+                    uniquePoints.Add(endPoint, sapEndPoint);
                 }
+
+                int b = 0;
+                b++;
 
                 // Adds the frame
                 SapFrame addedFrame = S2KModel.SM.FrameMan.AddByPoint_ReturnSapEntity(sapStartPoint, sapEndPoint,
@@ -304,7 +292,7 @@ namespace Beams_Tekla_to_S2K
 
                     addedFrame.SetLocalAxes(rotateAngle);
                 }
-                bwGenerateSap2000.ReportProgress(S2KStaticMethods.ProgressPercent(counter++,beamTable.Rows.Count));
+                bwGenerateSap2000.ReportProgress(S2KStaticMethods.ProgressPercent(counter++, beamTable.Rows.Count));
             }
             bwGenerateSap2000.ReportProgress(counter = 100, "Sent the Frames to SAP2000.");
 

@@ -91,6 +91,13 @@ namespace Emasa_Optimizer.Opt.ParamDefinitions
             }
         }
 
+        public string WpfMinString_X => $"{_rangeX.Min}";
+        public string WpfMaxString_X => $"{_rangeX.Max}";
+        public string WpfMinString_Y => $"{_rangeY.Min}";
+        public string WpfMaxString_Y => $"{_rangeY.Max}";
+        public string WpfMinString_Z => $"{_rangeZ.Min}";
+        public string WpfMaxString_Z => $"{_rangeZ.Max}";
+
         public bool IsInside(Point3d inValue)
         {
             return RangeX.IsInside(inValue.X) && RangeY.IsInside(inValue.Y) && RangeZ.IsInside(inValue.Z);

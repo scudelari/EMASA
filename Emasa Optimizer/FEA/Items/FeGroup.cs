@@ -42,7 +42,7 @@ namespace Emasa_Optimizer.FEA.Items
         }
         public override int GetHashCode()
         {
-            return StringComparer.InvariantCulture.GetHashCode(Name);
+            return (GetType(),Name).GetHashCode();
         }
         public static bool operator ==(FeGroup left, FeGroup right)
         {
@@ -51,7 +51,9 @@ namespace Emasa_Optimizer.FEA.Items
         public static bool operator !=(FeGroup left, FeGroup right)
         {
             return !Equals(left, right);
-        } 
+        }
         #endregion
+
+        public string WpfName => $"{GetType().Name} - {Name}";
     }
 }

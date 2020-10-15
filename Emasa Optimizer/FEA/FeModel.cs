@@ -24,88 +24,97 @@ namespace Emasa_Optimizer.FEA
         /// <param name="inSolPoint">The solution point that contain the Gh Geometry that will define the model. Usually the model is then saved into the its FeModel parameter</param>
         public FeModel([NotNull] SolutionPoint inSolPoint)
         {
-            if (inSolPoint == null) throw new ArgumentNullException(nameof(inSolPoint));
-
-            Owner = inSolPoint;
-
-            // Generates the model
-            //////////////////////////
-
-            // For each point list GH Geometry Parameter - Adds the joint
-            foreach (PointList_GhGeom_ParamDef pointList_Output_ParamDef in inSolPoint.GhGeom_Values.Keys.OfType<PointList_GhGeom_ParamDef>())
+            try
             {
-                FeGroup grp = AddNewOrGet_Group(pointList_Output_ParamDef.FeGroupNameHelper);
+                if (inSolPoint == null) throw new ArgumentNullException(nameof(inSolPoint));
 
-                List<Point3d> pPoints = (List<Point3d>) inSolPoint.GhGeom_Values[pointList_Output_ParamDef];
+                Owner = inSolPoint;
 
-                foreach (Point3d p in pPoints)
+                // Generates the model
+                //////////////////////////
+
+                // For each point list GH Geometry Parameter - Adds the joint
+                foreach (PointList_GhGeom_ParamDef pointList_Output_ParamDef in inSolPoint.GhGeom_Values.Keys.OfType<PointList_GhGeom_ParamDef>())
                 {
-                    FeJoint j = AddNewOrGet_JointByCoordinate(p);
-                    j.Restraint.IncorporateRestraint(pointList_Output_ParamDef.Restraint);
-                    grp.AddElement(j);
+                    FeGroup grp = AddNewOrGet_Group(pointList_Output_ParamDef.FeGroupNameHelper);
+
+                    List<Point3d> pPoints = (List<Point3d>)inSolPoint.GhGeom_Values[pointList_Output_ParamDef];
+
+                    foreach (Point3d p in pPoints)
+                    {
+                        FeJoint j = AddNewOrGet_JointByCoordinate(p);
+                        j.Restraint.IncorporateRestraint(pointList_Output_ParamDef.Restraint);
+                        grp.AddElement(j);
+                    }
+                }
+
+                // For each line list GH Geometry Parameter - Adds the joints and a frame
+                foreach (LineList_GhGeom_ParamDef lineList_Output_ParamDef in inSolPoint.GhGeom_Values.Keys.OfType<LineList_GhGeom_ParamDef>())
+                {
+                    FeGroup grp = AddNewOrGet_Group(lineList_Output_ParamDef.FeGroupNameHelper);
+
+                    List<Line> pLines = (List<Line>)inSolPoint.GhGeom_Values[lineList_Output_ParamDef];
+
+                    foreach (Line l in pLines)
+                    {
+                        // Adds the From joint
+                        FeJoint jFrom = AddNewOrGet_JointByCoordinate(l.From);
+                        jFrom.Restraint.IncorporateRestraint(lineList_Output_ParamDef.Restraint);
+                        grp.AddElement(jFrom);
+
+                        // Adds the To joint
+                        FeJoint jTo = AddNewOrGet_JointByCoordinate(l.To);
+                        jTo.Restraint.IncorporateRestraint(lineList_Output_ParamDef.Restraint);
+                        grp.AddElement(jTo);
+
+                        // Adds the Frame
+                        FeFrame f = AddNewOrGet_LineByCoordinate(jFrom, jTo, lineList_Output_ParamDef.OptimizationSection);
+                        grp.AddElement(f);
+                    }
+                }
+
+                // Adds the gravity loads
+                if (inSolPoint.Owner.FeOptions.Gravity_IsLoad)
+                {
+                    FeLoad_Inertial gravity = FeLoad_Inertial.GetStandardGravity(inSolPoint.Owner.FeOptions.Gravity_Multiplier);
+                    // Sets the direction based on the options
+                    switch (inSolPoint.Owner.FeOptions.Gravity_DirectionEnum_Selected)
+                    {
+                        case MainAxisDirectionEnum.xPos:
+                            gravity.Direction = Vector3d.XAxis;
+                            break;
+
+                        case MainAxisDirectionEnum.xNeg:
+                            gravity.Direction = -Vector3d.XAxis;
+                            break;
+
+                        case MainAxisDirectionEnum.yPos:
+                            gravity.Direction = Vector3d.YAxis;
+                            break;
+
+                        case MainAxisDirectionEnum.yNeg:
+                            gravity.Direction = -Vector3d.YAxis;
+                            break;
+
+                        case MainAxisDirectionEnum.zPos:
+                            gravity.Direction = Vector3d.ZAxis;
+                            break;
+
+                        case MainAxisDirectionEnum.zNeg:
+                            gravity.Direction = -Vector3d.ZAxis;
+                            break;
+
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                    Loads.Add(gravity);
                 }
             }
-
-            // For each line list GH Geometry Parameter - Adds the joints and a frame
-            foreach (LineList_GhGeom_ParamDef lineList_Output_ParamDef in inSolPoint.GhGeom_Values.Keys.OfType<LineList_GhGeom_ParamDef>())
+            catch (Exception e)
             {
-                FeGroup grp = AddNewOrGet_Group(lineList_Output_ParamDef.FeGroupNameHelper);
-
-                List<Line> pLines = (List<Line>) inSolPoint.GhGeom_Values[lineList_Output_ParamDef];
-
-                foreach (Line l in pLines)
-                {
-                    // Adds the From joint
-                    FeJoint jFrom = AddNewOrGet_JointByCoordinate(l.From);
-                    jFrom.Restraint.IncorporateRestraint(lineList_Output_ParamDef.Restraint);
-                    grp.AddElement(jFrom);
-
-                    // Adds the To joint
-                    FeJoint jTo = AddNewOrGet_JointByCoordinate(l.To);
-                    jTo.Restraint.IncorporateRestraint(lineList_Output_ParamDef.Restraint);
-                    grp.AddElement(jTo);
-
-                    // Adds the Frame
-                    FeFrame f = AddNewOrGet_LineByCoordinate(jFrom, jTo, lineList_Output_ParamDef.OptimizationSection);
-                    grp.AddElement(f);
-                }
-            }
-
-            // Adds the gravity loads
-            if (inSolPoint.Owner.FeOptions.Gravity_IsLoad)
-            {
-                FeLoad_Inertial gravity = FeLoad_Inertial.GetStandardGravity(inSolPoint.Owner.FeOptions.Gravity_Multiplier);
-                // Sets the direction based on the options
-                switch (inSolPoint.Owner.FeOptions.Gravity_DirectionEnum_Selected)
-                {
-                    case MainAxisDirectionEnum.xPos:
-                        gravity.Direction = Vector3d.XAxis;
-                        break;
-
-                    case MainAxisDirectionEnum.xNeg:
-                        gravity.Direction = -Vector3d.XAxis;
-                        break;
-
-                    case MainAxisDirectionEnum.yPos:
-                        gravity.Direction = Vector3d.YAxis;
-                        break;
-
-                    case MainAxisDirectionEnum.yNeg:
-                        gravity.Direction = -Vector3d.YAxis;
-                        break;
-
-                    case MainAxisDirectionEnum.zPos:
-                        gravity.Direction = Vector3d.ZAxis;
-                        break;
-
-                    case MainAxisDirectionEnum.zNeg:
-                        gravity.Direction = -Vector3d.ZAxis;
-                        break;
-
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-                Loads.Add(gravity);
+                string message = $"Error defining the FeModel internal class. {e.Message}";
+                inSolPoint.RuntimeMessages.Add(new SolutionPoint_Message(message, SolutionPoint_MessageSourceEnum.Internal, SolutionPoint_MessageLevelEnum.Error, e ));
+                throw new Exception(message, e);
             }
         }
 
@@ -115,7 +124,7 @@ namespace Emasa_Optimizer.FEA
         private int _frameCount = 1;
 
         public int JointRoundingDecimals = Properties.Settings.Default.Default_JointRoundingDecimals;
-        private Point3d RoundedPoint3d(Point3d inPoint)
+        public Point3d RoundedPoint3d(Point3d inPoint)
         {
             return new Point3d(
                 Math.Round(inPoint.X, JointRoundingDecimals, MidpointRounding.ToEven),
@@ -133,6 +142,15 @@ namespace Emasa_Optimizer.FEA
         public HashSet<FeSection> Sections => Frames.Select(a => a.Value.Section).Distinct().ToHashSet();
         public HashSet<FeMaterial> Materials => Sections.Select(a => a.Material).Distinct().ToHashSet();
 
+        /// <summary>
+        /// Gets a FeJoint by the given coordinates.
+        /// </summary>
+        /// <param name="inPoint">The point. THE COORDINATES MUST HAVE BEEN PREVIOUSLY ROUNDED!</param>
+        /// <returns>The joint if found, otherwise null.</returns>
+        public FeJoint Get_JointByCoordinate(Point3d inPoint)
+        {
+            return Joints.FirstOrDefault(a => a.Value.Point == inPoint).Value;
+        }
         private FeJoint AddNewOrGet_JointByCoordinate(Point3d inPoint)
         {
             // Rounds the point coordinates
@@ -179,7 +197,13 @@ namespace Emasa_Optimizer.FEA
         public double Joints_BoundingBox_MaxLength => (from a in Joints_BoundingBox.GetEdges() select a.Length).Max();
 
         #region Results
+        public bool HasMeshNodes = false;
+        public bool HasMeshBeams = false;
         public List<FeResultItem> Results { get; } = new List<FeResultItem>();
         #endregion
+
+
+
+        public string WpfName => ModelName;
     }
 }

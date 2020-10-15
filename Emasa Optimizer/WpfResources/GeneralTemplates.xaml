@@ -1,10 +1,45 @@
 ﻿<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:baseLib="clr-namespace:BaseWPFLibrary.Converters;assembly=BaseWPFLibrary"
+    xmlns:eb="clr-namespace:BaseWPFLibrary.Bindings;assembly=BaseWPFLibrary"
     xmlns:fea_results="clr-namespace:Emasa_Optimizer.FEA.Results"
     xmlns:local="clr-namespace:Emasa_Optimizer.WpfResources"
     xmlns:localParamDefinitions="clr-namespace:Emasa_Optimizer.Opt.ParamDefinitions"
+    xmlns:opt="clr-namespace:Emasa_Optimizer.Opt"
+    xmlns:probQuantity="clr-namespace:Emasa_Optimizer.Opt.ProbQuantity"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:syswin="clr-namespace:System.Windows;assembly=PresentationFramework"
     xmlns:wpfHelpers="clr-namespace:Emasa_Optimizer.WpfResources">
+
+    <SolidColorBrush x:Key="EmsGreenPanelBackground" Color="#dbf5ce" />
+    <SolidColorBrush x:Key="EmsRedPanelBackground" Color="LightSalmon" />
+
+    <Style x:Key="RedGreenYellowGrayPanel" TargetType="{x:Type Control}">
+        <Style.Triggers>
+            <Trigger Property="Tag" Value="Red">
+                <Setter Property="Background" Value="{StaticResource EmsRedPanelBackground}" />
+                <Setter Property="BorderBrush" Value="DarkRed" />
+                <Setter Property="BorderThickness" Value="1" />
+            </Trigger>
+            <Trigger Property="Tag" Value="Green">
+                <Setter Property="Background" Value="{StaticResource EmsGreenPanelBackground}" />
+                <Setter Property="BorderBrush" Value="Green" />
+                <Setter Property="BorderThickness" Value="1" />
+            </Trigger>
+            <Trigger Property="Tag" Value="Yellow">
+                <Setter Property="Background" Value="LightGoldenrodYellow" />
+                <Setter Property="BorderBrush" Value="Orange" />
+                <Setter Property="BorderThickness" Value="1" />
+            </Trigger>
+            <Trigger Property="Tag" Value="Gray">
+                <Setter Property="Background" Value="LightGray" />
+                <Setter Property="BorderBrush" Value="Gray" />
+                <Setter Property="BorderThickness" Value="1" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
 
     <Style TargetType="Border">
         <Setter Property="SnapsToDevicePixels" Value="True" />
@@ -22,7 +57,100 @@
         <Setter Property="SnapsToDevicePixels" Value="True" />
     </Style>
 
+    <Style x:Key="NumberTextBlock" TargetType="{x:Type TextBlock}">
+        <Setter Property="FontFamily" Value="Courier New" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="ListViewContainerStyle" TargetType="{x:Type ListViewItem}">
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    </Style>
+    <Style x:Key="ListBoxContainerStyle" TargetType="{x:Type ListBoxItem}">
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    </Style>
+    <!--#region ListBox Headers-->
+    <GridLength x:Key="VerticalScrollBarWidth">17</GridLength>
+    <Style x:Key="ListBoxHeaderGrid" TargetType="{x:Type Grid}">
+        <Setter Property="Height" Value="24" />
+        <Setter Property="Margin" Value="0" />
+        <Style.Resources>
+            <Style TargetType="Label">
+                <Setter Property="Padding" Value="5,2,5,2" />
+                <Setter Property="BorderThickness" Value="0,1,1,1" />
+                <Setter Property="Background" Value="{StaticResource EmsFaintGraySolidBrush}" />
+                <Setter Property="Margin" Value="0" />
+                <Setter Property="BorderBrush" Value="{StaticResource EmsLightGraySolidBrush}" />
+            </Style>
+        </Style.Resources>
+    </Style>
+    <!--#endregion-->
+    <Style x:Key="Borderless_ListBox" TargetType="ListBox">
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style
+        x:Key="VirtualListBox"
+        BasedOn="{StaticResource Borderless_ListBox}"
+        TargetType="{x:Type ListBox}">
+        <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling" />
+        <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Visible" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+    </Style>
+
+
+    <SolidColorBrush x:Key="Item.Background.NoHighlight" Color="Blue" />
+    <Style x:Key="ListViewContainerStyle_NoHighlight" TargetType="{x:Type ListViewItem}">
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ListViewItem}">
+                    <Border
+                        Background="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Border}, AncestorLevel=3}, Path=Background}"
+                        Focusable="False"
+                        IsHitTestVisible="False"
+                        SnapsToDevicePixels="true">
+                        <ContentPresenter
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="Borderless_ListView" TargetType="ListView">
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+
+    <Style x:Key="GlowTextBlock" TargetType="TextBlock">
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect
+                    BlurRadius="10"
+                    Opacity="1"
+                    ShadowDepth="0"
+                    Color="{StaticResource EmsFaintBlueColor}" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="TextBlock">
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+    </Style>
+    <Style TargetType="CheckBox">
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+    </Style>
+
     <wpfHelpers:PercentageConverter x:Key="PercentageConverter" />
+    <wpfHelpers:Wpf_ResultList_Input_DataTemplateSelector x:Key="Wpf_ResultList_Input_DataTemplateSelector" />
+    <baseLib:EnumBooleanConverter x:Key="EnumBooleanConverter" />
+    <baseLib:EnumBooleanConverter_NegateReadOnly x:Key="EnumBooleanConverter_NegateReadOnly" />
+    <wpfHelpers:Results_FunctionIterationSummary_ProblemQuantity_DataTemplateSelector x:Key="Results_FunctionIterationSummary_ProblemQuantity_DataTemplateSelector" />
+    <wpfHelpers:DefaultNumberConverter x:Key="DefaultNumberConverter" />
 
     <Style TargetType="{x:Type TextBox}">
         <Style.Triggers>
@@ -46,59 +174,51 @@
 
     <!--#region Grasshopper Input Param List View-->
     <ControlTemplate x:Key="InputParamListView_ControlTemplate">
-        <Border
-            BorderBrush="{StaticResource EmsLightGraySolidBrush}"
-            BorderThickness="1"
-            CornerRadius="0">
-            <ScrollViewer
-                CanContentScroll="True"
-                HorizontalScrollBarVisibility="Disabled"
-                PanningMode="VerticalOnly"
-                VerticalScrollBarVisibility="Visible">
-                <Border
-                    BorderBrush="{StaticResource EmsLightGraySolidBrush}"
-                    BorderThickness="0,0,1,0"
-                    CornerRadius="0">
-                    <StackPanel Orientation="Vertical">
 
-                        <Grid
-                            Height="24"
-                            Margin="5"
-                            DockPanel.Dock="Top">
-                            <Grid.Resources>
-                                <Style TargetType="Label">
-                                    <Setter Property="Padding" Value="5,2,5,2" />
-                                    <Setter Property="BorderThickness" Value="0,1,1,1" />
-                                    <Setter Property="Background" Value="{StaticResource EmsFaintGraySolidBrush}" />
-                                    <Setter Property="Margin" Value="0" />
-                                    <Setter Property="BorderBrush" Value="{StaticResource EmsLightGraySolidBrush}" />
-                                </Style>
-                            </Grid.Resources>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="1.5*" />
-                                <ColumnDefinition Width="2*" />
-                                <ColumnDefinition Width="2*" />
-                            </Grid.ColumnDefinitions>
-                            <Label Grid.Column="0">
-                                <TextBlock TextDecorations="underline">
-                                    <Run FontWeight="Bold" Text="Name" />
-                                    <Run Text=" and " />
-                                    <Run FontStyle="Italic" Text="Type" />
-                                </TextBlock>
-                            </Label>
-                            <Label Grid.Column="1">
-                                <TextBlock TextDecorations="underline">Search Range</TextBlock>
-                            </Label>
-                            <Label Grid.Column="2" BorderThickness="0,1,0,1">
-                                <TextBlock TextDecorations="underline">Search Start Position</TextBlock>
-                            </Label>
-                        </Grid>
-                        <ItemsPresenter />
+        <ScrollViewer
+            CanContentScroll="True"
+            HorizontalScrollBarVisibility="Disabled"
+            PanningMode="VerticalOnly"
+            VerticalScrollBarVisibility="Visible">
+            <StackPanel Orientation="Vertical">
+                <Grid
+                    Height="24"
+                    Margin="5"
+                    DockPanel.Dock="Top">
+                    <Grid.Resources>
+                        <Style TargetType="Label">
+                            <Setter Property="Padding" Value="5,2,5,2" />
+                            <Setter Property="BorderThickness" Value="0,1,1,1" />
+                            <Setter Property="Background" Value="{StaticResource EmsFaintGraySolidBrush}" />
+                            <Setter Property="Margin" Value="0" />
+                            <Setter Property="BorderBrush" Value="{StaticResource EmsLightGraySolidBrush}" />
+                        </Style>
+                    </Grid.Resources>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.5*" />
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="2*" />
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Column="0">
+                        <TextBlock TextDecorations="underline">
+                            <Run FontWeight="Bold" Text="Name" />
+                            <Run Text=" and " />
+                            <Run FontStyle="Italic" Text="Type" />
+                        </TextBlock>
+                    </Label>
+                    <Label Grid.Column="1">
+                        <TextBlock TextDecorations="underline">Search Range</TextBlock>
+                    </Label>
+                    <Label Grid.Column="2" BorderThickness="0,1,0,1">
+                        <TextBlock TextDecorations="underline">Search Start Position</TextBlock>
+                    </Label>
+                </Grid>
+                <ItemsPresenter />
 
-                    </StackPanel>
-                </Border>
-            </ScrollViewer>
-        </Border>
+            </StackPanel>
+
+        </ScrollViewer>
+
     </ControlTemplate>
     <DataTemplate DataType="{x:Type localParamDefinitions:Double_Input_ParamDef}">
         <Border
@@ -213,6 +333,148 @@
             </Grid>
         </Border>
     </DataTemplate>
+    <DataTemplate DataType="{x:Type localParamDefinitions:Point_Input_ParamDef}">
+        <Border
+            Margin="0,0,0,10"
+            BorderBrush="{StaticResource EmsFaintBlueSolidBrush}"
+            BorderThickness="0,0,0,1">
+            <Grid Margin="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.5*" />
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="2*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Height="20"
+                    FontWeight="Bold"
+                    Text="{Binding Name, Mode=OneWay, FallbackValue='Not found'}" />
+                <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Height="20"
+                    FontStyle="Italic"
+                    Text="{Binding TypeName, Mode=OneWay, FallbackValue='Not found'}" />
+
+                <Grid
+                    Grid.Row="0"
+                    Grid.RowSpan="2"
+                    Grid.Column="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBox
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        IsReadOnly="True"
+                        Text="{Binding SearchRange.WpfMinString_X, Mode=OneWay, FallbackValue='Not Found'}" />
+                    <TextBox
+                        Grid.Row="0"
+                        Grid.Column="3"
+                        IsReadOnly="True"
+                        Text="{Binding SearchRange.WpfMaxString_X, Mode=OneWay, FallbackValue='Not Found'}" />
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Foreground="{DynamicResource EmsFaintBlueSolidBrush}"
+                        Text="├───" />
+                    <TextBox
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        IsReadOnly="True"
+                        Text="{Binding SearchRange.WpfMinString_Y, Mode=OneWay, FallbackValue='Not Found'}" />
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="2"
+                        Foreground="{DynamicResource EmsFaintBlueSolidBrush}"
+                        Text="─────" />
+                    <TextBox
+                        Grid.Row="1"
+                        Grid.Column="3"
+                        IsReadOnly="True"
+                        Text="{Binding SearchRange.WpfMaxString_Y, Mode=OneWay, FallbackValue='Not Found'}" />
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="4"
+                        Foreground="{DynamicResource EmsFaintBlueSolidBrush}"
+                        Text="───┤" />
+                    <TextBox
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        IsReadOnly="True"
+                        Text="{Binding SearchRange.WpfMinString_Z, Mode=OneWay, FallbackValue='Not Found'}" />
+                    <TextBox
+                        Grid.Row="2"
+                        Grid.Column="3"
+                        IsReadOnly="True"
+                        Text="{Binding SearchRange.WpfMaxString_Z, Mode=OneWay, FallbackValue='Not Found'}" />
+                </Grid>
+
+                <Grid
+                    Grid.Row="0"
+                    Grid.RowSpan="2"
+                    Grid.Column="2"
+                    VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="20" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <ComboBox
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="3"
+                        Height="22"
+                        Margin="0,0,0,5"
+                        VerticalAlignment="Center"
+                        DisplayMemberPath="Value"
+                        ItemsSource="{Binding StartPositionTypeEnumStaticDescriptions}"
+                        SelectedValue="{Binding StartPositionType}"
+                        SelectedValuePath="Key" />
+                    <DockPanel
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Visibility="{Binding StartValue_TextBoxVisibility}">
+                        <TextBlock
+                            Margin="0,0,5,0"
+                            DockPanel.Dock="Left"
+                            Text="Value" />
+                        <TextBox local:DepObjs.CancelErrorOnLostFocus="true" Text="{Binding WpfStart, ValidatesOnExceptions=True}" />
+                    </DockPanel>
+                    <DockPanel
+                        Grid.Row="1"
+                        Grid.Column="2"
+                        Visibility="{Binding StartPositionPercent_TextBoxVisibility}">
+                        <TextBlock
+                            Margin="0,0,5,0"
+                            DockPanel.Dock="Left"
+                            Text="%" />
+                        <TextBox local:DepObjs.CancelErrorOnLostFocus="true" Text="{Binding StartPositionPercent, ValidatesOnExceptions=True}" />
+                    </DockPanel>
+                </Grid>
+            </Grid>
+        </Border>
+    </DataTemplate>
     <!--#endregion-->
 
     <!--#region Grasshopper Geometry PointList Param List View-->
@@ -240,7 +502,10 @@
                 <Label Grid.Column="0">
                     <TextBlock TextDecorations="underline">Point List Name</TextBlock>
                 </Label>
-                <Label Grid.Column="1" BorderThickness="0,1,0,1">
+                <Label
+                    Grid.Column="1"
+                    BorderThickness="0,1,0,1"
+                    Visibility="{Binding ElementName=MainGrid, Path=DataContext.SolveMgr.FeOptions.IsFeProblem}">
                     <TextBlock TextDecorations="underline">Restraints</TextBlock>
                 </Label>
             </Grid>
@@ -258,7 +523,7 @@
                 VerticalAlignment="Center"
                 FontWeight="Bold"
                 Text="{Binding Name, Mode=OneWay, FallbackValue='Not found'}" />
-            <Grid Grid.Column="1">
+            <Grid Grid.Column="1" Visibility="{Binding ElementName=MainGrid, Path=DataContext.SolveMgr.FeOptions.IsFeProblem}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
@@ -348,10 +613,13 @@
                 <Label Grid.Column="0">
                     <TextBlock TextDecorations="underline">Line List Name</TextBlock>
                 </Label>
-                <Label Grid.Column="1">
+                <Label Grid.Column="1" Visibility="{Binding ElementName=MainGrid, Path=DataContext.SolveMgr.FeOptions.IsFeProblem}">
                     <TextBlock TextDecorations="underline">Restraints</TextBlock>
                 </Label>
-                <Label Grid.Column="2" BorderThickness="0,1,0,1">
+                <Label
+                    Grid.Column="2"
+                    BorderThickness="0,1,0,1"
+                    Visibility="{Binding ElementName=MainGrid, Path=DataContext.SolveMgr.FeOptions.IsFeProblem}">
                     <TextBlock TextDecorations="underline">Optimization Section</TextBlock>
                 </Label>
             </Grid>
@@ -374,7 +642,7 @@
                     VerticalAlignment="Center"
                     FontWeight="Bold"
                     Text="{Binding Name, Mode=OneWay, FallbackValue='Not found'}" />
-                <Grid Grid.Column="1">
+                <Grid Grid.Column="1" Visibility="{Binding ElementName=MainGrid, Path=DataContext.SolveMgr.FeOptions.IsFeProblem}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="3" />
                         <ColumnDefinition Width="*" />
@@ -451,7 +719,7 @@
                         Command="{Binding Restraint.SetPinnedCommand}"
                         Content="Pinned" />
                 </Grid>
-                <Grid Grid.Column="2">
+                <Grid Grid.Column="2" Visibility="{Binding ElementName=MainGrid, Path=DataContext.SolveMgr.FeOptions.IsFeProblem}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="10" />
@@ -486,5 +754,1223 @@
     <!--#region Finite Element Result Classification Options-->
     <wpfHelpers:Wpf_EnumToString_Converter x:Key="Wpf_EnumToString_Converter" />
     <wpfHelpers:Wpf_FeResultClassificationTreeViewCounter_Converter x:Key="Wpf_FeResultClassificationTreeViewCounter_Converter" />
+    <!--#endregion-->
+
+    <!--#region Problem Quantities ObjectiveFunction Selected List View-->
+    <ControlTemplate x:Key="ProblemQuantities_ObjectiveFunction_SelectedListView_ControlTemplate">
+        <Border
+            Background="{StaticResource EmsGreenPanelBackground}"
+            BorderBrush="Green"
+            BorderThickness="1">
+            <ScrollViewer
+                CanContentScroll="True"
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Visible">
+                <ItemsPresenter />
+            </ScrollViewer>
+        </Border>
+    </ControlTemplate>
+    <DataTemplate x:Key="ProblemQuantity_ObjectiveFunction_Template" DataType="{x:Type probQuantity:ProblemQuantity}">
+        <Border
+            Margin="0,0,0,0"
+            Padding="0"
+            BorderBrush="{StaticResource EmsFaintBlueSolidBrush}"
+            BorderThickness="0,0,0,1"
+            Style="{DynamicResource MainItemBorder}">
+            <Grid Margin="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="0.6*" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="22" />
+                </Grid.ColumnDefinitions>
+
+                <Grid
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Margin="0,0,0,5"
+                    VerticalAlignment="Center"
+                    ToolTip="Designation of the problem Quantity. These will be used exclusively for output.">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+
+                    <Border
+                        Grid.RowSpan="3"
+                        Grid.Column="0"
+                        Width="30"
+                        Height="30"
+                        Padding="2"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Background="{StaticResource EmsFaintBlueSolidBrush}"
+                        BorderBrush="{StaticResource EmsLightBlueSolidBrush}"
+                        BorderThickness="1">
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Text="{Binding InternalId}" />
+                    </Border>
+
+                    <Border
+                        Grid.Row="0"
+                        Grid.Column="2"
+                        Style="{StaticResource LightBlue_BottomOnly_Border}">
+                        <TextBlock FontWeight="Bold" Text="{Binding TargetShapeDescription}" />
+                    </Border>
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="2"
+                        Style="{StaticResource Explanation_TextBlock}"
+                        Text="{Binding ResultFamilyGroupName}" />
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.RowSpan="2"
+                        Grid.Column="4"
+                        VerticalAlignment="Center"
+                        Text="{Binding ResultTypeDescription}" />
+
+                </Grid>
+
+                <Grid
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    HorizontalAlignment="Stretch">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="20" />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <TextBlock
+                        Grid.Row="0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontSize="14"
+                        RenderTransformOrigin="0.5,0.5"
+                        Style="{StaticResource GlowTextBlock}"
+                        Text="f(x)"
+                        ToolTip="Function Objective" />
+                    <ComboBox
+                        Grid.Row="0"
+                        Grid.Column="2"
+                        VerticalAlignment="Center"
+                        ItemsSource="{Binding Quantity_FunctionObjectiveEnumDescriptions}"
+                        SelectedValue="{Binding FunctionObjective}"
+                        SelectedValuePath="Key"
+                        ToolTip="Function Objective">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock
+                                    RenderTransformOrigin="0.5,0.5"
+                                    Text="{Binding Value.Item1}"
+                                    ToolTip="{Binding Value.Item3}">
+                                    <TextBlock.RenderTransform>
+                                        <RotateTransform Angle="{Binding Value.Item2}" />
+                                    </TextBlock.RenderTransform>
+                                </TextBlock>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <TextBox
+                        Grid.Row="0"
+                        Grid.Column="4"
+                        VerticalAlignment="Center"
+                        wpfHelpers:DepObjs.CancelErrorOnLostFocus="True"
+                        Text="{Binding FunctionObjective_TargetValue, ValidatesOnExceptions=True}"
+                        ToolTip="Function Objective"
+                        Visibility="{Binding FunctionObjective_TargetValue_TextBoxVisibility}" />
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontSize="25"
+                        RenderTransformOrigin="0.5,0.5"
+                        Style="{StaticResource GlowTextBlock}"
+                        Text="⥷"
+                        ToolTip="Manner used to aggregate the values">
+                        <TextBlock.RenderTransform>
+                            <TransformGroup>
+                                <RotateTransform Angle="180" />
+                                <TranslateTransform Y="4" />
+                            </TransformGroup>
+                        </TextBlock.RenderTransform>
+                    </TextBlock>
+                    <ComboBox
+                        Grid.Row="1"
+                        Grid.Column="2"
+                        Grid.ColumnSpan="3"
+                        VerticalAlignment="Center"
+                        DisplayMemberPath="Value"
+                        ItemsSource="{Binding QuantityAggregatorOptions.Quantity_AggregateTypeEnumDescriptions}"
+                        SelectedValue="{Binding QuantityAggregatorOptions.AggregateType}"
+                        SelectedValuePath="Key"
+                        ToolTip="Manner used to aggregate the values" />
+                </Grid>
+
+                <Grid
+                    Grid.Row="0"
+                    Grid.Column="4"
+                    VerticalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid
+                        Grid.Row="0"
+                        Height="18"
+                        Margin="0,0,0,3"
+                        ToolTip="Filter the concerned results by a given Grasshopper group."
+                        Visibility="{Binding FilterEntity_GridVisibility}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="5" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <CheckBox
+                            VerticalAlignment="Center"
+                            Content=""
+                            FontFamily="Segoe UI Symbol"
+                            IsChecked="{Binding QuantityAggregatorOptions.UseEntityFilter}" />
+                        <ComboBox
+                            Grid.Column="2"
+                            HorizontalAlignment="Stretch"
+                            IsEnabled="{Binding QuantityAggregatorOptions.UseEntityFilter}"
+                            ItemsSource="{Binding ElementName=MainGrid, Path=DataContext.SolveMgr.Gh_Alg.GeometryDefs_PointListBundle_View}"
+                            SelectedValue="{Binding QuantityAggregatorOptions.EntityToFilter}"
+                            Visibility="{Binding QuantityAggregatorOptions.EntityFilter_ComboBoxVisibility}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock>
+                                        <Run FontWeight="Bold" Text="{Binding Name, Mode=OneWay}" />
+                                        <Run Text=" " />
+                                        <Run Foreground="{StaticResource EmsExplanationSolidBrush}" Text="{Binding TypeName, Mode=OneWay}" />
+                                    </TextBlock>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </Grid>
+                    <CheckBox
+                        Grid.Row="1"
+                        Height="18"
+                        Margin="0,0,0,3"
+                        IsChecked="{Binding QuantityAggregatorOptions.UseTableAbsoluteValues}"
+                        SnapsToDevicePixels="True"
+                        ToolTip="Use absolute values of the concerned results.">
+                        <Border
+                            Padding="2,0"
+                            BorderBrush="Black"
+                            BorderThickness="3,0">
+                            <TextBlock Text="X" />
+                        </Border>
+
+                    </CheckBox>
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="5" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <CheckBox
+                            Grid.Column="0"
+                            Content="Scale"
+                            IsChecked="{Binding QuantityAggregatorOptions.HasScale}" />
+                        <Grid Grid.Column="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Grid.Column="0"
+                                Foreground="{DynamicResource EmsFaintBlueSolidBrush}"
+                                Text="├─" />
+                            <TextBox
+                                Grid.Column="1"
+                                wpfHelpers:DepObjs.CancelErrorOnLostFocus="True"
+                                IsEnabled="{Binding QuantityAggregatorOptions.HasScale}"
+                                Text="{Binding QuantityAggregatorOptions.ScaleRange.WpfMinString, ValidatesOnExceptions=true}" />
+                            <TextBlock
+                                Grid.Column="2"
+                                Foreground="{DynamicResource EmsFaintBlueSolidBrush}"
+                                Text="──" />
+                            <TextBox
+                                Grid.Column="3"
+                                wpfHelpers:DepObjs.CancelErrorOnLostFocus="True"
+                                IsEnabled="{Binding QuantityAggregatorOptions.HasScale}"
+                                Text="{Binding QuantityAggregatorOptions.ScaleRange.WpfMaxString, ValidatesOnExceptions=true}" />
+                            <TextBlock
+                                Grid.Column="4"
+                                Foreground="{DynamicResource EmsFaintBlueSolidBrush}"
+                                Text="─┤" />
+                        </Grid>
+                    </Grid>
+                </Grid>
+
+
+                <Button
+                    Grid.Column="6"
+                    Width="22"
+                    Height="22"
+                    Margin="0"
+                    Click="{eb:MethodBinding DeleteProblemQuantity}"
+                    Content="❌" />
+
+            </Grid>
+        </Border>
+    </DataTemplate>
+    <!--#endregion-->
+
+
+    <!--#region Problem Quantities Constraint Selected List View-->
+    <ControlTemplate x:Key="ProblemQuantities_Constraint_SelectedListView_ControlTemplate">
+        <Border
+            Background="LightGoldenrodYellow"
+            BorderBrush="Orange"
+            BorderThickness="1">
+            <ScrollViewer
+                CanContentScroll="True"
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Visible">
+                <ItemsPresenter />
+            </ScrollViewer>
+        </Border>
+    </ControlTemplate>
+    <DataTemplate x:Key="ProblemQuantity_Constraint_Template" DataType="{x:Type probQuantity:ProblemQuantity}">
+        <Border
+            Margin="0,0,0,0"
+            Padding="0"
+            BorderBrush="{StaticResource EmsFaintBlueSolidBrush}"
+            BorderThickness="0,0,0,1"
+            Style="{DynamicResource MainItemBorder}">
+            <Grid Margin="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="0.6*" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="22" />
+                </Grid.ColumnDefinitions>
+
+                <Grid
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Margin="0,0,0,5"
+                    VerticalAlignment="Center"
+                    ToolTip="Designation of the problem Quantity. These will be used exclusively for output.">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+
+                    <Border
+                        Grid.RowSpan="3"
+                        Grid.Column="0"
+                        Width="30"
+                        Height="30"
+                        Padding="2"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Background="{StaticResource EmsFaintBlueSolidBrush}"
+                        BorderBrush="{StaticResource EmsLightBlueSolidBrush}"
+                        BorderThickness="1">
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Text="{Binding InternalId}" />
+                    </Border>
+
+                    <Border
+                        Grid.Row="0"
+                        Grid.Column="2"
+                        Style="{StaticResource LightBlue_BottomOnly_Border}">
+                        <TextBlock FontWeight="Bold" Text="{Binding TargetShapeDescription}" />
+                    </Border>
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="2"
+                        Style="{StaticResource Explanation_TextBlock}"
+                        Text="{Binding ResultFamilyGroupName}" />
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.RowSpan="2"
+                        Grid.Column="4"
+                        VerticalAlignment="Center"
+                        Text="{Binding ResultTypeDescription}" />
+
+                </Grid>
+
+                <Grid
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    HorizontalAlignment="Stretch">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="20" />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <TextBlock
+                        Grid.Row="0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontSize="14"
+                        RenderTransformOrigin="0.5,0.5"
+                        Style="{StaticResource GlowTextBlock}"
+                        Text="c(x)"
+                        ToolTip="Constraint Objective" />
+                    <ComboBox
+                        Grid.Row="0"
+                        Grid.Column="2"
+                        VerticalAlignment="Center"
+                        DisplayMemberPath="Value"
+                        ItemsSource="{Binding Quantity_ConstraintObjectiveEnumDescriptions}"
+                        SelectedValue="{Binding ConstraintObjective}"
+                        SelectedValuePath="Key"
+                        ToolTip="Constraint Objective" />
+                    <TextBox
+                        Grid.Row="0"
+                        Grid.Column="4"
+                        VerticalAlignment="Center"
+                        wpfHelpers:DepObjs.CancelErrorOnLostFocus="True"
+                        Text="{Binding ConstraintObjective_CompareValue, ValidatesOnExceptions=True}"
+                        ToolTip="Constraint Objective" />
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontSize="25"
+                        RenderTransformOrigin="0.5,0.5"
+                        Style="{StaticResource GlowTextBlock}"
+                        Text="⥷"
+                        ToolTip="Manner used to aggregate the values">
+                        <TextBlock.RenderTransform>
+                            <TransformGroup>
+                                <RotateTransform Angle="180" />
+                                <TranslateTransform Y="4" />
+                            </TransformGroup>
+                        </TextBlock.RenderTransform>
+
+                    </TextBlock>
+                    <ComboBox
+                        Grid.Row="1"
+                        Grid.Column="2"
+                        Grid.ColumnSpan="3"
+                        VerticalAlignment="Center"
+                        DisplayMemberPath="Value"
+                        ItemsSource="{Binding QuantityAggregatorOptions.Quantity_AggregateTypeEnumDescriptions}"
+                        SelectedValue="{Binding QuantityAggregatorOptions.AggregateType}"
+                        SelectedValuePath="Key"
+                        ToolTip="Manner used to aggregate the values" />
+                </Grid>
+
+                <Grid
+                    Grid.Row="0"
+                    Grid.Column="4"
+                    VerticalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid
+                        Grid.Row="0"
+                        Height="18"
+                        Margin="0,0,0,3"
+                        ToolTip="Filter the concerned results by a given Grasshopper group."
+                        Visibility="{Binding FilterEntity_GridVisibility}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="5" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <CheckBox
+                            VerticalAlignment="Center"
+                            Content=""
+                            FontFamily="Segoe UI Symbol"
+                            IsChecked="{Binding QuantityAggregatorOptions.UseEntityFilter}" />
+                        <ComboBox
+                            Grid.Column="2"
+                            HorizontalAlignment="Stretch"
+                            IsEnabled="{Binding QuantityAggregatorOptions.UseEntityFilter}"
+                            ItemsSource="{Binding ElementName=MainGrid, Path=DataContext.SolveMgr.Gh_Alg.GeometryDefs_PointListBundle_View}"
+                            SelectedValue="{Binding QuantityAggregatorOptions.EntityToFilter}"
+                            Visibility="{Binding QuantityAggregatorOptions.EntityFilter_ComboBoxVisibility}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock>
+                                        <Run FontWeight="Bold" Text="{Binding Name, Mode=OneWay}" />
+                                        <Run Text=" " />
+                                        <Run Foreground="{StaticResource EmsExplanationSolidBrush}" Text="{Binding TypeName, Mode=OneWay}" />
+                                    </TextBlock>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </Grid>
+                    <CheckBox
+                        Grid.Row="1"
+                        IsChecked="{Binding QuantityAggregatorOptions.UseTableAbsoluteValues}"
+                        SnapsToDevicePixels="True"
+                        ToolTip="Use absolute values of the concerned results.">
+                        <Border
+                            Padding="2,0"
+                            BorderBrush="Black"
+                            BorderThickness="3,0">
+                            <TextBlock Text="X" />
+                        </Border>
+
+                    </CheckBox>
+
+                </Grid>
+
+
+                <Button
+                    Grid.Column="6"
+                    Width="22"
+                    Height="22"
+                    Margin="0"
+                    Click="{eb:MethodBinding DeleteProblemQuantity}"
+                    Content="❌" />
+            </Grid>
+        </Border>
+    </DataTemplate>
+    <!--#endregion-->
+
+    <!--#region Problem Quantities Output Only Selected List View-->
+    <ControlTemplate x:Key="ProblemQuantities_OutputOnly_SelectedListView_ControlTemplate">
+        <Border
+            Background="LightGray"
+            BorderBrush="Gray"
+            BorderThickness="1">
+            <ScrollViewer
+                CanContentScroll="True"
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Visible">
+                <ItemsPresenter />
+            </ScrollViewer>
+        </Border>
+    </ControlTemplate>
+    <DataTemplate x:Key="ProblemQuantity_OutputOnly_Template" DataType="{x:Type probQuantity:ProblemQuantity}">
+        <Border
+            Margin="0,0,0,0"
+            Padding="0"
+            BorderBrush="{StaticResource EmsFaintBlueSolidBrush}"
+            BorderThickness="0,0,0,1"
+            Style="{DynamicResource MainItemBorder}">
+            <Grid Margin="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="0.6*" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="22" />
+                </Grid.ColumnDefinitions>
+
+                <Grid
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Margin="0,0,0,5"
+                    VerticalAlignment="Center"
+                    ToolTip="Designation of the problem Quantity. These will be used exclusively for output.">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+
+                    <Border
+                        Grid.RowSpan="3"
+                        Grid.Column="0"
+                        Width="30"
+                        Height="30"
+                        Padding="2"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Background="{StaticResource EmsFaintBlueSolidBrush}"
+                        BorderBrush="{StaticResource EmsLightBlueSolidBrush}"
+                        BorderThickness="1">
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Text="{Binding InternalId}" />
+                    </Border>
+
+                    <Border
+                        Grid.Row="0"
+                        Grid.Column="2"
+                        Style="{StaticResource LightBlue_BottomOnly_Border}">
+                        <TextBlock FontWeight="Bold" Text="{Binding TargetShapeDescription}" />
+                    </Border>
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="2"
+                        Style="{StaticResource Explanation_TextBlock}"
+                        Text="{Binding ResultFamilyGroupName}" />
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.RowSpan="2"
+                        Grid.Column="4"
+                        VerticalAlignment="Center"
+                        Text="{Binding ResultTypeDescription}" />
+
+                </Grid>
+
+                <Grid
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    HorizontalAlignment="Stretch"
+                    ToolTip="Manner used to aggregate the values">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="20" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        Grid.Row="0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontSize="25"
+                        RenderTransformOrigin="0.5,0.5"
+                        Text="⥷">
+                        <TextBlock.RenderTransform>
+                            <TransformGroup>
+                                <RotateTransform Angle="180" />
+                                <TranslateTransform Y="4" />
+                            </TransformGroup>
+                        </TextBlock.RenderTransform>
+                        <TextBlock.Effect>
+                            <DropShadowEffect
+                                BlurRadius="10"
+                                Opacity="1"
+                                ShadowDepth="0"
+                                Color="{StaticResource EmsFaintBlueColor}" />
+                        </TextBlock.Effect>
+                    </TextBlock>
+                    <ComboBox
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        DisplayMemberPath="Value"
+                        ItemsSource="{Binding QuantityAggregatorOptions.Quantity_AggregateTypeEnumDescriptions}"
+                        SelectedValue="{Binding QuantityAggregatorOptions.AggregateType}"
+                        SelectedValuePath="Key" />
+                </Grid>
+
+                <Grid
+                    Grid.Row="0"
+                    Grid.Column="4"
+                    VerticalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid
+                        Grid.Row="0"
+                        Height="18"
+                        Margin="0,0,0,3"
+                        ToolTip="Filter the concerned results by a given Grasshopper group."
+                        Visibility="{Binding FilterEntity_GridVisibility}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="5" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <CheckBox
+                            VerticalAlignment="Center"
+                            Content=""
+                            FontFamily="Segoe UI Symbol"
+                            IsChecked="{Binding QuantityAggregatorOptions.UseEntityFilter}" />
+                        <ComboBox
+                            Grid.Column="2"
+                            HorizontalAlignment="Stretch"
+                            IsEnabled="{Binding QuantityAggregatorOptions.UseEntityFilter}"
+                            ItemsSource="{Binding ElementName=MainGrid, Path=DataContext.SolveMgr.Gh_Alg.GeometryDefs_PointListBundle_View}"
+                            SelectedValue="{Binding QuantityAggregatorOptions.EntityToFilter}"
+                            Visibility="{Binding QuantityAggregatorOptions.EntityFilter_ComboBoxVisibility}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock>
+                                        <Run FontWeight="Bold" Text="{Binding Name, Mode=OneWay}" />
+                                        <Run Text=" " />
+                                        <Run Foreground="{StaticResource EmsExplanationSolidBrush}" Text="{Binding TypeName, Mode=OneWay}" />
+                                    </TextBlock>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </Grid>
+                    <CheckBox
+                        Grid.Row="1"
+                        IsChecked="{Binding QuantityAggregatorOptions.UseTableAbsoluteValues}"
+                        SnapsToDevicePixels="True"
+                        ToolTip="Use absolute values of the concerned results.">
+                        <Border
+                            Padding="2,0"
+                            BorderBrush="Black"
+                            BorderThickness="3,0">
+                            <TextBlock Text="X" />
+                        </Border>
+
+                    </CheckBox>
+
+                </Grid>
+
+                <Button
+                    Grid.Column="6"
+                    Width="22"
+                    Height="22"
+                    Margin="0"
+                    Click="{eb:MethodBinding DeleteProblemQuantity}"
+                    Content="❌" />
+            </Grid>
+        </Border>
+    </DataTemplate>
+    <!--#endregion-->
+
+
+    <!--#region Results - Function Iteration Selection - List View-->
+    <DataTemplate x:Key="Results_FunctionIterationSelection_DataTemplate" DataType="{x:Type opt:SolutionPoint}">
+        <Border
+            Margin="0,0,0,0"
+            Padding="0"
+            BorderBrush="{StaticResource EmsFaintBlueSolidBrush}"
+            BorderThickness="0,0,0,1">
+            <Grid Margin="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="0.9*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    Grid.Column="0"
+                    Margin="5,0,0,0"
+                    Style="{StaticResource NumberTextBlock}"
+                    Text="{Binding PointIndex}" />
+                <TextBlock
+                    Grid.Column="1"
+                    Style="{StaticResource NumberTextBlock}"
+                    Text="{Binding ObjectiveFunctionEval, Converter={StaticResource DefaultNumberConverter}}" />
+            </Grid>
+        </Border>
+    </DataTemplate>
+    <!--#endregion-->
+
+
+    <!--#region Results - Summary-->
+    <DataTemplate x:Key="Results_FunctionIterationSummary_DataTemplate" DataType="{x:Type opt:SolutionPoint}">
+        <Border
+            Margin="0,0,0,0"
+            Padding="0"
+            BorderBrush="{StaticResource EmsFaintBlueSolidBrush}"
+            BorderThickness="0,0,0,1"
+            Style="{DynamicResource MainItemBorder}">
+            <Grid Margin="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition Width=".6*" />
+                    <ColumnDefinition Width="120" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    Grid.Column="0"
+                    Margin="5,0,0,0"
+                    Style="{StaticResource NumberTextBlock}"
+                    Text="{Binding PointIndex}" />
+                <ListView
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    ItemContainerStyle="{StaticResource ListViewContainerStyle_NoHighlight}"
+                    ItemTemplateSelector="{StaticResource Wpf_ResultList_Input_DataTemplateSelector}"
+                    ItemsSource="{Binding GhInput_Values}"
+                    Style="{StaticResource Borderless_ListView}" />
+                <TextBlock
+                    Grid.Column="2"
+                    Style="{StaticResource NumberTextBlock}"
+                    Text="{Binding ObjectiveFunctionEval, Converter={StaticResource DefaultNumberConverter}}" />
+
+                <ListView
+                    Grid.Column="3"
+                    ItemContainerStyle="{StaticResource ListViewContainerStyle_NoHighlight}"
+                    ItemTemplateSelector="{StaticResource Results_FunctionIterationSummary_ProblemQuantity_DataTemplateSelector}"
+                    ItemsSource="{Binding ProblemQuantityOutputs}"
+                    Style="{StaticResource Borderless_ListView}" />
+            </Grid>
+        </Border>
+    </DataTemplate>
+
+    <DataTemplate x:Key="Results_FunctionIterationSummary_DataTemplate_InputParams_DoubleInputParam">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <TextBlock FontWeight="Bold" Text="{Binding Key.Name}" />
+            <TextBlock
+                Grid.Column="2"
+                Style="{StaticResource NumberTextBlock}"
+                Text="{Binding Value, Converter={StaticResource DefaultNumberConverter}}" />
+        </Grid>
+    </DataTemplate>
+    <DataTemplate x:Key="Results_FunctionIterationSummary_DataTemplate_InputParams_PointInputParam">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition />
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition />
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <TextBlock FontWeight="Bold" Text="{Binding Key.Name}" />
+            <TextBlock
+                Grid.Column="2"
+                Style="{StaticResource NumberTextBlock}"
+                Text="{Binding Value.X, Converter={StaticResource DefaultNumberConverter}}" />
+            <TextBlock
+                Grid.Column="4"
+                Style="{StaticResource NumberTextBlock}"
+                Text="{Binding Value.Y, Converter={StaticResource DefaultNumberConverter}}" />
+            <TextBlock
+                Grid.Column="6"
+                Style="{StaticResource NumberTextBlock}"
+                Text="{Binding Value.Z, Converter={StaticResource DefaultNumberConverter}}" />
+        </Grid>
+    </DataTemplate>
+
+    <DataTemplate x:Key="Results_FunctionIterationSummary_ProblemQuantity_ObjectiveFunction_DataTemplate">
+        <Border
+            Margin="0,2"
+            Padding="2"
+            Background="{StaticResource EmsGreenPanelBackground}"
+            BorderBrush="Green"
+            BorderThickness="1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="120" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="150" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="100" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Border
+                    Grid.RowSpan="3"
+                    Grid.Column="0"
+                    Width="30"
+                    Height="30"
+                    Padding="2"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="{StaticResource EmsFaintBlueSolidBrush}"
+                    BorderBrush="{StaticResource EmsLightBlueSolidBrush}"
+                    BorderThickness="1">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        Style="{StaticResource NumberTextBlock}"
+                        Text="{Binding Key.InternalId}" />
+                </Border>
+
+                <Border
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    BorderBrush="{StaticResource EmsFaintBlueSolidBrush}"
+                    BorderThickness="0,0,0,1">
+                    <TextBlock FontWeight="Bold" Text="{Binding Key.TargetShapeDescription}" />
+                </Border>
+                <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    Style="{StaticResource Explanation_TextBlock}"
+                    Text="{Binding Key.ResultFamilyGroupName}" />
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.RowSpan="2"
+                    Grid.Column="4"
+                    VerticalAlignment="Center"
+                    Text="{Binding Key.ResultTypeDescription}" />
+                <Grid
+                    Grid.Row="0"
+                    Grid.RowSpan="2"
+                    Grid.Column="6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        FontSize="18"
+                        RenderTransformOrigin="0.5,0.5"
+                        Text="{Binding Key.WpfSummaryFunctionObjective_DisplayOnly.Item1}"
+                        ToolTip="{Binding Key.WpfSummaryFunctionObjective_DisplayOnly.Item3}">
+                        <TextBlock.RenderTransform>
+                            <RotateTransform Angle="{Binding Key.WpfSummaryFunctionObjective_DisplayOnly.Item2}" />
+                        </TextBlock.RenderTransform>
+                    </TextBlock>
+                    <TextBlock
+                        Grid.Column="1"
+                        Margin="2,0,0,0"
+                        Style="{StaticResource NumberTextBlock}"
+                        Text="{Binding Key.FunctionObjective_TargetValue, Converter={StaticResource DefaultNumberConverter}}"
+                        Visibility="{Binding Key.WpfSummaryFunctionObjective_FunctionObjective_TargetValue_TextBlockVisibility}" />
+                </Grid>
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.RowSpan="2"
+                    Grid.Column="8"
+                    VerticalAlignment="Center"
+                    FontFamily="Lucida Console"
+                    Text="{Binding Key.QuantityAggregatorOptions.WpfTextDescription}" />
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.RowSpan="2"
+                    Grid.Column="10"
+                    Style="{StaticResource NumberTextBlock}"
+                    Text="{Binding Value.AggregatedValue, Converter={StaticResource DefaultNumberConverter}}" />
+            </Grid>
+        </Border>
+    </DataTemplate>
+    <DataTemplate x:Key="Results_FunctionIterationSummary_ProblemQuantity_Constraint_DataTemplate">
+        <Border
+            Margin="0,2"
+            Padding="2"
+            Background="LightGoldenrodYellow"
+            BorderBrush="Orange"
+            BorderThickness="1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="120" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="150" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="100" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Border
+                    Grid.RowSpan="3"
+                    Grid.Column="0"
+                    Width="30"
+                    Height="30"
+                    Padding="2"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="{StaticResource EmsFaintBlueSolidBrush}"
+                    BorderBrush="{StaticResource EmsLightBlueSolidBrush}"
+                    BorderThickness="1">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Text="{Binding Key.InternalId}" />
+                </Border>
+
+                <Border
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    BorderBrush="{StaticResource EmsFaintBlueSolidBrush}"
+                    BorderThickness="0,0,0,1">
+                    <TextBlock
+                        FontFamily="Courier New"
+                        FontWeight="Bold"
+                        Text="{Binding Key.TargetShapeDescription}" />
+                </Border>
+                <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    Style="{StaticResource Explanation_TextBlock}"
+                    Text="{Binding Key.ResultFamilyGroupName}" />
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.RowSpan="2"
+                    Grid.Column="4"
+                    VerticalAlignment="Center"
+                    Text="{Binding Key.ResultTypeDescription}" />
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.RowSpan="2"
+                    Grid.Column="6"
+                    VerticalAlignment="Center"
+                    FontFamily="Lucida Console">
+                    <Run Text="f(x)" />
+                    <Run Text="{Binding Key.WpfSummaryFunctionObjective_ConstraintObjective_DisplayOnly, Mode=OneWay}" />
+                    <Run FontFamily="Courier New" Text="{Binding Key.ConstraintObjective_CompareValue, Mode=OneWay, Converter={StaticResource DefaultNumberConverter}}" />
+                </TextBlock>
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.RowSpan="2"
+                    Grid.Column="8"
+                    VerticalAlignment="Center"
+                    FontFamily="Lucida Console"
+                    Text="{Binding Key.QuantityAggregatorOptions.WpfTextDescription}" />
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.RowSpan="2"
+                    Grid.Column="10"
+                    Style="{StaticResource NumberTextBlock}"
+                    Text="{Binding Value.AggregatedValue, Converter={StaticResource DefaultNumberConverter}}" />
+            </Grid>
+        </Border>
+    </DataTemplate>
+    <DataTemplate x:Key="Results_FunctionIterationSummary_ProblemQuantity_OutputOnly_DataTemplate">
+        <Border
+            Margin="0,2"
+            Padding="2"
+            Background="LightGray"
+            BorderBrush="Gray"
+            BorderThickness="1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="120" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="150" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="100" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Border
+                    Grid.RowSpan="3"
+                    Grid.Column="0"
+                    Width="30"
+                    Height="30"
+                    Padding="2"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="{StaticResource EmsFaintBlueSolidBrush}"
+                    BorderBrush="{StaticResource EmsLightBlueSolidBrush}"
+                    BorderThickness="1">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Style="{StaticResource NumberTextBlock}"
+                        Text="{Binding Key.InternalId}" />
+                </Border>
+
+                <Border
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    BorderBrush="{StaticResource EmsFaintBlueSolidBrush}"
+                    BorderThickness="0,0,0,1">
+                    <TextBlock FontWeight="Bold" Text="{Binding Key.TargetShapeDescription}" />
+                </Border>
+                <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    Style="{StaticResource Explanation_TextBlock}"
+                    Text="{Binding Key.ResultFamilyGroupName}" />
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.RowSpan="2"
+                    Grid.Column="4"
+                    VerticalAlignment="Center"
+                    Text="{Binding Key.ResultTypeDescription}" />
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.RowSpan="2"
+                    Grid.Column="8"
+                    VerticalAlignment="Center"
+                    FontFamily="Lucida Console"
+                    Text="{Binding Key.QuantityAggregatorOptions.WpfTextDescription}" />
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.RowSpan="2"
+                    Grid.Column="10"
+                    Style="{StaticResource NumberTextBlock}"
+                    Text="{Binding Value.AggregatedValue, Converter={StaticResource DefaultNumberConverter}}" />
+            </Grid>
+        </Border>
+    </DataTemplate>
+    <!--#endregion-->
+
+    <!--#region-->
+    <DataTemplate x:Key="Results_DataSelection_ProblemQuantitiesSelection_ProblemQuantity" DataType="{x:Type probQuantity:ProblemQuantity}">
+        <Grid
+            Grid.Column="1"
+            Margin="0,0,0,5"
+            VerticalAlignment="Center"
+            ToolTip="{Binding ResultTypeExplanation}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="5" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="5" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Border
+                Grid.Row="0"
+                Grid.RowSpan="2"
+                Grid.Column="0"
+                Width="30"
+                Height="30"
+                Padding="2"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="{StaticResource EmsFaintBlueSolidBrush}"
+                BorderBrush="{StaticResource EmsLightBlueSolidBrush}"
+                BorderThickness="1">
+                <Border.Resources>
+                    <Style TargetType="TextBlock">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsFiniteElementData}" Value="{StaticResource False}">
+                                <Setter Property="Text" Value="Gh" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IsFiniteElementData}" Value="{StaticResource True}">
+                                <Setter Property="Text" Value="Fe" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Resources>
+                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <Border
+                Grid.Row="0"
+                Grid.Column="2"
+                Style="{StaticResource LightBlue_BottomOnly_Border}">
+                <TextBlock FontWeight="Bold" Text="{Binding TargetShapeDescription}" />
+            </Border>
+            <TextBlock
+                Grid.Row="1"
+                Grid.Column="2"
+                Style="{StaticResource Explanation_TextBlock}"
+                Text="{Binding ResultFamilyGroupName}" />
+            <TextBlock
+                Grid.Row="0"
+                Grid.RowSpan="2"
+                Grid.Column="4"
+                VerticalAlignment="Center"
+                Text="{Binding ResultTypeDescription}" />
+        </Grid>
+    </DataTemplate>
+    <!--#endregion-->
+
+    <!--#region Finite Element Result Selection Category Button-->
+    <ControlTemplate x:Key="FiniteElementResultSelectionCategoryButtonContentTemplate" TargetType="{x:Type ButtonBase}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Border
+                x:Name="border"
+                Background="Transparent"
+                BorderBrush="Transparent"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                SnapsToDevicePixels="True">
+                <ContentPresenter
+                    x:Name="contentPresenter"
+                    Margin="{TemplateBinding Padding}"
+                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                    Content="{TemplateBinding Content}"
+                    ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                    Focusable="False"
+                    RecognizesAccessKey="True"
+                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}">
+                    <ContentPresenter.Resources>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="TextWrapping" Value="Wrap" />
+                            <Setter Property="TextAlignment" Value="Center" />
+                        </Style>
+                    </ContentPresenter.Resources>
+                </ContentPresenter>
+            </Border>
+        </Grid>
+        <ControlTemplate.Triggers>
+            <Trigger Property="Button.IsDefaulted" Value="True">
+                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" />
+            </Trigger>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="border" Property="Background" Value="#FFBEE6FD" />
+                <Setter TargetName="border" Property="BorderBrush" Value="#FF3C7FB1" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter TargetName="border" Property="Background" Value="#FFC4E5F6" />
+                <Setter TargetName="border" Property="BorderBrush" Value="#FF2C628B" />
+            </Trigger>
+            <Trigger Property="ToggleButton.IsChecked" Value="True">
+                <Setter TargetName="border" Property="Background" Value="#FFBCDDEE" />
+                <Setter TargetName="border" Property="BorderBrush" Value="#FF245A83" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter TargetName="border" Property="Background" Value="#FFF4F4F4" />
+                <Setter TargetName="border" Property="BorderBrush" Value="#FFADB2B5" />
+                <Setter Property="Foreground" Value="#FF838383" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
     <!--#endregion-->
 </ResourceDictionary>

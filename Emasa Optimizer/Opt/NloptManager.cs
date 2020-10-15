@@ -1,19 +1,27 @@
-﻿using System;
+﻿extern alias r3dm;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Data;
+using System.Windows.Media;
+using System.Windows.Media.Media3D;
 using BaseWPFLibrary.Annotations;
 using BaseWPFLibrary.Others;
 using Emasa_Optimizer.FEA;
 using Emasa_Optimizer.FEA.Results;
 using Emasa_Optimizer.Opt.ParamDefinitions;
+using Emasa_Optimizer.Opt.ProbQuantity;
 using Emasa_Optimizer.WpfResources;
 using NLoptNet;
 using Prism.Mvvm;
+using r3dm::Rhino.Geometry;
 
 namespace Emasa_Optimizer.Opt
 {
@@ -26,6 +34,9 @@ namespace Emasa_Optimizer.Opt
 
             // Sets the defaults related to the stopping criteria
             SetDefaultStoppingCriteria();
+
+            CollectionViewSource WpfNlOptEndCriteriaStatus_cvs = new CollectionViewSource() {Source = NlOptEndCriteriaStatus};
+            WpfNlOptEndCriteriaStatus = WpfNlOptEndCriteriaStatus_cvs.View;
         }
 
         private NLoptSolver _nLOptMethod;
@@ -47,15 +58,38 @@ namespace Emasa_Optimizer.Opt
 
                 // Flags the other properties as updated
                 RaisePropertyChanged("SolverNeedsPopulationSize");
+                RaisePropertyChanged("WpfNlOptSolverTypeString");
             }
         }
         public Dictionary<NLoptAlgorithm, string> NlOptAlgorithmEnumDescriptions => ListDescriptionStaticHolder.ListDescSingleton.NlOptAlgorithmEnumDescriptions;
+        public string WpfNlOptSolverTypeString => UseLagrangian ? $"Lagrangian [{NlOptAlgorithmEnumDescriptions[NlOptSolverType]}]" : $"{NlOptAlgorithmEnumDescriptions[NlOptSolverType]}";
+
+        private bool _useLagrangian = true;
+        public bool UseLagrangian
+        {
+            get => _useLagrangian;
+            set => SetProperty(ref _useLagrangian, value);
+        }
+
+        #region TimeSpans
+        private TimeSpan _nlOpt_TotalSolveTimeSpan = TimeSpan.Zero;
+        public TimeSpan NlOpt_TotalSolveTimeSpan
+        {
+            get => _nlOpt_TotalSolveTimeSpan;
+            set => SetProperty(ref _nlOpt_TotalSolveTimeSpan, value);
+        }
+        #endregion
 
         private NloptResult? _result = null;
         public NloptResult? Result
         {
             get => _result;
-            set => SetProperty(ref _result, value);
+            set
+            {
+                SetProperty(ref _result, value);
+                RaisePropertyChanged("WpfResultText");
+                RaisePropertyChanged("WpfResultStyleTag");
+            }
         }
         public string WpfResultText
         {
@@ -115,6 +149,52 @@ namespace Emasa_Optimizer.Opt
                 }
             }
         }
+        public string WpfResultStyleTag
+        {
+            get
+            {
+                if (!_result.HasValue) return "Gray";
+
+                switch (_result.Value)
+                {
+                    case NloptResult.FAILURE:
+                    case NloptResult.INVALID_ARGS:
+                    case NloptResult.OUT_OF_MEMORY:
+                        return "Red";
+
+
+                    case NloptResult.ROUNDOFF_LIMITED:
+                    case NloptResult.FORCED_STOP:
+                        return "Yellow";
+
+                    case NloptResult.SUCCESS:
+                    case NloptResult.FTOL_REACHED:
+                    case NloptResult.XTOL_REACHED:
+                    case NloptResult.MAXEVAL_REACHED:
+                    case NloptResult.MAXTIME_REACHED:
+                    case NloptResult.STOPVAL_REACHED:
+                        return "Green";
+
+                    default:
+                        return $"Gray";
+                }
+            }
+        }
+        
+        private Exception _resultException;
+        public Exception ResultException
+        {
+            get => _resultException;
+            set
+            {
+                SetProperty(ref _resultException, value);
+                RaisePropertyChanged("WpfResultExceptionMessage");
+                RaisePropertyChanged("WpfResultExceptionVisibility");
+            }
+        }
+
+        public Visibility WpfResultExceptionVisibility => ResultException == null ? Visibility.Hidden : Visibility.Visible;
+        public string WpfResultExceptionMessage => _resultException?.Message ?? string.Empty;
 
         private CancellationTokenSource _cancelSource = new CancellationTokenSource();
         public CancellationTokenSource CancelSource
@@ -291,6 +371,10 @@ namespace Emasa_Optimizer.Opt
                 return toRet;
             }
         }
+
+        // List with the end status of the Stop Criteria
+        public FastObservableCollection<NlOptStopCriteriaStatus> NlOptEndCriteriaStatus = new FastObservableCollection<NlOptStopCriteriaStatus>();
+        public ICollectionView WpfNlOptEndCriteriaStatus { get; }
         #endregion
 
         #region Population Size Options
@@ -340,9 +424,28 @@ namespace Emasa_Optimizer.Opt
         }
         #endregion
 
+        #region Objective Function Options
+        private ObjectiveFunctionSumTypeEnum _objectiveFunctionSumType = ObjectiveFunctionSumTypeEnum.Squares;
+        public ObjectiveFunctionSumTypeEnum ObjectiveFunctionSumType
+        {
+            get => _objectiveFunctionSumType;
+            set => SetProperty(ref _objectiveFunctionSumType, value);
+        }
+        #endregion
+
         #region Actions!
         public void SolveSelectedProblem(bool inUpdateInterface = false)
         {
+            // Clears the stop status report
+            NlOptEndCriteriaStatus.Clear();
+
+            // Resets the cancellation token
+            CancelSource = new CancellationTokenSource();
+
+            // Resets
+            Result = null;
+            ResultException = null;
+
             #region Validates the solver limits
             if (IsOn_MaximumIterations && MaximumIterations <= 0) throw new InvalidOperationException("When active, the number of maximum iterations must be larger than 0.");
             if (IsOn_MaximumRunTime && MaximumRunTime <= 0) throw new InvalidOperationException("When active, the maximum runtime must be larger than 0.");
@@ -363,15 +466,36 @@ namespace Emasa_Optimizer.Opt
                 !IsOn_AbsoluteToleranceOnParameterValue) throw new InvalidOperationException("At least one stop control must be set.");
             #endregion
 
-            using (NLOptMethod = new NLoptSolver(
-                NlOptSolverType,
-                (uint)_owner.WpfSelectedProblem.NumberOfVariables,
-                IsOn_RelativeToleranceOnFunctionValue ? RelativeToleranceOnFunctionValue : -1d,
-                IsOn_MaximumIterations ? MaximumIterations : -1
-            ))
-            {
+            // Checks if we have equality of inequality constraints
+            bool hasEqualConstraint = false;
+            bool hasUnequalConstraint = false;
 
-                #region Setting the rest of the stop limits
+            foreach (ProblemQuantity constraintQuantity in _owner.WpfProblemQuantities_Constraint.OfType<ProblemQuantity>())
+            {
+                // Regardless of the constraint type, it will always point to the same function
+                switch (constraintQuantity.ConstraintObjective)
+                {
+                    case Quantity_ConstraintObjectiveEnum.EqualTo:
+                        hasEqualConstraint = true;
+                        break;
+
+                    case Quantity_ConstraintObjectiveEnum.HigherThanOrEqual:
+                    case Quantity_ConstraintObjectiveEnum.LowerThanOrEqual:
+                        hasUnequalConstraint = true;
+                        break;
+
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            using (NLOptMethod = new NLoptSolver(NlOptSolverType, 
+                (uint)_owner.WpfSelectedProblem.NumberOfVariables, 
+                UseLagrangian, hasEqualConstraint, hasUnequalConstraint ))
+            {
+                #region Setting the stop limits
+                if (IsOn_MaximumIterations) NLOptMethod.SetStopOnMaximumIteration(MaximumIterations);
+                if (IsOn_RelativeToleranceOnFunctionValue) NLOptMethod.SetRelativeToleranceOnFunctionValue(RelativeToleranceOnFunctionValue);
                 if (IsOn_AbsoluteToleranceOnFunctionValue) NLOptMethod.SetAbsoluteToleranceOnFunctionValue(AbsoluteToleranceOnFunctionValue);
                 if (IsOn_RelativeToleranceOnParameterValue) NLOptMethod.SetRelativeToleranceOnOptimizationParameter(RelativeToleranceOnParameterValue);
                 if (IsOn_AbsoluteToleranceOnParameterValue)
@@ -389,23 +513,180 @@ namespace Emasa_Optimizer.Opt
                 NLOptMethod.SetLowerBounds(_owner.Gh_Alg.InputDefs_LowerBounds);
                 NLOptMethod.SetUpperBounds(_owner.Gh_Alg.InputDefs_UpperBounds);
 
-                // The objective function is given by th wrapper
-                NLOptMethod.SetMinObjective(_owner.WpfSelectedProblem.Function_NLOptFunctionWrapper);
+                // The objective function is given by the wrapper
+                NLOptMethod.SetMinObjective(_owner.WpfSelectedProblem.NlOptEntryPoint_ObjectiveFunction);
                 #endregion
 
+                // Sets the constraints as given by the quantity selections
+                foreach (ProblemQuantity constraintQuantity in _owner.WpfProblemQuantities_Constraint.OfType<ProblemQuantity>())
+                {
+                    // Regardless of the constraint type, it will always point to the same function
+                    switch (constraintQuantity.ConstraintObjective)
+                    {
+                        case Quantity_ConstraintObjectiveEnum.EqualTo:
+                            NLOptMethod.AddEqualZeroConstraint(constraintQuantity.NlOptEntryPoint_ConstraintFunction, constraintQuantity.ConstraintTolerance);
+                            break;
+
+                        case Quantity_ConstraintObjectiveEnum.HigherThanOrEqual:
+                        case Quantity_ConstraintObjectiveEnum.LowerThanOrEqual:
+                            NLOptMethod.AddLessOrEqualZeroConstraint(constraintQuantity.NlOptEntryPoint_ConstraintFunction, constraintQuantity.ConstraintTolerance);
+                            break;
+
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
+                
                 // Gets the start value array
                 double[] startValues = _owner.Gh_Alg.GetInputStartPosition();
 
-                // Runs the optimization!
-                Result = NLOptMethod.Optimize(startValues, out double? bestEval);
+                Stopwatch sw = Stopwatch.StartNew();
+
+                try
+                {
+                    // Runs the optimization!
+                    Result = NLOptMethod.Optimize(startValues, out double? bestEval);
+                }
+                catch (Exception e)
+                {
+                    Result = NloptResult.FAILURE;
+                    ResultException = e;
+                    throw new Exception($"NlOpt failed. Return code: {Result}", e);
+                }
+                finally
+                {
+                    sw.Stop();
+                    NlOpt_TotalSolveTimeSpan = sw.Elapsed;
+
+                    // These depend on the solution points
+                    int countSolPoints = _owner.WpfFunctionPoints.OfType<SolutionPoint>().Count();
+                    SolutionPoint lastPoint = countSolPoints > 0 ? _owner.WpfFunctionPoints.OfType<SolutionPoint>().ElementAt(countSolPoints - 1) : null;
+                    SolutionPoint beforeLastPoint = countSolPoints > 1 ? _owner.WpfFunctionPoints.OfType<SolutionPoint>().ElementAt(countSolPoints - 2) : null;
+
+                    if (IsOn_StopValueOnObjectiveFunction)
+                    {
+                        if (countSolPoints == 0)
+                        {
+                            NlOptEndCriteriaStatus.Add(new NlOptStopCriteriaStatus("F Stop Value", StopValueOnObjectiveFunction, double.NaN));
+                        }
+                        else
+                        {
+                            NlOptEndCriteriaStatus.Add(new NlOptStopCriteriaStatus("F Stop Value", 
+                                StopValueOnObjectiveFunction, 
+                                Math.Abs(lastPoint.ObjectiveFunctionEval)));
+                        }
+                    }
+
+                    if (IsOn_RelativeToleranceOnFunctionValue)
+                    {
+                        if (countSolPoints < 2)
+                        {
+                            if (countSolPoints == 1) NlOptEndCriteriaStatus.Add(new NlOptStopCriteriaStatus("F Relative Tolerance", Math.Abs(RelativeToleranceOnFunctionValue * lastPoint.ObjectiveFunctionEval), double.NaN));
+                            else NlOptEndCriteriaStatus.Add(new NlOptStopCriteriaStatus("F Relative Tolerance", double.NaN, double.NaN));
+                        }
+                        else
+                        {
+                            NlOptEndCriteriaStatus.Add(new NlOptStopCriteriaStatus("F Relative Tolerance", 
+                                Math.Abs(RelativeToleranceOnFunctionValue * lastPoint.ObjectiveFunctionEval),
+                                Math.Abs(lastPoint.ObjectiveFunctionEval - beforeLastPoint.ObjectiveFunctionEval)));
+                        }
+                    }
+
+                    if (IsOn_AbsoluteToleranceOnFunctionValue)
+                    {
+                        if (countSolPoints < 2)
+                        {
+                            NlOptEndCriteriaStatus.Add(new NlOptStopCriteriaStatus("F Absolute Tolerance", AbsoluteToleranceOnFunctionValue, double.NaN));
+                        }
+                        else
+                        {
+                            NlOptEndCriteriaStatus.Add(new NlOptStopCriteriaStatus("F Absolute Tolerance",
+                                AbsoluteToleranceOnFunctionValue,
+                                Math.Abs(lastPoint.ObjectiveFunctionEval - beforeLastPoint.ObjectiveFunctionEval)));
+                        }
+                    }
+
+                    if (IsOn_RelativeToleranceOnParameterValue)
+                    {
+                        if (countSolPoints < 2)
+                        {
+                            if (countSolPoints == 1) NlOptEndCriteriaStatus.Add(new NlOptStopCriteriaStatus("X Relative Tolerance", Math.Abs(RelativeToleranceOnParameterValue * lastPoint.ObjectiveFunctionEval), double.NaN));
+                            else NlOptEndCriteriaStatus.Add(new NlOptStopCriteriaStatus("X Relative Tolerance", double.NaN, double.NaN));
+                        }
+                        else
+                        {
+                            foreach (KeyValuePair<Input_ParamDefBase, object> lastPointGhInput_Value in lastPoint.GhInput_Values)
+                            {
+                                switch (lastPointGhInput_Value.Key)
+                                {
+                                    case Double_Input_ParamDef doubleInputParamDef:
+                                        NlOptEndCriteriaStatus.Add(new NlOptStopCriteriaStatus($"X Rel: {lastPointGhInput_Value.Key.Name}",
+                                            Math.Abs(RelativeToleranceOnParameterValue * (double)lastPointGhInput_Value.Value),
+                                            Math.Abs((double)lastPointGhInput_Value.Value - (double)beforeLastPoint.GhInput_Values[lastPointGhInput_Value.Key])));
+                                        break;
+
+                                    case Point_Input_ParamDef pointInputParamDef:
+                                        NlOptEndCriteriaStatus.Add(new NlOptStopCriteriaStatus($"X Rel: {lastPointGhInput_Value.Key.Name} - X",
+                                            Math.Abs(RelativeToleranceOnParameterValue * ((Point3d)lastPointGhInput_Value.Value).X),
+                                            Math.Abs(((Point3d)lastPointGhInput_Value.Value).X - ((Point3d)beforeLastPoint.GhInput_Values[lastPointGhInput_Value.Key]).X)));
+
+                                        NlOptEndCriteriaStatus.Add(new NlOptStopCriteriaStatus($"X Rel: {lastPointGhInput_Value.Key.Name} - Y",
+                                            Math.Abs(RelativeToleranceOnParameterValue * ((Point3d)lastPointGhInput_Value.Value).Y),
+                                            Math.Abs(((Point3d)lastPointGhInput_Value.Value).Y - ((Point3d)beforeLastPoint.GhInput_Values[lastPointGhInput_Value.Key]).Y)));
+
+                                        NlOptEndCriteriaStatus.Add(new NlOptStopCriteriaStatus($"X Rel: {lastPointGhInput_Value.Key.Name} - Z",
+                                            Math.Abs(RelativeToleranceOnParameterValue * ((Point3d)lastPointGhInput_Value.Value).Z),
+                                            Math.Abs(((Point3d)lastPointGhInput_Value.Value).Z - ((Point3d)beforeLastPoint.GhInput_Values[lastPointGhInput_Value.Key]).Z)));
+                                        break;
+
+                                    default:
+                                        throw new ArgumentOutOfRangeException(nameof(lastPointGhInput_Value.Key));
+                                }
+                            }
+                        }
+                    }
+
+                    if (IsOn_AbsoluteToleranceOnParameterValue)
+                    {
+                        if (countSolPoints < 2)
+                        {
+                            if (countSolPoints == 1)
+                            {
+                                foreach (AbsoluteToleranceOnParameterValue_NameValuePair item in AbsoluteToleranceOnParameterValue)
+                                {
+                                    NlOptEndCriteriaStatus.Add(new NlOptStopCriteriaStatus($"X Abs: {item.ParameterName}", item.ParameterTolerance, double.NaN)); 
+                                }
+                            }
+                            else NlOptEndCriteriaStatus.Add(new NlOptStopCriteriaStatus("X Absolute Tolerance", double.NaN, double.NaN));
+                        }
+                        else
+                        {
+                            for (int i = 0; i < lastPoint.InputValuesAsDoubleArray.Length; i++)
+                            {
+                                AbsoluteToleranceOnParameterValue_NameValuePair current = AbsoluteToleranceOnParameterValue[i];
+
+                                NlOptEndCriteriaStatus.Add(new NlOptStopCriteriaStatus($"X Abs: {current.ParameterName}",
+                                    current.ParameterTolerance,
+                                    Math.Abs(lastPoint.InputValuesAsDoubleArray[i] - beforeLastPoint.InputValuesAsDoubleArray[i])));
+                            }
+                        }
+                    }
+
+                    if (IsOn_MaximumIterations)
+                    {
+                        NlOptEndCriteriaStatus.Add(new NlOptStopCriteriaStatus("Max. Iterations", (double)MaximumIterations, (double)_owner.WpfFunctionPoints.OfType<SolutionPoint>().Count()));
+                    }
+                    
+                    if (IsOn_MaximumRunTime)
+                    {
+                        NlOptEndCriteriaStatus.Add(new NlOptStopCriteriaStatus("Max. Time", MaximumRunTime, NlOpt_TotalSolveTimeSpan.TotalSeconds));
+                    }
+                }
             }
-            // Resets the NlOptMethod to null
+
+            //Resets the NlOptMethod to null
             NLOptMethod = null;
         }
-        #endregion
-
-        #region Optimization Variables
-        public FastObservableCollection<FeResultOptimizeOptionsClass> OptimizationVariableList = new FastObservableCollection<FeResultOptimizeOptionsClass>();
         #endregion
     }
 
@@ -440,172 +721,38 @@ namespace Emasa_Optimizer.Opt
         }
     }
 
-    public class FeResultOptimizeOptionsClass : BindableBase
+    public class NlOptStopCriteriaStatus
     {
-        public FeResultOptimizeOptionsClass([NotNull] FeResultClassification inResult)
+        public NlOptStopCriteriaStatus([NotNull] string inName, double inLimit, double inCurrent)
         {
-            _result = inResult ?? throw new ArgumentNullException(nameof(inResult));
-
-            // Sets the defaults in accordance with the ResultClass Type
-            switch (_result.ResultFamily)
-            {
-                case FeResultFamilyEnum.Nodal_Reaction:
-
-                    break;
-
-                case FeResultFamilyEnum.Nodal_Displacement:
-                    break;
-
-                case FeResultFamilyEnum.SectionNode_Stress:
-                    break;
-
-                case FeResultFamilyEnum.SectionNode_Strain:
-                    break;
-
-                case FeResultFamilyEnum.ElementNodal_BendingStrain:
-                    break;
-
-                case FeResultFamilyEnum.ElementNodal_Force:
-                    break;
-
-                case FeResultFamilyEnum.ElementNodal_Strain:
-                    break;
-
-                case FeResultFamilyEnum.ElementNodal_Stress:
-                    break;
-
-                case FeResultFamilyEnum.Others:
-                    break;
-
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            Name = inName ?? throw new ArgumentNullException(nameof(inName));
+            Limit = inLimit;
+            Current = inCurrent;
         }
 
-        private FeResultClassification _result;
-        public FeResultClassification Result
-        {
-            get => _result;
-            set => SetProperty(ref _result, value);
-        }
-
-        private bool _optimize_AggregateType_Max = true;
-        public bool Optimize_AggregateType_Max
-        {
-            get => _optimize_AggregateType_Max;
-            set => SetProperty(ref _optimize_AggregateType_Max, value);
-        }
-        private bool _optimize_AggregateType_Min = false;
-        public bool Optimize_AggregateType_Min
-        {
-            get => _optimize_AggregateType_Min;
-            set => SetProperty(ref _optimize_AggregateType_Min, value);
-        }
-        private bool _optimize_AggregateType_Mean = false;
-        public bool Optimize_AggregateType_Mean
-        {
-            get => _optimize_AggregateType_Mean;
-            set => SetProperty(ref _optimize_AggregateType_Mean, value);
-        }
-        private bool _optimize_AggregateType_StandardDeviation = false;
-        public bool Optimize_AggregateType_StandardDeviation
-        {
-            get => _optimize_AggregateType_StandardDeviation;
-            set => SetProperty(ref _optimize_AggregateType_StandardDeviation, value);
-        }
-        
-        private bool _optimize_Objective_Maximize = false;
-        public bool Optimize_Objective_Maximize
-        {
-            get => _optimize_Objective_Maximize;
-            set => SetProperty(ref _optimize_Objective_Maximize, value);
-        }
-        private bool _optimize_Objective_Minimize = true;
-        public bool Optimize_Objective_Minimize
-        {
-            get => _optimize_Objective_Minimize;
-            set => SetProperty(ref _optimize_Objective_Minimize, value);
-        }
-        private bool _optimize_Objective_ToValue = false;
-        public bool Optimize_Objective_ToValue
-        {
-            get => _optimize_Objective_ToValue;
-            set => SetProperty(ref _optimize_Objective_ToValue, value);
-        }
-        private double _optimize_Objective_Value = 0d;
-        public double Optimize_Objective_Value
-        {
-            get => _optimize_Objective_Value;
-            set => SetProperty(ref _optimize_Objective_Value, value);
-        }
-
-
-        private bool _optimize_ExpectedScaleRange_IsSet;
-        public bool Optimize_ExpectedScaleRange_IsSet
-        {
-            get => _optimize_ExpectedScaleRange_IsSet;
-            set => SetProperty(ref _optimize_ExpectedScaleRange_IsSet, value);
-        }
-        private double _optimize_ExpectedScale_Min;
-        public double Optimize_ExpectedScale_Min
-        {
-            get => _optimize_ExpectedScale_Min;
-            set => SetProperty(ref _optimize_ExpectedScale_Min, value);
-        }
-        private double _optimize_ExpectedScale_Max;
-        public double Optimize_ExpectedScale_Max
-        {
-            get => _optimize_ExpectedScale_Max;
-            set => SetProperty(ref _optimize_ExpectedScale_Max, value);
-        }
-        private DoubleValueRange _optimize_ExpectedScale_Range;
-        public DoubleValueRange Optimize_ExpectedScale_Range => _optimize_ExpectedScale_Range ?? (_optimize_ExpectedScale_Range = new DoubleValueRange(_optimize_ExpectedScale_Min, _optimize_ExpectedScale_Max));
-
-        private bool _optimize_LimitPenalty_IsSet;
-        public bool Optimize_LimitPenalty_IsSet
-        {
-            get => _optimize_LimitPenalty_IsSet;
-            set => SetProperty(ref _optimize_LimitPenalty_IsSet, value);
-        }
-        private double _optimize_LimitPenalty_Value;
-        public double Optimize_LimitPenalty_Value
-        {
-            get => _optimize_LimitPenalty_Value;
-            set => SetProperty(ref _optimize_LimitPenalty_Value, value);
-        }
-        private double _optimize_LimitPenalty_Min;
-        public double Optimize_LimitPenalty_Min
-        {
-            get => _optimize_LimitPenalty_Min;
-            set => SetProperty(ref _optimize_LimitPenalty_Min, value);
-        }
-        private double _optimize_LimitPenalty_Max;
-        public double Optimize_LimitPenalty_Max
-        {
-            get => _optimize_LimitPenalty_Max;
-            set => SetProperty(ref _optimize_LimitPenalty_Max, value);
-        }
-        private DoubleValueRange _optimize_LimitPenalty_Range;
-        public DoubleValueRange Optimize_LimitPenalty_Range => _optimize_LimitPenalty_Range ?? (_optimize_LimitPenalty_Range = new DoubleValueRange(_optimize_LimitPenalty_Min, _optimize_LimitPenalty_Max));
-
-        public string WpfFriendlyName
+        public string Name { get; private set; }
+        public double Limit { get; private set; }
+        public double Current { get; private set; }
+        public bool IsStop
         {
             get
             {
-                string objective = string.Empty;
-                if (Optimize_Objective_Maximize) objective = "Maximize";
-                else if (Optimize_Objective_Minimize) objective = "Minimize";
-                else if (Optimize_Objective_ToValue) objective = $"To: {Optimize_Objective_Value:F3}";
-
-                string aggregate = string.Empty;
-                if (Optimize_AggregateType_Max) aggregate = "Max";
-                else if(Optimize_AggregateType_Min) aggregate = "Min";
-                else if(Optimize_AggregateType_Mean) aggregate = "Mean";
-                else if(Optimize_AggregateType_StandardDeviation) aggregate = "StDev";
-
-                return $"{Result.WpfFriendlyName} - {objective} - {aggregate}";
+                try
+                {
+                    if (Name == "Max. Time" || Name == "Max. Iterations") return Current >= Limit;
+                    else return Current < Limit;
+                }
+                catch
+                {
+                    return false;
+                }
             }
         }
     }
 
+    public enum ObjectiveFunctionSumTypeEnum
+    {
+        Simple,
+        Squares,
+    }
 }

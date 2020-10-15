@@ -1,5 +1,5 @@
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Win32\librhino3dmio_native.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Win64\librhino3dmio_native.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\Win32\librhino3dmio_native.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\librhino3dmio_native.dylib
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\x32\nlopt.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Geometry Optimizer\bin\Debug\x64\nlopt.dll

@@ -287,7 +287,7 @@ namespace GHComponents
         }
         public void WriteLine3dValues(IEnumerable<Line> inValues)
         {
-            File.WriteAllLines(VarFilePath(), inValues.Select(a => $"{a}"));
+            File.WriteAllLines(VarFilePath(), inValues.Select(a => $"{a.From}\t{a.To}"));
         }
         public double[] WriteDoubleRange(double inMin = double.NaN, double inMax = double.NaN)
         {

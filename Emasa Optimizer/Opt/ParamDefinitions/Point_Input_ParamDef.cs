@@ -45,21 +45,44 @@ namespace Emasa_Optimizer.Opt.ParamDefinitions
             }
         }
 
+        public string WpfStart
+        {
+            get => $"{Start}";
+            set
+            {
+                if (!RhinoStaticMethods.TryParsePoint3d(value, out Point3d p)) throw new Exception("Given string in not a valid Point3d.");
+                Start = p;
+            }
+        }
+
         public double Start_X
         {
             get => Start.X;
-            set => Start = new Point3d(value, _Start.Y, _Start.Z);
+            set
+            {
+                if (!SearchRange.RangeX.IsInside(value)) throw new Exception("Given start value must be within the search range.");
+                Start = new Point3d(value, _Start.Y, _Start.Z);
+            }
         }
         public double Start_Y
         {
             get => Start.Y;
-            set => Start = new Point3d(_Start.X, value, _Start.Z);
+            set
+            {
+                if (!SearchRange.RangeY.IsInside(value)) throw new Exception("Given start value must be within the search range.");
+                Start = new Point3d(_Start.X, value, _Start.Z);
+            }
         }
         public double Start_Z
         {
             get => Start.Z;
-            set => Start = new Point3d(_Start.X, _Start.Y, value);
+            set
+            {
+                if (!SearchRange.RangeZ.IsInside(value)) throw new Exception("Given start value must be within the search range.");
+                Start = new Point3d(_Start.X, _Start.Y, value);
+            }
         }
+
         #region UI Helpers
         #endregion
     }

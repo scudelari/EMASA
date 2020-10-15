@@ -425,6 +425,11 @@ namespace RhinoInterfaceLibrary
 
             _emsPluginReference.ChangePropertiesOfObjectInGroup(inGroupName, rgb, inLineTypeIndex);
         }
+
+        public string[,] Grasshopper_GetDocumentMessages()
+        {
+            return _emsPluginReference.Grasshopper_GetDocumentMessages();
+        }
         #endregion
 
     }

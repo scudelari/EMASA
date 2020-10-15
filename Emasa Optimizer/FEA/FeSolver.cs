@@ -37,12 +37,8 @@ namespace Emasa_Optimizer.FEA
             get => _feWorkFolder;
             set => SetProperty(ref _feWorkFolder, value);
         }
-        
-        public void CleanUpDirectory()
-        {
-            if (Directory.Exists(FeWorkFolder)) Directory.Delete(FeWorkFolder, true);
-            Directory.CreateDirectory(FeWorkFolder);
-        }
+
+        public abstract void CleanUpDirectory();
         
         public abstract void InitializeSoftware();
         public abstract void ResetSoftwareData();

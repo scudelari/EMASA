@@ -249,12 +249,7 @@ namespace Sap2000Library
         public ResultManager ResultMan { get; }
         public SteelDesignManager SteelDesignMan { get; }
 
-
-
-
-
-
-
+        
 
         private bool _isCurrentlyVisible = true;
         private object visibleLocker = new object();
@@ -274,7 +269,6 @@ namespace Sap2000Library
             task.Start();
             await task;
         }
-
         public async void HideSapAsync()
         {
             void work()
@@ -291,9 +285,9 @@ namespace Sap2000Library
             await task;
         }
 
-        private bool WindowVisible
+        public bool WindowVisible
         {
-            get { return SapInstance.Visible(); }
+            get => SapInstance.Visible();
             set
             {
                 if (value) // Shall make it visible
@@ -301,9 +295,7 @@ namespace Sap2000Library
                     if (!_isCurrentlyVisible) // It is currently hidden
                     {
                         if (!SapInstance.Visible())
-                            if (SapInstance.Unhide() != 0)
-                                throw new S2KHelperException(
-                                    "It was requested that SAP2000 be shown, but the request failed.");
+                            if (SapInstance.Unhide() != 0) throw new S2KHelperException("It was requested that SAP2000 be shown, but the request failed.");
                         _isCurrentlyVisible = true;
                     }
                 }
@@ -313,9 +305,7 @@ namespace Sap2000Library
                     if (_isCurrentlyVisible) // It is currently shown
                     {
                         if (SapInstance.Visible())
-                            if (SapInstance.Hide() != 0)
-                                throw new S2KHelperException(
-                                    "It was requested that SAP2000 be hidden, but the request failed.");
+                            if (SapInstance.Hide() != 0) throw new S2KHelperException("It was requested that SAP2000 be hidden, but the request failed.");
                         _isCurrentlyVisible = false;
                     }
                 }

@@ -98,7 +98,7 @@ namespace RhinoInterfaceLibrary
                 "problem.data");
         }
 
-        public static Regex Point3dRegex = new Regex(@"(?<x>-?\d.*?),(?<y>-?\d.*?),(?<z>-?\d.*)");
+        public static Regex Point3dRegex = new Regex(@"(?<x>[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?),(?<y>[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?),(?<z>[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)");
         public static bool TryParsePoint3d(string inText, out R3dmGeom.Point3d outPoint)
         {
             Match m = Point3dRegex.Match(inText);
@@ -121,7 +121,7 @@ namespace RhinoInterfaceLibrary
             return true;
         }
 
-        public static Regex LineRegex = new Regex(@"(?<x1>-?\d.*?),(?<y1>-?\d.*?),(?<z1>-?\d.*)\t(?<x2>-?\d.*?),(?<y2>-?\d.*?),(?<z2>-?\d.*)");
+        public static Regex LineRegex = new Regex(@"(?<x1>[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?),(?<y1>[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?),(?<z1>[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)\t(?<x2>[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?),(?<y2>[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?),(?<z2>[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)");
         public static bool TryParseLine(string inText, out R3dmGeom.Line outLine)
         {
             Match m = LineRegex.Match(inText);

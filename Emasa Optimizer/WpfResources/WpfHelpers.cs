@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -10,6 +12,7 @@ using Emasa_Optimizer.FEA;
 using Emasa_Optimizer.FEA.Results;
 using Emasa_Optimizer.Helpers.Accord;
 using Emasa_Optimizer.Opt.ParamDefinitions;
+using Emasa_Optimizer.Opt.ProbQuantity;
 
 namespace Emasa_Optimizer.WpfResources
 {
@@ -28,6 +31,7 @@ namespace Emasa_Optimizer.WpfResources
         }
         public static void SetCancelErrorOnLostFocus(DependencyObject d, string value)
         {
+            
             d.SetValue(CancelErrorOnLostFocus, value);
         }
         private static void PropertyChangedCallback_CancelErrorOnLostFocus(DependencyObject inD, DependencyPropertyChangedEventArgs inE)
@@ -174,4 +178,71 @@ namespace Emasa_Optimizer.WpfResources
             return "bla";
         }
     }
+
+
+    public class Wpf_ResultList_Input_DataTemplateSelector : DataTemplateSelector
+    {
+        public override DataTemplate
+            SelectTemplate(object item, DependencyObject container)
+        {
+            FrameworkElement element = container as FrameworkElement;
+
+            if (element != null && item != null && item is KeyValuePair<Input_ParamDefBase, object> kvp)
+            {
+                switch (kvp.Key)
+                {
+                    case Double_Input_ParamDef _:
+                        return element.FindResource("Results_FunctionIterationSummary_DataTemplate_InputParams_DoubleInputParam") as DataTemplate;
+
+                    case Point_Input_ParamDef _:
+                        return element.FindResource("Results_FunctionIterationSummary_DataTemplate_InputParams_PointInputParam") as DataTemplate;
+                }
+            }
+
+            return null;
+        }
+    }
+
+    public class Results_FunctionIterationSummary_ProblemQuantity_DataTemplateSelector : DataTemplateSelector
+    {
+        public override DataTemplate
+            SelectTemplate(object item, DependencyObject container)
+        {
+            FrameworkElement element = container as FrameworkElement;
+
+            if (element != null && item != null && item is KeyValuePair<ProblemQuantity, SolutionPoint_ProblemQuantity_Output> kvp)
+            {
+                if (kvp.Key.IsObjectiveFunctionMinimize) 
+                    return element.FindResource("Results_FunctionIterationSummary_ProblemQuantity_ObjectiveFunction_DataTemplate") as DataTemplate;
+                if (kvp.Key.IsOutputOnly)
+                    return element.FindResource("Results_FunctionIterationSummary_ProblemQuantity_OutputOnly_DataTemplate") as DataTemplate;
+                if (kvp.Key.IsConstraint)
+                    return element.FindResource("Results_FunctionIterationSummary_ProblemQuantity_Constraint_DataTemplate") as DataTemplate;
+            }
+
+            return null;
+        }
+    }
+
+    public class DefaultNumberConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is double d)
+            {
+                double absD = Math.Abs(d);
+                //if (absD < 1e-9) return "0.0";
+
+                return $"{d:+0.000e+000;-0.000e+000;0.0}";
+            }
+            
+            return value.ToString();
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
 }

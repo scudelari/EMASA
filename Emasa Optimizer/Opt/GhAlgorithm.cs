@@ -53,12 +53,32 @@ namespace Emasa_Optimizer.Opt
                 switch (varExtension)
                 {
                     case ".Double":
-                        AddParameterToInputs(new Double_Input_ParamDef(inName: varName, inRange: ReadDoubleValueRange(varRangeFile))
-                        { Start = ReadDouble(varDataFile) });
+                        Double_Input_ParamDef bdlInputParam = new Double_Input_ParamDef(inName: varName, inRange: ReadDoubleValueRange(varRangeFile));
+                        double startVal = ReadDouble(varDataFile);
+                        if (!double.IsNaN(startVal))
+                        {
+                            try
+                            {
+                                bdlInputParam.Start = startVal;
+                            }
+                            catch (Exception)
+                            {
+                                bdlInputParam.Start = bdlInputParam.SearchRange.Mid;
+                            }
+                        }
+                        AddParameterToInputs(bdlInputParam);
                         break;
                     case ".Point":
-                        AddParameterToInputs(new Point_Input_ParamDef(inName: varName, inRange: ReadPointValueRange(varRangeFile))
-                        { Start = ReadPoint(varDataFile) });
+                        Point_Input_ParamDef pntParam = new Point_Input_ParamDef(inName: varName, inRange: ReadPointValueRange(varRangeFile));
+                        try
+                        {
+                            pntParam.Start = ReadPoint(varDataFile);
+                        }
+                        catch
+                        {
+                            pntParam.Start = pntParam.SearchRange.MaxPoint;
+                        }
+                        AddParameterToInputs(pntParam);
                         break;
                     default:
                         throw new InvalidDataException($"The format given by extension {varExtension} is not supported as GH input.");
@@ -81,7 +101,10 @@ namespace Emasa_Optimizer.Opt
                         break;
 
                     case ".DoubleList":
-                        GeometryDefs.Add(new DoubleList_GhGeom_ParamDef(varName));
+                        DoubleList_GhGeom_ParamDef dlParam = new DoubleList_GhGeom_ParamDef(varName);
+                        GeometryDefs.Add(dlParam);
+                        // Also adds it to the list of available problem quantity types
+                        _owner.ProblemQuantityAvailableTypes.Add(dlParam);
                         break;
 
                     case ".PointList":
@@ -102,38 +125,32 @@ namespace Emasa_Optimizer.Opt
 
 
             CollectionViewSource geometryDefs_PointList_Cvs = new CollectionViewSource() {Source = GeometryDefs};
-            geometryDefs_PointList_Cvs.Filter += (inSender, inArgs) =>
-            {
-                if (inArgs.Item is PointList_GhGeom_ParamDef item) inArgs.Accepted = true;
-                else inArgs.Accepted = false;
-            };
-            geometryDefs_PointList_Cvs.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
-            geometryDefs_PointList_Cvs.GroupDescriptions.Add(new PropertyGroupDescription("TypeName"));
             GeometryDefs_PointList_View = geometryDefs_PointList_Cvs.View;
+            GeometryDefs_PointList_View.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
+            //GeometryDefs_PointList_View.GroupDescriptions.Add(new PropertyGroupDescription("TypeName"));
+            GeometryDefs_PointList_View.Filter += inO => inO is PointList_GhGeom_ParamDef;
             HasGeometryDef_PointList = GeometryDefs_PointList_View.IsEmpty ? Visibility.Collapsed : Visibility.Visible;
 
             CollectionViewSource geometryDefs_LineList_Cvs = new CollectionViewSource() { Source = GeometryDefs };
-            geometryDefs_LineList_Cvs.Filter += (inSender, inArgs) =>
-            {
-                if (inArgs.Item is LineList_GhGeom_ParamDef item) inArgs.Accepted = true;
-                else inArgs.Accepted = false;
-            };
-            geometryDefs_LineList_Cvs.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
-            geometryDefs_LineList_Cvs.GroupDescriptions.Add(new PropertyGroupDescription("TypeName"));
             GeometryDefs_LineList_View = geometryDefs_LineList_Cvs.View;
+            GeometryDefs_LineList_View.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
+            //GeometryDefs_LineList_View.GroupDescriptions.Add(new PropertyGroupDescription("TypeName"));
+            GeometryDefs_LineList_View.Filter += inO => inO is LineList_GhGeom_ParamDef;
             HasGeometryDef_LineList = GeometryDefs_LineList_View.IsEmpty ? Visibility.Collapsed : Visibility.Visible;
 
             CollectionViewSource geometryDefs_DoubleList_Cvs = new CollectionViewSource() { Source = GeometryDefs };
-            geometryDefs_DoubleList_Cvs.Filter += (inSender, inArgs) =>
-            {
-                if (inArgs.Item is DoubleList_GhGeom_ParamDef item) inArgs.Accepted = true;
-                else inArgs.Accepted = false;
-            };
-            geometryDefs_DoubleList_Cvs.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
-            geometryDefs_DoubleList_Cvs.GroupDescriptions.Add(new PropertyGroupDescription("TypeName"));
             GeometryDefs_DoubleList_View = geometryDefs_DoubleList_Cvs.View;
+            GeometryDefs_DoubleList_View.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
+            //GeometryDefs_DoubleList_View.GroupDescriptions.Add(new PropertyGroupDescription("TypeName"));
+            GeometryDefs_DoubleList_View.Filter += inO => inO is DoubleList_GhGeom_ParamDef;
             HasGeometryDef_DoubleList = GeometryDefs_DoubleList_View.IsEmpty ? Visibility.Collapsed : Visibility.Visible;
 
+
+            CollectionViewSource geometryDefs_PointLineBundle_Cvs = new CollectionViewSource() { Source = GeometryDefs };
+            GeometryDefs_PointListBundle_View = geometryDefs_PointLineBundle_Cvs.View;
+            GeometryDefs_PointListBundle_View.SortDescriptions.Add(new SortDescription("TypeName", ListSortDirection.Ascending));
+            GeometryDefs_PointListBundle_View.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
+            GeometryDefs_PointListBundle_View.Filter += inO => inO is LineList_GhGeom_ParamDef || inO is PointList_GhGeom_ParamDef;
 
             #endregion
 
@@ -381,7 +398,10 @@ namespace Emasa_Optimizer.Opt
                 }
                 catch (Exception e)
                 {
-                    throw new Exception($"Could not write the Grasshopper input {input_ParamDefBase.Name} to {inputVarFilePath}.", e);
+                    string errorMessage = $"Could not write the Grasshopper input {input_ParamDefBase.Name} to {inputVarFilePath}.";
+                    inSolPoint.RuntimeMessages.Add(new SolutionPoint_Message(errorMessage, SolutionPoint_MessageSourceEnum.Grasshopper, SolutionPoint_MessageLevelEnum.Error, e));
+                    // Rethrows for program flow
+                    throw new Exception(errorMessage, e);
                 }
             }
 
@@ -392,9 +412,46 @@ namespace Emasa_Optimizer.Opt
             }
             catch (Exception e)
             {
-                throw new COMException("Could not solve the Grasshopper Algorithm.", e);
+                string errorMessage = "Could not solve the Grasshopper Algorithm. Error in the COM interface.";
+                inSolPoint.RuntimeMessages.Add(new SolutionPoint_Message(errorMessage, SolutionPoint_MessageSourceEnum.Grasshopper, SolutionPoint_MessageLevelEnum.Error, e));
+                // Rethrows for program flow
+                throw new COMException(errorMessage, e);
             }
 
+            // Checks if the Grasshopper result has anything to say
+            string[,] ghMessages = RhinoModel.RM.Grasshopper_GetDocumentMessages();
+            if (ghMessages != null)
+            {
+                string errors = string.Empty;
+
+                // Adds the message to the buffer
+                for (int i = 0; i < ghMessages.GetLength(0); i++)
+                {
+                    switch (ghMessages[i,0])
+                    {
+                        case "Error":
+                            errors += $"{ghMessages[i, 1]}{Environment.NewLine}";
+                            inSolPoint.RuntimeMessages.Add(new SolutionPoint_Message(ghMessages[i, 1], SolutionPoint_MessageSourceEnum.Grasshopper, SolutionPoint_MessageLevelEnum.Error));
+                            break;
+
+                        case "Warning":
+                            inSolPoint.RuntimeMessages.Add(new SolutionPoint_Message(ghMessages[i, 1], SolutionPoint_MessageSourceEnum.Grasshopper, SolutionPoint_MessageLevelEnum.Warning));
+                            break;
+
+                        case "Remark":
+                            inSolPoint.RuntimeMessages.Add(new SolutionPoint_Message(ghMessages[i, 1], SolutionPoint_MessageSourceEnum.Grasshopper, SolutionPoint_MessageLevelEnum.Remark));
+                            break;
+
+                        default:
+                            errors += $"A grasshopper message type was unexpected: {ghMessages[i, 0]}. Message: {ghMessages[i, 1]}{Environment.NewLine}";
+                            inSolPoint.RuntimeMessages.Add(new SolutionPoint_Message(ghMessages[i, 1], SolutionPoint_MessageSourceEnum.Grasshopper, SolutionPoint_MessageLevelEnum.Error));
+                            break;
+                    }    
+                }
+
+                // There was an error, so we must throw
+                if (!string.IsNullOrWhiteSpace(errors)) throw new Exception(errors);
+            }
 
             // Reads the geometry into the solution point
             foreach (GhGeom_ParamDefBase output_ParamDefBase in GeometryDefs)
@@ -438,7 +495,10 @@ namespace Emasa_Optimizer.Opt
                 }
                 catch (Exception e)
                 {
-                    throw new Exception($"Could not read the Grasshopper geometry {output_ParamDefBase.Name}.", e);
+                    string errorMessage = $"Could not read the Grasshopper geometry {output_ParamDefBase.Name}.";
+                    inSolPoint.RuntimeMessages.Add(new SolutionPoint_Message(errorMessage, SolutionPoint_MessageSourceEnum.Grasshopper, SolutionPoint_MessageLevelEnum.Error, e));
+                    // Rethrows for program flow
+                    throw new Exception(errorMessage, e);
                 }
             }
 
@@ -546,6 +606,9 @@ namespace Emasa_Optimizer.Opt
 
         public ICollectionView GeometryDefs_DoubleList_View { get; private set; }
         public Visibility HasGeometryDef_DoubleList { get; private set; }
+
+        public ICollectionView GeometryDefs_PointListBundle_View { get; private set; }
+
         #endregion
     }
 }

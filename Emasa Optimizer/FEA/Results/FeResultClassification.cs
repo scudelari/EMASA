@@ -5,11 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using Emasa_Optimizer.Opt;
+using Emasa_Optimizer.Opt.ProbQuantity;
 using Prism.Mvvm;
 
 namespace Emasa_Optimizer.FEA.Results
 {
-    public class FeResultClassification : BindableBase
+    public class FeResultClassification : BindableBase, IProblemQuantitySource
     {
         public FeResultClassification(FeResultTypeEnum inResultType, bool inOutputDataIsSelected, FeAnalysisShapeEnum inShape)
         {
@@ -24,8 +26,7 @@ namespace Emasa_Optimizer.FEA.Results
             get => _resultFamily;
             set => SetProperty(ref _resultFamily, value);
         }
-        public string ResultFamilyGroupName => GetFriendlyEnumName(ResultFamily);
-
+        
         private FeResultTypeEnum _resultType;
         public FeResultTypeEnum ResultType
         {
@@ -39,9 +40,9 @@ namespace Emasa_Optimizer.FEA.Results
                     case FeResultTypeEnum.Nodal_Reaction_Fx:
                     case FeResultTypeEnum.Nodal_Reaction_My:
                     case FeResultTypeEnum.Nodal_Reaction_Mz:
-                    case FeResultTypeEnum.Nodal_Reaction_Tq:
-                    case FeResultTypeEnum.Nodal_Reaction_SFz:
-                    case FeResultTypeEnum.Nodal_Reaction_SFy:
+                    case FeResultTypeEnum.Nodal_Reaction_Mx:
+                    case FeResultTypeEnum.Nodal_Reaction_Fz:
+                    case FeResultTypeEnum.Nodal_Reaction_Fy:
                         ResultFamily = FeResultFamilyEnum.Nodal_Reaction;
                         ResultLocation = FeResultLocationEnum.Node;
                         break;
@@ -134,7 +135,6 @@ namespace Emasa_Optimizer.FEA.Results
                 }
             }
         }
-        public string ResultTypeDescription => GetFriendlyEnumName(ResultType);
 
         public string ResultTypeExplanation
         {
@@ -165,7 +165,6 @@ namespace Emasa_Optimizer.FEA.Results
             get => _targetShape;
             set => SetProperty(ref _targetShape, value);
         }
-        public string TargetShapeDescription => GetFriendlyEnumName(TargetShape);
 
         public bool IsEigenValueBuckling => ResultType == FeResultTypeEnum.Model_EigenvalueBuckling_Mode1Factor ||
                                             ResultType == FeResultTypeEnum.Model_EigenvalueBuckling_Mode2Factor ||
@@ -276,15 +275,15 @@ namespace Emasa_Optimizer.FEA.Results
                     return "Moment Z";
                     break;
 
-                case FeResultTypeEnum.Nodal_Reaction_Tq:
+                case FeResultTypeEnum.Nodal_Reaction_Mx:
                     return "Moment X";
                     break;
 
-                case FeResultTypeEnum.Nodal_Reaction_SFz:
+                case FeResultTypeEnum.Nodal_Reaction_Fz:
                     return "Force Z";
                     break;
 
-                case FeResultTypeEnum.Nodal_Reaction_SFy:
+                case FeResultTypeEnum.Nodal_Reaction_Fy:
                     return "Force Y";
                     break;
 
@@ -457,12 +456,40 @@ namespace Emasa_Optimizer.FEA.Results
                     break;
 
                 case FeResultTypeEnum.Model_EigenvalueBuckling_Mode3Factor:
-                    return "EV Blk M2";
+                    return "EV Blk M3";
                     break;
 
                 default:
                     throw new ArgumentOutOfRangeException(nameof(inFeResultType), inFeResultType, null);
             }
+        }
+        #endregion
+
+
+        #region IProblemQuantitySource
+        public bool IsGhGeometryDoubleListData => false;
+        public bool IsFiniteElementData => true;
+        public string ResultFamilyGroupName => GetFriendlyEnumName(ResultFamily);
+        public string ResultTypeDescription => GetFriendlyEnumName(ResultType);
+        public string TargetShapeDescription => GetFriendlyEnumName(TargetShape);
+
+        public void AddProblemQuantity_FunctionObjective(object inSolveMan)
+        {
+            if (inSolveMan is SolveManager s) s.AddProblemQuantity(new ProblemQuantity(this, Quantity_TreatmentTypeEnum.ObjectiveFunctionMinimize, s));
+            else
+                throw new InvalidOperationException($"{nameof(inSolveMan)} is not of expected type ({typeof(SolveManager)}).");
+        }
+        public void AddProblemQuantity_ConstraintObjective(object inSolveMan)
+        {
+            if (inSolveMan is SolveManager s) s.AddProblemQuantity(new ProblemQuantity(this, Quantity_TreatmentTypeEnum.Constraint, s));
+            else
+                throw new InvalidOperationException($"{nameof(inSolveMan)} is not of expected type ({typeof(SolveManager)}).");
+        }
+        public void AddProblemQuantity_OutputOnly(object inSolveMan)
+        {
+            if (inSolveMan is SolveManager s) s.AddProblemQuantity(new ProblemQuantity(this, Quantity_TreatmentTypeEnum.OutputOnly, s));
+            else
+                throw new InvalidOperationException($"{nameof(inSolveMan)} is not of expected type ({typeof(SolveManager)}).");
         }
         #endregion
     }
@@ -533,9 +560,9 @@ namespace Emasa_Optimizer.FEA.Results
     {
         // Family: Nodal Reaction
         Nodal_Reaction_Fx,
-        Nodal_Reaction_SFy,
-        Nodal_Reaction_SFz,
-        Nodal_Reaction_Tq,
+        Nodal_Reaction_Fy,
+        Nodal_Reaction_Fz,
+        Nodal_Reaction_Mx,
         Nodal_Reaction_My,
         Nodal_Reaction_Mz,
 
@@ -576,9 +603,7 @@ namespace Emasa_Optimizer.FEA.Results
         ElementNodal_Force_Tq,
         ElementNodal_Force_My,
         ElementNodal_Force_Mz,
-
-
-
+        
         // Family: ElementNodal_Strain
         ElementNodal_Strain_Ex,
         ElementNodal_Strain_Ky,

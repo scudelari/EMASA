@@ -17,8 +17,15 @@ namespace Emasa_Optimizer.FEA
         public ImageCaptureViewDirectionEnum ImageCapture_ViewDirections
         {
             get => _imageCapture_ViewDirections;
-            set => SetProperty(ref _imageCapture_ViewDirections, value);
+            set
+            {
+                SetProperty(ref _imageCapture_ViewDirections, value);
+
+                RaisePropertyChanged("ImageCapture_ViewDirectionsEnumerable");
+                RaisePropertyChanged("WfpCaption_FeSolverTypeEnum");
+            }
         }
+
         public IEnumerable<ImageCaptureViewDirectionEnum> ImageCapture_ViewDirectionsEnumerable => Enum.GetValues(typeof(ImageCaptureViewDirectionEnum)).OfType<ImageCaptureViewDirectionEnum>().Where(value => _imageCapture_ViewDirections.HasFlag(value));
 
         private double _imageCapture_Extrude_Multiplier = Settings.Default.Default_ImageCapture_Extrude_Multiplier;
@@ -40,199 +47,190 @@ namespace Emasa_Optimizer.FEA
             set => SetProperty(ref _imageCapture_DeformedShape, value);
         }
 
-        public double ImageCapture_AnsysHelper_XDir
+        public double ImageCapture_AnsysHelper_XDir(ImageCaptureViewDirectionEnum inImageDir)
         {
-            get
+            switch (inImageDir)
             {
-                switch (ImageCapture_ViewDirections)
-                {
-                    case ImageCaptureViewDirectionEnum.Top_Towards_ZNeg:
-                        return 0d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Top_Towards_ZNeg:
+                    return 0d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Front_Towards_YPos:
-                        return 0d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Front_Towards_YPos:
+                    return 0d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Back_Towards_YNeg:
-                        return 0d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Back_Towards_YNeg:
+                    return 0d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Right_Towards_XNeg:
-                        return 1d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Right_Towards_XNeg:
+                    return 1d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Left_Towards_XPos:
-                        return -1d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Left_Towards_XPos:
+                    return -1d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Perspective_Top_Front_Edge:
-                        return 0.2d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Perspective_Top_Front_Edge:
+                    return 0.2d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Perspective_Top_Back_Edge:
-                        return 0.2d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Perspective_Top_Back_Edge:
+                    return 0.2d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Perspective_Top_Right_Edge:
-                        return 1d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Perspective_Top_Right_Edge:
+                    return 1d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Perspective_Top_Left_Edge:
-                        return -1d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Perspective_Top_Left_Edge:
+                    return -1d;
+                    break;
 
 
-                    case ImageCaptureViewDirectionEnum.Perspective_TFR_Corner:
-                        return 1d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Perspective_TFR_Corner:
+                    return 1d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Perspective_TFL_Corner:
-                        return -1d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Perspective_TFL_Corner:
+                    return -1d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Perspective_TBR_Corner:
-                        return 1d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Perspective_TBR_Corner:
+                    return 1d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Perspective_TBL_Corner:
-                        return -1d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Perspective_TBL_Corner:
+                    return -1d;
+                    break;
 
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
-        public double ImageCapture_AnsysHelper_YDir
+        public double ImageCapture_AnsysHelper_YDir(ImageCaptureViewDirectionEnum inImageDir)
         {
-            get
+            switch (inImageDir)
             {
-                switch (ImageCapture_ViewDirections)
-                {
-                    case ImageCaptureViewDirectionEnum.Top_Towards_ZNeg:
-                        return 0d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Top_Towards_ZNeg:
+                    return 0d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Front_Towards_YPos:
-                        return -1d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Front_Towards_YPos:
+                    return -1d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Back_Towards_YNeg:
-                        return 1d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Back_Towards_YNeg:
+                    return 1d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Right_Towards_XNeg:
-                        return 0d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Right_Towards_XNeg:
+                    return 0d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Left_Towards_XPos:
-                        return 0d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Left_Towards_XPos:
+                    return 0d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Perspective_Top_Front_Edge:
-                        return -1d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Perspective_Top_Front_Edge:
+                    return -1d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Perspective_Top_Back_Edge:
-                        return 1d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Perspective_Top_Back_Edge:
+                    return 1d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Perspective_Top_Right_Edge:
-                        return 0.2d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Perspective_Top_Right_Edge:
+                    return 0.2d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Perspective_Top_Left_Edge:
-                        return 0.2d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Perspective_Top_Left_Edge:
+                    return 0.2d;
+                    break;
 
 
-                    case ImageCaptureViewDirectionEnum.Perspective_TFR_Corner:
-                        return -1d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Perspective_TFR_Corner:
+                    return -1d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Perspective_TFL_Corner:
-                        return -1d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Perspective_TFL_Corner:
+                    return -1d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Perspective_TBR_Corner:
-                        return 1d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Perspective_TBR_Corner:
+                    return 1d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Perspective_TBL_Corner:
-                        return 1d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Perspective_TBL_Corner:
+                    return 1d;
+                    break;
 
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
-        public double ImageCapture_AnsysHelper_ZDir
+        public double ImageCapture_AnsysHelper_ZDir(ImageCaptureViewDirectionEnum inImageDir)
         {
-            get
+            switch (inImageDir)
             {
-                switch (ImageCapture_ViewDirections)
-                {
-                    case ImageCaptureViewDirectionEnum.Top_Towards_ZNeg:
-                        return 1d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Top_Towards_ZNeg:
+                    return 1d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Front_Towards_YPos:
-                        return 0d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Front_Towards_YPos:
+                    return 0d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Back_Towards_YNeg:
-                        return 0d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Back_Towards_YNeg:
+                    return 0d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Right_Towards_XNeg:
-                        return 0d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Right_Towards_XNeg:
+                    return 0d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Left_Towards_XPos:
-                        return 0d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Left_Towards_XPos:
+                    return 0d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Perspective_Top_Front_Edge:
-                        return 1d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Perspective_Top_Front_Edge:
+                    return 1d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Perspective_Top_Back_Edge:
-                        return 1d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Perspective_Top_Back_Edge:
+                    return 1d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Perspective_Top_Right_Edge:
-                        return 1d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Perspective_Top_Right_Edge:
+                    return 1d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Perspective_Top_Left_Edge:
-                        return 1d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Perspective_Top_Left_Edge:
+                    return 1d;
+                    break;
 
 
-                    case ImageCaptureViewDirectionEnum.Perspective_TFR_Corner:
-                        return 1d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Perspective_TFR_Corner:
+                    return 1d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Perspective_TFL_Corner:
-                        return 1d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Perspective_TFL_Corner:
+                    return 1d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Perspective_TBR_Corner:
-                        return 1d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Perspective_TBR_Corner:
+                    return 1d;
+                    break;
 
-                    case ImageCaptureViewDirectionEnum.Perspective_TBL_Corner:
-                        return 1d;
-                        break;
+                case ImageCaptureViewDirectionEnum.Perspective_TBL_Corner:
+                    return 1d;
+                    break;
 
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
-        public double ImageCapture_AnsysHelper_RotateToAlign => ImageCapture_ViewDirections == ImageCaptureViewDirectionEnum.Top_Towards_ZNeg ? -90d : Double.NaN;
+        public double ImageCapture_AnsysHelper_RotateToAlign(ImageCaptureViewDirectionEnum inImageDir) => inImageDir == ImageCaptureViewDirectionEnum.Top_Towards_ZNeg ? -90d : Double.NaN;
         #endregion
 
 
@@ -297,6 +295,90 @@ namespace Emasa_Optimizer.FEA
                     throw new ArgumentOutOfRangeException(nameof(inImageDirection), inImageDirection, null);
             }
         }
+        #endregion
+
+        #region Wpf Properties
+        private ImageCaptureViewDirectionEnum _selectedDisplayDirection;
+        public ImageCaptureViewDirectionEnum SelectedDisplayDirection
+        {
+            get => _selectedDisplayDirection;
+            set => SetProperty(ref _selectedDisplayDirection, value);
+        }
+        public List<KeyValuePair<ImageCaptureViewDirectionEnum, string>> WfpCaption_ImageCaptureViewDirectionEnum
+        {
+            get
+            {
+                List<KeyValuePair<ImageCaptureViewDirectionEnum, string>> tmpList = new List<KeyValuePair<ImageCaptureViewDirectionEnum, string>>();
+
+                foreach (ImageCaptureViewDirectionEnum imageCaptureViewDirectionEnum in ImageCapture_ViewDirectionsEnumerable)
+                {
+                    switch (imageCaptureViewDirectionEnum)
+                    {
+                        case ImageCaptureViewDirectionEnum.Top_Towards_ZNeg:
+                            tmpList.Add( new KeyValuePair<ImageCaptureViewDirectionEnum, string>(imageCaptureViewDirectionEnum, "Axial - Top"));
+                            break;
+
+                        case ImageCaptureViewDirectionEnum.Front_Towards_YPos:
+                            tmpList.Add( new KeyValuePair<ImageCaptureViewDirectionEnum, string>(imageCaptureViewDirectionEnum, "Axial - Front"));
+                            break;
+
+                        case ImageCaptureViewDirectionEnum.Back_Towards_YNeg:
+                            tmpList.Add( new KeyValuePair<ImageCaptureViewDirectionEnum, string>(imageCaptureViewDirectionEnum, "Axial - Back"));
+                            break;
+
+                        case ImageCaptureViewDirectionEnum.Right_Towards_XNeg:
+                            tmpList.Add( new KeyValuePair<ImageCaptureViewDirectionEnum, string>(imageCaptureViewDirectionEnum, "Axial - Right"));
+                            break;
+
+                        case ImageCaptureViewDirectionEnum.Left_Towards_XPos:
+                            tmpList.Add( new KeyValuePair<ImageCaptureViewDirectionEnum, string>(imageCaptureViewDirectionEnum, "Axial - Left"));
+                            break;
+
+                        case ImageCaptureViewDirectionEnum.Perspective_Top_Front_Edge:
+                            tmpList.Add( new KeyValuePair<ImageCaptureViewDirectionEnum, string>(imageCaptureViewDirectionEnum, "Edges - Top-Front"));
+                            break;
+
+                        case ImageCaptureViewDirectionEnum.Perspective_Top_Back_Edge:
+                            tmpList.Add( new KeyValuePair<ImageCaptureViewDirectionEnum, string>(imageCaptureViewDirectionEnum, "Edges - Top-Back"));
+                            break;
+
+                        case ImageCaptureViewDirectionEnum.Perspective_Top_Right_Edge:
+                            tmpList.Add( new KeyValuePair<ImageCaptureViewDirectionEnum, string>(imageCaptureViewDirectionEnum, "Edges - Top-Right"));
+                            break;
+
+                        case ImageCaptureViewDirectionEnum.Perspective_Top_Left_Edge:
+                            tmpList.Add( new KeyValuePair<ImageCaptureViewDirectionEnum, string>(imageCaptureViewDirectionEnum, "Edges - Top-Left"));
+                            break;
+
+                        case ImageCaptureViewDirectionEnum.Perspective_TFR_Corner:
+                            tmpList.Add( new KeyValuePair<ImageCaptureViewDirectionEnum, string>(imageCaptureViewDirectionEnum, "Corners - Top-Front-Right"));
+                            break;
+
+                        case ImageCaptureViewDirectionEnum.Perspective_TFL_Corner:
+                            tmpList.Add( new KeyValuePair<ImageCaptureViewDirectionEnum, string>(imageCaptureViewDirectionEnum, "Corners - Top-Front-Left"));
+                            break;
+
+                        case ImageCaptureViewDirectionEnum.Perspective_TBR_Corner:
+                            tmpList.Add( new KeyValuePair<ImageCaptureViewDirectionEnum, string>(imageCaptureViewDirectionEnum, "Corners - Top-Back-Right"));
+                            break;
+
+                        case ImageCaptureViewDirectionEnum.Perspective_TBL_Corner:
+                            tmpList.Add( new KeyValuePair<ImageCaptureViewDirectionEnum, string>(imageCaptureViewDirectionEnum, "Corners - Top-Back-Left"));
+                            break;
+
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
+
+                tmpList.Sort((pair1, pair2) => pair1.Value.CompareTo(pair2.Value));
+
+                SelectedDisplayDirection = ImageCapture_ViewDirectionsEnumerable.FirstOrDefault();
+
+                return tmpList;
+            }
+        }
+
         #endregion
     }
 

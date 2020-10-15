@@ -37,8 +37,8 @@ namespace Emasa_Optimizer.FEA.Items
                         7850, // kg/m3
                         2.1e11, // N/m2
                         0.3,    // Poisson
-                        3.55e8,    // N/mm2
-                        5.1e8,     // N/mm2
+                        inFy: 3.55e8,    // N/mm2
+                        inFu: 5.1e8,     // N/mm2
                         1.170E-05 // C^-1
                     ));
                 }
@@ -132,7 +132,7 @@ namespace Emasa_Optimizer.FEA.Items
         }
         public override int GetHashCode()
         {
-            return StringComparer.InvariantCulture.GetHashCode(_name);
+            return (GetType(), Name).GetHashCode();
         }
         public static bool operator ==(FeMaterial left, FeMaterial right)
         {
@@ -148,5 +148,7 @@ namespace Emasa_Optimizer.FEA.Items
         {
             return $"{Name} E={YoungModulus} P={Poisson} Fy={Fy} Fu={Fu}";
         }
+
+        public string WpfName => $"{GetType().Name} - {Name}";
     }
 }

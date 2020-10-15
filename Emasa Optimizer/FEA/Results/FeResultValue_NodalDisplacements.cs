@@ -14,5 +14,7 @@ namespace Emasa_Optimizer.FEA.Results
         public double RX { get; set; }
         public double RY { get; set; }
         public double RZ { get; set; }
+
+        public double UTot => Math.Sqrt(UX * UX + UY * UY + UZ * UZ);
     }
 }

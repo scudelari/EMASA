@@ -8,10 +8,10 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\bin\Debug\System.Va
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\bin\Debug\System.Data.SQLite.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\bin\Debug\System.Data.SQLite.dll.config
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\bin\Debug\System.ValueTuple.xml
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\obj\Debug\StepwiseSpheres.csprojAssemblyReference.cache
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\obj\Debug\StepwiseSpheres.Properties.Resources.resources
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\obj\Debug\StepwiseSpheres.csproj.GenerateResource.cache
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\obj\Debug\StepwiseSpheres.csproj.CoreCompileInputs.cache
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\obj\Debug\StepwiseSpheres.csproj.CopyComplete
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\obj\Debug\StepwiseSpheres.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\obj\Debug\StepwiseSpheres.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\obj\Debug\StepwiseSpheres.csprojAssemblyReference.cache

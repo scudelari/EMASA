@@ -62,7 +62,7 @@ namespace Emasa_Optimizer.FEA.Items
         }
         public override int GetHashCode()
         {
-            return _point.GetHashCode();
+            return (GetType(), _point).GetHashCode();
         }
         public static bool operator ==(FeJoint left, FeJoint right)
         {
@@ -76,7 +76,9 @@ namespace Emasa_Optimizer.FEA.Items
 
         public override string ToString()
         {
-            return $"{Id}: {Point}";
+            return $"Joint {Id}: {Point}";
         }
+
+        public string WpfName => $"{GetType().Name} - {Id}";
     }
 }

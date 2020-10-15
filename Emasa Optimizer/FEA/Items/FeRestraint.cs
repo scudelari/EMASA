@@ -94,7 +94,7 @@ namespace Emasa_Optimizer.FEA.Items
          
         public bool IsFullyFixed => DoF.All(a => a == true);
         public bool IsPinned => U1 && U2 && U3;
-        public bool ExistAny => DoF.All(a => a == false);
+        public bool ExistAny => DoF.Any(a => a == true);
 
         private void RaiseUpdatedEvents()
         {
@@ -186,6 +186,8 @@ namespace Emasa_Optimizer.FEA.Items
         }
         #endregion
 
+
+        public string WpfName => $"{GetType().Name}";
     }
 }
 

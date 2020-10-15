@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using BaseWPFLibrary.Annotations;
 using Emasa_Optimizer.FEA;
 using Emasa_Optimizer.Opt;
+using Emasa_Optimizer.Opt.ProbQuantity;
 using Prism.Mvvm;
 using MathNet.Numerics;
 using MathNet.Numerics.Differentiation;
@@ -30,98 +31,165 @@ namespace Emasa_Optimizer.ProblemDefs
 
         public virtual int NumberOfVariables => _owner.Gh_Alg.InputDefs_VarCount;
 
-        #region Current Eval Buffer
-        private EvalTypeEnum _currentEvalType;
-        public EvalTypeEnum CurrentEvalType
+        #region Current SolutionPoint Calculation Buffer
+        private SolutionPointCalcTypeEnum _solPointCalcType;
+        public SolutionPointCalcTypeEnum SolPointCalcType
         {
-            get => _currentEvalType;
-            set => SetProperty(ref _currentEvalType, value);
+            get => _solPointCalcType;
+            set => SetProperty(ref _solPointCalcType, value);
+        }
+        
+        private SolutionPoint _currentCalc_SolutionPoint;
+        public SolutionPoint CurrentCalc_SolutionPoint
+        {
+            get => _currentCalc_SolutionPoint;
+            set
+            {
+                _currentCalc_SolutionPoint = value;
+                RaisePropertyChanged();
+                // Clears the Gradient definition
+                CurrentCalc_GradientPoint = null;
+            }
         }
 
-        private SolutionPoint _tempSolutionPoint;
-
-        private SolutionPoint _currentSolutionPoint;
-        public SolutionPoint CurrentSolutionPoint
+        private SolutionPoint _currentCalc_GradientPoint;
+        public SolutionPoint CurrentCalc_GradientPoint
         {
-            get => _currentSolutionPoint;
-            set => SetProperty(ref _currentSolutionPoint, value);
+            get => _currentCalc_GradientPoint;
+            set
+            {
+                _currentCalc_GradientPoint = value;
+                RaisePropertyChanged();
+            }
         }
+
         #endregion
 
-        Random rnd = new Random();
-        /// <summary>
-        /// Override in other problems to calculate the objective function.
-        /// </summary>
-        /// <param name="inPoint">The solution point of this function. The Grasshopper variables have already been updated. You *MUST NOT* set the FunctionEval parameter in this function.</param>
-        /// <returns>The function evaluation result.</returns>
-        public virtual double Function(SolutionPoint inPoint)
-        {
-            // Builds the FeModel Class and links it to this point
-            inPoint.FeModel = new FeModel(inPoint);
-
-            return 0d;
-        }
-
-        private double FunctionWithArrayInputWrapper(double[] inPointVars)
+        private double CalculateSolutionPoint(double[] inPointVars)
         {
             // Starts the stopwatch
             Stopwatch sw = Stopwatch.StartNew();
 
             // Creates a new solution point
-            _tempSolutionPoint = new SolutionPoint(_owner, inPointVars, CurrentEvalType);
-            // Stores it in the list of calculated solutions
-            _owner.AddSolutionPoint(_tempSolutionPoint);
+            SolutionPoint local_solPoint = new SolutionPoint(_owner, inPointVars, SolPointCalcType);
+
+            switch (SolPointCalcType)
+            {
+                // What is the point we are currently calculating
+                case SolutionPointCalcTypeEnum.ObjectiveFunction:
+                    CurrentCalc_SolutionPoint = local_solPoint;
+                    break;
+
+                case SolutionPointCalcTypeEnum.Gradient:
+                default:
+                    CurrentCalc_GradientPoint = local_solPoint;
+                    break;
+            }
+
+            // Changes the status of the SolutionPoint
+            local_solPoint.Status = SolutionPointStatusEnum.Grasshopper_Updating;
 
             // Updates the grasshopper geometry of the SolutionPoint
-            _owner.Gh_Alg.UpdateGrasshopperGeometry(_tempSolutionPoint);
+            _owner.Gh_Alg.UpdateGrasshopperGeometry(local_solPoint);
 
-            // Evaluates the function at the given point and saves
-            _tempSolutionPoint.FunctionEval = Function(_tempSolutionPoint);
+            // If it is a Fe Problem, runs the model
+            if (_owner.FeOptions.FeSolverType_Selected != FeSolverTypeEnum.NotFeProblem)
+            {
+                Stopwatch sw_Fe = Stopwatch.StartNew();
 
-            // Stops the watch and saves the timespan
-            sw.Stop();
-            _tempSolutionPoint.EvalTimeSpan = sw.Elapsed;
+                // Changes the status of the solution point
+                local_solPoint.Status = SolutionPointStatusEnum.FiniteElement_Running;
 
-            // Returns the eval
-            return _tempSolutionPoint.FunctionEval;
-        }
-        public double Function_NLOptFunctionWrapper(double[] inPointVars, double[] inGradient = null)
-        {
-            // First, evaluates the function at the given point
-            CurrentEvalType = EvalTypeEnum.ObjectiveFunction;
-            FunctionWithArrayInputWrapper(inPointVars);
+                // Generates the Abstraction of the Finite Element Model
+                local_solPoint.FeModel = new FeModel(local_solPoint);
 
-            // Saves the created function point
-            CurrentSolutionPoint = _tempSolutionPoint;
+                // Runs the FeModel and acquires the results, putting them inside the FeModel parameter of the SolutionPoint class
+                _owner.FeSolver.RunAnalysisAndCollectResults(local_solPoint.FeModel);
+
+                sw_Fe.Stop();
+                local_solPoint.FeInputCalcOutputTimeSpan = sw_Fe.Elapsed;
+            }
+
+            // We have all the raw outputs, so we can initialize the Quantity Value's Outputs
+            local_solPoint.InitializeProblemQuantityOutputs();
+
+            // Calculates the final value of the objective function based on the selected quantity values
+            local_solPoint.CalculateObjectiveFunctionResult();
             
-            // We must also calculate the gradient of this point
+            // Outputs and Constraints have already been initialized, so they should be readily available.
+
+            // Stops the watch and saves the timespan used to handle the timespan
+            sw.Stop();
+            local_solPoint.CalculateTimeSpan = sw.Elapsed;
+
+            return local_solPoint.ObjectiveFunctionEval;
+        }
+
+        public double NlOptEntryPoint_ObjectiveFunction(double[] inPointVars, double[] inGradient = null)
+        {
+            // IMPORTANT: Errors are reported by the Unhandled Exceptions that "escape" this function
+
+            // There was an error in the last evaluation - breaks
+            if (inPointVars.Contains(double.NaN))
+            {
+                _owner.NlOptManager.NLOptMethod.ForceStop();
+                throw new Exception("NlOpt Solver gave Not A Number (NaN) as input to the objective function.");
+            }
+            // Should we cancel the execution - Forces the NlOpt to Stop
+            if (_owner.NlOptManager.CancelSource.IsCancellationRequested)
+            {
+                _owner.NlOptManager.NLOptMethod.ForceStop();
+                throw new Exception("User stopped the solver.");
+            }
+
+            Stopwatch sw_total = Stopwatch.StartNew();
+
+            // Creates and calculates a new solution point -> putting it in the given reference location
+            SolPointCalcType = SolutionPointCalcTypeEnum.ObjectiveFunction;
+            CalculateSolutionPoint(inPointVars);
+
+            // Stores it in the list of calculated solutions
+            _owner.AddSolutionPoint(CurrentCalc_SolutionPoint);
+
+            // Gradient Necessary ?
             if (inGradient != null)
             {
                 Stopwatch gradSw = Stopwatch.StartNew();
+
+                CurrentCalc_SolutionPoint.Status = SolutionPointStatusEnum.Gradients_Running;
+
+                // Initializes the gradient variables
+                CurrentCalc_SolutionPoint.HasGradient = true;
 
                 // Creates a new FiniteDifferences Manager
                 NumericalDerivative nd = new NumericalDerivative(_owner.NlOptManager.FiniteDiff_PointsPerPartialDerivative, _owner.NlOptManager.FiniteDiff_PointsPerPartialDerivativeCenter);
 
                 // Fills the gradient information 
-                CurrentEvalType = EvalTypeEnum.Gradient;
-                for (int i = 0; i < CurrentSolutionPoint.GradientAtThisPoint.Length; i++)
+                SolPointCalcType = SolutionPointCalcTypeEnum.Gradient;
+                for (int i = 0; i < CurrentCalc_SolutionPoint.ObjectiveFunctionGradient.Length; i++)
                 {
-                    CurrentSolutionPoint.GradientAtThisPoint[i] = nd.EvaluatePartialDerivative(FunctionWithArrayInputWrapper, CurrentSolutionPoint.InputValuesAsDoubleArray, i, 1, CurrentSolutionPoint.FunctionEval);
+                    // Note: it will call the  CalculateSolutionPoint, which will assign the solution point calculated to the CurrentCalc_GradientPoint parameter
+                    CurrentCalc_SolutionPoint.ObjectiveFunctionGradient[i] = nd.EvaluatePartialDerivative(CalculateSolutionPoint, CurrentCalc_SolutionPoint.InputValuesAsDoubleArray.Clone() as double[], i, 1, CurrentCalc_SolutionPoint.ObjectiveFunctionEval);
+
+                    // Saves the solution point that was calculated to get the partial derivative
+                    // Used when the constraint function is called
+                    CurrentCalc_SolutionPoint.GradientSolutionPoints[i] = CurrentCalc_GradientPoint;
                 }
 
                 // Saves the copy to the return parameter
-                double[] gradArray = new double[CurrentSolutionPoint.GradientAtThisPoint.Length];
-                CurrentSolutionPoint.GradientAtThisPoint.CopyTo(gradArray, 0);
-                inGradient = gradArray;
+                double[] gradArray = CurrentCalc_SolutionPoint.ObjectiveFunctionGradient.Clone() as double[];
+                gradArray.CopyTo(inGradient, 0);
 
                 gradSw.Stop();
-                CurrentSolutionPoint.TotalGradientTimeSpan = gradSw.Elapsed;
+                CurrentCalc_SolutionPoint.TotalGradientTimeSpan = gradSw.Elapsed;
             }
 
-            // Should we cancel the execution - Forces the NlOpt to Stop
-            if (_owner.NlOptManager.CancelSource.IsCancellationRequested) _owner.NlOptManager.NLOptMethod.ForceStop();
+            sw_total.Stop();
+            CurrentCalc_SolutionPoint.TotalIterationTimeSpan = sw_total.Elapsed;
 
-            return CurrentSolutionPoint.FunctionEval;
+            CurrentCalc_SolutionPoint.Status = SolutionPointStatusEnum.Ended_Success;
+
+            return CurrentCalc_SolutionPoint.ObjectiveFunctionEval;
         }
     }
 }

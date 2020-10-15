@@ -5,6 +5,9 @@
     xmlns:cv="clr-namespace:BaseWPFLibrary.Converters"
     xmlns:lo="clr-namespace:BaseWPFLibrary.Others">
 
+    <System:Boolean x:Key="True">True</System:Boolean>
+    <System:Boolean x:Key="False">False</System:Boolean>
+
     <cv:InverseBooleanConverter x:Key="InverseBooleanConverter" />
 
     <Color x:Key="EmsDarkBlueColor">#FF414163</Color>

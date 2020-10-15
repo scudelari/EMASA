@@ -38,7 +38,7 @@ namespace Emasa_Optimizer.FEA.Items
 
             LeastGyrationRadius = Math.Min(_radiusGyration2, _radiusGyration3);
         }
-
+        //_sectionList.Add(new FeSectionPipe("244_5X5", SectionIdCounter++, FeMaterial.GetMaterialByName("S355"),AREA= 0.00376, 0.000053970004, 0.000026989998, 0.000026989998, 0, 0.00192029895019531, 0.00192029895019531, 0.000220777079754601, 0.000220777079754601, 0.00028684290625, 0.00028684290625, 0.0847242052629991, 0.0847242052629991, 0, 0.2445, 0.005));
         #region Specific to Ansys
         public override string AnsysSecTypeLine
         {

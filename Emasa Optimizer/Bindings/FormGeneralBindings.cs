@@ -18,16 +18,16 @@ namespace Emasa_Optimizer.Bindings
     {
         private FormGeneralBindings() { }
 
-        private SolveManager _solveManager;
-        public SolveManager SolveManager
+        private SolveManager _solveMgr;
+        public SolveManager SolveMgr
         {
-            get => _solveManager;
-            set => SetProperty(ref _solveManager, value);
+            get => _solveMgr;
+            set => SetProperty(ref _solveMgr, value);
         }
         
         public override void SetOrReset()
         {
-            SolveManager = new SolveManager();
+            SolveMgr = new SolveManager();
         }
     }
 

@@ -45,6 +45,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StepwiseSpheres", "Stepwise
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emasa Optimizer", "Emasa Optimizer\Emasa Optimizer.csproj", "{0B739A68-114F-4266-9DB6-9ED3F1C55A9E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NlOpt AugLag Learn", "NlOpt AugLag Learn\NlOpt AugLag Learn.csproj", "{5A4D4F0F-2CA5-4214-BE05-61DA92DEE798}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -181,6 +183,14 @@ Global
 		{0B739A68-114F-4266-9DB6-9ED3F1C55A9E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0B739A68-114F-4266-9DB6-9ED3F1C55A9E}.Release|x64.ActiveCfg = Release|Any CPU
 		{0B739A68-114F-4266-9DB6-9ED3F1C55A9E}.Release|x64.Build.0 = Release|Any CPU
+		{5A4D4F0F-2CA5-4214-BE05-61DA92DEE798}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A4D4F0F-2CA5-4214-BE05-61DA92DEE798}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A4D4F0F-2CA5-4214-BE05-61DA92DEE798}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5A4D4F0F-2CA5-4214-BE05-61DA92DEE798}.Debug|x64.Build.0 = Debug|Any CPU
+		{5A4D4F0F-2CA5-4214-BE05-61DA92DEE798}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A4D4F0F-2CA5-4214-BE05-61DA92DEE798}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A4D4F0F-2CA5-4214-BE05-61DA92DEE798}.Release|x64.ActiveCfg = Release|Any CPU
+		{5A4D4F0F-2CA5-4214-BE05-61DA92DEE798}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -198,6 +208,7 @@ Global
 		{3019E16C-963E-479D-B533-57AA586F160B} = {214DDE6A-1967-456F-B059-25E4C2FCA04F}
 		{2A19EEFB-D7EF-49CE-A20E-A92F8C0DE2B9} = {5AE89BC6-F011-4B77-928E-C1F3C52E3281}
 		{998AA099-6F2B-477F-876B-E01C00E7A1DD} = {99E3D6A7-9D89-451D-8245-8DB014D5E435}
+		{5A4D4F0F-2CA5-4214-BE05-61DA92DEE798} = {214DDE6A-1967-456F-B059-25E4C2FCA04F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D48A6F39-7517-4F41-8702-20427C528DA5}
