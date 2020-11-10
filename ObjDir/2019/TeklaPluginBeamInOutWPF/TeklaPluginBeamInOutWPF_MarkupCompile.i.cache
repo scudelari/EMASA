@@ -4,7 +4,7 @@
 library
 C#
 .cs
-C:\Users\EngRafaelSMacedo\Source\Repos\EMS_S2K_Tools\S2K Solution\ObjDir\2019\TeklaPluginBeamInOutWPF\
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\ObjDir\2019\TeklaPluginBeamInOutWPF\
 TeklaPluginBeamInOutWPF
 none
 false
@@ -12,8 +12,8 @@ DEBUG;TRACE
 
 11151548125
 
-5-1375774498
-22-561180879
+51807240327
+221263542601
 MainWindow.xaml;
 
 False

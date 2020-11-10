@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>Stepwise Sphere</Name>
+    <Assembly>StepwiseSpheres\StepwiseSpheres.dll</Assembly>
+    <AddInId>d2afa900-5fbd-494e-b259-da47fb4e293b</AddInId>
+    <FullClassName>StepwiseSpheres.StepwiseSphereExternalApp</FullClassName>
+    <VendorId>Vendor</VendorId>
+    <VendorDescription>Your Company Information</VendorDescription>
+  </AddIn>
+</RevitAddIns>

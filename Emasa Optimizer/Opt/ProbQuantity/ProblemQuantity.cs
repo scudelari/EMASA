@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Reflection;
+using System.Security.Policy;
 using System.Windows;
 using BaseWPFLibrary.Annotations;
+using Emasa_Optimizer.Bindings;
 using Emasa_Optimizer.FEA;
 using Emasa_Optimizer.FEA.Items;
 using Emasa_Optimizer.FEA.Results;
@@ -18,19 +20,15 @@ namespace Emasa_Optimizer.Opt.ProbQuantity
 {
     public class ProblemQuantity : BindableBase
     {
-        [NotNull] private readonly SolveManager _owner;
         public bool IsFeResult => (QuantitySource is FeResultClassification);
         public bool IsGhDoubleList => (QuantitySource is DoubleList_GhGeom_ParamDef);
         public IProblemQuantitySource QuantitySource { get; private set; }
         public FeResultClassification QuantitySource_AsFeResult => QuantitySource as FeResultClassification;
 
-        public ProblemQuantity(IProblemQuantitySource inProblemQuantitySource, Quantity_TreatmentTypeEnum inTreatmentType, [NotNull] SolveManager inOwner)
+        public ProblemQuantity(IProblemQuantitySource inProblemQuantitySource, Quantity_TreatmentTypeEnum inTreatmentType)
         {
-            // Saves the owner
-            _owner = inOwner ?? throw new ArgumentNullException(nameof(inOwner));
-            
             // Saves the index of this quantity for faster reference
-            InternalId = _owner.ProblemQuantityMaxIndex++;
+            InternalId = AppSS.I.ProbQuantMgn.ProblemQuantityMaxIndex++;
 
             // Sets the quantity type
             QuantitySource = inProblemQuantitySource;
@@ -40,12 +38,15 @@ namespace Emasa_Optimizer.Opt.ProbQuantity
 
             // Initializes the Aggregator Options
             QuantityAggregatorOptions = new ProblemQuantityAggregator();
-            if (IsFeResult)
+            if (IsFeResult && IsObjectiveFunctionMinimize)
             {
                 QuantityAggregatorOptions.HasScale = true;
                 QuantityAggregatorOptions.SetDefaultScale(QuantitySource_AsFeResult.ResultType);
             }
-            else QuantityAggregatorOptions.HasScale = false;
+            else
+            {
+                QuantityAggregatorOptions.HasScale = false;
+            }
 
         }
 
@@ -55,7 +56,6 @@ namespace Emasa_Optimizer.Opt.ProbQuantity
             get => _internalId;
             set => SetProperty(ref _internalId, value);
         }
-
 
         #region Variables related to the type of treatment of this quantity
         public bool IsOutputOnly => TreatmentType == Quantity_TreatmentTypeEnum.OutputOnly;
@@ -77,12 +77,8 @@ namespace Emasa_Optimizer.Opt.ProbQuantity
         }
         #endregion
 
-        public string ResultFamilyGroupName => QuantitySource.ResultFamilyGroupName;
-        public string ResultTypeDescription => QuantitySource.ResultTypeDescription;
-        public string TargetShapeDescription => QuantitySource.TargetShapeDescription;
-
         #region Variables related to the Objective Function
-        public Dictionary<Quantity_FunctionObjectiveEnum, Tuple<string, double, string>> Quantity_FunctionObjectiveEnumDescriptions => ListDescriptionStaticHolder.ListDescSingleton.Quantity_FunctionObjectiveEnumDescriptiosn;
+        public Dictionary<Quantity_FunctionObjectiveEnum, Tuple<string, double, string>> Quantity_FunctionObjectiveEnumDescriptions => ListDescSH.I.Quantity_FunctionObjectiveEnumDescriptions;
         private Quantity_FunctionObjectiveEnum _functionObjective = Quantity_FunctionObjectiveEnum.Minimize;
         public Quantity_FunctionObjectiveEnum FunctionObjective
         {
@@ -103,8 +99,10 @@ namespace Emasa_Optimizer.Opt.ProbQuantity
         }
         #endregion
 
+
+
         #region Variables Related to Constraint SETUP
-        public Dictionary<Quantity_ConstraintObjectiveEnum, string> Quantity_ConstraintObjectiveEnumDescriptions => ListDescriptionStaticHolder.ListDescSingleton.Quantity_ConstraintObjectiveEnumDescriptions;
+        public Dictionary<Quantity_ConstraintObjectiveEnum, string> Quantity_ConstraintObjectiveEnumDescriptions => ListDescSH.I.Quantity_ConstraintObjectiveEnumDescriptions;
         private Quantity_ConstraintObjectiveEnum _constraintObjective;
         public Quantity_ConstraintObjectiveEnum ConstraintObjective
         {
@@ -134,22 +132,19 @@ namespace Emasa_Optimizer.Opt.ProbQuantity
         #region Wpf
         public void DeleteProblemQuantity()
         {
-            _owner.DeleteProblemQuantity(this);
+            AppSS.I.ProbQuantMgn.DeleteProblemQuantity(this);
         }
 
         public override string ToString()
         {
-            return $"[{ListDescriptionStaticHolder.ListDescSingleton.Quantity_TreatmentTypeEnumDescriptions[TreatmentType]}] {TargetShapeDescription} - {ResultFamilyGroupName} - {ResultTypeDescription} : {QuantityAggregatorOptions.Quantity_AggregateTypeEnumDescriptions[QuantityAggregatorOptions.AggregateType]}";
+            return $"[{ListDescSH.I.Quantity_TreatmentTypeEnumDescriptions[TreatmentType]}] {QuantitySource} :: {ListDescSH.I.Quantity_AggregateTypeEnumDescriptions[QuantityAggregatorOptions.AggregateType]}";
         }
-
 
         public string WpfSummaryFunctionObjective_ConstraintObjective_DisplayOnly => Quantity_ConstraintObjectiveEnumDescriptions[ConstraintObjective];
         public Tuple<string, double, string> WpfSummaryFunctionObjective_DisplayOnly => Quantity_FunctionObjectiveEnumDescriptions[FunctionObjective];
         public Visibility WpfSummaryFunctionObjective_FunctionObjective_TargetValue_TextBlockVisibility => FunctionObjective == Quantity_FunctionObjectiveEnum.Target ? Visibility.Visible : Visibility.Collapsed;
-
         #endregion
-
-
+        
         #region Selected Aggregator Configuration
         public ProblemQuantityAggregator QuantityAggregatorOptions { get; private set; }
         #endregion
@@ -312,6 +307,10 @@ namespace Emasa_Optimizer.Opt.ProbQuantity
                             outputColumnName = "Curvature - z";
                             break;
 
+                        case FeResultTypeEnum.ElementNodal_Strain_Te:
+                            outputColumnName = "Torsional - Te";
+                            break;
+
                         case FeResultTypeEnum.ElementNodal_Strain_SEz:
                             outputColumnName = "Shear - SEy";
                             break;
@@ -373,8 +372,8 @@ namespace Emasa_Optimizer.Opt.ProbQuantity
         // Must be set here in the Problem Quantity because they exists BEFORE the iterations start and thus may be used to hold the constraint functions
         public double NlOptEntryPoint_ConstraintFunction(double[] inValues, double[] inGradient)
         {
-            // The inValues are ignored because it is better to go directly to the CurrentCalc_SolutionPoint of the problem
-            SolutionPoint solPoint = _owner.WpfSelectedProblem.CurrentCalc_SolutionPoint;
+            // The inValues are ignored because it is better to go directly to the CurrentCalc_NlOptPoint of the problem
+            NlOpt_Point solPoint = AppSS.I.NlOptObjFunc.CurrentCalc_NlOptPoint;
 
             // Calculates this quantity at the solution point
             solPoint.CalculateConstraintResult(this);
@@ -397,19 +396,15 @@ namespace Emasa_Optimizer.Opt.ProbQuantity
 
                     switch (ConstraintObjective)
                     {
-                        //case Quantity_ConstraintObjectiveEnum.EqualTo: // |fc(x)| <= Tolerance
-                        //    xa = Math.Abs(solPoint.ConstraintEvals[this] - ConstraintObjective_CompareValue);
-                        //    xb = Math.Abs(solPoint.GradientSolutionPoints[i].ConstraintEvals[this] - ConstraintObjective_CompareValue);
-                        //    break;
                         case Quantity_ConstraintObjectiveEnum.EqualTo: // fc(x) - Tolerance = 0
                         case Quantity_ConstraintObjectiveEnum.LowerThanOrEqual: // fc(x) <= Tolerance
-                            xa = solPoint.ConstraintEvals[this] - ConstraintObjective_CompareValue;
-                            xb = solPoint.GradientSolutionPoints[i].ConstraintEvals[this] - ConstraintObjective_CompareValue;
+                            xa = solPoint.ConstraintData[this].EvalValue - ConstraintObjective_CompareValue;
+                            xb = solPoint.GradientSolutionPoints[i].ConstraintData[this].EvalValue - ConstraintObjective_CompareValue;
                             break;
 
                         case Quantity_ConstraintObjectiveEnum.HigherThanOrEqual: // // fc(x) <= Tolerance
-                            xa = -(solPoint.ConstraintEvals[this] - ConstraintObjective_CompareValue);
-                            xb = -(solPoint.GradientSolutionPoints[i].ConstraintEvals[this] - ConstraintObjective_CompareValue);
+                            xa = -(solPoint.ConstraintData[this].EvalValue - ConstraintObjective_CompareValue);
+                            xb = -(solPoint.GradientSolutionPoints[i].ConstraintData[this].EvalValue - ConstraintObjective_CompareValue);
                             break;
 
                         default:
@@ -420,7 +415,7 @@ namespace Emasa_Optimizer.Opt.ProbQuantity
 
                 }
                 // Adds a copy to the solution point's records
-                solPoint.ConstraintGradients.Add(this, inGradient.Clone() as double[]);
+                solPoint.ConstraintData[this].Gradients = inGradient.Clone() as double[];
             }
 
             // The quantity itself depends on the constraint objective and value
@@ -431,10 +426,10 @@ namespace Emasa_Optimizer.Opt.ProbQuantity
 
                 case Quantity_ConstraintObjectiveEnum.EqualTo: // fc(x) - Tolerance = 0
                 case Quantity_ConstraintObjectiveEnum.LowerThanOrEqual: // fc(x) <= Tolerance
-                    return solPoint.ConstraintEvals[this] - ConstraintObjective_CompareValue;
+                    return solPoint.ConstraintData[this].EvalValue - ConstraintObjective_CompareValue;
 
                 case Quantity_ConstraintObjectiveEnum.HigherThanOrEqual: // // fc(x) <= Tolerance
-                    return -(solPoint.ConstraintEvals[this] - ConstraintObjective_CompareValue);
+                    return -(solPoint.ConstraintData[this].EvalValue - ConstraintObjective_CompareValue);
 
                 default:
                     return double.NaN;

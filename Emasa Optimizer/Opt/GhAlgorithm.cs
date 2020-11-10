@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -14,6 +15,8 @@ using System.Windows;
 using System.Windows.Data;
 using BaseWPFLibrary.Annotations;
 using BaseWPFLibrary.Others;
+using Emasa_Optimizer.Bindings;
+using Emasa_Optimizer.FEA;
 using Emasa_Optimizer.FEA.Items;
 using Emasa_Optimizer.Opt;
 using Emasa_Optimizer.Opt.ParamDefinitions;
@@ -25,11 +28,9 @@ namespace Emasa_Optimizer.Opt
 {
     public class GhAlgorithm : BindableBase
     {
-        [NotNull] private readonly SolveManager _owner;
-        public GhAlgorithm([NotNull] SolveManager inOwner)
+        //[NotNull] private readonly SolveManager _owner;
+        public GhAlgorithm()
         {
-            _owner = inOwner ?? throw new ArgumentNullException(nameof(inOwner));
-
             // In the constructor, we will build the input files
             RhinoModel.Initialize();
 
@@ -47,12 +48,13 @@ namespace Emasa_Optimizer.Opt
 
                 if (varExtension.EndsWith("Range")) continue; // Ignores the ranges as they are accounted together with their variable
 
-                string varRangeFile = varDataFile + "Range";
-                if (!File.Exists(varRangeFile)) throw new IOException($"The range file for GH input variable {varDataFile} could not be found.");
-
                 switch (varExtension)
                 {
                     case ".Double":
+                    {
+                        string varRangeFile = varDataFile + "Range";
+                        if (!File.Exists(varRangeFile)) throw new IOException($"The range file for GH input variable {varDataFile} could not be found.");
+
                         Double_Input_ParamDef bdlInputParam = new Double_Input_ParamDef(inName: varName, inRange: ReadDoubleValueRange(varRangeFile));
                         double startVal = ReadDouble(varDataFile);
                         if (!double.IsNaN(startVal))
@@ -66,9 +68,16 @@ namespace Emasa_Optimizer.Opt
                                 bdlInputParam.Start = bdlInputParam.SearchRange.Mid;
                             }
                         }
+
                         AddParameterToInputs(bdlInputParam);
                         break;
+                    }
+
                     case ".Point":
+                    {
+                        string varRangeFile = varDataFile + "Range";
+                        if (!File.Exists(varRangeFile)) throw new IOException($"The range file for GH input variable {varDataFile} could not be found.");
+
                         Point_Input_ParamDef pntParam = new Point_Input_ParamDef(inName: varName, inRange: ReadPointValueRange(varRangeFile));
                         try
                         {
@@ -78,8 +87,18 @@ namespace Emasa_Optimizer.Opt
                         {
                             pntParam.Start = pntParam.SearchRange.MaxPoint;
                         }
+
                         AddParameterToInputs(pntParam);
                         break;
+                    }
+
+                    case ".Integer":
+                    {
+                        Integer_GhConfig_ParamDef intParam = new Integer_GhConfig_ParamDef(inName: varName);
+                        ConfigDefs.Add(intParam);
+                        break;
+                    }
+
                     default:
                         throw new InvalidDataException($"The format given by extension {varExtension} is not supported as GH input.");
                 }
@@ -104,7 +123,7 @@ namespace Emasa_Optimizer.Opt
                         DoubleList_GhGeom_ParamDef dlParam = new DoubleList_GhGeom_ParamDef(varName);
                         GeometryDefs.Add(dlParam);
                         // Also adds it to the list of available problem quantity types
-                        _owner.ProblemQuantityAvailableTypes.Add(dlParam);
+                        AppSS.I.ProbQuantMgn.ProblemQuantityAvailableTypes.Add(dlParam);
                         break;
 
                     case ".PointList":
@@ -122,6 +141,17 @@ namespace Emasa_Optimizer.Opt
             InputDefs_View = CollectionViewSource.GetDefaultView(InputDefs);
             InputDefs_View.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
             InputDefs_View.GroupDescriptions.Add(new PropertyGroupDescription("TypeName"));
+
+            
+            ConfigDefs_View = CollectionViewSource.GetDefaultView(ConfigDefs);
+            ConfigDefs_View.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
+
+
+            CollectionViewSource configDefs_Integer_Cvs = new CollectionViewSource() {Source = ConfigDefs};
+            ConfigDefs_Integer_View = configDefs_Integer_Cvs.View;
+            ConfigDefs_Integer_View.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
+            ConfigDefs_Integer_View.Filter += inO => inO is Integer_GhConfig_ParamDef;
+            HasConfigDefs_Integer = ConfigDefs_Integer_View.IsEmpty ? Visibility.Collapsed : Visibility.Visible;
 
 
             CollectionViewSource geometryDefs_PointList_Cvs = new CollectionViewSource() {Source = GeometryDefs};
@@ -147,13 +177,11 @@ namespace Emasa_Optimizer.Opt
 
 
             CollectionViewSource geometryDefs_PointLineBundle_Cvs = new CollectionViewSource() { Source = GeometryDefs };
-            GeometryDefs_PointListBundle_View = geometryDefs_PointLineBundle_Cvs.View;
-            GeometryDefs_PointListBundle_View.SortDescriptions.Add(new SortDescription("TypeName", ListSortDirection.Ascending));
-            GeometryDefs_PointListBundle_View.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
-            GeometryDefs_PointListBundle_View.Filter += inO => inO is LineList_GhGeom_ParamDef || inO is PointList_GhGeom_ParamDef;
-
+            GeometryDefs_PointLineListBundle_View = geometryDefs_PointLineBundle_Cvs.View;
+            GeometryDefs_PointLineListBundle_View.SortDescriptions.Add(new SortDescription("TypeName", ListSortDirection.Ascending));
+            GeometryDefs_PointLineListBundle_View.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
+            GeometryDefs_PointLineListBundle_View.Filter += inO => inO is LineList_GhGeom_ParamDef || inO is PointList_GhGeom_ParamDef;
             #endregion
-
         }
 
         public string GrasshopperFullFileName { get; private set; }
@@ -170,6 +198,38 @@ namespace Emasa_Optimizer.Opt
             InputDefs.Add(inParam);
         }
 
+        public string GetInputParameterNameByIndex(int inIndex)
+        {
+            if (inIndex < 0 || inIndex > InputDefs_VarCount) throw new ArgumentOutOfRangeException(nameof(inIndex), inIndex, $"Index must be between 0 and number of variables {InputDefs_VarCount}.");
+
+            int pos = 0;
+
+            foreach (Input_ParamDefBase inParam in InputDefs)
+            {
+                switch (inParam)
+                {
+                    case Double_Input_ParamDef double_Input_ParamDef:
+                        if (pos == inIndex) return double_Input_ParamDef.Name;
+                        pos++;
+                        break;
+
+                    case Point_Input_ParamDef point_Input_ParamDef:
+                        if (pos == inIndex) return point_Input_ParamDef.Name + " - X";
+                        pos++;
+                        if (pos == inIndex) return point_Input_ParamDef.Name + " - Y";
+                        pos++;
+                        if (pos == inIndex) return point_Input_ParamDef.Name + " - Z";
+                        pos++;
+                        break;
+
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(inParam));
+                }
+            }
+
+            throw new Exception($"Could not get input parameter at index {inIndex}.");
+        }
+        
         private int? _inputDefs_VarCount;
         public int InputDefs_VarCount
         {
@@ -190,9 +250,6 @@ namespace Emasa_Optimizer.Opt
                 {
                     switch (input)
                     {
-                        case Integer_Input_ParamDef ip:
-                            lower.Add((double)ip.SearchRange.Range.Min);
-                            break;
                         case Double_Input_ParamDef dp:
                             lower.Add(dp.SearchRange.Range.Min);
                             break;
@@ -221,9 +278,6 @@ namespace Emasa_Optimizer.Opt
                 {
                     switch (input)
                     {
-                        case Integer_Input_ParamDef ip:
-                            upper.Add((double)ip.SearchRange.Range.Max);
-                            break;
                         case Double_Input_ParamDef dp:
                             upper.Add(dp.SearchRange.Range.Max);
                             break;
@@ -265,10 +319,6 @@ namespace Emasa_Optimizer.Opt
                 {
                     case Double_Input_ParamDef doubleInputParamDef:
                         userValList.Add(doubleInputParamDef.Start);
-                        break;
-
-                    case Integer_Input_ParamDef integerInputParamDef:
-                        userValList.Add((double)integerInputParamDef.Start);
                         break;
 
                     case Point_Input_ParamDef pointInputParamDef:
@@ -355,7 +405,6 @@ namespace Emasa_Optimizer.Opt
                 int pos = inputDef.IndexInDoubleArray;
                 switch (inputDef)
                 {
-                    case Integer_Input_ParamDef integer_Input_ParamDef:
                     case Double_Input_ParamDef double_Input_ParamDef:
                         lf_SetValue(inputDef, pos);
                         break;
@@ -378,14 +427,33 @@ namespace Emasa_Optimizer.Opt
         }
         
         public FastObservableCollection<GhGeom_ParamDefBase> GeometryDefs { get; } = new FastObservableCollection<GhGeom_ParamDefBase>();
+
+        public FastObservableCollection<GhConfig_ParamDefBase> ConfigDefs { get; } = new FastObservableCollection<GhConfig_ParamDefBase>();
         #endregion
 
         #region HELPER Grasshopper Send, Run, Read
-        public void UpdateGrasshopperGeometry([NotNull] SolutionPoint inSolPoint)
+        public void UpdateGrasshopperGeometry([NotNull] NlOpt_Point inSolPoint)
         {
             if (inSolPoint == null) throw new ArgumentNullException(nameof(inSolPoint));
 
             Stopwatch sw = Stopwatch.StartNew();
+
+            // Writes the data to the config files
+            foreach (Integer_GhConfig_ParamDef intGhConfig in ConfigDefs.OfType<Integer_GhConfig_ParamDef>())
+            {
+                string inputVarFilePath = Path.Combine(GhInputDirPath, $"{intGhConfig.Name}.{intGhConfig.TypeName}");
+
+                try
+                {
+                    // Finds the configuration value
+                    object configValue = AppSS.I.SolveMgr.CurrentCalculatingProblemConfig.GetGhIntegerConfig(intGhConfig);
+                    File.WriteAllText(inputVarFilePath, configValue.ToString());
+                }
+                catch (Exception e)
+                {
+                    throw new Exception($"Could not write the Grasshopper configuration input {intGhConfig.Name} to {inputVarFilePath}.", e);
+                }
+            }
 
             // Writes the data to the input files
             foreach (Input_ParamDefBase input_ParamDefBase in InputDefs)
@@ -398,10 +466,7 @@ namespace Emasa_Optimizer.Opt
                 }
                 catch (Exception e)
                 {
-                    string errorMessage = $"Could not write the Grasshopper input {input_ParamDefBase.Name} to {inputVarFilePath}.";
-                    inSolPoint.RuntimeMessages.Add(new SolutionPoint_Message(errorMessage, SolutionPoint_MessageSourceEnum.Grasshopper, SolutionPoint_MessageLevelEnum.Error, e));
-                    // Rethrows for program flow
-                    throw new Exception(errorMessage, e);
+                    throw new Exception($"Could not write the Grasshopper input {input_ParamDefBase.Name} to {inputVarFilePath}.", e);
                 }
             }
 
@@ -412,10 +477,7 @@ namespace Emasa_Optimizer.Opt
             }
             catch (Exception e)
             {
-                string errorMessage = "Could not solve the Grasshopper Algorithm. Error in the COM interface.";
-                inSolPoint.RuntimeMessages.Add(new SolutionPoint_Message(errorMessage, SolutionPoint_MessageSourceEnum.Grasshopper, SolutionPoint_MessageLevelEnum.Error, e));
-                // Rethrows for program flow
-                throw new COMException(errorMessage, e);
+                throw new COMException("Could not solve the Grasshopper Algorithm. Error in the COM interface.", e);
             }
 
             // Checks if the Grasshopper result has anything to say
@@ -431,26 +493,24 @@ namespace Emasa_Optimizer.Opt
                     {
                         case "Error":
                             errors += $"{ghMessages[i, 1]}{Environment.NewLine}";
-                            inSolPoint.RuntimeMessages.Add(new SolutionPoint_Message(ghMessages[i, 1], SolutionPoint_MessageSourceEnum.Grasshopper, SolutionPoint_MessageLevelEnum.Error));
                             break;
 
                         case "Warning":
-                            inSolPoint.RuntimeMessages.Add(new SolutionPoint_Message(ghMessages[i, 1], SolutionPoint_MessageSourceEnum.Grasshopper, SolutionPoint_MessageLevelEnum.Warning));
+                            inSolPoint.RuntimeWarningMessages.Add(new NlOpt_Point_Message(ghMessages[i, 1], NlOpt_Point_MessageSourceEnum.Grasshopper, NlOpt_Point_MessageLevelEnum.Warning));
                             break;
 
                         case "Remark":
-                            inSolPoint.RuntimeMessages.Add(new SolutionPoint_Message(ghMessages[i, 1], SolutionPoint_MessageSourceEnum.Grasshopper, SolutionPoint_MessageLevelEnum.Remark));
+                            inSolPoint.RuntimeWarningMessages.Add(new NlOpt_Point_Message(ghMessages[i, 1], NlOpt_Point_MessageSourceEnum.Grasshopper, NlOpt_Point_MessageLevelEnum.Remark));
                             break;
 
                         default:
                             errors += $"A grasshopper message type was unexpected: {ghMessages[i, 0]}. Message: {ghMessages[i, 1]}{Environment.NewLine}";
-                            inSolPoint.RuntimeMessages.Add(new SolutionPoint_Message(ghMessages[i, 1], SolutionPoint_MessageSourceEnum.Grasshopper, SolutionPoint_MessageLevelEnum.Error));
                             break;
                     }    
                 }
 
                 // There was an error, so we must throw
-                if (!string.IsNullOrWhiteSpace(errors)) throw new Exception(errors);
+                if (!string.IsNullOrWhiteSpace(errors)) throw new Exception($"Grasshopper errors.{Environment.NewLine}{errors}");
             }
 
             // Reads the geometry into the solution point
@@ -495,11 +555,27 @@ namespace Emasa_Optimizer.Opt
                 }
                 catch (Exception e)
                 {
-                    string errorMessage = $"Could not read the Grasshopper geometry {output_ParamDefBase.Name}.";
-                    inSolPoint.RuntimeMessages.Add(new SolutionPoint_Message(errorMessage, SolutionPoint_MessageSourceEnum.Grasshopper, SolutionPoint_MessageLevelEnum.Error, e));
-                    // Rethrows for program flow
-                    throw new Exception(errorMessage, e);
+                    throw new Exception($"Could not read the Grasshopper geometry {output_ParamDefBase.Name}.", e);
                 }
+            }
+
+            // Obtains the Rhino Screenshots
+            try
+            {
+                List<(string dir, Image image)> rhinoScreenshots = RhinoModel.RM.GetScreenshots(AppSS.I.ScreenShotOpt.ImageCapture_ViewDirectionsEnumerable.Select(inEnum => inEnum.ToString()).ToArray());
+                foreach ((string dir, Image image) rhinoScreenshot in rhinoScreenshots)
+                {
+                    if (!Enum.TryParse(rhinoScreenshot.dir, out ImageCaptureViewDirectionEnum dirEnum)) throw new Exception($"Could not get back the direction enumerate value from its string representation. {rhinoScreenshot.dir}.");
+                    
+                    inSolPoint.ScreenShots.Add(new NlOpt_Point_ScreenShot(
+                        AppSS.I.ScreenShotOpt.SpecialRhinoDisplayScreenshotInstance,
+                        dirEnum, 
+                        rhinoScreenshot.image));
+                }
+            }
+            catch (Exception e)
+            {
+                throw new COMException("Could not get the RhinoScreenshots.", e);
             }
 
             sw.Stop();
@@ -538,6 +614,18 @@ namespace Emasa_Optimizer.Opt
                 string[] fileLines = File.ReadAllLines(inFileName);
                 if (fileLines.Length != 2) throw new Exception();
                 return new DoubleValueRange(Convert.ToDouble(fileLines[0]), Convert.ToDouble(fileLines[1]));
+            }
+            catch (Exception e)
+            {
+                throw new IOException($"{MethodBase.GetCurrentMethod().Name}: Could not read from file {inFileName}.", e);
+            }
+        }
+
+        private int ReadInteger(string inFileName)
+        {
+            try
+            {
+                return Convert.ToInt32(File.ReadAllText(inFileName));
             }
             catch (Exception e)
             {
@@ -607,8 +695,12 @@ namespace Emasa_Optimizer.Opt
         public ICollectionView GeometryDefs_DoubleList_View { get; private set; }
         public Visibility HasGeometryDef_DoubleList { get; private set; }
 
-        public ICollectionView GeometryDefs_PointListBundle_View { get; private set; }
+        public ICollectionView GeometryDefs_PointLineListBundle_View { get; private set; }
 
+        public ICollectionView ConfigDefs_View { get; }
+
+        public ICollectionView ConfigDefs_Integer_View { get; }
+        public Visibility HasConfigDefs_Integer { get; private set; }
         #endregion
     }
 }

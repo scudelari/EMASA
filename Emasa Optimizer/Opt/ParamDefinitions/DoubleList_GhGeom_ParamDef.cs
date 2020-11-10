@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Emasa_Optimizer.Bindings;
 using Emasa_Optimizer.Opt.ProbQuantity;
-using Emasa_Optimizer.ProblemDefs;
 
 namespace Emasa_Optimizer.Opt.ParamDefinitions
 {
@@ -21,24 +21,26 @@ namespace Emasa_Optimizer.Opt.ParamDefinitions
         public string ResultFamilyGroupName => "GH Double List";
         public string ResultTypeDescription => "";
         public string TargetShapeDescription => Name;
+        public string ResultTypeExplanation => $"Grasshopper double list named {TargetShapeDescription}";
 
-        public void AddProblemQuantity_FunctionObjective(object inSolveMan)
+        public string Wpf_ProblemQuantityName => Name;
+        public string Wpf_ProblemQuantityGroup => "GH Double List";
+        public string Wpf_Explanation => $"Grasshopper double list named {TargetShapeDescription}";
+
+        public string ScreenShotFileName => "DoubleList_RhinoScreenshot";
+        public string DataTableName => $"{Wpf_ProblemQuantityGroup} - {Wpf_ProblemQuantityName}";
+
+        public void AddProblemQuantity_FunctionObjective()
         {
-            if (inSolveMan is SolveManager s) s.AddProblemQuantity(new ProblemQuantity(this, Quantity_TreatmentTypeEnum.ObjectiveFunctionMinimize, s));
-            else
-                throw new InvalidOperationException($"{nameof(inSolveMan)} is not of expected type ({typeof(SolveManager)}).");
+            AppSS.I.ProbQuantMgn.AddProblemQuantity(new ProblemQuantity(this, Quantity_TreatmentTypeEnum.ObjectiveFunctionMinimize));
         }
-        public void AddProblemQuantity_ConstraintObjective(object inSolveMan)
+        public void AddProblemQuantity_ConstraintObjective()
         {
-            if (inSolveMan is SolveManager s) s.AddProblemQuantity(new ProblemQuantity(this, Quantity_TreatmentTypeEnum.Constraint, s));
-            else
-                throw new InvalidOperationException($"{nameof(inSolveMan)} is not of expected type ({typeof(SolveManager)}).");
+            AppSS.I.ProbQuantMgn.AddProblemQuantity(new ProblemQuantity(this, Quantity_TreatmentTypeEnum.Constraint));
         }
-        public void AddProblemQuantity_OutputOnly(object inSolveMan)
+        public void AddProblemQuantity_OutputOnly()
         {
-            if (inSolveMan is SolveManager s) s.AddProblemQuantity(new ProblemQuantity(this, Quantity_TreatmentTypeEnum.OutputOnly, s));
-            else
-                throw new InvalidOperationException($"{nameof(inSolveMan)} is not of expected type ({typeof(SolveManager)}).");
+            AppSS.I.ProbQuantMgn.AddProblemQuantity(new ProblemQuantity(this, Quantity_TreatmentTypeEnum.OutputOnly));
         }
         #endregion
     }

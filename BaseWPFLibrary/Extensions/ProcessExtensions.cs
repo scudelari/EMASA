@@ -17,6 +17,7 @@ namespace BaseWPFLibrary.Extensions
         /// <param name="inProcess">Process.</param>
         public static void KillProcessAndChildren(this Process inProcess)
         {
+            if (inProcess.HasExited) return; // The process has already died
             KillProcessAndChildren(inProcess.Id);
         }
 
@@ -75,7 +76,15 @@ namespace BaseWPFLibrary.Extensions
 
         public static Process Parent(this Process process)
         {
-            return FindPidFromIndexedProcessName(FindIndexedProcessName(process.Id));
+            if (process.HasExited) return null;
+            try
+            {
+                return FindPidFromIndexedProcessName(FindIndexedProcessName(process.Id));
+            }
+            catch (Exception) // Failed because the current process is already dead
+            {
+                return null;
+            }
         }
     }
 }

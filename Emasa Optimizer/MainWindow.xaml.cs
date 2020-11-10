@@ -3,10 +3,12 @@ using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Drawing;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -18,9 +20,14 @@ using BaseWPFLibrary.Bindings;
 using BaseWPFLibrary.Events;
 using BaseWPFLibrary.Forms;
 using Emasa_Optimizer.Bindings;
+using Emasa_Optimizer.FEA;
+using Emasa_Optimizer.Opt;
 using Emasa_Optimizer.Opt.ParamDefinitions;
+using Emasa_Optimizer.Opt.ProbQuantity;
 using Emasa_Optimizer.WpfResources;
+using NLoptNet;
 using Prism.Events;
+using RhinoInterfaceLibrary;
 
 namespace Emasa_Optimizer
 {
@@ -34,14 +41,14 @@ namespace Emasa_Optimizer
             InitializeComponent();
         }
         private async void Window_Initialized(object sender, EventArgs e)
-        {
+        {            
             try
             {
                 BusyOverlay.ShowOverlay();
                 
                 void lf_Work()
                 {
-                    // Starts the Solve Manager, initializing the connection with GrassHopper and other variables
+                    // Starts the Optimize Manager, initializing the connection with GrassHopper and other variables
                     BusyOverlayBindings.I.Title = "Linking to Grasshopper and Initializing";
                     BusyOverlayBindings.I.SetIndeterminate("Please wait...");
                 }
@@ -51,7 +58,9 @@ namespace Emasa_Optimizer
                 task.Start();
                 await task;
 
-                FormGeneralBindings.Start(MainGrid);
+                AppSS.Start(this);
+                //BusyOptimizingOverlay.DataContext = AppSS.I;
+                BusyOptimizingOverlay.SetAdditionalContentDataContext(AppSS.I);
             }
             catch (Exception ex)
             {
@@ -72,11 +81,11 @@ namespace Emasa_Optimizer
         #region Binder Event Handlers
         private void BindBeginCommandEventHandler(BindCommandEventArgs inObj)
         {
-            CustomOverlay.ShowOverlay();
+            BusyOptimizingOverlay.ShowOverlay();
         }
         private void BindEndCommandEventHandler(BindCommandEventArgs inObj)
         {
-            CustomOverlay.HideOverlayAndReset();
+            BusyOptimizingOverlay.HideOverlayAndReset();
         }
         private void BindMessageEventHandler(BindMessageEventArgs inObj)
         {
@@ -106,15 +115,26 @@ namespace Emasa_Optimizer
         {
             try
             {
-                CustomOverlay.ShowOverlay();
+                #region Resetting the overlay's variables.
+                // Resets the progress bar
+                AppSS.I.Overlay_ProgressBarMaximum = 1;
+                AppSS.I.Overlay_ProgressBarCurrent = 0;
+
+                // Resets the messages
+                AppSS.I.Overlay_TopMessage = "";
+
+                // Hides the currently solve details
+                AppSS.I.Overlay_ProblemConfigDetailsVisible = Visibility.Collapsed;
+                #endregion
+
+                BusyOptimizingOverlay.ShowOverlay();
 
                 void lf_Work()
                 {
-                    // Starts the Solve Manager, initializing the connection with GrassHopper and other variables
-                    CustomOverlayBindings.I.Title = "Solving";
-                    CustomOverlayBindings.I.MessageText = "Please Wait";
+                    // Starts the Optimize Manager, initializing the connection with GrassHopper and other variables
+                    CustomOverlayBindings.I.Title = "Working";
 
-                    FormGeneralBindings.I.SolveMgr.NlOpt_SolveSelectedProblem();
+                    AppSS.I.SolveMgr.OptimizeMissingProblemConfigurations();
                 }
 
                 // Runs the job async
@@ -128,28 +148,15 @@ namespace Emasa_Optimizer
             }
             finally
             {
-                CustomOverlay.HideOverlayAndReset();
+                BusyOptimizingOverlay.HideOverlayAndReset();
             }
         }
 
         private void CancelSolveButton_Click(object sender, RoutedEventArgs e)
         {
             // Sends the cancel signal
-            FormGeneralBindings.I.SolveMgr.NlOptManager.CancelSource.Cancel();
+            AppSS.I.SolveMgr.CancelSource.Cancel();
         }
-
-        private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (e.AddedItems.Count == 1 && e.AddedItems[0] is TabItem tab)
-            {
-                if (tab.HasHeader && tab.Header is string tabString && tabString == "Optimize")
-                {
-                    FormGeneralBindings.I.SolveMgr.FeOptions.WpfAllSelectedOutputResults.Refresh();
-                    // TODO: Checks if the added list has items that are not in the selected output list
-                }
-            }
-        }
-
 
         private void DataGrid_AutoGeneratingColumn_AddDoubleFormats(object sender, DataGridAutoGeneratingColumnEventArgs e)
         {
@@ -162,6 +169,14 @@ namespace Emasa_Optimizer
                     binding.Converter = new DefaultNumberConverter();
                 }
             }
+        }
+
+        bool swap = false;
+
+        private async void Debug_Click(object sender, RoutedEventArgs e)
+        {
+            int a = 0;
+            a++;
         }
     }
 }

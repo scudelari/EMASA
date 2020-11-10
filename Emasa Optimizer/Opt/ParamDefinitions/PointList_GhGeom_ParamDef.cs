@@ -7,7 +7,7 @@ using Emasa_Optimizer.FEA.Items;
 
 namespace Emasa_Optimizer.Opt.ParamDefinitions
 {
-    public class PointList_GhGeom_ParamDef : GhGeom_ParamDefBase
+    public class PointList_GhGeom_ParamDef : GhGeom_ParamDefBase, IGhElement_HasFeRestraint
     {
         public override string TypeName => "PointList";
 

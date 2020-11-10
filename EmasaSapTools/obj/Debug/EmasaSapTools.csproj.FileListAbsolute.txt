@@ -70,6 +70,7 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\ExcelDataRe
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\LibOptimization.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\MathNet.Numerics.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\MathNet.Spatial.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\Microsoft.Xaml.Behaviors.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\MoreLinq.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\Newtonsoft.Json.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\Prism.dll
@@ -79,7 +80,6 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\Sap2000Libr
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\System.Data.SQLite.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\System.Data.SQLite.Linq.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\System.ValueTuple.dll
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\System.Windows.Interactivity.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\Rhino3dmIO.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\BaseWPFLibrary.pdb
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\BaseWPFLibrary.dll.config
@@ -93,6 +93,8 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\ExcelDataRe
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\ExcelDataReader.DataSet.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\MathNet.Numerics.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\MathNet.Spatial.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\Microsoft.Xaml.Behaviors.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\Microsoft.Xaml.Behaviors.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\MoreLinq.pdb
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\MoreLinq.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Debug\Newtonsoft.Json.xml

@@ -4,4 +4,8 @@
   &lt;Assembly Path="C:\Program Files\Rhino 6\System\rhinocommon.dll" /&gt;&#xD;
   &lt;Assembly Path="C:\Users\EngRafaelSMacedo\source\repos\EMASA\packages\RhinoCommon.6.27.20176.5001\lib\net45\RhinoCommon.dll" /&gt;&#xD;
   &lt;Assembly Path="C:\Users\EngRafaelSMacedo\source\repos\EMASA\packages\NLoptNet.1.2.0\lib\net45\NLoptNet.dll" /&gt;&#xD;
-&lt;/AssemblyExplorer&gt;</s:String></wpf:ResourceDictionary>
+&lt;/AssemblyExplorer&gt;</s:String>
+	<s:Boolean x:Key="/Default/Housekeeping/Bookmarks/NumberedBookmarks/=Bookmark8/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/Housekeeping/Bookmarks/NumberedBookmarks/=Bookmark8/Coords/@EntryValue">(Doc Ln 60 Col 20)</s:String>
+	<s:String x:Key="/Default/Housekeeping/Bookmarks/NumberedBookmarks/=Bookmark8/FileId/@EntryValue">17E521D8-43BD-4B35-8127-E1C30BAED644/d:Bindings/f:CustomOverlayBindings.cs</s:String>
+	<s:String x:Key="/Default/Housekeeping/Bookmarks/NumberedBookmarks/=Bookmark8/Owner/@EntryValue">NumberedBookmarkManager</s:String></wpf:ResourceDictionary>

@@ -10,301 +10,305 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using GH_IO.Serialization;
 using GHComponents.Properties;
+using Grasshopper.GUI;
 using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 
 namespace GHComponents
 {
-    //public class GHFileInputIntegerParameter : GH_Param<GH_Integer>
-    //{
-    //    public GHFileInputIntegerParameter() :
-    //        base("File Input Integer", "", "Reads an Integer from a Text File and Outputs its value.", "Emasa", "Input", GH_ParamAccess.item)
-    //    {
-    //    }
+    public class GHFileInputIntegerParameter : GH_Param<GH_Integer>
+    {
+        public override Guid ComponentGuid => new Guid("426ae71e-82f2-4821-8829-723b10a2ead1");
+        public override GH_Exposure Exposure => GH_Exposure.primary;
+        protected override Bitmap Icon => Properties.Resources.GH_Icon_InputInteger;
+        public Image PublicIcon => Icon;
 
-    //    public string SubDir => this.SubCategory;
-    //    public override Guid ComponentGuid => new Guid("426ae71e-82f2-4821-8829-723b10a2ead1");
-    //    public override GH_Exposure Exposure => GH_Exposure.primary;
-    //    protected override System.Drawing.Bitmap Icon => Properties.Resources.GH_Icon_InputInteger;
+        private GhOptFileManager _fManager = null;
+        private GhOptVariableType _varType = GhOptVariableType.Integer;
+        private GhOptVariableDirection _varDir = GhOptVariableDirection.Input;
 
-    //    // Helper functions
-    //    public string VarFilePath(GH_Document inDocument = null, string inVarName = null)
-    //    {
-    //        if (inDocument == null) inDocument = OnPingDocument();
-    //        if (inVarName == null) inVarName = NickName;
+        public GHFileInputIntegerParameter() :
+            base("File Input Integer", "", "Reads an Integer from a Text File and Outputs its value.", "Emasa", "Input", GH_ParamAccess.item)
+        {
+        }
 
-    //        if (!inDocument.IsFilePathDefined) return null;
-    //        if (string.IsNullOrWhiteSpace(inDocument.FilePath)) return null;
+        public override void AddedToDocument(GH_Document document)
+        {
+            // Denies the addition of new items to GHDocs that don't have a defined name.
+            if (string.IsNullOrWhiteSpace(NickName) && !document.IsFilePathDefined)
+            {
+                MessageBox.Show($"{Name} may only be added to documents that have a defined file path.", "Save the GH document first", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                document.RemoveObject(this, true);
+                return;
+            }
 
-    //        try
-    //        {
-    //            // Gets the document
-    //            string projectFolder = Path.GetDirectoryName(inDocument.FilePath);
-    //            string ghFilename = Path.GetFileName(inDocument.FilePath);
+            // Creates the file manager, making a new name in case this does not exist
+            _fManager = new GhOptFileManager(this, NickName, _varType, _varDir);
+            if (string.IsNullOrWhiteSpace(NickName)) NickName = _fManager.VarName;
 
-    //            string targetDir = Path.Combine(projectFolder, ghFilename + "_data", SubDir);
+            // Listens to the file change events
+            document.FilePathChanged += _fManager.Document_FilePathChanged;
 
-    //            DirectoryInfo dirInfo = new DirectoryInfo(targetDir);
-    //            if (!dirInfo.Exists) dirInfo.Create();
+            base.AddedToDocument(document);
+        }
+        public override void RemovedFromDocument(GH_Document document)
+        {
+            // If the document has not been saved, ignore.
+            if (!document.IsFilePathDefined) return;
 
-    //            return Path.Combine(targetDir, $"{inVarName}.Integer");
-    //        }
-    //        catch (Exception)
-    //        {
-    //            return null;
-    //        }
-    //    }
+            // If the document is open (enabled) and the user deleted this object. 
+            // Otherwise, it means that the document is closing....
+            if (document.Enabled)
+            {
+                try
+                {
+                    _fManager.DeleteFiles(document);
+                }
+                catch
+                {
+                }
+                finally
+                {
+                    document.FilePathChanged -= _fManager.Document_FilePathChanged;
+                }
+            }
 
-    //    public Image PublicIcon => Icon;
+            base.RemovedFromDocument(document);
+        }
 
-    //    public override void CreateAttributes()
-    //    {
-    //        m_attributes = new GHFileInputIntegerAttributes(this);
-    //    }
+        public override void CreateAttributes()
+        {
+            m_attributes = new GHFileInputIntegerAttributes(this);
+        }
 
-    //    public override bool AppendMenuItems(ToolStripDropDown menu)
-    //    {
-    //        Menu_AppendItem(menu, this.Name);
-    //        Menu_AppendSeparator(menu);
-    //        Menu_AppendItem(menu, "Variable Name:");
-    //        Menu_AppendObjectNameEx(menu);
-            
-    //        return true;
-    //    }
+        private ToolStripTextBox _varName_ToolStripTextBox = null;
+        //private ToolStripTextBox _minRange_ToolStripTextBox = null;
+        //private ToolStripTextBox _maxRange_ToolStripTextBox = null;
+        public override bool AppendMenuItems(ToolStripDropDown menu)
+        {
+            Menu_AppendItem(menu, this.Name);
+            Menu_AppendSeparator(menu);
+            ToolStripMenuItem varNameTextItem = Menu_AppendItem(menu, "Variable Name:");
+            varNameTextItem.ForeColor = Color.DarkOrange;
+            _varName_ToolStripTextBox = Menu_AppendTextItem(menu, $"{NickName}",
+                keydown: (inSender, inArgs) => { },
+                textchanged: ToolStripMenuTextChanged_CheckValidFileName,
+                true);
+            // Removes the buttons that are automatically added...
+            menu.Items.RemoveAt(menu.Items.Count - 1);
+            menu.Items.RemoveAt(menu.Items.Count - 1);
 
-    //    public string ValCount
-    //    {
-    //        get
-    //        {
-    //            if (m_data.IsEmpty) return "No Data";
-    //            else return m_data.get_FirstItem(true).ToString();
-    //        }
-    //    }
+            Menu_AppendSeparator(menu);
 
-    //    public override string NickName
-    //    {
-    //        get => base.NickName;
-    //        set
-    //        {
-    //            if (string.IsNullOrWhiteSpace(value)) return;
-    //            if (base.NickName == value) return;
+            menu.Closed += Menu_Closed;
 
-    //            try
-    //            {
-    //                string oldFile = VarFilePath(inVarName: NickName);
-    //                string newFile = VarFilePath(inVarName: value);
+            return true;
+        }
 
-    //                // If the old file exists, we must move it
-    //                if (File.Exists(oldFile))
-    //                {
-    //                    // The new file already exists; the change of name is aborted
-    //                    if (File.Exists(newFile)) return;
+        private void Menu_Closed(object sender, ToolStripDropDownClosedEventArgs e)
+        {
+            try
+            {
+                NickName = _varName_ToolStripTextBox.Text;
+            }
+            catch
+            {
+                MessageBox.Show($"Could not change the variable name.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                _varName_ToolStripTextBox = null;
+            }
 
-    //                    File.Copy(oldFile, newFile);
-    //                    File.Delete(oldFile);
-    //                }
-    //            }
-    //            catch
-    //            {
-    //            }
 
-    //            // Sets the value
-    //            base.NickName = value;
+            CollectVolatileData_Custom();
+            CollectData();
+        }
 
-    //            this.CollectData();
-    //        }
-    //    }
+        private void ToolStripMenuTextChanged_CheckValidFileName(GH_MenuTextBox inSender, string inNewtext)
+        {
+            // Changed to the current NickName
+            if (inNewtext == NickName) return;
 
-    //    public override void AddedToDocument(GH_Document document)
-    //    {
-    //        if (base.NickName == "") 
-    //        {
-    //            Random random = new Random();
-    //            int randVal = random.Next(1, 100);
-    //            base.NickName = "IVar_" + randVal;
+            if (inNewtext.Any(a => Path.GetInvalidFileNameChars().Contains(a)))
+            {
+                inSender.Text = inSender.OriginalText; // Cancels
+            }
 
-    //            // Makes sure there is no duplicate on the default value
-    //            if (document.IsFilePathDefined)
-    //            {
-    //                while (File.Exists(VarFilePath()))
-    //                {
-    //                    randVal = random.Next(1, 100);
-    //                    base.NickName = "IVar_" + randVal;
-    //                }
-    //            }
-    //        }
+            // Checks if the altered filename exists
+            try
+            {
+                if (File.Exists(_fManager.VarFilePath(inNewtext))) inSender.Text = inSender.OriginalText; // Cancels
+            }
+            catch (Exception e)
+            {
+                // Also cancels as a safeguard
+                inSender.Text = inSender.OriginalText; // Cancels
+            }
+        }
 
-    //        document.FilePathChanged += Document_FilePathChanged;
+        public string ValueString
+        {
+            get
+            {
+                if (m_data.IsEmpty) return "No Data";
+                else return $"{m_data.get_FirstItem(true).Value:D}";
+            }
+        }
+        public override string NickName
+        {
+            get => base.NickName;
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value)) return; // Ignores the change
+                if (base.NickName == value) return; // Did not change
 
-    //        base.AddedToDocument(document);
-    //    }
-    //    public override void RemovedFromDocument(GH_Document document)
-    //    {
-    //        // If the document is open (enabled) and the user deleted this object. 
-    //        // Otherwise, it means that the document is closing....
-    //        if (document.Enabled)
-    //        {
-    //            try
-    //            {
-    //                if (File.Exists(VarFilePath(document))) File.Delete(VarFilePath(document));
-    //            }
-    //            catch
-    //            {
-    //            }
-    //            finally
-    //            {
-    //                document.FilePathChanged -= Document_FilePathChanged;
-    //            }
-    //        }
+                if (value.Any(a => Path.GetInvalidFileNameChars().Contains(a))) return; // Ignores the change
 
-    //        base.RemovedFromDocument(document);
-    //    }
+                // Changes the name in the file manager
+                _fManager.UpdateVarName(value);
 
-    //    private void Document_FilePathChanged(object sender, GH_DocFilePathEventArgs e)
-    //    {
-    //        try
-    //        {
-    //            DirectoryInfo oldDir = new DirectoryInfo(Path.Combine(Path.GetDirectoryName(e.OldFilePath), Path.GetFileNameWithoutExtension(e.OldFilePath)));
-    //            DirectoryInfo newDir = new DirectoryInfo(Path.Combine(Path.GetDirectoryName(e.NewFilePath), Path.GetFileNameWithoutExtension(e.NewFilePath)));
+                // Sets the value in the controller
+                base.NickName = value;
+                this.CollectData();
+            }
+        }
 
-    //            if (oldDir.Exists) oldDir.MoveTo(newDir.FullName);
-    //        }
-    //        catch
-    //        {
-    //        }
-    //        finally
-    //        {
-    //            this.ClearData();
-    //            this.CollectData();
-    //        }
-    //    }
+        protected override void CollectVolatileData_Custom()
+        {
+            ClearRuntimeMessages();
 
-    //    protected override void CollectVolatileData_Custom()
-    //    {
-    //        ClearRuntimeMessages();
+            GH_Document doc = OnPingDocument();
+            if (!doc.IsFilePathDefined)
+            {
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "The grasshopper document must be saved for the relative paths to work.");
+                return;
+            }
 
-    //        GH_Document doc = OnPingDocument();
-    //        if (!doc.IsFilePathDefined)
-    //        {
-    //            AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "The grasshopper document must be saved for the relative paths to work.");
-    //            return;
-    //        }
+            try
+            {
+                // Clears the current data
+                m_data.Clear();
 
-    //        try
-    //        {
-    //            if (!File.Exists(VarFilePath()))
-    //            {
-    //                using (StreamWriter sw = new StreamWriter( File.Create(VarFilePath())))
-    //                {
-    //                    sw.WriteLine(0);
-    //                }
-    //            }
-    //        }
-    //        catch (Exception)
-    //        {
-    //            AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Could not get the Grasshopper file name. Please save the file.");
-    //            return;
-    //        }
+                // Reads the integer value and transforms to GH data
+                GH_Integer val = new GH_Integer(_fManager.ReadIntegerValue());
+                m_data.Append(val);
+            }
+            catch (Exception e)
+            {
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"There was an error while acquiring the data.{Environment.NewLine}{e.Message}");
+                return;
+            }
+        }
+    }
 
-    //        // Reads the double from the file
-    //        string fileContents = string.Empty;
-    //        try
-    //        {
-    //            fileContents = File.ReadAllText(VarFilePath());
-    //            GH_Integer val = new GH_Integer(Convert.ToInt32(fileContents));
-    //            m_data.Clear();
-    //            m_data.Append(val);
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"Could not convert the contents {fileContents} of the file to GH_Integer. {ex.Message} | {ex.StackTrace}");
-    //            return;
-    //        }
-    //    }
-    //}
+    public class GHFileInputIntegerAttributes : GH_Attributes<GHFileInputIntegerParameter>
+    {
+        public GHFileInputIntegerAttributes(GHFileInputIntegerParameter owner) : base(owner) { }
 
-    //public class GHFileInputIntegerAttributes : GH_Attributes<GHFileInputIntegerParameter>
-    //{
-    //    public GHFileInputIntegerAttributes(GHFileInputIntegerParameter owner) : base(owner) { }
+        private float NominalWidth = 185;
+        private float NominalHeight = 50;
 
-    //    protected override void Layout()
-    //    {
-    //        Bounds = new RectangleF(Pivot, new SizeF(100, 70));
-    //    }
+        protected override void Layout()
+        {
+            Bounds = new RectangleF(Pivot, new SizeF(NominalWidth, NominalHeight));
+        }
 
-    //    public override bool HasInputGrip => false;
-    //    public override bool HasOutputGrip => true;
+        public override bool HasInputGrip => false;
+        public override bool HasOutputGrip => true;
 
-    //    protected override void Render(GH_Canvas canvas, Graphics graphics, GH_CanvasChannel channel)
-    //    {
-    //        // Render all the wires that connect the Owner to all its Sources.
-    //        if (channel == GH_CanvasChannel.Wires)
-    //        {
-    //            RenderIncomingWires(canvas.Painter, Owner.Sources, Owner.WireDisplay);
-    //            return;
-    //        }
+        protected override void Render(GH_Canvas canvas, Graphics graphics, GH_CanvasChannel channel)
+        {
+            // Render all the wires that connect the Owner to all its Sources.
+            if (channel == GH_CanvasChannel.Wires)
+            {
+                RenderIncomingWires(canvas.Painter, Owner.Sources, Owner.WireDisplay);
+                return;
+            }
 
-    //        // Render the parameter capsule and any additional text on top of it.
-    //        if (channel == GH_CanvasChannel.Objects)
-    //        {
-    //            // Define the default palette.
-    //            GH_Palette palette = GH_Palette.Normal;
+            // Render the parameter capsule and any additional text on top of it.
+            if (channel == GH_CanvasChannel.Objects)
+            {
+                // Define the default palette.
+                GH_Palette palette = GH_Palette.Normal;
 
-    //            // Adjust palette based on the Owner's worst case messaging level.
-    //            switch (Owner.RuntimeMessageLevel)
-    //            {
-    //                case GH_RuntimeMessageLevel.Warning:
-    //                    palette = GH_Palette.Warning;
-    //                    break;
+                // Adjust palette based on the Owner's worst case messaging level.
+                switch (Owner.RuntimeMessageLevel)
+                {
+                    case GH_RuntimeMessageLevel.Warning:
+                        palette = GH_Palette.Warning;
+                        break;
 
-    //                case GH_RuntimeMessageLevel.Error:
-    //                    palette = GH_Palette.Error;
-    //                    break;
-    //            }
+                    case GH_RuntimeMessageLevel.Error:
+                        palette = GH_Palette.Error;
+                        break;
+                }
 
-    //            // Create a new Capsule without text or icon.
-    //            GH_Capsule capsule = GH_Capsule.CreateCapsule(Bounds, palette);
+                // Create a new Capsule without text or icon.
+                GH_Capsule capsule = GH_Capsule.CreateCapsule(Bounds, palette);
 
-    //            // Render the capsule using the current Selection, Locked and Hidden states.
-    //            // Integer parameters are always hidden since they cannot be drawn in the viewport.
-    //            capsule.AddOutputGrip((Bounds.Bottom - Bounds.Top) / 2 + Bounds.Top);
-    //            capsule.Render(graphics, Selected, Owner.Locked, true);
-                
-    //            // Always dispose of a GH_Capsule when you're done with it.
-    //            capsule.Dispose();
-    //            capsule = null;
+                // Adds an output grip fo the capsule
+                capsule.AddOutputGrip((Bounds.Bottom - Bounds.Top) / 2 + Bounds.Top);
+                // Render the capsule using the current Selection, Locked and Hidden states.
+                capsule.Render(graphics, Selected, Owner.Locked, true);
 
-    //            graphics.DrawImage(Owner.PublicIcon, Bounds.Left + Bounds.Width / 2 - Owner.PublicIcon.Width / 2f, Bounds.Top + 5);
+                // Always dispose of a GH_Capsule when you're done with it.
+                capsule.Dispose();
+                capsule = null;
 
-    //            // Now it's time to draw the text on top of the capsule.
-    //            // First we'll draw the Owner NickName using a standard font and a black brush.
-    //            // We'll also align the NickName in the center of the Bounds.
-    //            StringFormat format = new StringFormat();
-    //            format.Alignment = StringAlignment.Center;
-    //            format.LineAlignment = StringAlignment.Center;
-    //            format.Trimming = StringTrimming.EllipsisCharacter;
+                // Draws the icon at the middle =>
+                // graphics.DrawImage(Owner.PublicIcon, Bounds.Left + Bounds.Width / 2 - Owner.PublicIcon.Width / 2f, Bounds.Top + 5);
+                // Draws the icon closer to the left
+                graphics.DrawImage(Owner.PublicIcon, Bounds.Left + 5, Bounds.Top + 5);
 
-    //            // Our entire capsule is 60 pixels high, and we'll draw 
-    //            // three lines of text, each 20 pixels high.
-    //            RectangleF textRectangle = Bounds;
-    //            textRectangle.Height = 20;
-    //            textRectangle.Y += 24 + 5;
+                // Setting up the font configs
+                StringFormat leftFormat = new StringFormat();
+                leftFormat.Alignment = StringAlignment.Near;
+                leftFormat.LineAlignment = StringAlignment.Center;
+                leftFormat.Trimming = StringTrimming.EllipsisCharacter;
 
-    //            // Draw the NickName in a Standard Grasshopper font.
-    //            graphics.DrawString(Owner.NickName, GH_FontServer.Standard, Brushes.Black, textRectangle, format);
+                StringFormat centerFormat = new StringFormat();
+                centerFormat.Alignment = StringAlignment.Center;
+                centerFormat.LineAlignment = StringAlignment.Center;
+                centerFormat.Trimming = StringTrimming.Character;
+                centerFormat.FormatFlags = StringFormatFlags.NoWrap;
 
-    //            // Now we need to draw the median and mean information.
-    //            // Adjust the formatting and the layout rectangle.
-    //            format.Alignment = StringAlignment.Near;
-    //            textRectangle.Inflate(-5, 0);
+                // Setting up the Pen Configs
+                Pen underline = new Pen(Brushes.DarkSlateGray, 1f);
+                Brush bg = new SolidBrush(Color.White);
 
-    //            textRectangle.Y += 20;
-    //            graphics.DrawString($"{Owner.ValCount}", GH_FontServer.StandardItalic, Brushes.Black, textRectangle, format);
+                // Drawing the NickName
+                RectangleF nameRect = Bounds;
+                nameRect.Height = 20; // LineList height is of 20
+                nameRect.Offset(23 + 5 + 5, 5);
+                nameRect.Width += -(23 + 5 + 5 + 5);
+                graphics.DrawString(Owner.NickName, GH_FontServer.Large, Brushes.Black, nameRect, leftFormat);
+                graphics.DrawLine(underline, new PointF(nameRect.X, nameRect.Y + 20), new PointF(nameRect.X + nameRect.Width, nameRect.Y + 20));
 
-    //            // Always dispose of any GDI+ object that implement IDisposable.
-    //            format.Dispose();
-    //        }
-    //    }
-    //}
+                // Drawing the value
+                RectangleF valueRect = Bounds;
+                valueRect.Height = 20;
+                valueRect.Y += 30;
+                valueRect.Offset(23 + 5 + 5, 0);
+                valueRect.Width += -(23 + 5 + 5 + 5);
+                graphics.DrawString(Owner.ValueString, GH_FontServer.Console, Brushes.Black, valueRect, leftFormat);
+
+                // Always dispose of any GDI+ object that implement IDisposable.
+                centerFormat.Dispose();
+                centerFormat = null;
+                leftFormat.Dispose();
+                leftFormat = null;
+                underline.Dispose();
+                underline = null;
+                bg.Dispose();
+                bg = null;
+            }
+        }
+
+        private Rectangle ToIntRectangle(RectangleF inRectangleF)
+        {
+            return new Rectangle((int)inRectangleF.X, (int)inRectangleF.Y, (int)inRectangleF.Width, (int)inRectangleF.Height);
+        }
+    }
 }

@@ -2,9 +2,12 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\bin\Debug\StepwiseS
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\bin\Debug\StepwiseSpheres.dll.config
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\bin\Debug\StepwiseSpheres.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\bin\Debug\StepwiseSpheres.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\bin\Debug\Prism.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\bin\Debug\System.Data.SQLite.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\bin\Debug\System.Data.SQLite.Linq.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\bin\Debug\System.ValueTuple.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\bin\Debug\Prism.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\bin\Debug\Prism.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\bin\Debug\System.Data.SQLite.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\bin\Debug\System.Data.SQLite.dll.config
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\bin\Debug\System.ValueTuple.xml

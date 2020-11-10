@@ -1,0 +1,16 @@
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\bin\Release\StepwiseSphere.addin
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\bin\Release\StepwiseSpheres.dll.config
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\bin\Release\StepwiseSpheres.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\bin\Release\StepwiseSpheres.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\bin\Release\System.Data.SQLite.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\bin\Release\System.Data.SQLite.Linq.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\bin\Release\System.ValueTuple.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\bin\Release\System.Data.SQLite.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\bin\Release\System.Data.SQLite.dll.config
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\bin\Release\System.ValueTuple.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\obj\Release\StepwiseSpheres.Properties.Resources.resources
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\obj\Release\StepwiseSpheres.csproj.GenerateResource.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\obj\Release\StepwiseSpheres.csproj.CoreCompileInputs.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\obj\Release\StepwiseSpheres.csproj.CopyComplete
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\obj\Release\StepwiseSpheres.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\obj\Release\StepwiseSpheres.pdb

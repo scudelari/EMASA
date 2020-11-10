@@ -1,9 +1,3 @@
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Debug\Emasa Optimizer.csprojAssemblyReference.cache
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Debug\MainWindow.g.cs
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Debug\App.g.cs
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Debug\GeneratedInternalTypeHelper.g.cs
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Debug\Emasa Optimizer_MarkupCompile.cache
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Debug\Emasa Optimizer_MarkupCompile.lref
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\Win32\librhino3dmio_native.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\Win64\librhino3dmio_native.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\librhino3dmio_native.dylib
@@ -15,6 +9,8 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\CommonSer
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\CsvHelper.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\MathNet.Numerics.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\Microsoft.Bcl.AsyncInterfaces.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\Microsoft.Xaml.Behaviors.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\MintPlayer.ObservableCollection.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\NLoptNet.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\NumericUpDownLib.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\Prism.dll
@@ -24,7 +20,6 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\RhinoInte
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\System.Runtime.CompilerServices.Unsafe.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\System.Threading.Tasks.Extensions.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\System.ValueTuple.dll
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\System.Windows.Interactivity.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\MathNet.Spatial.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\BaseWPFLibrary.pdb
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\BaseWPFLibrary.dll.config
@@ -32,6 +27,8 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\RhinoInte
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\CsvHelper.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\MathNet.Numerics.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\Microsoft.Bcl.AsyncInterfaces.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\Microsoft.Xaml.Behaviors.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\Microsoft.Xaml.Behaviors.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\NLoptNet.pdb
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\Prism.pdb
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\Prism.xml
@@ -41,6 +38,11 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\System.Ru
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\System.Threading.Tasks.Extensions.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\System.ValueTuple.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\MathNet.Spatial.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Debug\MainWindow.g.cs
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Debug\App.g.cs
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Debug\GeneratedInternalTypeHelper.g.cs
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Debug\Emasa Optimizer_MarkupCompile.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Debug\Emasa Optimizer_MarkupCompile.lref
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Debug\App.baml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Debug\MainWindow.baml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Debug\WpfResources\GeneralTemplates.baml
@@ -51,3 +53,4 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Debug\Emasa Opt
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Debug\Emasa Optimizer.csproj.CopyComplete
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Debug\Emasa Optimizer.exe
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Debug\Emasa Optimizer.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Debug\Emasa Optimizer.csprojAssemblyReference.cache

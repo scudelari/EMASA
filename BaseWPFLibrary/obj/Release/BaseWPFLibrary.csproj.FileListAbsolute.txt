@@ -5,7 +5,6 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\bin\Release\CommonSe
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\bin\Release\Prism.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\bin\Release\Prism.Wpf.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\bin\Release\System.ValueTuple.dll
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\bin\Release\System.Windows.Interactivity.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\bin\Release\Prism.pdb
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\bin\Release\Prism.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\bin\Release\Prism.Wpf.pdb
@@ -34,3 +33,7 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Release\BaseWPFL
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Release\BaseWPFLibrary.csproj.CopyComplete
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Release\BaseWPFLibrary.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Release\BaseWPFLibrary.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Release\BaseWPFLibrary.csprojAssemblyReference.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\bin\Release\Microsoft.Xaml.Behaviors.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\bin\Release\Microsoft.Xaml.Behaviors.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\bin\Release\Microsoft.Xaml.Behaviors.xml

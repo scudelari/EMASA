@@ -11,6 +11,7 @@ using System.Windows.Data;
 using Emasa_Optimizer.FEA;
 using Emasa_Optimizer.FEA.Results;
 using Emasa_Optimizer.Helpers.Accord;
+using Emasa_Optimizer.Opt;
 using Emasa_Optimizer.Opt.ParamDefinitions;
 using Emasa_Optimizer.Opt.ProbQuantity;
 
@@ -131,16 +132,34 @@ namespace Emasa_Optimizer.WpfResources
         // From value to WPF
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            switch (value)
+            try
             {
-                case FeAnalysisShapeEnum FeAnalysisShapeEnum:
-                    return FeResultClassification.GetFriendlyEnumName(FeAnalysisShapeEnum);
-                case FeResultFamilyEnum FeResultFamilyEnum:
-                    return FeResultClassification.GetFriendlyEnumName(FeResultFamilyEnum);
-                case FeResultTypeEnum feResultTypeEnum:
-                    return FeResultClassification.GetFriendlyEnumName(feResultTypeEnum);
-                default:
-                    return $"Enum of type {value.GetType()} not supported";
+                // Decides which list this is targeting
+                FieldInfo[] fieldsThatTargetGivenEnum = typeof(ListDescSH).GetFields().Where(a =>
+                    a.FieldType.GetGenericTypeDefinition() == typeof(Dictionary<,>) &&
+                    a.FieldType.GenericTypeArguments.First() == value.GetType()).ToArray();
+
+                if (fieldsThatTargetGivenEnum.Length == 0) return $"Could not find a dictionary that targets {value.GetType()}";
+                if (fieldsThatTargetGivenEnum.Length != 1) return $"There are more dictionaries that target {value.GetType()}. This is currently not supported.";
+
+                // Expected to be Dictionary<Enum,something>
+                Type fieldType = fieldsThatTargetGivenEnum[0].FieldType;
+
+                // Gets the value of the dictionary
+                dynamic d = fieldsThatTargetGivenEnum[0].GetValue(ListDescSH.I); // the dictionary
+
+                MethodInfo m_GetItem = fieldType.GetMethod("get_Item");
+                object v = m_GetItem.Invoke(d, new[] {value});
+
+                if (parameter == null) return $"{v}";
+                if (v.GetType().GetProperty((string)parameter) != null) return $"{v.GetType().GetProperty((string)parameter).GetValue(v)}";
+                if (v.GetType().GetField((string)parameter) != null) return $"{v.GetType().GetField((string)parameter).GetValue(v)}";
+
+                throw new Exception($"Parameter/Field {parameter} does not exists in type {v.GetType()}.");
+            }
+            catch (Exception e)
+            {
+                throw new InvalidCastException($"Could not get the enum description of value {value} targeting parameter {parameter} on the static enum descriptions.", e);
             }
         }
 
@@ -179,60 +198,12 @@ namespace Emasa_Optimizer.WpfResources
         }
     }
 
-
-    public class Wpf_ResultList_Input_DataTemplateSelector : DataTemplateSelector
-    {
-        public override DataTemplate
-            SelectTemplate(object item, DependencyObject container)
-        {
-            FrameworkElement element = container as FrameworkElement;
-
-            if (element != null && item != null && item is KeyValuePair<Input_ParamDefBase, object> kvp)
-            {
-                switch (kvp.Key)
-                {
-                    case Double_Input_ParamDef _:
-                        return element.FindResource("Results_FunctionIterationSummary_DataTemplate_InputParams_DoubleInputParam") as DataTemplate;
-
-                    case Point_Input_ParamDef _:
-                        return element.FindResource("Results_FunctionIterationSummary_DataTemplate_InputParams_PointInputParam") as DataTemplate;
-                }
-            }
-
-            return null;
-        }
-    }
-
-    public class Results_FunctionIterationSummary_ProblemQuantity_DataTemplateSelector : DataTemplateSelector
-    {
-        public override DataTemplate
-            SelectTemplate(object item, DependencyObject container)
-        {
-            FrameworkElement element = container as FrameworkElement;
-
-            if (element != null && item != null && item is KeyValuePair<ProblemQuantity, SolutionPoint_ProblemQuantity_Output> kvp)
-            {
-                if (kvp.Key.IsObjectiveFunctionMinimize) 
-                    return element.FindResource("Results_FunctionIterationSummary_ProblemQuantity_ObjectiveFunction_DataTemplate") as DataTemplate;
-                if (kvp.Key.IsOutputOnly)
-                    return element.FindResource("Results_FunctionIterationSummary_ProblemQuantity_OutputOnly_DataTemplate") as DataTemplate;
-                if (kvp.Key.IsConstraint)
-                    return element.FindResource("Results_FunctionIterationSummary_ProblemQuantity_Constraint_DataTemplate") as DataTemplate;
-            }
-
-            return null;
-        }
-    }
-
     public class DefaultNumberConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is double d)
             {
-                double absD = Math.Abs(d);
-                //if (absD < 1e-9) return "0.0";
-
                 return $"{d:+0.000e+000;-0.000e+000;0.0}";
             }
             

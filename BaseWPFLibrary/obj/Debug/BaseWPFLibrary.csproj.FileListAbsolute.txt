@@ -2,10 +2,12 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\bin\Debug\BaseWPFLib
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\bin\Debug\BaseWPFLibrary.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\bin\Debug\BaseWPFLibrary.pdb
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\bin\Debug\CommonServiceLocator.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\bin\Debug\Microsoft.Xaml.Behaviors.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\bin\Debug\Prism.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\bin\Debug\Prism.Wpf.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\bin\Debug\System.ValueTuple.dll
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\bin\Debug\System.Windows.Interactivity.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\bin\Debug\Microsoft.Xaml.Behaviors.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\bin\Debug\Microsoft.Xaml.Behaviors.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\bin\Debug\Prism.pdb
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\bin\Debug\Prism.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\bin\Debug\Prism.Wpf.pdb

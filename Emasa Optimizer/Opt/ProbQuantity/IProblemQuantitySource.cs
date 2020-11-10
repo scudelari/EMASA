@@ -5,12 +5,15 @@
         bool IsGhGeometryDoubleListData { get; }
         bool IsFiniteElementData { get; }
 
-        string ResultFamilyGroupName { get; }
-        string ResultTypeDescription { get; }
-        string TargetShapeDescription { get; }
+        string Wpf_ProblemQuantityName { get; }
+        string Wpf_ProblemQuantityGroup { get; }
+        string Wpf_Explanation { get; }
 
-        void AddProblemQuantity_FunctionObjective(object inSolveMan);
-        void AddProblemQuantity_ConstraintObjective(object inSolveMan);
-        void AddProblemQuantity_OutputOnly(object inSolveMan);
+        string ScreenShotFileName { get; }
+        string DataTableName { get; }
+
+        void AddProblemQuantity_FunctionObjective();
+        void AddProblemQuantity_ConstraintObjective();
+        void AddProblemQuantity_OutputOnly();
     }
 }

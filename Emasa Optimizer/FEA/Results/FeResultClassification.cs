@@ -5,8 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using Emasa_Optimizer.Bindings;
 using Emasa_Optimizer.Opt;
 using Emasa_Optimizer.Opt.ProbQuantity;
+using Emasa_Optimizer.WpfResources;
 using Prism.Mvvm;
 
 namespace Emasa_Optimizer.FEA.Results
@@ -98,6 +100,7 @@ namespace Emasa_Optimizer.FEA.Results
                     case FeResultTypeEnum.ElementNodal_Strain_Ex:
                     case FeResultTypeEnum.ElementNodal_Strain_Ky:
                     case FeResultTypeEnum.ElementNodal_Strain_Kz:
+                    case FeResultTypeEnum.ElementNodal_Strain_Te:
                     case FeResultTypeEnum.ElementNodal_Strain_SEz:
                     case FeResultTypeEnum.ElementNodal_Strain_SEy:
                         ResultFamily = FeResultFamilyEnum.ElementNodal_Strain;
@@ -135,16 +138,7 @@ namespace Emasa_Optimizer.FEA.Results
                 }
             }
         }
-
-        public string ResultTypeExplanation
-        {
-            get
-            {
-                // TODO: Write the correct explanation of the results
-                return ResultTypeDescription;
-            }
-        }
-
+        
         private FeResultLocationEnum _resultLocation;
         public FeResultLocationEnum ResultLocation
         {
@@ -170,13 +164,17 @@ namespace Emasa_Optimizer.FEA.Results
                                             ResultType == FeResultTypeEnum.Model_EigenvalueBuckling_Mode2Factor ||
                                             ResultType == FeResultTypeEnum.Model_EigenvalueBuckling_Mode3Factor;
 
-        public bool IsSupportedBySolver(FeSolverTypeEnum inSolver)
+        public bool IsSupportedByCurrentSolver
         {
-            return inSolver == FeSolverTypeEnum.Ansys;
+            get
+            {
+                // TODO: Will need to be improved if different FeSolvers are added.
+                if (AppSS.I.FeOpt != null) return AppSS.I.FeOpt.FeSolverType_Selected == FeSolverTypeEnum.Ansys;
+                else return true; // The default is Ansys
+            }
         }
 
-        public string WpfFriendlyName => $"{GetFriendlyEnumName(TargetShape)} - {GetFriendlyEnumName(ResultFamily)} - {GetFriendlyEnumName(ResultType)}";
-
+        // Strings that define this element for various contexts
         public string ResultFileName
         {
             get
@@ -202,296 +200,55 @@ namespace Emasa_Optimizer.FEA.Results
                 
             }
         }
-
         public string ScreenShotFileName => $"ems_image_{TargetShape}_{ResultType}";
 
-        #region Friendly String Helpers
-        public static string GetFriendlyEnumName(FeAnalysisShapeEnum inFeAnalysisShape)
+        public string DataTableName
         {
-            switch (inFeAnalysisShape)
+            get
             {
-                case FeAnalysisShapeEnum.PerfectShape:
-                    return "Perfect";
+                switch (ResultType)
+                {
+                    case FeResultTypeEnum.Model_EigenvalueBuckling_Mode1Factor:
+                    case FeResultTypeEnum.Model_EigenvalueBuckling_Mode2Factor:
+                    case FeResultTypeEnum.Model_EigenvalueBuckling_Mode3Factor:
+                        return $"{ListDescSH.I.FeAnalysisShapeEnumDescriptions[TargetShape].Item1} - {ListDescSH.I.FeResultFamilyEnumDescriptions[ResultFamily].Item1} - EV Blk Modes";
 
-                case FeAnalysisShapeEnum.ImperfectShape_FullStiffness:
-                    return "Imperfect - Full Stiffness";
-
-                case FeAnalysisShapeEnum.ImperfectShape_Softened:
-                    return "Imperfect - Softened";
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(inFeAnalysisShape), inFeAnalysisShape, null);
+                    default:
+                        return ToString();
+                }
             }
         }
-        public static string GetFriendlyEnumName(FeResultFamilyEnum inFeResultFamily)
-        {
-            switch (inFeResultFamily)
-            {
-                case FeResultFamilyEnum.Nodal_Reaction:
-                    return "Nodal Reaction";
 
-                case FeResultFamilyEnum.Nodal_Displacement:
-                    return "Nodal Displacement";
-
-                case FeResultFamilyEnum.SectionNode_Stress:
-                    return "Section Nodal Stress";
-
-                case FeResultFamilyEnum.SectionNode_Strain:
-                    return "Section Nodal Strain";
-
-                case FeResultFamilyEnum.ElementNodal_BendingStrain:
-                    return "Element Nodal Bending Strain";
-
-                case FeResultFamilyEnum.ElementNodal_Force:
-                    return "Element Nodal Force";
-
-                case FeResultFamilyEnum.ElementNodal_Strain:
-                    return "Element Nodal Strain";
-
-                case FeResultFamilyEnum.ElementNodal_Stress:
-                    return "Element Nodal Stress";
-
-                case FeResultFamilyEnum.Others:
-                    return "Others";
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(inFeResultFamily), inFeResultFamily, null);
-            }
-        }
-        public static string GetFriendlyEnumName(FeResultTypeEnum inFeResultType)
-        {
-            //return inFeResultType.ToString();
-            switch (inFeResultType)
-            {
-                case FeResultTypeEnum.Nodal_Reaction_Fx:
-                    return "Force X";
-                    break;
-
-                case FeResultTypeEnum.Nodal_Reaction_My:
-                    return "Moment Y";
-                    break;
-
-                case FeResultTypeEnum.Nodal_Reaction_Mz:
-                    return "Moment Z";
-                    break;
-
-                case FeResultTypeEnum.Nodal_Reaction_Mx:
-                    return "Moment X";
-                    break;
-
-                case FeResultTypeEnum.Nodal_Reaction_Fz:
-                    return "Force Z";
-                    break;
-
-                case FeResultTypeEnum.Nodal_Reaction_Fy:
-                    return "Force Y";
-                    break;
-
-                case FeResultTypeEnum.Nodal_Displacement_Ux:
-                    return "Δ X";
-                    break;
-
-                case FeResultTypeEnum.Nodal_Displacement_Uy:
-                    return "Δ Y";
-                    break;
-
-                case FeResultTypeEnum.Nodal_Displacement_Uz:
-                    return "Δ Z";
-                    break;
-
-                case FeResultTypeEnum.Nodal_Displacement_Rx:
-                    return "Rot X";
-                    break;
-
-                case FeResultTypeEnum.Nodal_Displacement_Ry:
-                    return "Rot Y";
-                    break;
-
-                case FeResultTypeEnum.Nodal_Displacement_Rz:
-                    return "Rot Z";
-                    break;
-
-                case FeResultTypeEnum.Nodal_Displacement_UTotal:
-                    return "Δ Abs";
-                    break;
-
-                case FeResultTypeEnum.SectionNode_Stress_S1:
-                    return "Principal 1";
-                    break;
-
-                case FeResultTypeEnum.SectionNode_Stress_S2:
-                    return "Principal 2";
-                    break;
-
-                case FeResultTypeEnum.SectionNode_Stress_S3:
-                    return "Principal 3";
-                    break;
-
-                case FeResultTypeEnum.SectionNode_Stress_SInt:
-                    return "Intensity";
-                    break;
-
-                case FeResultTypeEnum.SectionNode_Stress_SEqv:
-                    return "Von-Mises";
-                    break;
-
-                case FeResultTypeEnum.SectionNode_Strain_EPTT1:
-                    return "Principal 1";
-                    break;
-
-                case FeResultTypeEnum.SectionNode_Strain_EPTT2:
-                    return "Principal 2";
-                    break;
-
-                case FeResultTypeEnum.SectionNode_Strain_EPTT3:
-                    return "Principal 3";
-                    break;
-
-                case FeResultTypeEnum.SectionNode_Strain_EPTTInt:
-                    return "Intensity";
-                    break;
-
-                case FeResultTypeEnum.SectionNode_Strain_EPTTEqv:
-                    return "Von-Mises";
-                    break;
-
-                case FeResultTypeEnum.ElementNodal_BendingStrain_EPELDIR:
-                    return "EPELDIR";
-                    break;
-
-                case FeResultTypeEnum.ElementNodal_BendingStrain_EPELByT:
-                    return "EPELByT";
-                    break;
-
-                case FeResultTypeEnum.ElementNodal_BendingStrain_EPELByB:
-                    return "EPELByB";
-                    break;
-
-                case FeResultTypeEnum.ElementNodal_BendingStrain_EPELBzT:
-                    return "EPELBzT";
-                    break;
-
-                case FeResultTypeEnum.ElementNodal_BendingStrain_EPELBzB:
-                    return "EPELBzB";
-                    break;
-
-                case FeResultTypeEnum.ElementNodal_Force_Fx:
-                    return "Fx - Axial";
-                    break;
-
-                case FeResultTypeEnum.ElementNodal_Force_My:
-                    return "Moment Y";
-                    break;
-
-                case FeResultTypeEnum.ElementNodal_Force_Mz:
-                    return "Moment Z";
-                    break;
-
-                case FeResultTypeEnum.ElementNodal_Force_Tq:
-                    return "Moment X";
-                    break;
-
-                case FeResultTypeEnum.ElementNodal_Force_SFz:
-                    return "Fz - Shear";
-                    break;
-
-                case FeResultTypeEnum.ElementNodal_Force_SFy:
-                    return "Fy - Shear";
-                    break;
-
-                case FeResultTypeEnum.ElementNodal_Strain_Ex:
-                    return "Ex - Axial";
-                    break;
-
-                case FeResultTypeEnum.ElementNodal_Strain_Ky:
-                    return "Curvature Y";
-                    break;
-
-                case FeResultTypeEnum.ElementNodal_Strain_Kz:
-                    return "Curvature Z";
-                    break;
-
-                case FeResultTypeEnum.ElementNodal_Strain_SEz:
-                    return "Ez - Shear";
-                    break;
-
-                case FeResultTypeEnum.ElementNodal_Strain_SEy:
-                    return "Ey - Shear";
-                    break;
-
-                case FeResultTypeEnum.ElementNodal_Stress_SDir:
-                    return "Axial";
-                    break;
-
-                case FeResultTypeEnum.ElementNodal_Stress_SByT:
-                    return "Bending +Y";
-                    break;
-
-                case FeResultTypeEnum.ElementNodal_Stress_SByB:
-                    return "Bending -Y";
-                    break;
-
-                case FeResultTypeEnum.ElementNodal_Stress_SBzT:
-                    return "Bending +Z";
-                    break;
-
-                case FeResultTypeEnum.ElementNodal_Stress_SBzB:
-                    return "Bending -Z";
-                    break;
-
-                case FeResultTypeEnum.ElementNodal_CodeCheck:
-                    return "Code Check";
-                    break;
-
-                case FeResultTypeEnum.Element_StrainEnergy:
-                    return "Strain Energy";
-                    break;
-
-                case FeResultTypeEnum.Model_EigenvalueBuckling_Mode1Factor:
-                    return "EV Blk M1";
-                    break;
-
-                case FeResultTypeEnum.Model_EigenvalueBuckling_Mode2Factor:
-                    return "EV Blk M2";
-                    break;
-
-                case FeResultTypeEnum.Model_EigenvalueBuckling_Mode3Factor:
-                    return "EV Blk M3";
-                    break;
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(inFeResultType), inFeResultType, null);
-            }
-        }
-        #endregion
+        public string Wpf_ProblemQuantityName => $"{ListDescSH.I.FeResultLocationEnumDescriptions[ResultLocation].Item1} - {ListDescSH.I.FeResultTypeEnumDescriptions[ResultType].Item1}";
+        public string Wpf_ProblemQuantityGroup => $"{ListDescSH.I.FeAnalysisShapeEnumDescriptions[TargetShape].Item1} - {ListDescSH.I.FeResultFamilyEnumDescriptions[ResultFamily].Item1}";
+        public string Wpf_Explanation => $@"Target Shape: {ListDescSH.I.FeAnalysisShapeEnumDescriptions[TargetShape].Item2}
+Family: {ListDescSH.I.FeResultFamilyEnumDescriptions[ResultFamily].Item2}
+Result:  {ListDescSH.I.FeResultTypeEnumDescriptions[ResultType].Item2}
+Location: {ListDescSH.I.FeResultLocationEnumDescriptions[ResultLocation].Item2}";
 
 
         #region IProblemQuantitySource
         public bool IsGhGeometryDoubleListData => false;
         public bool IsFiniteElementData => true;
-        public string ResultFamilyGroupName => GetFriendlyEnumName(ResultFamily);
-        public string ResultTypeDescription => GetFriendlyEnumName(ResultType);
-        public string TargetShapeDescription => GetFriendlyEnumName(TargetShape);
 
-        public void AddProblemQuantity_FunctionObjective(object inSolveMan)
+        public void AddProblemQuantity_FunctionObjective()
         {
-            if (inSolveMan is SolveManager s) s.AddProblemQuantity(new ProblemQuantity(this, Quantity_TreatmentTypeEnum.ObjectiveFunctionMinimize, s));
-            else
-                throw new InvalidOperationException($"{nameof(inSolveMan)} is not of expected type ({typeof(SolveManager)}).");
+            AppSS.I.ProbQuantMgn.AddProblemQuantity(new ProblemQuantity(this, Quantity_TreatmentTypeEnum.ObjectiveFunctionMinimize));
         }
-        public void AddProblemQuantity_ConstraintObjective(object inSolveMan)
+        public void AddProblemQuantity_ConstraintObjective()
         {
-            if (inSolveMan is SolveManager s) s.AddProblemQuantity(new ProblemQuantity(this, Quantity_TreatmentTypeEnum.Constraint, s));
-            else
-                throw new InvalidOperationException($"{nameof(inSolveMan)} is not of expected type ({typeof(SolveManager)}).");
+            AppSS.I.ProbQuantMgn.AddProblemQuantity(new ProblemQuantity(this, Quantity_TreatmentTypeEnum.Constraint));
         }
-        public void AddProblemQuantity_OutputOnly(object inSolveMan)
+        public void AddProblemQuantity_OutputOnly()
         {
-            if (inSolveMan is SolveManager s) s.AddProblemQuantity(new ProblemQuantity(this, Quantity_TreatmentTypeEnum.OutputOnly, s));
-            else
-                throw new InvalidOperationException($"{nameof(inSolveMan)} is not of expected type ({typeof(SolveManager)}).");
+            AppSS.I.ProbQuantMgn.AddProblemQuantity(new ProblemQuantity(this, Quantity_TreatmentTypeEnum.OutputOnly));
         }
         #endregion
+
+        public override string ToString()
+        {
+            return $"{Wpf_ProblemQuantityGroup} - {Wpf_ProblemQuantityName}";
+        }
     }
 
     public enum FeAnalysisShapeEnum
@@ -515,47 +272,6 @@ namespace Emasa_Optimizer.FEA.Results
 
         Others,
     }
-    public class WpfEnumFeOptionsFriendlyStringValueConverter : IValueConverter
-    {
-        private ImageCaptureViewDirectionEnum target;
-
-        public WpfEnumFeOptionsFriendlyStringValueConverter()
-        {
-        }
-
-        // From value to WPF
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            switch (value)
-            {
-                case FeResultFamilyEnum feResultFamily:
-                    return FeResultClassification.GetFriendlyEnumName(feResultFamily);
-                case FeResultTypeEnum feResultType:
-                    return FeResultClassification.GetFriendlyEnumName(feResultType);
-                case FeAnalysisShapeEnum feAnalysisShape:
-                    return FeResultClassification.GetFriendlyEnumName(feAnalysisShape);
-                case ImageCaptureViewDirectionEnum imageCaptureViewDirection:
-                    return FeScreenShotOptions.GetFriendlyEnumName(imageCaptureViewDirection);
-                default:
-                    return "Error in the WpfEnumFeOptionsFriendlyStringValueConverter";
-            }
-        }
-
-        // From WPF to value
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (!(value is string s)) throw new InvalidCastException("ResultValue is not string.");
-
-            if (Enum.TryParse(s, out FeResultTypeEnum feResultType)) return feResultType;
-            if (Enum.TryParse(s, out FeAnalysisShapeEnum feAnalysisShape)) return feAnalysisShape;
-            if (Enum.TryParse(s, out FeResultFamilyEnum feResultFamily)) return feResultFamily;
-            if (Enum.TryParse(s, out ImageCaptureViewDirectionEnum imageCaptureViewDirection)) return imageCaptureViewDirection;
-
-            throw new InvalidCastException("ResultValue is not an expected enum.");
-
-        }
-    }
-
     public enum FeResultTypeEnum
     {
         // Family: Nodal Reaction
@@ -610,6 +326,7 @@ namespace Emasa_Optimizer.FEA.Results
         ElementNodal_Strain_Kz,
         ElementNodal_Strain_SEz,
         ElementNodal_Strain_SEy,
+        ElementNodal_Strain_Te,
 
         // Family: ElementNodal_Stress
         ElementNodal_Stress_SDir,
@@ -625,6 +342,7 @@ namespace Emasa_Optimizer.FEA.Results
         Model_EigenvalueBuckling_Mode2Factor,
         Model_EigenvalueBuckling_Mode3Factor,
     }
+
     public enum FeResultLocationEnum
     {
         Model,

@@ -2,143 +2,39 @@
     x:Class="WpfApp1.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:bindings="clr-namespace:BaseWPFLibrary.Bindings;assembly=BaseWPFLibrary"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:e="clr-namespace:BaseWPFLibrary;assembly=BaseWPFLibrary"
+    xmlns:local="clr-namespace:WpfApp1"
+    xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:validationRules="clr-namespace:BaseWPFLibrary.ValidationRules;assembly=BaseWPFLibrary"
     Title="MainWindow"
     Width="800"
-    Height="1000"
-    MinWidth="500"
-    MinHeight="500"
-    WindowStartupLocation="CenterScreen"
+    Height="450"
+    Initialized="Window_Initialized"
     mc:Ignorable="d">
     <Grid>
-        <StackPanel Orientation="Vertical">
-            <StackPanel
-                HorizontalAlignment="Center"
-                VerticalAlignment="Top"
-                Orientation="Horizontal">
-                <Button
-                    x:Name="TestBusyOverLayButton"
-                    Width="300"
-                    Height="200"
-                    Margin="10"
-                    Click="TestBusyOverLayButton_Click"
-                    Content="Busy Overlay Tester" />
-                <Button
-                    x:Name="TestMessageButton"
-                    Width="300"
-                    Height="200"
-                    Margin="10"
-                    Click="TestMessageButton_Click"
-                    Content="Message Overlay Tester" />
-            </StackPanel>
-            <Border
-                Width="200"
-                Height="200"
-                Margin="30"
-                Padding="5"
-                Style="{DynamicResource LightBlue_Border}">
-                <GroupBox Header="bla" Style="{DynamicResource Blue_GroupBox}">
-                    <StackPanel Orientation="Vertical">
-                        <TextBlock Foreground="{DynamicResource EmsExplanationSolidBrush}" Text="This is an explanation!" />
-                        <TextBox Text="{validationRules:BindValidation {Binding NumberValue, UpdateSourceTrigger=PropertyChanged}, ValRule=IntValRule|1|20}" />
-                        <TextBox Text="{validationRules:BindValidation {Binding NumberValue2}, ValRule=IntValRule|1|20}" />
-                        <CheckBox Content="BoundToChildrenNoErrors" IsChecked="{Binding BoundToChildrenNoErrors}" />
-                        <Button Command="{Binding TextButtonCmd}" Content="Validation Button" />
-                    </StackPanel>
-                </GroupBox>
-            </Border>
-            <Button
-                x:Name="IfcGenerateButton"
-                Click="IfcGenerateButton_Click"
-                Content="Test IFC Generation" />
-            <Button
-                x:Name="TestFiniteDifferences"
-                Click="TestFiniteDifferences_Click"
-                Content="Test Accord and MathNet Finite Differences" />
-            <Rectangle
-                Width="50"
-                Height="50"
-                Margin="5">
-                <Rectangle.Fill>
-                    <SolidColorBrush Color="{DynamicResource EmsLightBlueColor}" />
-                </Rectangle.Fill>
-            </Rectangle>
-            <StackPanel Orientation="Vertical">
-                <TextBox
-                    Width="200"
-                    Text="{validationRules:BindValidation {Binding NumberValue},
-                                                          ValRule=IntValRule|1|20}"
-                    ToolTip="Enter a Number" />
-                <Button Click="{bindings:MethodBinding TestSingleButton}" Content="Text Command" />
-                <Button Click="Button_Click" Content="Debug Data" />
-                <CheckBox
-                    Checked="{bindings:MethodBinding CheckBox_Checked,
-                                                     {bindings:EventSender},
-                                                     {bindings:EventArgs}}"
-                    Content="Test Event Reply"
-                    Unchecked="{bindings:MethodBinding CheckBox_Unchecked,
-                                                       {bindings:EventSender},
-                                                       {bindings:EventArgs}}" />
-                <ListBox ItemsSource="{Binding StringList}" SelectedItem="{Binding SelectedString}">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding}" />
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-                <WrapPanel ItemWidth="170" Orientation="Horizontal">
-                    <Button
-                        Width="150"
-                        Click="{bindings:MethodBinding StartCollection,
-                                                       {bindings:EventSender},
-                                                       {bindings:EventArgs}}"
-                        Content="Start" />
-                    <Button
-                        Width="150"
-                        Click="{bindings:MethodBinding IncreaseCollection,
-                                                       {bindings:EventSender},
-                                                       {bindings:EventArgs}}"
-                        Content="Increase" />
-                    <Button
-                        Width="150"
-                        Click="{bindings:MethodBinding DecreaseCollection,
-                                                       {bindings:EventSender},
-                                                       {bindings:EventArgs}}"
-                        Content="Decrease" />
-                    <Button
-                        Width="150"
-                        Click="{bindings:MethodBinding ClearCollection,
-                                                       {bindings:EventSender},
-                                                       {bindings:EventArgs}}"
-                        Content="Clear" />
-                </WrapPanel>
-                <StackPanel Orientation="Horizontal">
-                    <Button
-                        x:Name="TestRhino"
-                        Click="TestRhino_Click"
-                        Content="Test Rhino" />
-                    <Button
-                        x:Name="TestCustomOverlay"
-                        Click="TestCustomOverlay_Click"
-                        Content="Test Custom Overlay" />
-                </StackPanel>
-            </StackPanel>
-        </StackPanel>
-        <e:BusyOverlay x:Name="BusyOverlay" Visibility="Collapsed" />
-        <e:MessageOverlay x:Name="MessageOverlay" Visibility="Collapsed" />
-        <e:CustomOverlay
-            x:Name="CustomOverlay"
-            ContentHorizontalAlignment="Center"
-            ContentMargin="50"
-            ContentVerticalAlignment="Top"
-            Visibility="Collapsed">
-            <e:CustomOverlay.AdditionalContent>
-                <Button Content="bafadas" />
-            </e:CustomOverlay.AdditionalContent>
-        </e:CustomOverlay>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <!--<lvc:CartesianChart LegendLocation="Right" Series="{Binding SeriesCollection}" AxisY="{Binding AxesCollection1, FallbackValue={x:Null}}">
+
+        </lvc:CartesianChart>-->
+        <Button
+            x:Name="bntRhinoByCommand"
+            Click="bntRhinoByCommand_Click"
+            Content="Debug Rhino By Command" />
+        <Button
+            x:Name="bntRhinoByCOM"
+            Grid.Column="1"
+            Click="bntRhinoByCOM_Click"
+            Content="Debug Rhino By COM" />
+        <Button
+            Grid.Row="1"
+            Click="Button_Click"
+            Content="GenerateChart" />
     </Grid>
 </Window>

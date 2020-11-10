@@ -67,6 +67,7 @@ namespace BaseWPFLibrary.Bindings
 
                 // Create an _instance via the private constructor
                 _instance = (K)Activator.CreateInstance(t, true);
+                _instance.SetOrReset();
             }
 
             if (inFe != null)
@@ -108,7 +109,6 @@ namespace BaseWPFLibrary.Bindings
 
         protected BindableSingleton()
         {
-            SetOrReset();
         }
 
         private bool _boundToChildrenNoErrors = true;
@@ -133,6 +133,70 @@ namespace BaseWPFLibrary.Bindings
         public void OnMessage(string inTitle, string inMessage, object inEventData = null)
         {
             EventAggregatorSingleton.I.GetEvent<BindMessageEvent>().Publish(new BindMessageEventArgs(inTitle, inMessage, this, inEventData));
+        }
+
+        /// <summary>
+        /// Searches in the given list for an item and, if found, attempts to bring it into view.
+        /// </summary>
+        /// <param name="inListNameOrTag">The x:Name of the list. If fails by name, tries to get a string inside the Tag.</param>
+        /// <param name="inItem">The item's object.</param>
+        /// <param name="inContainerName">The name of the container if different that the</param>
+        public void BringListChildIntoView(string inListNameOrTag, object inItem, string inContainerName = null)
+        {
+            // Gets the target container - either by name or the element bound in the initializer.
+            FrameworkElement baseElement = null;
+            if (inContainerName == null) baseElement = _boundTo;
+            else
+            {
+                // Declares the function to run in the UI thread
+                FrameworkElement lf_GetBoundToNamedChild() 
+                {
+                    return _boundTo.GetAllChildren().OfType<FrameworkElement>().FirstOrDefault(a => a.Name == inContainerName);
+                }
+                baseElement = _boundTo.Dispatcher.Invoke(lf_GetBoundToNamedChild) ?? _boundTo;
+            }
+
+            // Gets the list control
+            // Declares the function to run in the UI thread
+            FrameworkElement lf_GetBaseElementNamedChild()
+            {
+                return baseElement.GetAllChildren().OfType<FrameworkElement>().FirstOrDefault(a => a.Name == inListNameOrTag);
+            }
+            FrameworkElement list = baseElement.Dispatcher.Invoke(lf_GetBaseElementNamedChild);
+            if (list == null)
+            {
+                FrameworkElement lf_GetBaseElementTaggedChild()
+                {
+                    return baseElement.GetAllChildren().OfType<FrameworkElement>().FirstOrDefault(a => (a.Tag as string) == inListNameOrTag);
+                }
+                list = baseElement.Dispatcher.Invoke(lf_GetBaseElementTaggedChild);
+            }
+
+            if (list == null) return; // Could not find the list not by x:Name, not by tag.
+
+            // Finds the item in the list
+            FrameworkElement cp = null;
+            switch (list)
+            {
+                case ListView listView:
+                    cp = listView.ItemContainerGenerator.ContainerFromItem(inItem) as FrameworkElement;
+                    break;
+
+                case ListBox listBox:
+                    cp = listBox.ItemContainerGenerator.ContainerFromItem(inItem) as FrameworkElement;
+                    break;
+
+                case ItemsControl itemsControl:
+                    cp = itemsControl.ItemContainerGenerator.ContainerFromItem(inItem) as FrameworkElement;
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException($"The list type {list.GetType()} is not supported as a container.");
+            }
+
+            if (cp == null) return; // Could not find element - abort
+
+            cp.Dispatcher.Invoke(() => { cp.BringIntoView(); });
         }
     }
 }

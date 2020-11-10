@@ -12,7 +12,7 @@ namespace Emasa_Optimizer.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.6.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.7.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -133,7 +133,7 @@ namespace Emasa_Optimizer.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("30")]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
         public double Default_ImageCapture_Extrude_Multiplier {
             get {
                 return ((double)(this["Default_ImageCapture_Extrude_Multiplier"]));
@@ -170,9 +170,9 @@ namespace Emasa_Optimizer.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Ansys")]
-        public string Default_FeSolverType {
+        public string Default_FeNlOpt_OptimizerWrapperType {
             get {
-                return ((string)(this["Default_FeSolverType"]));
+                return ((string)(this["Default_FeNlOpt_OptimizerWrapperType"]));
             }
         }
         
@@ -191,6 +191,24 @@ namespace Emasa_Optimizer.Properties {
         public double Default_AddGravityLoad_Multiplier {
             get {
                 return ((double)(this["Default_AddGravityLoad_Multiplier"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Ansys")]
+        public string Default_FeNlOpt_SolverWrapperType {
+            get {
+                return ((string)(this["Default_FeNlOpt_SolverWrapperType"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Ansys")]
+        public string Default_FeSolverType {
+            get {
+                return ((string)(this["Default_FeSolverType"]));
             }
         }
     }

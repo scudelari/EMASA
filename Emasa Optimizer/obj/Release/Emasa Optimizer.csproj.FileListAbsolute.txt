@@ -9,7 +9,10 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\CommonS
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\CsvHelper.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\MathNet.Numerics.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\Microsoft.Bcl.AsyncInterfaces.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\Microsoft.Xaml.Behaviors.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\MintPlayer.ObservableCollection.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\NLoptNet.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\NumericUpDownLib.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\Prism.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\Prism.Wpf.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\Rhino3dmIO.dll
@@ -17,7 +20,6 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\RhinoIn
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\System.Runtime.CompilerServices.Unsafe.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\System.Threading.Tasks.Extensions.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\System.ValueTuple.dll
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\System.Windows.Interactivity.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\MathNet.Spatial.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\BaseWPFLibrary.pdb
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\BaseWPFLibrary.dll.config
@@ -25,6 +27,8 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\RhinoIn
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\CsvHelper.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\MathNet.Numerics.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\Microsoft.Bcl.AsyncInterfaces.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\Microsoft.Xaml.Behaviors.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\Microsoft.Xaml.Behaviors.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\NLoptNet.pdb
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\Prism.pdb
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\Prism.xml

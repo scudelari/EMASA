@@ -184,7 +184,13 @@ namespace GHComponents
         {
             File.WriteAllLines(RangeFilePath(), _defaultDoubleRange.Select(a => $"{a}"));
         }
-        
+
+        private readonly int _defaultInteger = 2;
+        public void WriteDefaultIntegerValue()
+        {
+            File.WriteAllText(VarFilePath(), $"{_defaultInteger}");
+        }
+
         private readonly Point3d _defaultPoint = new Point3d(50d, 50d, 50d);
         private readonly Point3d[] _defaultPointRange = new[] {new Point3d(0d,0d,0d), new Point3d(100d,100d,100d) };
         public void WriteDefaultPointValue()
@@ -227,6 +233,22 @@ namespace GHComponents
                 WriteDefaultDoubleRange();
 
                 return _defaultDoubleRange;
+            }
+        }
+
+        public int ReadIntegerValue()
+        {
+            // Tries to read the file. If anything wrong happens, recreates the file with default values
+            try
+            {
+                return Convert.ToInt32(File.ReadAllText(VarFilePath()));
+            }
+            catch (Exception e)
+            {
+                DeleteFiles(GH_Doc);
+                WriteDefaultIntegerValue();
+
+                return _defaultInteger;
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -10,8 +11,11 @@ using Rhino.Geometry;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
+using System.Xml.Serialization;
+using Eto.Threading;
 using Grasshopper.Kernel;
 using Rhino.Commands;
 using Rhino.Display;
@@ -99,20 +103,6 @@ namespace EmasaRhinoPlugin
             {
                 return false;
             }
-        }
-        public void Redraw()
-        {
-            foreach (var item in ActiveDoc.Views)
-            {
-                item.ActiveViewport.ZoomExtents();
-            }
-            ActiveDoc.Views.Redraw();
-        }
-        public void MakeSingleView()
-        {
-            ActiveDoc.Views.ActiveView.Maximized = true;
-            ActiveDoc.Views.ActiveView.ActiveViewport.ZoomExtents();
-            ActiveDoc.Views.ActiveView.ActiveViewport.SetViewProjection(new ViewportInfo(), false);
         }
 
         public string[] GetSelectedBrep()
@@ -444,35 +434,229 @@ namespace EmasaRhinoPlugin
         #endregion
 
         #region ImageGeneration
-        public string SaveScreenShot(string inFullFilename, int inViewNumber)
+        public bool PrepareRhinoViewForImageAcquire()
         {
-            // Check the possible results
-            RhinoView[] views = ActiveDoc.Views.GetViewList(true, false);
-            if (inViewNumber > views.Count()) return "The Rhino view index is out or range.";
+            ManualResetEvent successHandle = new ManualResetEvent(false);
+            ManualResetEvent failHandle = new ManualResetEvent(false);
+
+            void lf_UiThread()
+            {
+                try
+                {
+                    // Ensures that no views are floating
+                    foreach (RhinoView v in ActiveDoc.Views)
+                    {
+                        if (v.Floating) v.Floating = false;
+                    }
+
+                    // Creates a new floating view
+                    RhinoView view = ActiveDoc.Views.Add("Rhino", DefinedViewportProjection.Perspective, new Rectangle(0, 0, 810, 610), true);
+                    view.Size = new Size(810, 610);
+                    view.Redraw();
+
+                    // Closes all other non-floating viewports
+                    foreach (RhinoView v in ActiveDoc.Views)
+                    {
+                        if (!v.Floating) v.Close();
+                    }
+
+                    // Makes the view active
+                    ActiveDoc.Views.ActiveView = view;
+
+                    // Redraws the viewport
+                    ActiveDoc.Views.Redraw();
+
+                    // Tells the other threads that we finished successfully
+                    successHandle.Set();
+                }
+                catch
+                {
+                    failHandle.Set();
+                }
+            }
 
             try
             {
-                // Makes the selected view active
-                if (inViewNumber != -1) ActiveDoc.Views.ActiveView = views[inViewNumber];
+                RhinoApp.InvokeOnUiThread((Action)lf_UiThread, null);
 
-                // Sends the selected view to the clipboard
-                bool r = RhinoApp.RunScript($"_-ScreenCaptureToFile \"{inFullFilename}\" _Enter", true);
+                // Waits for the response from the UI thread
+                WaitHandle.WaitAny(new WaitHandle[] { successHandle, failHandle });
 
-                return null;
+                // This thread was released by the failHandle
+                if (successHandle.GetSafeWaitHandle().IsClosed) return false; // Rhino activities failed
+
+                return true; // Success!
             }
-            catch (Exception e)
+            catch
             {
-                return $"Exception: {e.Message}{Environment.NewLine}{e.StackTrace}";
+                return false; // General failure.
             }
         }
-
-        public void SetActiveViewPort(int inViewPortNumber)
+        public string GetScreenshotsInXmlFormat(string[] inDirections)
         {
-            // Check the possible results
-            RhinoView[] views = ActiveDoc.Views.GetViewList(true, false);
-            if (inViewPortNumber > views.Count()) throw new Exception("The Rhino view index is out or range.");
+            List<(string, byte[])> listOfImages = new List<(string, byte[])>();
 
-            if (inViewPortNumber != -1) ActiveDoc.Views.ActiveView = views[inViewPortNumber];
+            ManualResetEvent successHandle = new ManualResetEvent(false);
+            ManualResetEvent failHandle = new ManualResetEvent(false);
+
+            void lf_UiThread()
+            {
+                try
+                {
+                    foreach (string dir in inDirections)
+                    {
+                        Point3d cameraLocation = Point3d.Unset;
+
+                        // Sets the direction of the view
+                        switch (dir)
+                        {
+                            case "Top_Towards_ZNeg":
+                                cameraLocation = new Point3d(0d, 0d, 1d);
+                                break;
+
+                            case "Front_Towards_YPos":
+                                cameraLocation = new Point3d(0d, -1d, 0d);
+                                break;
+
+                            case "Back_Towards_YNeg":
+                                cameraLocation = new Point3d(0d, 1d, 0d);
+                                break;
+                            case "Right_Towards_XNeg":
+                                cameraLocation = new Point3d(1d, 0d, 0d);
+                                break;
+                            case "Left_Towards_XPos":
+                                cameraLocation = new Point3d(-1d, 0d, 0d);
+                                break;
+
+                            case "Perspective_Top_Front_Edge":
+                                cameraLocation = new Point3d(0.2d, -1d, 1d);
+                                break;
+                            case "Perspective_Top_Back_Edge":
+                                cameraLocation = new Point3d(0.2d, 1d, 1d);
+                                break;
+                            case "Perspective_Top_Right_Edge":
+                                cameraLocation = new Point3d(1d, 0.2d, 1d);
+                                break;
+                            case "Perspective_Top_Left_Edge":
+                                cameraLocation = new Point3d(-1d, 0.2d, 1d);
+                                break;
+
+
+                            case "Perspective_TFL_Corner":
+                                cameraLocation = new Point3d(-1d, -1d, 1d);
+                                break;
+                            case "Perspective_TBR_Corner":
+                                cameraLocation = new Point3d(1d, 1d, 1d);
+                                break;
+                            case "Perspective_TBL_Corner":
+                                cameraLocation = new Point3d(-1d, 1d, 1d);
+                                break;
+
+                            case "Perspective_TFR_Corner":
+                            default:
+                                cameraLocation = new Point3d(1d, -1d, 1d);
+                                break;
+                        }
+                        ActiveDoc.Views.ActiveView.ActiveViewport.SetCameraLocations(Point3d.Origin, cameraLocation);
+                        ActiveDoc.Views.ActiveView.ActiveViewport.ZoomExtents();
+                        ActiveDoc.Views.ActiveView.Redraw();
+
+                        Bitmap bp = ActiveDoc.Views.ActiveView.CaptureToBitmap(false, true, false);
+
+                        // Converts to Byte Array
+                        using (MemoryStream ms = new MemoryStream())
+                        {
+                            bp.Save(ms, ImageFormat.Png);
+                            listOfImages.Add((dir, ms.ToArray()));
+                        }
+                    }
+
+                    // Tells the other threads that we finished successfully
+                    successHandle.Set();
+                }
+                catch
+                {
+                    failHandle.Set();
+                }
+            }
+
+            try
+            {
+                // Populates the image list on the UI thread
+                RhinoApp.InvokeOnUiThread((Action)lf_UiThread, null);
+
+                // Waits for the response from the UI thread
+                WaitHandle.WaitAny(new WaitHandle[] { successHandle, failHandle });
+
+                // This thread was released by the failHandle
+                if (successHandle.GetSafeWaitHandle().IsClosed) return null; // Rhino activities failed
+
+                try
+                {
+                    if (listOfImages.Count == 0) return null; // No image came back.
+
+                    // Serializing
+                    string xmlData;
+                    XmlSerializer serializer = new XmlSerializer(typeof(List<(string, byte[])>));
+                    using (MemoryStream ms = new MemoryStream())
+                    {
+                        serializer.Serialize(ms, listOfImages);
+                        xmlData = Encoding.UTF8.GetString(ms.ToArray(), 0, (int)ms.Length);
+                    }
+
+                    return xmlData; // Success!
+                }
+                catch (Exception ex)
+                {
+                    return null; // Serialization failed
+                }
+            }
+            catch
+            {
+                return null; // General failure
+            }
+        }
+        public bool RestoreRhinoViewFromImageAcquire()
+        {
+            ManualResetEvent successHandle = new ManualResetEvent(false);
+            ManualResetEvent failHandle = new ManualResetEvent(false);
+
+            void lf_UiThread()
+            {
+                try
+                {
+                    // Ensures that no views are floating
+                    foreach (RhinoView v in ActiveDoc.Views)
+                    {
+                        if (v.Floating) v.Floating = false;
+                    }
+
+                    RunScript("_-4View", true);
+
+                    successHandle.Set();
+                }
+                catch
+                {
+                    failHandle.Set();
+                }
+            }
+
+            try
+            {
+                RhinoApp.InvokeOnUiThread((Action)lf_UiThread, null);
+
+                // Waits for the response from the UI thread
+                WaitHandle.WaitAny(new WaitHandle[] {successHandle, failHandle});
+
+                // This thread was released by the failHandle
+                if (successHandle.GetSafeWaitHandle().IsClosed) return false; // Rhino activities failed
+
+                return true; // Success!
+            }
+            catch
+            {
+                return false; // General failure.
+            }
         }
         #endregion
     }

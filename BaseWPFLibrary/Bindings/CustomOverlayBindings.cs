@@ -58,31 +58,11 @@ namespace BaseWPFLibrary.Bindings
             }
         }
 
-        private string _messageText;
-        public string MessageText
-        {
-            get
-            {
-                lock (_padLock)
-                {
-                    return _messageText;
-                }
-            }
-            set
-            {
-                lock (_padLock)
-                {
-                    SetProperty(ref _messageText, value);
-                }
-            }
-        }
-
         public void HideOverlayAndReset()
         {
             OverlayVisibility = Visibility.Collapsed;
 
             Title = "Working ...";
-            MessageText = "Busy.";
         }
         public void ShowOverlay()
         {

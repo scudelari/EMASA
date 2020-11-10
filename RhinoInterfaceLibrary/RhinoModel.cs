@@ -13,6 +13,8 @@ using System.Drawing;
 using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
+using System.Xml;
+using System.Xml.Serialization;
 using Grasshopper;
 
 namespace RhinoInterfaceLibrary
@@ -313,15 +315,6 @@ namespace RhinoInterfaceLibrary
             return Guid.Parse(pointGuid);
         }
 
-        public void Redraw()
-        {
-            _emsPluginReference.Redraw();
-        }
-        public void MakeSingleView()
-        {
-            _emsPluginReference.MakeSingleView();
-        }
-
         public MN.Vector3D GetNormalAtSurface(MN.Point3D inPoint, string RhinoGroupName)
         {
             double[] vecCoords = (double[])_emsPluginReference.GetNormalAtSurface(new double[] { inPoint.X, inPoint.Y, inPoint.Z }, RhinoGroupName);
@@ -355,19 +348,7 @@ namespace RhinoInterfaceLibrary
         {
             throw new NotImplementedException();
         }
-        public void SaveScreenShot(string inFullFilename, int inViewNumber)
-        {
-            string rhinoReturn = _emsPluginReference.SaveScreenShot(inFullFilename, inViewNumber);
-            if (rhinoReturn != null) throw new Exception($"Rhino was not able to return the byte array that expresses the image. Message: {rhinoReturn}");
 
-            if (!File.Exists(inFullFilename)) throw new IOException($"The target file does not exist!");
-        }
-        
-        public void SetActiveViewport(int inViewNumber)
-        {
-            _emsPluginReference.SetActiveViewPort(inViewNumber);
-        }
-        
         public void AddPointWithGroupAndColor(string inPointName, MN.Point3D inPointLocation, int inGroupId, Color inColor)
         {
             double[] pointArray = { inPointLocation.X, inPointLocation.Y, inPointLocation.Z };
@@ -430,7 +411,46 @@ namespace RhinoInterfaceLibrary
         {
             return _emsPluginReference.Grasshopper_GetDocumentMessages();
         }
+
         #endregion
 
+
+        #region ScreenShot Related COM Wrappers
+        public void PrepareRhinoViewForImageAcquire()
+        {
+            if (!_emsPluginReference.PrepareRhinoViewForImageAcquire()) throw new Exception($"Failed while preparing Rhino for image acquisition.");
+        }
+        public List<(string dir, Image image)> GetScreenshots(string[] inDirections)
+        {
+            if (inDirections == null || inDirections.Length == 0) throw new Exception($"{nameof(inDirections)} must contain at least one value.");
+
+            string xmlData = _emsPluginReference.GetScreenshotsInXmlFormat(inDirections);
+
+            if (xmlData == null) throw new Exception("Failed when getting Rhino's screenshots.");
+
+            List<(string, byte[])> toRetTempBytes;
+            
+            // Deserializes
+            XmlSerializer serializer = new XmlSerializer(typeof(List<(string, byte[])>));
+            using (MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(xmlData)))
+            {
+                toRetTempBytes = serializer.Deserialize(ms) as List<(string, byte[])>;
+            }
+
+            return toRetTempBytes.Select((inTuple, inI) =>
+            {
+                Image img;
+                using (MemoryStream ms = new MemoryStream(inTuple.Item2))
+                {
+                    img = Image.FromStream(ms);
+                }
+                return (inTuple.Item1, img);
+            }).ToList();
+        }
+        public void RestoreRhinoViewFromImageAcquire()
+        {
+            if (!_emsPluginReference.RestoreRhinoViewFromImageAcquire()) throw new Exception($"Failed while restoring default Rhino from image acquisition.");
+        }
+        #endregion
     }
 }

@@ -27,15 +27,20 @@ namespace BaseWPFLibrary
             CustomOverlayBindings.Start(this);
         }
 
-        /// <summary>
-        /// Gets or sets additional content for the UserControl
-        /// </summary>
         public object AdditionalContent
         {
             get { return (object)GetValue(AdditionalContentProperty); }
             set { SetValue(AdditionalContentProperty, value); }
         }
         public static readonly DependencyProperty AdditionalContentProperty = DependencyProperty.Register("AdditionalContent", typeof(object), typeof(CustomOverlay), new PropertyMetadata(null));
+
+        public void SetAdditionalContentDataContext(object inDataContext)
+        {
+            if (AdditionalContent is FrameworkElement fe)
+            {
+                fe.DataContext = inDataContext;
+            }
+        }
 
         public double BackgroundOpacity
         {
@@ -45,6 +50,13 @@ namespace BaseWPFLibrary
         public static readonly DependencyProperty BackgroundOpacityProperty =
             DependencyProperty.Register("BackgroundOpacity", typeof(double), typeof(CustomOverlay), new PropertyMetadata(0.7d));
 
+        public Visibility ProgressBarVisibility
+        {
+            get => (Visibility)GetValue(ProgressBarVisibilityProperty);
+            set => SetValue(ProgressBarVisibilityProperty, value);
+        }
+        public static readonly DependencyProperty ProgressBarVisibilityProperty =
+            DependencyProperty.Register("ProgressBarVisibility", typeof(Visibility), typeof(CustomOverlay), new PropertyMetadata(Visibility.Visible));
 
         public SolidColorBrush BackgroundColor
         {
@@ -80,26 +92,6 @@ namespace BaseWPFLibrary
         public static readonly DependencyProperty ContentMarginProperty =
             DependencyProperty.Register("ContentMargin", typeof(Thickness), typeof(CustomOverlay), new PropertyMetadata(new Thickness(0d)));
 
-
-        public double TargetResidual
-        {
-            get => (double)GetValue(TargetResidualProperty);
-            set => SetValue(TargetResidualProperty, value);
-        }
-        public static readonly DependencyProperty TargetResidualProperty =
-            DependencyProperty.Register("TargetResidual", typeof(double), typeof(CustomOverlay), new PropertyMetadata(0.7d));
-
-
-        public double CurrentResidual
-        {
-            get => (double)GetValue(CurrentResidualProperty);
-            set => SetValue(CurrentResidualProperty, value);
-        }
-        public static readonly DependencyProperty CurrentResidualProperty =
-            DependencyProperty.Register("CurrentResidual", typeof(double), typeof(CustomOverlay), new PropertyMetadata(0.7d));
-
-
-
         public void HideOverlayAndReset()
         {
             CustomOverlayBindings.I.HideOverlayAndReset();
@@ -108,6 +100,8 @@ namespace BaseWPFLibrary
         {
             CustomOverlayBindings.I.ShowOverlay();
         }
+
+        
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {

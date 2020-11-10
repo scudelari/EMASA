@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Net.Sockets;
 using System.Windows.Threading;
 
 namespace BaseWPFLibrary.Others
@@ -46,6 +47,20 @@ namespace BaseWPFLibrary.Others
         }
 
         /// <summary>
+        /// This method will add the items in the input that don't currently exist.
+        /// </summary>
+        /// <param name="items">The list of items to add.</param>
+        /// <returns>The number of newly added items.</returns>
+        public int AddItemsIfNew(IList<T> items)
+        {
+            List<T> toAdd = (from a in items where !Contains(a) select a).ToList();
+
+            if (toAdd.Count > 0) AddItems(toAdd);
+
+            return toAdd.Count;
+        }
+
+        /// <summary>
         /// This method adds the given generic list of items
         /// as a range into current collection by casting them as type T.
         /// It then notifies once after all items are added.
@@ -74,9 +89,7 @@ namespace BaseWPFLibrary.Others
         public void NotifyChanges()
         {
             ResumeCollectionChangeNotification();
-            var arg
-                 = new NotifyCollectionChangedEventArgs
-                      (NotifyCollectionChangedAction.Reset);
+            var arg = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
             OnCollectionChanged(arg);
         }
 
@@ -128,8 +141,7 @@ namespace BaseWPFLibrary.Others
             {
                 if (!suspendCollectionChangeNotification)
                 {
-                    NotifyCollectionChangedEventHandler eventHandler =
-                          CollectionChanged;
+                    NotifyCollectionChangedEventHandler eventHandler = CollectionChanged;
                     if (eventHandler == null)
                     {
                         return;

@@ -39,7 +39,7 @@
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="Default_ImageCapture_Extrude_Multiplier" Type="System.Double" Scope="Application">
-      <Value Profile="(Default)">30</Value>
+      <Value Profile="(Default)">5</Value>
     </Setting>
     <Setting Name="Default_ImageCapture_UndeformedShadow" Type="System.Boolean" Scope="Application">
       <Value Profile="(Default)">True</Value>
@@ -50,7 +50,7 @@
     <Setting Name="Default_ImageCapture_ViewDirections" Type="System.String" Scope="Application">
       <Value Profile="(Default)">Front_Towards_YPos, Perspective_TFL_Corner</Value>
     </Setting>
-    <Setting Name="Default_FeNlOptSolverType" Type="System.String" Scope="Application">
+    <Setting Name="Default_FeNlOpt_OptimizerWrapperType" Type="System.String" Scope="Application">
       <Value Profile="(Default)">Ansys</Value>
     </Setting>
     <Setting Name="Default_AddGravityLoad_Direction" Type="System.String" Scope="Application">
@@ -58,6 +58,12 @@
     </Setting>
     <Setting Name="Default_AddGravityLoad_Multiplier" Type="System.Double" Scope="Application">
       <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="Default_FeNlOpt_SolverWrapperType" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Ansys</Value>
+    </Setting>
+    <Setting Name="Default_FeSolverType" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Ansys</Value>
     </Setting>
   </Settings>
 </SettingsFile>

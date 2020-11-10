@@ -33,10 +33,6 @@ namespace Emasa_Optimizer.Opt.ParamDefinitions
             {
                 switch (inputDef)
                 {
-                    case Integer_Input_ParamDef intParam:
-                        toRet.Add((double)intParam.SearchRange.Range.Min);
-                        break;
-
                     case Double_Input_ParamDef dblParam:
                         toRet.Add(dblParam.SearchRange.Range.Min);
                         break;
@@ -62,10 +58,6 @@ namespace Emasa_Optimizer.Opt.ParamDefinitions
             {
                 switch (inputDef)
                 {
-                    case Integer_Input_ParamDef intParam:
-                        toRet.Add((double)intParam.SearchRange.Range.Max);
-                        break;
-
                     case Double_Input_ParamDef dblParam:
                         toRet.Add(dblParam.SearchRange.Range.Max);
                         break;
@@ -100,7 +92,7 @@ namespace Emasa_Optimizer.Opt.ParamDefinitions
             return average;
         }
 
-        public Dictionary<StartPositionTypeEnum, string> StartPositionTypeEnumStaticDescriptions => ListDescriptionStaticHolder.ListDescSingleton.StartPositionTypeEnumStaticDescriptions;
+        public Dictionary<StartPositionTypeEnum, string> StartPositionTypeEnumStaticDescriptions => ListDescSH.I.StartPositionTypeEnumStaticDescriptions;
         private StartPositionTypeEnum _startPositionType;
         public StartPositionTypeEnum StartPositionType
         {
@@ -161,9 +153,6 @@ namespace Emasa_Optimizer.Opt.ParamDefinitions
         {
             switch (this)
             {
-                case Integer_Input_ParamDef intParam:
-                    return intParam.SearchRange.IsInside((int) inValue);
-
                 case Double_Input_ParamDef dblParam:
                     return dblParam.SearchRange.IsInside((double)inValue);
 

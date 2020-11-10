@@ -43,7 +43,7 @@
     <Style x:Key="Blue_GroupBox" TargetType="GroupBox">
         <Style.Triggers>
             <Trigger Property="IsEnabled" Value="True">
-                <Setter Property="BorderBrush" Value="{DynamicResource EmsDarkBlueSolidBrush}" />
+                <Setter Property="BorderBrush" Value="{StaticResource EmsDarkBlueSolidBrush}" />
             </Trigger>
             <Trigger Property="IsEnabled" Value="False">
                 <Setter Property="BorderBrush" Value="DimGray" />
@@ -58,7 +58,7 @@
                     <DockPanel>
                         <Grid
                             Margin="0"
-                            Background="{DynamicResource EmsDarkBlueSolidBrush}"
+                            Background="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type GroupBox}}, Path=BorderBrush}"
                             DockPanel.Dock="Top">
                             <ContentPresenter
                                 Margin="5,2"

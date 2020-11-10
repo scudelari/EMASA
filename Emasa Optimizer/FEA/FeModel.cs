@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Documents;
 using BaseWPFLibrary.Annotations;
+using Emasa_Optimizer.Bindings;
 using Emasa_Optimizer.FEA.Items;
 using Emasa_Optimizer.FEA.Loads;
 using Emasa_Optimizer.FEA.Results;
@@ -17,12 +18,12 @@ namespace Emasa_Optimizer.FEA
 {
     public class FeModel : IFeEntity
     {
-        public SolutionPoint Owner { get; private set; }
+        public NlOpt_Point Owner { get; private set; }
         /// <summary>
         /// Creates the abstraction of the FeModel.
         /// </summary>
         /// <param name="inSolPoint">The solution point that contain the Gh Geometry that will define the model. Usually the model is then saved into the its FeModel parameter</param>
-        public FeModel([NotNull] SolutionPoint inSolPoint)
+        public FeModel([NotNull] NlOpt_Point inSolPoint)
         {
             try
             {
@@ -68,17 +69,18 @@ namespace Emasa_Optimizer.FEA
                         grp.AddElement(jTo);
 
                         // Adds the Frame
-                        FeFrame f = AddNewOrGet_LineByCoordinate(jFrom, jTo, lineList_Output_ParamDef.OptimizationSection);
+                        FeSection s = Owner.Owner.GetGhLineListSection(lineList_Output_ParamDef);
+                        FeFrame f = AddNewOrGet_LineByCoordinate(jFrom, jTo, s);
                         grp.AddElement(f);
                     }
                 }
 
                 // Adds the gravity loads
-                if (inSolPoint.Owner.FeOptions.Gravity_IsLoad)
+                if (AppSS.I.FeOpt.Gravity_IsLoad)
                 {
-                    FeLoad_Inertial gravity = FeLoad_Inertial.GetStandardGravity(inSolPoint.Owner.FeOptions.Gravity_Multiplier);
+                    FeLoad_Inertial gravity = FeLoad_Inertial.GetStandardGravity(AppSS.I.FeOpt.Gravity_Multiplier);
                     // Sets the direction based on the options
-                    switch (inSolPoint.Owner.FeOptions.Gravity_DirectionEnum_Selected)
+                    switch (AppSS.I.FeOpt.Gravity_DirectionEnum_Selected)
                     {
                         case MainAxisDirectionEnum.xPos:
                             gravity.Direction = Vector3d.XAxis;
@@ -112,9 +114,7 @@ namespace Emasa_Optimizer.FEA
             }
             catch (Exception e)
             {
-                string message = $"Error defining the FeModel internal class. {e.Message}";
-                inSolPoint.RuntimeMessages.Add(new SolutionPoint_Message(message, SolutionPoint_MessageSourceEnum.Internal, SolutionPoint_MessageLevelEnum.Error, e ));
-                throw new Exception(message, e);
+                throw new Exception($"Error defining the FeModel internal class.", e);
             }
         }
 

@@ -32,5 +32,10 @@ namespace Emasa_Optimizer.FEA.Results
         /// OptimizationSection shear strains - Y
         /// </summary>
         public double SEy { get; set; }
+
+        /// <summary>
+        /// OptimizationSection Torsional Strains
+        /// </summary>
+        public double Te { get; set; }
     }
 }

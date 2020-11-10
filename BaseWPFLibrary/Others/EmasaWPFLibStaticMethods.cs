@@ -10,6 +10,26 @@ namespace BaseWPFLibrary.Others
 {
     public static class EmasaWPFLibraryStaticMethods
     {
+        public static IEnumerable<IEnumerable<T>> GetAllPossibleCombos<T>(IEnumerable<IEnumerable<T>> inValues)
+        {
+            IEnumerable<IEnumerable<T>> combos = new T[][] { new T[0] };
+
+            foreach (var inner in inValues)
+                combos = from c in combos
+                    from i in inner
+                    select c.Append(i);
+
+            return combos;
+        }
+
+        public static IEnumerable<TSource> Append<TSource>(this IEnumerable<TSource> source, TSource item)
+        {
+            foreach (TSource element in source)
+                yield return element;
+
+            yield return item;
+        }
+
         /// <summary>
         /// A helper to give an integer percent of a progress - to be used in a ProgressBar
         /// </summary>

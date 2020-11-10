@@ -3089,6 +3089,220 @@
             <param name="b">The β shape parameter of the Beta distribution. Range: β ≥ 0.</param>
             <returns>a sequence of samples from the distribution.</returns>
         </member>
+        <member name="T:MathNet.Numerics.Distributions.BetaBinomial">
+            <summary>
+            Discrete Univariate Beta-Binomial distribution.
+            The beta-binomial distribution is a family of discrete probability distributions on a finite support of non-negative integers arising
+            when the probability of success in each of a fixed or known number of Bernoulli trials is either unknown or random.
+            The beta-binomial distribution is the binomial distribution in which the probability of success at each of n trials is not fixed but randomly drawn from a beta distribution.
+            It is frequently used in Bayesian statistics, empirical Bayes methods and classical statistics to capture overdispersion in binomial type distributed data.
+            <a href="https://en.wikipedia.org/wiki/Beta-binomial_distribution">Wikipedia - Beta-Binomial distribution</a>.
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.BetaBinomial.#ctor(System.Int32,System.Double,System.Double)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MathNet.Numerics.Distributions.BetaBinomial"/> class.
+            </summary>
+            <param name="n">The number of Bernoulli trials n - n is a positive integer </param>
+            <param name="a">Shape parameter alpha of the Beta distribution. Range: a > 0.</param>
+            <param name="b">Shape parameter beta of the Beta distribution. Range: b > 0.</param>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.BetaBinomial.#ctor(System.Int32,System.Double,System.Double,System.Random)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MathNet.Numerics.Distributions.BetaBinomial"/> class.
+            </summary>
+            <param name="n">The number of Bernoulli trials n - n is a positive integer </param>
+            <param name="a">Shape parameter alpha of the Beta distribution. Range: a > 0.</param>
+            <param name="b">Shape parameter beta of the Beta distribution. Range: b > 0.</param>
+            <param name="randomSource">The random number generator which is used to draw random samples.</param>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.BetaBinomial.ToString">
+            <summary>
+            Returns a <see cref="T:System.String"/> that represents this instance.
+            </summary>
+            <returns>
+            A <see cref="T:System.String"/> that represents this instance.
+            </returns>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.BetaBinomial.IsValidParameterSet(System.Int32,System.Double,System.Double)">
+            <summary>
+            Tests whether the provided values are valid parameters for this distribution.
+            </summary>
+            <param name="n">The number of Bernoulli trials n - n is a positive integer </param>
+            <param name="a">Shape parameter alpha of the Beta distribution. Range: a > 0.</param>
+            <param name="b">Shape parameter beta of the Beta distribution. Range: b > 0.</param>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.BetaBinomial.IsValidParameterSet(System.Int32,System.Double,System.Double,System.Int32)">
+            <summary>
+            Tests whether the provided values are valid parameters for this distribution.
+            </summary>
+            <param name="n">The number of Bernoulli trials n - n is a positive integer </param>
+            <param name="a">Shape parameter alpha of the Beta distribution. Range: a > 0.</param>
+            <param name="b">Shape parameter beta of the Beta distribution. Range: b > 0.</param>
+            <param name="k">The location in the domain where we want to evaluate the probability mass function.</param>
+        </member>
+        <member name="P:MathNet.Numerics.Distributions.BetaBinomial.Mean">
+            <summary>
+            Gets the mean of the distribution.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Distributions.BetaBinomial.Variance">
+            <summary>
+            Gets the variance of the distribution.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Distributions.BetaBinomial.StdDev">
+            <summary>
+            Gets the standard deviation of the distribution.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Distributions.BetaBinomial.MathNet#Numerics#Distributions#IUnivariateDistribution#Entropy">
+            <summary>
+            Gets the entropy of the distribution.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Distributions.BetaBinomial.Skewness">
+            <summary>
+            Gets the skewness of the distribution.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Distributions.BetaBinomial.MathNet#Numerics#Distributions#IDiscreteDistribution#Mode">
+            <summary>
+            Gets the mode of the distribution
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Distributions.BetaBinomial.MathNet#Numerics#Distributions#IUnivariateDistribution#Median">
+            <summary>
+            Gets the median of the distribution.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Distributions.BetaBinomial.Minimum">
+            <summary>
+            Gets the smallest element in the domain of the distributions which can be represented by an integer.
+            </summary>
+        </member>
+        <member name="P:MathNet.Numerics.Distributions.BetaBinomial.Maximum">
+            <summary>
+            Gets the largest element in the domain of the distributions which can be represented by an integer.
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.BetaBinomial.Probability(System.Int32)">
+            <summary>
+            Computes the probability mass (PMF) at k, i.e. P(X = k).
+            </summary>
+            <param name="k">The location in the domain where we want to evaluate the probability mass function.</param>
+            <returns>the probability mass at location <paramref name="k"/>.</returns>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.BetaBinomial.ProbabilityLn(System.Int32)">
+            <summary>
+            Computes the log probability mass (lnPMF) at k, i.e. ln(P(X = k)).
+            </summary>
+            <param name="k">The location in the domain where we want to evaluate the log probability mass function.</param>
+            <returns>the log probability mass at location <paramref name="k"/>.</returns>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.BetaBinomial.CumulativeDistribution(System.Double)">
+            <summary>
+            Computes the cumulative distribution (CDF) of the distribution at x, i.e. P(X ≤ x).
+            </summary>
+            <param name="x">The location at which to compute the cumulative distribution function.</param>
+            <returns>the cumulative distribution at location <paramref name="x"/></returns>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.BetaBinomial.PMF(System.Int32,System.Double,System.Double,System.Int32)">
+            <summary>
+            Computes the probability mass (PMF) at k, i.e. P(X = k).
+            </summary>
+            <param name="n">The number of Bernoulli trials n - n is a positive integer </param>
+            <param name="a">Shape parameter alpha of the Beta distribution. Range: a > 0.</param>
+            <param name="b">Shape parameter beta of the Beta distribution. Range: b > 0.</param>
+            <param name="k">The location in the domain where we want to evaluate the probability mass function.</param>
+            <returns>the probability mass at location <paramref name="k"/>.</returns>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.BetaBinomial.PMFLn(System.Int32,System.Double,System.Double,System.Int32)">
+            <summary>
+            Computes the log probability mass (lnPMF) at k, i.e. ln(P(X = k)).
+            </summary>
+            <param name="n">The number of Bernoulli trials n - n is a positive integer </param>
+            <param name="a">Shape parameter alpha of the Beta distribution. Range: a > 0.</param>
+            <param name="b">Shape parameter beta of the Beta distribution. Range: b > 0.</param>
+            <param name="k">The location in the domain where we want to evaluate the probability mass function.</param>
+            <returns>the log probability mass at location <paramref name="k"/>.</returns>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.BetaBinomial.CDF(System.Int32,System.Double,System.Double,System.Int32)">
+            <summary>
+            Computes the cumulative distribution (CDF) of the distribution at x, i.e. P(X ≤ x).
+            </summary>
+            <param name="n">The number of Bernoulli trials n - n is a positive integer </param>
+            <param name="a">Shape parameter alpha of the Beta distribution. Range: a > 0.</param>
+            <param name="b">Shape parameter beta of the Beta distribution. Range: b > 0.</param>
+            <param name="x">The location at which to compute the cumulative distribution function.</param>
+            <returns>the cumulative distribution at location <paramref name="x"/>.</returns>
+            <seealso cref="M:MathNet.Numerics.Distributions.BetaBinomial.CumulativeDistribution(System.Double)"/>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.BetaBinomial.SampleUnchecked(System.Random,System.Int32,System.Double,System.Double)">
+            <summary>
+            Samples BetaBinomial distributed random variables by sampling a Beta distribution then passing to a Binomial distribution.
+            </summary>
+            <param name="rnd">The random number generator to use.</param>
+            <param name="a">The α shape parameter of the Beta distribution. Range: α ≥ 0.</param>
+            <param name="b">The β shape parameter of the Beta distribution. Range: β ≥ 0.</param>
+            <param name="n">The number of trials (n). Range: n ≥ 0.</param>
+            <returns>a random number from the BetaBinomial distribution.</returns>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.BetaBinomial.Sample">
+            <summary>
+            Samples a <c>BetaBinomial</c> distributed random variable.
+            </summary>
+            <returns>a sample from the distribution.</returns>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.BetaBinomial.Samples(System.Int32[])">
+            <summary>
+            Fills an array with samples generated from the distribution.
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.BetaBinomial.Samples">
+            <summary>
+            Samples an array of <c>BetaBinomial</c> distributed random variables.
+            </summary>
+            <returns>a sequence of samples from the distribution.</returns>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.BetaBinomial.Sample(System.Random,System.Int32,System.Double,System.Double)">
+            <summary>
+            Samples a <c>BetaBinomial</c> distributed random variable.
+            </summary>
+            <param name="rnd">The random number generator to use.</param>
+            <param name="a">The α shape parameter of the Beta distribution. Range: α ≥ 0.</param>
+            <param name="b">The β shape parameter of the Beta distribution. Range: β ≥ 0.</param>
+            <param name="n">The number of trials (n). Range: n ≥ 0.</param>
+            <returns>a sample from the distribution.</returns>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.BetaBinomial.Samples(System.Random,System.Int32[],System.Int32,System.Double,System.Double)">
+            <summary>
+            Fills an array with samples generated from the distribution.
+            </summary>
+            <param name="rnd">The random number generator to use.</param>
+            <param name="values">The array to fill with the samples.</param>
+            <param name="a">The α shape parameter of the Beta distribution. Range: α ≥ 0.</param>
+            <param name="b">The β shape parameter of the Beta distribution. Range: β ≥ 0.</param>
+            <param name="n">The number of trials (n). Range: n ≥ 0.</param>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.BetaBinomial.Samples(System.Int32,System.Double,System.Double)">
+            <summary>
+            Samples an array of <c>BetaBinomial</c> distributed random variables.
+            </summary>
+            <param name="a">The α shape parameter of the Beta distribution. Range: α ≥ 0.</param>
+            <param name="b">The β shape parameter of the Beta distribution. Range: β ≥ 0.</param>
+            <param name="n">The number of trials (n). Range: n ≥ 0.</param>
+            <returns>a sequence of samples from the distribution.</returns>
+        </member>
+        <member name="M:MathNet.Numerics.Distributions.BetaBinomial.Samples(System.Int32[],System.Int32,System.Double,System.Double)">
+            <summary>
+            Fills an array with samples generated from the distribution.
+            </summary>
+            <param name="values">The array to fill with the samples.</param>
+            <param name="a">The α shape parameter of the Beta distribution. Range: α ≥ 0.</param>
+            <param name="b">The β shape parameter of the Beta distribution. Range: β ≥ 0.</param>
+            <param name="n">The number of trials (n). Range: n ≥ 0.</param>
+        </member>
         <member name="M:MathNet.Numerics.Distributions.BetaScaled.#ctor(System.Double,System.Double,System.Double,System.Double)">
             <summary>
             Initializes a new instance of the BetaScaled class.
@@ -17708,7 +17922,7 @@
             Solver based on:<br />
             Faster PDE-based simulations using robust composite linear solvers<br />
             S. Bhowmicka, P. Raghavan a,*, L. McInnes b, B. Norris<br />
-            Future Generation Computer Systems, Vol 20, 2004, pp 373–387<br />
+            Future Generation Computer Systems, Vol 20, 2004, pp 373�387<br />
             </para>
             <para>
             Note that if an iterator is passed to this solver it will be used for all the sub-solvers.
@@ -21958,7 +22172,7 @@
             Solver based on:<br />
             Faster PDE-based simulations using robust composite linear solvers<br />
             S. Bhowmicka, P. Raghavan a,*, L. McInnes b, B. Norris<br />
-            Future Generation Computer Systems, Vol 20, 2004, pp 373–387<br />
+            Future Generation Computer Systems, Vol 20, 2004, pp 373�387<br />
             </para>
             <para>
             Note that if an iterator is passed to this solver it will be used for all the sub-solvers.
@@ -30386,7 +30600,7 @@
             Solver based on:<br />
             Faster PDE-based simulations using robust composite linear solvers<br />
             S. Bhowmicka, P. Raghavan a,*, L. McInnes b, B. Norris<br />
-            Future Generation Computer Systems, Vol 20, 2004, pp 373–387<br />
+            Future Generation Computer Systems, Vol 20, 2004, pp 373�387<br />
             </para>
             <para>
             Note that if an iterator is passed to this solver it will be used for all the sub-solvers.
@@ -40377,7 +40591,7 @@
         </member>
         <member name="P:MathNet.Numerics.Optimization.NonlinearMinimizationResult.StandardErrors">
             <summary>
-            Returns the standard errors of the corresponding parameters 
+            Returns the standard errors of the corresponding parameters
             </summary>
         </member>
         <member name="P:MathNet.Numerics.Optimization.NonlinearMinimizationResult.MinimizedValues">
@@ -42261,578 +42475,6 @@
             </summary>
             <param name="otherValue">The value to compare with.</param>
             <returns>A norm of the difference between this and the other value.</returns>
-        </member>
-        <member name="T:MathNet.Numerics.Properties.Resources">
-            <summary>
-              A strongly-typed resource class, for looking up localized strings, etc.
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ResourceManager">
-            <summary>
-              Returns the cached ResourceManager instance used by this class.
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.Culture">
-            <summary>
-              Overrides the current thread's CurrentUICulture property for all
-              resource lookups using this strongly typed resource class.
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.AccuracyNotReached">
-            <summary>
-              Looks up a localized string similar to The accuracy couldn&apos;t be reached with the specified number of iterations..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentArraysSameLength">
-            <summary>
-              Looks up a localized string similar to The array arguments must have the same length..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentArrayWrongLength">
-            <summary>
-              Looks up a localized string similar to The given array has the wrong length. Should be {0}..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentBetween0And1">
-            <summary>
-              Looks up a localized string similar to The argument must be between 0 and 1..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentCannotBeBetweenOneAndNegativeOne">
-            <summary>
-              Looks up a localized string similar to Value cannot be in the range -1 &lt; x &lt; 1..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentEven">
-            <summary>
-              Looks up a localized string similar to Value must be even..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentHistogramContainsNot">
-            <summary>
-              Looks up a localized string similar to The histogram does not contain the value..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentInIntervalXYInclusive">
-            <summary>
-              Looks up a localized string similar to Value is expected to be between {0} and {1} (including {0} and {1})..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentItemNull">
-            <summary>
-              Looks up a localized string similar to At least one item of {0} is a null reference (Nothing in Visual Basic)..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentLessThanOne">
-            <summary>
-              Looks up a localized string similar to Value must be greater than or equal to one..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentMatrixDimensions">
-            <summary>
-              Looks up a localized string similar to Matrix dimensions must agree..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentMatrixDimensions1">
-            <summary>
-              Looks up a localized string similar to Matrix dimensions must agree: {0}..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentMatrixDimensions2">
-            <summary>
-              Looks up a localized string similar to Matrix dimensions must agree: op1 is {0}, op2 is {1}..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentMatrixDimensions3">
-            <summary>
-              Looks up a localized string similar to Matrix dimensions must agree: op1 is {0}, op2 is {1}, op3 is {2}..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentMatrixDoesNotExist">
-            <summary>
-              Looks up a localized string similar to The requested matrix does not exist..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentMatrixIndexOutOfRange">
-            <summary>
-              Looks up a localized string similar to The matrix indices must not be out of range of the given matrix..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentMatrixNotRankDeficient">
-            <summary>
-              Looks up a localized string similar to Matrix must not be rank deficient..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentMatrixNotSingular">
-            <summary>
-              Looks up a localized string similar to Matrix must not be singular..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentMatrixPositiveDefinite">
-            <summary>
-              Looks up a localized string similar to Matrix must be positive definite..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentMatrixSameColumnDimension">
-            <summary>
-              Looks up a localized string similar to Matrix column dimensions must agree..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentMatrixSameRowDimension">
-            <summary>
-              Looks up a localized string similar to Matrix row dimensions must agree..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentMatrixSingleColumn">
-            <summary>
-              Looks up a localized string similar to Matrix must have exactly one column..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentMatrixSingleColumnRow">
-            <summary>
-              Looks up a localized string similar to Matrix must have exactly one column and row, thus have only one cell..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentMatrixSingleRow">
-            <summary>
-              Looks up a localized string similar to Matrix must have exactly one row..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentMatrixSquare">
-            <summary>
-              Looks up a localized string similar to Matrix must be square..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentMatrixSymmetric">
-            <summary>
-              Looks up a localized string similar to Matrix must be symmetric..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentMatrixSymmetricPositiveDefinite">
-            <summary>
-              Looks up a localized string similar to Matrix must be symmetric positive definite..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentMaxExclusiveMustBeLargerThanMinInclusive">
-            <summary>
-              Looks up a localized string similar to In the specified range, the exclusive maximum must be greater than the inclusive minimum..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentMinValueGreaterThanMaxValue">
-            <summary>
-              Looks up a localized string similar to In the specified range, the minimum is greater than maximum..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentMustBePositive">
-            <summary>
-              Looks up a localized string similar to Value must be positive..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentNotInfinityNaN">
-            <summary>
-              Looks up a localized string similar to Value must neither be infinite nor NaN..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentNotNegative">
-            <summary>
-              Looks up a localized string similar to Value must not be negative (zero is ok)..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentNull">
-            <summary>
-              Looks up a localized string similar to {0} is a null reference (Nothing in Visual Basic)..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentOdd">
-            <summary>
-              Looks up a localized string similar to Value must be odd..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentOutOfRangeGreater">
-            <summary>
-              Looks up a localized string similar to {0} must be greater than {1}..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentOutOfRangeGreaterEqual">
-            <summary>
-              Looks up a localized string similar to {0} must be greater than or equal to {1}..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentOutOfRangeSmaller">
-            <summary>
-              Looks up a localized string similar to {0} must be smaller than {1}..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentOutOfRangeSmallerEqual">
-            <summary>
-              Looks up a localized string similar to {0} must be smaller than or equal to {1}..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentParameterSetInvalid">
-            <summary>
-              Looks up a localized string similar to The chosen parameter set is invalid (probably some value is out of range)..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentParseComplexNumber">
-            <summary>
-              Looks up a localized string similar to The given expression does not represent a complex number..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentPositive">
-            <summary>
-              Looks up a localized string similar to Value must be positive (and not zero)..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentPowerOfTwo">
-            <summary>
-              Looks up a localized string similar to Size must be a Power of Two..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentPowerOfTwoEveryDimension">
-            <summary>
-              Looks up a localized string similar to Size must be a Power of Two in every dimension..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentRangeLessEqual">
-            <summary>
-              Looks up a localized string similar to The range between {0} and {1} must be less than or equal to {2}..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentReferenceDifferent">
-            <summary>
-              Looks up a localized string similar to Arguments must be different objects..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentSingleDimensionArray">
-            <summary>
-              Looks up a localized string similar to Array must have exactly one dimension (and not be null)..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentTooLarge">
-            <summary>
-              Looks up a localized string similar to Value is too large..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentTooLargeForIterationLimit">
-            <summary>
-              Looks up a localized string similar to Value is too large for the current iteration limit..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentTypeMismatch">
-            <summary>
-              Looks up a localized string similar to Type mismatch..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentUpperBoundMustBeLargerThanLowerBound">
-            <summary>
-              Looks up a localized string similar to The upper bound must be strictly larger than the lower bound..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentUpperBoundMustBeLargerThanOrEqualToLowerBound">
-            <summary>
-              Looks up a localized string similar to The upper bound must be at least as large as the lower bound..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentVectorLengthsMultipleOf">
-            <summary>
-              Looks up a localized string similar to Array length must be a multiple of {0}..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentVectorsSameLength">
-            <summary>
-              Looks up a localized string similar to All vectors must have the same dimensionality..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArgumentVectorThreeDimensional">
-            <summary>
-              Looks up a localized string similar to The vector must have 3 dimensions..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ArrayTooSmall">
-            <summary>
-              Looks up a localized string similar to The given array is too small. It must be at least {0} long..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.BigEndianNotSupported">
-            <summary>
-              Looks up a localized string similar to Big endian files are not supported..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.CollectionEmpty">
-            <summary>
-              Looks up a localized string similar to The supplied collection is empty..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ComplexMatricesNotSupported">
-            <summary>
-              Looks up a localized string similar to Complex matrices are not supported..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ConvergenceFailed">
-            <summary>
-              Looks up a localized string similar to An algorithm failed to converge..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.DegreesOfFreedomMustBeLessThanSampleSize">
-            <summary>
-              Looks up a localized string similar to The sample size must be larger than the given degrees of freedom..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.FeaturePlannedButNotImplementedYet">
-            <summary>
-              Looks up a localized string similar to This feature is not implemented yet (but is planned)..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.FileDoesNotExist">
-            <summary>
-              Looks up a localized string similar to The given file doesn&apos;t exist..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.Interpolation_Initialize_SamplePointsNotStrictlyAscendingOrder">
-            <summary>
-              Looks up a localized string similar to Sample points should be sorted in strictly ascending order.
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.Interpolation_Initialize_SamplePointsNotUnique">
-            <summary>
-              Looks up a localized string similar to All sample points should be unique..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.InvalidDistributionParameters">
-            <summary>
-              Looks up a localized string similar to Invalid parameterization for the distribution..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.InvalidLeftBoundaryCondition">
-            <summary>
-              Looks up a localized string similar to Invalid Left Boundary Condition..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.InvalidOperationAccumulatorEmpty">
-            <summary>
-              Looks up a localized string similar to The operation could not be performed because the accumulator is empty..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.InvalidOperationHistogramEmpty">
-            <summary>
-              Looks up a localized string similar to The operation could not be performed because the histogram is empty..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.InvalidOperationHistogramNotEnoughPoints">
-            <summary>
-              Looks up a localized string similar to Not enough points in the distribution..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.InvalidOperationNoSamplesProvided">
-            <summary>
-              Looks up a localized string similar to No Samples Provided. Preparation Required..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.InvalidParameter">
-            <summary>
-              Looks up a localized string similar to An invalid parameter was passed to a native method..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.InvalidParameterWithNumber">
-            <summary>
-              Looks up a localized string similar to An invalid parameter was passed to a native method, parameter number : {0}.
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.InvalidRightBoundaryCondition">
-            <summary>
-              Looks up a localized string similar to Invalid Right Boundary Condition..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.LagMustBePositive">
-            <summary>
-              Looks up a localized string similar to Lag must be positive.
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.LagMustBeSmallerThanTheSampleSize">
-            <summary>
-              Looks up a localized string similar to Lag must be smaller than the sample size.
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.MatlabDateHeaderFormat">
-            <summary>
-              Looks up a localized string similar to ddd MMM dd HH:mm:ss yyyy.
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.MatrixCanNotBeEmpty">
-            <summary>
-              Looks up a localized string similar to Matrices can not be empty and must have at least one row and column..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.MatrixColumnsMustBePositive">
-            <summary>
-              Looks up a localized string similar to The number of columns of a matrix must be positive..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.MatrixMustBeSparse">
-            <summary>
-              Looks up a localized string similar to Matrix must be in sparse storage format.
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.MatrixRowsMustBePositive">
-            <summary>
-              Looks up a localized string similar to The number of rows of a matrix must be positive..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.MatrixRowsOrColumnsMustBePositive">
-            <summary>
-              Looks up a localized string similar to The number of rows or columns of a matrix must be positive..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.MemoryAllocation">
-            <summary>
-              Looks up a localized string similar to Unable to allocate native memory..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.MoreThan2D">
-            <summary>
-              Looks up a localized string similar to Only 1 and 2 dimensional arrays are supported..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.MustContainAtLeast">
-            <summary>
-              Looks up a localized string similar to Data must contain at least {0} values..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.NameCannotContainASpace">
-            <summary>
-              Looks up a localized string similar to Name cannot contain a space. name:  {0}.
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.NotSupportedType">
-            <summary>
-              Looks up a localized string similar to {0} is not a supported type..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.NumericalBreakdown">
-             <summary>
-               Looks up a localized string similar to Algorithm experience a numerical break down
-            .
-             </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.NumericalEstimationFailed">
-            <summary>
-              Looks up a localized string similar to: Numerical estimation of the statistic has failed.
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.PartialOrderException">
-            <summary>
-              Looks up a localized string similar to The two arguments can&apos;t be compared (maybe they are part of a partial ordering?).
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.PermutationAsIntArrayInvalid">
-            <summary>
-              Looks up a localized string similar to The integer array does not represent a valid permutation..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.ProposalDistributionNoUpperBound">
-            <summary>
-              Looks up a localized string similar to The sampler&apos;s proposal distribution is not upper bounding the target density..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.RegressionNotEnoughSamples">
-            <summary>
-              Looks up a localized string similar to A regression of the requested order requires at least {0} samples. Only {1} samples have been provided. .
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.RootFindingFailed">
-            <summary>
-              Looks up a localized string similar to The algorithm has failed, exceeded the number of iterations allowed or there is no root within the provided bounds..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.RootFindingFailedRecommendRobustNewtonRaphson">
-            <summary>
-              Looks up a localized string similar to The algorithm has failed, exceeded the number of iterations allowed or there is no root within the provided bounds. Consider to use RobustNewtonRaphson instead..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.RootMustBeBracketedByBounds">
-            <summary>
-              Looks up a localized string similar to The lower and upper bounds must bracket a single root..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.RootNotFound">
-            <summary>
-              Looks up a localized string similar to The algorithm ended without root in the range..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.RowsLessThanColumns">
-            <summary>
-              Looks up a localized string similar to The number of rows must greater than or equal to the number of columns..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.SampleVectorsSameLength">
-            <summary>
-              Looks up a localized string similar to All sample vectors must have the same length. However, vectors with disagreeing length {0} and {1} have been provided. A sample with index i is given by the value at index i of each provided vector..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.SingularUMatrix">
-            <summary>
-              Looks up a localized string similar to U is singular, and the inversion could not be completed..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.SingularUMatrixWithElement">
-            <summary>
-              Looks up a localized string similar to U is singular, and the inversion could not be completed. The {0}-th diagonal element of the factor U is zero..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.SingularVectorsNotComputed">
-            <summary>
-              Looks up a localized string similar to The singular vectors were not computed..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.SpecialCasePlannedButNotImplementedYet">
-            <summary>
-              Looks up a localized string similar to This special case is not supported yet (but is planned)..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.StopCriterionDuplicate">
-            <summary>
-              Looks up a localized string similar to The given stop criterion already exist in the collection..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.StopCriterionMissing">
-            <summary>
-              Looks up a localized string similar to There is no stop criterion in the collection..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.StringNullOrEmpty">
-            <summary>
-              Looks up a localized string similar to String parameter cannot be empty or null..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.TooManyElements">
-            <summary>
-              Looks up a localized string similar to We only support sparse matrix with less than int.MaxValue elements..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.UndefinedMoment">
-            <summary>
-              Looks up a localized string similar to The moment of the distribution is undefined..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.UserDefinedProviderNotSpecified">
-            <summary>
-              Looks up a localized string similar to A user defined provider has not been specified..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.UserWorkBufferNotSupported">
-            <summary>
-              Looks up a localized string similar to User work buffers are not supported by this provider..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.VectorCanNotBeEmpty">
-            <summary>
-              Looks up a localized string similar to Vectors can not be empty and must have at least one element..
-            </summary>
-        </member>
-        <member name="P:MathNet.Numerics.Properties.Resources.WorkArrayTooSmall">
-            <summary>
-              Looks up a localized string similar to The given work array is too small. Check work[0] for the corret size..
-            </summary>
         </member>
         <member name="M:MathNet.Numerics.Providers.Common.Cuda.CudaProvider.Load(System.String)">
             <returns>Revision</returns>
@@ -52667,6 +52309,29 @@
             </summary>
             <param name="p">The argument of the inverse digamma function.</param>
             <returns>The positive solution to the inverse DiGamma function at <paramref name="p"/>.</returns>
+        </member>
+        <member name="M:MathNet.Numerics.SpecialFunctions.RisingFactorial(System.Double,System.Int32)">
+            <summary>
+            Computes the Rising Factorial (Pochhammer function)  x -> (x)n, n>= 0. see: https://en.wikipedia.org/wiki/Falling_and_rising_factorials
+            </summary>
+            <returns>The real value of the Rising Factorial for x and n</returns>
+        </member>
+        <member name="M:MathNet.Numerics.SpecialFunctions.FallingFactorial(System.Double,System.Int32)">
+            <summary>
+            Computes the Falling Factorial (Pochhammer function)  x -> x(n), n>= 0. see: https://en.wikipedia.org/wiki/Falling_and_rising_factorials
+            </summary>
+            <returns>The real value of the Falling Factorial for x and n</returns>
+        </member>
+        <member name="M:MathNet.Numerics.SpecialFunctions.GeneralizedHypergeometric(System.Double[],System.Double[],System.Int32)">
+            <summary>
+            A generalized hypergeometric series is a power series in which the ratio of successive coefficients indexed by n is a rational function of n.
+            This is the most common pFq(a1, ..., ap; b1,...,bq; z) representation
+            see: https://en.wikipedia.org/wiki/Generalized_hypergeometric_function
+            </summary>
+            <param name="a">The list of coefficients in the numerator</param>
+            <param name="b">The list of coefficients in the denominator</param>
+            <param name="z">The variable in the power series</param>
+            <returns>The value of the Generalized HyperGeometric Function.</returns>
         </member>
         <member name="M:MathNet.Numerics.SpecialFunctions.HankelH1(System.Double,System.Numerics.Complex)">
             <summary>

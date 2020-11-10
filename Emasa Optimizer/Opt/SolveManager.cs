@@ -1,169 +1,283 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Configuration;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Security.Policy;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Data;
+using System.Windows.Media.Imaging;
 using BaseWPFLibrary.Annotations;
+using BaseWPFLibrary.Forms;
 using BaseWPFLibrary.Others;
+using Emasa_Optimizer.Bindings;
 using Emasa_Optimizer.FEA;
+using Emasa_Optimizer.FEA.Items;
 using Emasa_Optimizer.FEA.Results;
 using Emasa_Optimizer.Opt;
 using Emasa_Optimizer.Opt.ParamDefinitions;
 using Emasa_Optimizer.Opt.ProbQuantity;
-using Emasa_Optimizer.ProblemDefs;
+using Emasa_Optimizer.WpfResources;
 using NLoptNet;
+using MPOC = MintPlayer.ObservableCollection;
 using Prism.Mvvm;
+using RhinoInterfaceLibrary;
 
 namespace Emasa_Optimizer.Opt
 {
     public class SolveManager : BindableBase
     {
-        private readonly GhAlgorithm _gh_alg;
-        public GhAlgorithm Gh_Alg { get => _gh_alg; }
-
-        private readonly NloptManager _nloptManager;
-        public NloptManager NlOptManager { get => _nloptManager; }
-
-        private FeSolver _feSolver;
-        public FeSolver FeSolver
-        {
-            get => _feSolver;
-            set => SetProperty(ref _feSolver, value);
-        }
-        
         public SolveManager()
         {
-            _gh_alg = new GhAlgorithm(this);
-            _nloptManager = new NloptManager(this);
-            _feOptions = new FeOptions(this);
+            // Adds listeners to the problem configs
+            _problemConfigs.CollectionChanged += ProblemConfigsOnCollectionChanged;
 
-            #region Decides on the available problems
-            List<GeneralProblem> problems = new List<GeneralProblem>
-                {
-                new GeneralProblem(this),
-                new TriangleProblem(this)
-                };
+            Wpf_ProblemConfigs_View = CollectionViewSource.GetDefaultView(ProblemConfigs);
 
-            // Filters to those problems that actually target the current Gh
-            problems = problems.Where(a => a.TargetsOpenGhAlgorithm).ToList();
+            //CollectionViewSource ProblemConfigs_Finalized_cvs = new CollectionViewSource() { Source = ProblemConfigs };
+            //Wpf_OptimizedProblemConfigs_View = ProblemConfigs_Finalized_cvs.View;
+            //Wpf_OptimizedProblemConfigs_View.Filter += inO => inO is ProblemConfig pc && pc.NlOptSolverWrapper.OptimizeTerminationException != null;
+            //Wpf_OptimizedProblemConfigs_View.CollectionChanged += (inSender, inArgs) =>
+            //{
+            //    RaisePropertyChanged("Wpf_ConfigurationCount_NotOptimized");
+            //    RaisePropertyChanged("Wpf_ConfigurationCount_Optimized");
+            //};
+            //// Setting live shaping
+            //if (Wpf_OptimizedProblemConfigs_View is ICollectionViewLiveShaping ls)
+            //{
+            //    ls.LiveFilteringProperties.Add("NlOptSolverWrapper.OptimizeTerminationException");
+            //    ls.IsLiveFiltering = true;
+            //}
+            //else throw new Exception($"List does not accept ICollectionViewLiveShaping.");
 
-            // If any of those overrides the general, removes the general from the list
-            if (problems.Any(a => a.OverridesGeneralProblem))
+        }
+        
+        #region Problem Configuration Data & Management
+        public bool Wpf_ConfigurationsHaveBeenGenerated => _problemConfigs.Count > 0;
+        public int Wpf_ConfigurationCount_Generated => ProblemConfigs.Count;
+        public int Wpf_ConfigurationCount_Successful => ProblemConfigs.Count(a => a.NlOptSolverWrapper.OptimizeTerminationException.OptimizeTerminationCode == NlOpt_OptimizeTerminationCodeEnum.Success || a.NlOptSolverWrapper.OptimizeTerminationException.OptimizeTerminationCode == NlOpt_OptimizeTerminationCodeEnum.Converged);
+
+        public void WpfCommand_GenerateConfigurations_AndValidateForm()
+        {
+            try
             {
-                problems = problems.Where(a => a.GetType().Name != nameof(GeneralProblem)).ToList();
+                #region Validating Form
+                // Validating the form - Do we have one for Objective Function?
+                if (!AppSS.I.ProbQuantMgn.WpfProblemQuantities_ObjectiveFunction.OfType<ProblemQuantity>().Any())
+                {
+                    MessageBox.Show("You must add at least one quantity to be used as Objective Function.", "Objective Function", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                // Validating the form - More than one Equality Constraints?
+                if (AppSS.I.ProbQuantMgn.WpfProblemQuantities_Constraint.OfType<ProblemQuantity>().Count(a => a.IsConstraint && a.ConstraintObjective == Quantity_ConstraintObjectiveEnum.EqualTo) > 1)
+                {
+                    MessageBox.Show($"The maximum number of equal constraints is 1.{Environment.NewLine}Add higher than or lower than instead.", "Equality Constraints", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                // Validating the form - Optimizer Type - Constraint Validity
+                if (!AppSS.I.ProbQuantMgn.WpfProblemQuantities_Constraint.OfType<ProblemQuantity>().Any())
+                {
+                    if (AppSS.I.NlOptOpt.UseLagrangian)
+                    {
+                        AppSS.I.NlOptOpt.UseLagrangian = false; // Forces false.
+                    }
+                }
+                else // We have constraints
+                {
+                    if (!AppSS.I.NlOptOpt.UseLagrangian)
+                    {
+                        // Checks if we have equality of inequality constraints
+                        bool hasEqualConstraint = false;
+                        bool hasUnequalConstraint = false;
+
+                        // Sets up the constraints
+                        foreach (ProblemQuantity constraintQuantity in AppSS.I.ProbQuantMgn.WpfProblemQuantities_Constraint.OfType<ProblemQuantity>())
+                        {
+                            // Regardless of the constraint type, it will always point to the same function
+                            switch (constraintQuantity.ConstraintObjective)
+                            {
+                                case Quantity_ConstraintObjectiveEnum.EqualTo:
+                                    hasEqualConstraint = true;
+                                    break;
+
+                                case Quantity_ConstraintObjectiveEnum.HigherThanOrEqual:
+                                case Quantity_ConstraintObjectiveEnum.LowerThanOrEqual:
+                                    hasUnequalConstraint = true;
+                                    break;
+
+                                default:
+                                    throw new ArgumentOutOfRangeException();
+                            }
+                        }
+
+                        switch (AppSS.I.NlOptOpt.NlOptSolverType)
+                        {
+                            case NLoptAlgorithm.LN_COBYLA: // Both
+                            case NLoptAlgorithm.GN_ISRES: // Both
+                            case NLoptAlgorithm.LD_SLSQP: // Both
+                                // They are OK
+                                break;
+
+                            case NLoptAlgorithm.LD_CCSAQ:   // NE Only
+                            case NLoptAlgorithm.GN_AGS:  // NE Only
+                            case NLoptAlgorithm.LD_MMA: // NE Only
+                                MessageBox.Show($"{ListDescSH.I.NlOptAlgorithmEnumDescriptions[AppSS.I.NlOptOpt.NlOptSolverType]} does not support equality constraints by itself (only inequality). You can use Augmented Lagrangian option to embed the constraint into the objective function.", "Constraints", MessageBoxButton.OK, MessageBoxImage.Information);
+                                return;
+
+                            default:
+                                MessageBox.Show($"{ListDescSH.I.NlOptAlgorithmEnumDescriptions[AppSS.I.NlOptOpt.NlOptSolverType]} does not support any type of constraints by itself. You can use Augmented Lagrangian option to embed the constraint into the objective function.", "Constraints", MessageBoxButton.OK, MessageBoxImage.Information);
+                                return;
+                        }
+                    }
+                }
+                #endregion
+
+                #region Generating the Problem Config List
+                int problemConfigIndex = 0;
+
+                // Combines the lists of lines and integers
+                List<IProblemConfig_CombinableVariable> combVars = new List<IProblemConfig_CombinableVariable>();
+                combVars.AddRange(AppSS.I.Gh_Alg.GeometryDefs_LineList_View.OfType<LineList_GhGeom_ParamDef>());
+                combVars.AddRange(AppSS.I.Gh_Alg.ConfigDefs_Integer_View.OfType<Integer_GhConfig_ParamDef>());
+
+                // Checks if all have at least one option
+                foreach (IProblemConfig_CombinableVariable combVar in combVars)
+                {
+                    if (!combVar.FlatCombinationList.Any())
+                    {
+                        throw new InvalidOperationException($"All configuration variable must have at least one option.{Environment.NewLine}{combVar.Name} is lacking options.");
+                    }
+                }
+
+                // Gets a List of possible values for each variable 
+                // Example: LineList 1 => FeSectionA, FeSectionB
+                //          Integers => 1,2,3
+                IEnumerable<IEnumerable<ProblemConfig_ElementCombinationValue>> possiblePerVariable = from a in combVars select a.FlatCombinationList;
+
+                IEnumerable<IEnumerable<ProblemConfig_ElementCombinationValue>> allPossibleCombos = EmasaWPFLibraryStaticMethods.GetAllPossibleCombos(possiblePerVariable);
+
+                // Gets the UNIQUE combinations - Heavily based on the Comparer found in ProblemConfig_ElementCombinationValue 
+                HashSet<List<ProblemConfig_ElementCombinationValue>> uniqueCombs = new HashSet<List<ProblemConfig_ElementCombinationValue>>(new ProblemConfig_ElementCombinationValue.ProblemConfig_ElementCombinationValue_ListComparer());
+                foreach (IEnumerable<ProblemConfig_ElementCombinationValue> possibleCombo in allPossibleCombos)
+                {
+                    List<ProblemConfig_ElementCombinationValue> possibleComboAsList = possibleCombo.ToList();
+                    possibleComboAsList.Sort(new ProblemConfig_ElementCombinationValue.ProblemConfig_ElementCombinationValue_Comparer());
+                    uniqueCombs.Add(possibleComboAsList);
+                }
+
+                // Adds the problem configs to the list
+                ProblemConfigs.AddRange(uniqueCombs.Select(comb => new ProblemConfig(comb, problemConfigIndex++)));
+                #endregion
             }
-
-            // Saves it into the list
-            _availableProblems = problems;
-
-            // Builds the interface view for the problem list
-            CollectionViewSource problem_cvs = new CollectionViewSource() { Source = _availableProblems };
-            problem_cvs.SortDescriptions.Add(new SortDescription("WpfFriendlyName", ListSortDirection.Ascending));
-            WpfAvailableProblems = problem_cvs.View;
-
-            // Gets the default selection
-            GeneralProblem genProblemInList = problems.FirstOrDefault(a => a.GetType().Name == nameof(GeneralProblem));
-            WpfSelectedProblem = genProblemInList ?? problems.First();
-            #endregion
-
-            #region Initializes the Solution Points
-            _solPoints = new FastObservableCollection<SolutionPoint>();
-
-            // Sets the views for the function points
-            CollectionViewSource functionPnts_cvs = new CollectionViewSource() {Source = _solPoints };
-            WpfFunctionPoints = functionPnts_cvs.View;
-            WpfFunctionPoints.Filter += inO => inO is SolutionPoint sPnt && sPnt.SolutionPointCalcType == SolutionPointCalcTypeEnum.ObjectiveFunction;
-
-
-            // Sets the views for the gradient points
-            CollectionViewSource gradientPnts_cvs = new CollectionViewSource() { Source = _solPoints };
-            WpfGradientPoints = gradientPnts_cvs.View;
-            WpfGradientPoints.Filter += inO => inO is SolutionPoint sPnt && sPnt.SolutionPointCalcType == SolutionPointCalcTypeEnum.Gradient;
-
-            #endregion
-
-            #region Initializes the Problem Quantities Views
-            CollectionViewSource problemQuantities_All_cvs = new CollectionViewSource() { Source = _problemQuantities};
-            WpfProblemQuantities_All = problemQuantities_All_cvs.View;
-
-            CollectionViewSource problemQuantities_OutputOnly_cvs = new CollectionViewSource() { Source = _problemQuantities };
-            WpfProblemQuantities_OutputOnly = problemQuantities_OutputOnly_cvs.View;
-            WpfProblemQuantities_OutputOnly.Filter += inO => (inO is ProblemQuantity pq && pq.IsOutputOnly);
-
-            CollectionViewSource problemQuantities_ObjectiveFunction_cvs = new CollectionViewSource() { Source = _problemQuantities };
-            WpfProblemQuantities_ObjectiveFunction = problemQuantities_ObjectiveFunction_cvs.View;
-            WpfProblemQuantities_ObjectiveFunction.Filter += inO => (inO is ProblemQuantity pq && pq.IsObjectiveFunctionMinimize);
-
-            CollectionViewSource problemQuantities_Constraints_cvs = new CollectionViewSource() { Source = _problemQuantities };
-            WpfProblemQuantities_Constraint = problemQuantities_Constraints_cvs.View;
-            WpfProblemQuantities_Constraint.Filter += inO => (inO is ProblemQuantity pq && pq.IsConstraint);
-            #endregion
-
-            CollectionViewSource problemQuantities_AvailableTypes_cvs = new CollectionViewSource() { Source = ProblemQuantityAvailableTypes };
-            WpfProblemQuantityAvailableTypes = problemQuantities_AvailableTypes_cvs.View;
-            WpfProblemQuantityAvailableTypes.SortDescriptions.Add(new SortDescription("IsFiniteElementData", ListSortDirection.Ascending));
+            catch (Exception e)
+            {
+                ExceptionViewer.Show(e);
+            }
         }
+        public void WpfCommand_ClearConfigurations()
+        {
+            ProblemConfigs.Clear();
+        }
+
+        private readonly MPOC.ObservableCollection<ProblemConfig> _problemConfigs = new MPOC.ObservableCollection<ProblemConfig>();
+        private void ProblemConfigsOnCollectionChanged(object inSender, NotifyCollectionChangedEventArgs inE)
+        {
+            RaisePropertyChanged("Wpf_ConfigurationsHaveBeenGenerated");
+            RaisePropertyChanged("Wpf_ConfigurationCount_Generated");
+        }
+        public MPOC.ObservableCollection<ProblemConfig> ProblemConfigs => _problemConfigs;
+        public ICollectionView Wpf_ProblemConfigs_View { get; }
+
+        private ProblemConfig _currentCalculatingProblemConfig;
+        public ProblemConfig CurrentCalculatingProblemConfig
+        {
+            get => _currentCalculatingProblemConfig;
+            set
+            {
+                SetProperty(ref _currentCalculatingProblemConfig, value);
+
+                // Tries to make it visible in the list
+                AppSS.I.BringListChildIntoView("OverlayProblemConfigurationList", _currentCalculatingProblemConfig, "BusyOptimizingOverlay");
+            }
+        }
+
+        private ProblemConfig _wpf_CurrentlySelected_ProblemConfig;
+        public ProblemConfig Wpf_CurrentlySelected_ProblemConfig
+        {
+            get => _wpf_CurrentlySelected_ProblemConfig;
+            set => SetProperty(ref _wpf_CurrentlySelected_ProblemConfig, value);
+        }
+
+        private ProblemConfig _wpf_BestEval_ProblemConfig;
+        public ProblemConfig Wpf_BestEval_ProblemConfig
+        {
+            get => _wpf_BestEval_ProblemConfig;
+            set => SetProperty(ref _wpf_BestEval_ProblemConfig, value);
+        }
+        public void Update_Wpf_BestEval_ProblemConfig()
+        {
+            Wpf_BestEval_ProblemConfig = ProblemConfigs
+                .Where(a => a.LastPoint.AllConstraintsRespected &&
+                            (a.NlOptSolverWrapper.OptimizeTerminationException.OptimizeTerminationCode == NlOpt_OptimizeTerminationCodeEnum.Converged ||
+                             a.NlOptSolverWrapper.OptimizeTerminationException.OptimizeTerminationCode == NlOpt_OptimizeTerminationCodeEnum.Success))
+                .OrderBy(a => a.LastPoint.ObjectiveFunctionEval)
+                .FirstOrDefault();
+        }
+        #endregion
+
+        private CancellationTokenSource _cancelSource = new CancellationTokenSource();
+        public CancellationTokenSource CancelSource
+        {
+            get => _cancelSource;
+            set => _cancelSource = value ?? throw new InvalidOperationException($"{MethodBase.GetCurrentMethod()} does not accept null values.");
+        }
+
+        private TimeSpan _totalOptimizationElapsedTime;
+        public TimeSpan TotalOptimizationElapsedTime
+        {
+            get => _totalOptimizationElapsedTime;
+            set => SetProperty(ref _totalOptimizationElapsedTime, value);
+        }
+
+        public double AverageTotalSeconds_ConfigurationElapsedTime => _problemConfigs.Average(a => a.ProblemConfigOptimizeElapsedTime.TotalSeconds);
         
-        #region Finite Element Problem Options
-        private FeOptions _feOptions;
-        public FeOptions FeOptions
-        {
-            get => _feOptions;
-            set => SetProperty(ref _feOptions, value);
-        }
-        #endregion
-
-        #region Available Problem Management
-        private readonly List<GeneralProblem> _availableProblems;
-        public ICollectionView WpfAvailableProblems { get; }
-        public bool IsOnlyOneAvailableProblem => _availableProblems.Count == 1;
-        private GeneralProblem _wpfSelectedProblem;
-        public GeneralProblem WpfSelectedProblem
-        {
-            get => _wpfSelectedProblem;
-            set => SetProperty(ref _wpfSelectedProblem, value);
-        } 
-        #endregion
-        
-        #region NlOpt Optimization Point Management
-        private readonly FastObservableCollection<SolutionPoint> _solPoints;
-        public void AddSolutionPoint(SolutionPoint inPoint)
-        {
-            inPoint.PointIndex = _solPoints.Count;
-            _solPoints.Add(inPoint);
-        }
-        public SolutionPoint GetSolutionPointIfExists(double[] inPointVars)
-        {
-            // Will return the first it finds; or null if failed.
-            return _solPoints.FirstOrDefault(a => a.InputValuesAsDoubleArray.SequenceEqual(inPointVars));
-        }
-        public ICollectionView WpfFunctionPoints { get; }
-        public ICollectionView WpfGradientPoints { get; }
-        #endregion
-
         #region Actions!
-        public void NlOpt_SolveSelectedProblem(bool inUpdateInterface = false)
+        public void OptimizeMissingProblemConfigurations()
         {
-            // Clears the current solution list
-            _solPoints.Clear();
+            // The missing problem configurations are:
+            List<ProblemConfig> toOptimize = (from a in _problemConfigs
+                where a.NlOptSolverWrapper.OptimizeTerminationException.OptimizeTerminationCode == NlOpt_OptimizeTerminationCodeEnum.NotStarted ||
+                      a.NlOptSolverWrapper.OptimizeTerminationException.OptimizeTerminationCode == NlOpt_OptimizeTerminationCodeEnum.Forced_Stop
+                select a).ToList();
 
-            // Starts the Fe Solver software
-            FeOptions.EvaluateRequiredFeOutputs();
-            string nlOpt_Folder = Path.Combine(Gh_Alg.GhDataDirPath, "NlOpt", "FeWork");
-            switch (FeOptions.FeSolverType_Selected)
+            if (toOptimize.Count == 0) return;
+
+            Stopwatch sw = Stopwatch.StartNew();
+
+            // Resets the cancellation source
+            AppSS.I.SolveMgr.CancelSource = new CancellationTokenSource();
+
+            // Instantiates the Fe Solver software
+            AppSS.I.FeOpt.EvaluateRequiredFeOutputs();
+            switch (AppSS.I.FeOpt.FeSolverType_Selected)
             {
                 case FeSolverTypeEnum.Ansys:
-                    FeSolver = new FeSolver_Ansys(nlOpt_Folder, this);
+                    AppSS.I.FeSolver = new FeSolverBase_Ansys();
                     break;
 
                 case FeSolverTypeEnum.NotFeProblem:
-                    FeSolver = null;
+                    AppSS.I.FeSolver = null;
                     break;
 
                 default:
@@ -172,89 +286,57 @@ namespace Emasa_Optimizer.Opt
 
             try
             {
-                NlOptManager.SolveSelectedProblem(inUpdateInterface);
+                // Prepares Rhino for Screenshot output
+                RhinoModel.RM.PrepareRhinoViewForImageAcquire();
+
+                // Sets the progress bar
+                AppSS.I.Overlay_ProgressBarMaximum = toOptimize.Count;
+                AppSS.I.Overlay_ProgressBarIndeterminate = false;
+
+                // Sets the default selections for the screenshots
+                AppSS.I.ScreenShotOpt.SelectedDisplayImageResultClassification = AppSS.I.ScreenShotOpt.Wpf_ScreenshotList.OfType<IProblemQuantitySource>().FirstOrDefault();
+                AppSS.I.ScreenShotOpt.SelectedDisplayDirection = AppSS.I.ScreenShotOpt.ImageCapture_ViewDirectionsEnumerable.FirstOrDefault();
+
+                // Runs optimizations for missing Problem Configurations
+                for (int i = 0; i < toOptimize.Count; i++)
+                {
+                    AppSS.I.Overlay_ProgressBarCurrent = i;
+
+                    ProblemConfig pc = toOptimize[i];
+
+                    // Sets the current problem configuration
+                    CurrentCalculatingProblemConfig = pc;
+                    CurrentCalculatingProblemConfig.Optimize();
+
+                    // User cancelled
+                    if (CancelSource.IsCancellationRequested) break;
+                }
             }
             finally
             {
-                FeSolver?.Dispose();
-                FeSolver = null;
+                Update_Wpf_BestEval_ProblemConfig();
+
+                CurrentCalculatingProblemConfig = null;
+
+                // Terminates the Finite Element Solver
+                AppSS.I.FeSolver?.Dispose();
+                AppSS.I.FeSolver = null;
+
+                // Returns Rhino to its default view state
+                RhinoModel.RM.RestoreRhinoViewFromImageAcquire();
+
+                // Saves the total elapsed time
+                sw.Stop();
+                TotalOptimizationElapsedTime = sw.Elapsed;
+                
+                RaisePropertyChanged("AverageTotalSeconds_ConfigurationElapsedTime");
             }
-
-
         }
         #endregion
 
+        #region Report During Calculation 
 
 
-
-
-        #region Problem Quantity Available Types
-        public FastObservableCollection<IProblemQuantitySource> ProblemQuantityAvailableTypes { get; } = new FastObservableCollection<IProblemQuantitySource>();
-        public ICollectionView WpfProblemQuantityAvailableTypes { get; }
-        #endregion
-
-        #region Problem Quantities Selection
-
-        public int ProblemQuantityMaxIndex { get; set; } = 1;
-
-        private readonly FastObservableCollection<ProblemQuantity> _problemQuantities = new FastObservableCollection<ProblemQuantity>();
-        public ICollectionView WpfProblemQuantities_OutputOnly { get; }
-        public ICollectionView WpfProblemQuantities_ObjectiveFunction { get; }
-        public ICollectionView WpfProblemQuantities_Constraint { get; }
-        public ICollectionView WpfProblemQuantities_All { get; }
-        public void AddProblemQuantity(ProblemQuantity inProblemQuantity)
-        {
-            _problemQuantities.Add(inProblemQuantity);
-            //WpfProblemQuantities_ObjectiveFunction.Refresh();
-        }
-        public void DeleteProblemQuantity(ProblemQuantity inProblemQuantity)
-        {
-            _problemQuantities.Remove(inProblemQuantity);
-            //WpfProblemQuantities_ObjectiveFunction.Refresh();
-        }
-
-        public void AddAllProblemQuantity_OutputOnly()
-        {
-            // Adds one for each Grasshopper double list
-            foreach (DoubleList_GhGeom_ParamDef ghDoubleList in Gh_Alg.GeometryDefs_DoubleList_View.OfType<DoubleList_GhGeom_ParamDef>())
-            {
-                ghDoubleList.AddProblemQuantity_OutputOnly(this);
-            }
-
-            // Adds one for each selected output results
-            foreach (FeResultClassification feResultClassification in FeOptions.WpfAllSelectedOutputResults.OfType<FeResultClassification>())
-            {
-                feResultClassification.AddProblemQuantity_OutputOnly(this);
-            }
-        }
-        public void AddAllProblemQuantity_ConstraintObjective()
-        {
-            // Adds one for each Grasshopper double list
-            foreach (DoubleList_GhGeom_ParamDef ghDoubleList in Gh_Alg.GeometryDefs_DoubleList_View.OfType<DoubleList_GhGeom_ParamDef>())
-            {
-                ghDoubleList.AddProblemQuantity_ConstraintObjective(this);
-            }
-
-            // Adds one for each selected output results
-            foreach (FeResultClassification feResultClassification in FeOptions.WpfAllSelectedOutputResults.OfType<FeResultClassification>())
-            {
-                feResultClassification.AddProblemQuantity_ConstraintObjective(this);
-            }
-        }
-        public void AddAllProblemQuantity_FunctionObjective()
-        {
-            // Adds one for each Grasshopper double list
-            foreach (DoubleList_GhGeom_ParamDef ghDoubleList in Gh_Alg.GeometryDefs_DoubleList_View.OfType<DoubleList_GhGeom_ParamDef>())
-            {
-                ghDoubleList.AddProblemQuantity_FunctionObjective(this);
-            }
-
-            // Adds one for each selected output results
-            foreach (FeResultClassification feResultClassification in FeOptions.WpfAllSelectedOutputResults.OfType<FeResultClassification>())
-            {
-                feResultClassification.AddProblemQuantity_FunctionObjective(this);
-            }
-        }
         #endregion
     }
 }

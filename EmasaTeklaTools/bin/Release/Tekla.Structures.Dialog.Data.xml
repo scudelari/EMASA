@@ -1,0 +1,460 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Tekla.Structures.Dialog.Data</name>
+    </assembly>
+    <members>
+        <member name="T:Tekla.Structures.Dialog.Data.AppliedAttributesSelector">
+            <summary>
+            The <see cref="T:Tekla.Structures.Dialog.Data.AppliedAttributesSelector"/> class selects the current applied attributes for any <see cref="T:Tekla.Structures.Model.Part"/> instance.
+            </summary>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.AppliedAttributesSelector.SelectAppliedAttributes(Tekla.Structures.Model.Part,Tekla.Structures.Dialog.Data.MaterialType)">
+            <summary>
+            Selects the current applied attributes to the given <see cref="T:Tekla.Structures.Model.Part"/> instance.
+            </summary>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="part"/> is null.</exception>
+            <exception cref="T:System.ApplicationException">Thrown when the applied attributes cannot be selected for <paramref name="part"/>.</exception>
+            <param name="part">The <see cref="T:Tekla.Structures.Model.Part"/> to set the current applied values to.</param>
+            <param name="materialType">The type of material of <paramref name="part"/>.</param>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.AppliedAttributesSelector.SelectAppliedAttributes(Tekla.Structures.Model.Part,Tekla.Structures.Dialog.Data.MaterialType,Tekla.Structures.Dialog.Data.IAppliedAttributesSelector)">
+            <summary>
+            Selects the current applied attributes to the given <see cref="T:Tekla.Structures.Model.Part"/> instance.
+            </summary>
+            <param name="part">The <see cref="T:Tekla.Structures.Model.Part"/> to set the current applied values to.</param>
+            <param name="materialType">The type of material of <paramref name="part"/>.</param>
+            <param name="appliedAttributesSelector">An instance of an <see cref="T:Tekla.Structures.Dialog.Data.IAppliedAttributesSelector"/> interface.</param>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.AppliedAttributesSelector.SelectDefaultEndPoints(Tekla.Structures.Model.Beam,Tekla.Structures.Dialog.Data.MaterialType,Tekla.Common.Geometry.Vector3)">
+            <summary>
+            Selects the default end points to <paramref name="column"/> for the given <paramref name="referencePosition"/>.
+            The <see cref="P:Tekla.Structures.Model.Beam.Type"/> property of <paramref name="column"/> must be set to either <see cref="F:Tekla.Structures.Model.Beam.BeamTypeEnum.COLUMN"/> or <see cref="F:Tekla.Structures.Model.Beam.BeamTypeEnum.PAD_FOOTING"/>.
+            </summary>
+            <exception cref="T:System.ArgumentException">
+            Thrown when <paramref name="column"/> is neither of type <see cref="F:Tekla.Structures.Model.Beam.BeamTypeEnum.COLUMN"/> or <see cref="F:Tekla.Structures.Model.Beam.BeamTypeEnum.PAD_FOOTING"/>.
+            </exception>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown when <paramref name="column"/> is null.
+            </exception>
+            <exception cref="T:System.ApplicationException">
+            Thrown when the applied attributes cannot be selected for <paramref name="column"/>.
+            </exception>
+            <param name="column">The <see cref="T:Tekla.Structures.Model.Beam"/> to set the default <see cref="P:Tekla.Structures.Model.Beam.StartPoint"/> and <see cref="P:Tekla.Structures.Model.Beam.EndPoint"/> values on.</param>
+            <param name="materialType">The type of material of <paramref name="column"/>.</param>
+            <param name="referencePosition">The reference location to position <paramref name="column"/> against.</param>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.AppliedAttributesSelector.SelectDefaultEndPoints(Tekla.Structures.Model.Beam,Tekla.Structures.Dialog.Data.MaterialType,Tekla.Common.Geometry.Vector3,Tekla.Structures.Dialog.Data.IAppliedAttributesSelector)">
+            <summary>
+            Selects the default end points to <paramref name="column"/> for the given <paramref name="referencePosition"/>.
+            The <see cref="P:Tekla.Structures.Model.Beam.Type"/> property of <paramref name="column"/> must be set to either <see cref="F:Tekla.Structures.Model.Beam.BeamTypeEnum.COLUMN"/> or <see cref="F:Tekla.Structures.Model.Beam.BeamTypeEnum.PAD_FOOTING"/>.
+            </summary>
+            <param name="column">The <see cref="T:Tekla.Structures.Model.Beam"/> to set the default <see cref="P:Tekla.Structures.Model.Beam.StartPoint"/> and <see cref="P:Tekla.Structures.Model.Beam.EndPoint"/> values on.</param>
+            <param name="materialType">The type of material of <paramref name="column"/>.</param>
+            <param name="referencePosition">The reference location to position <paramref name="column"/> against.</param>
+            <param name="appliedAttributesSelector">An instance of an <see cref="T:Tekla.Structures.Dialog.Data.IAppliedAttributesSelector"/> interface.</param>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.AppliedAttributesSelector.SelectAppliedAttributes(Tekla.Structures.Model.RebarGroup)">
+            <summary>
+            Selects the current applied attributes to the given <see cref="T:Tekla.Structures.Model.RebarGroup"/> instance.
+            </summary>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="rebarGroup"/> is null.</exception>
+            <exception cref="T:System.ApplicationException">Thrown when the applied attributes cannot be selected for <paramref name="rebarGroup"/>.</exception>
+            <param name="rebarGroup">The <see cref="T:Tekla.Structures.Model.RebarGroup"/> to set the current applied values to.</param>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.AppliedAttributesSelector.SelectAppliedAttributes(Tekla.Structures.Model.ControlArc)">
+            <summary>
+            Selects the current applied attributes to the given <see cref="T:Tekla.Structures.Model.ControlArc"/> instance.
+            </summary>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="controlArc"/> is null.</exception>
+            <exception cref="T:System.ApplicationException">Thrown when the applied attributes cannot be selected for <paramref name="controlArc"/>.</exception>
+            <param name="controlArc">The <see cref="T:Tekla.Structures.Model.ControlArc"/> to set the current applied values to.</param>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.AppliedAttributesSelector.SelectAppliedAttributes(Tekla.Structures.Model.ControlCircle)">
+            <summary>
+            Selects the current applied attributes to the given <see cref="T:Tekla.Structures.Model.ControlCircle"/> instance.
+            </summary>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="controlCircle"/> is null.</exception>
+            <exception cref="T:System.ApplicationException">Thrown when the applied attributes cannot be selected for <paramref name="controlCircle"/>.</exception>
+            <param name="controlCircle">The <see cref="T:Tekla.Structures.Model.ControlCircle"/> to set the current applied values to.</param>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.AppliedAttributesSelector.SelectAppliedAttributes(Tekla.Structures.Model.ControlLine)">
+            <summary>
+            Selects the current applied attributes to the given <see cref="T:Tekla.Structures.Model.ControlLine"/> instance.
+            </summary>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="controlLine"/> is null.</exception>
+            <exception cref="T:System.ApplicationException">Thrown when the applied attributes cannot be selected for <paramref name="controlLine"/>.</exception>
+            <param name="controlLine">The <see cref="T:Tekla.Structures.Model.ControlLine"/> to set the current applied values to.</param>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.AppliedAttributesSelector.SelectAppliedAttributes(Tekla.Structures.Model.ControlPolycurve)">
+            <summary>
+            Selects the current applied attributes to the given <see cref="T:Tekla.Structures.Model.ControlPolycurve"/> instance.
+            </summary>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="controlPolycurve"/> is null.</exception>
+            <exception cref="T:System.ApplicationException">Thrown when the applied attributes cannot be selected for <paramref name="controlPolycurve"/>.</exception>
+            <param name="controlPolycurve">The <see cref="T:Tekla.Structures.Model.ControlPolycurve"/> to set the current applied values to.</param>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.AppliedAttributesSelector.SelectAppliedAttributes``1(``0)">
+            <summary>
+            Selects the current applied attributes to the given <see cref="T:Tekla.Structures.Model.GridBase"/> instance.
+            </summary>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="grid"/> is null.</exception>
+            <exception cref="T:System.ApplicationException">Thrown when the applied attributes cannot be selected for <paramref name="grid"/>.</exception>
+            <param name="grid">The <see cref="T:Tekla.Structures.Model.GridBase"/> to set the current applied values to.</param>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.AppliedAttributesSelector.SelectAppliedAttributes(Tekla.Structures.Model.LoftedPlate,Tekla.Structures.Dialog.Data.MaterialType)">
+            <summary>
+            Selects the current applied attributes to the given <see cref="T:Tekla.Structures.Model.LoftedPlate"/> instance.
+            </summary>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="loftedPlate"/> is null.</exception>
+            <exception cref="T:System.ApplicationException">Thrown when the applied attributes cannot be selected for <paramref name="loftedPlate"/>.</exception>
+            <param name="loftedPlate">The <see cref="T:Tekla.Structures.Model.Part"/> to set the current applied values to.</param>
+            <param name="materialType">The type of material of <paramref name="loftedPlate"/>.</param>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.AppliedAttributesSelector.SelectAppliedAttributes(Tekla.Structures.Model.SingleRebar)">
+            <summary>
+            [Proto] Selects the current applied attributes to the given <see cref="T:Tekla.Structures.Model.SingleRebar"/> instance.
+            </summary>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="singleRebar"/> is null.</exception>
+            <exception cref="T:System.ApplicationException">Thrown when the applied attributes cannot be selected for <paramref name="singleRebar"/>.</exception>
+            <param name="singleRebar">The <see cref="T:Tekla.Structures.Model.SingleRebar"/> to set the current applied values to.</param>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.AppliedAttributesSelector.Construct(Tekla.Structures.Model.Part,System.Collections.Generic.IEnumerable{Tekla.Common.Geometry.Vector3})">
+            <summary>
+            [Proto] Prototype function for constructing a <see cref="T:Tekla.Structures.Model.RebarMesh"/> by applied values.
+            </summary>
+            <param name="fatherPart">The father of the mesh (not required?)</param>
+            <param name="inputPoints">The input points for construction.</param>
+            <returns>A newly constructed <see cref="T:Tekla.Structures.Model.RebarMesh"/>, ready to be inserted to TS.</returns>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.AppliedAttributesSelector.AssertNotNull(Tekla.Structures.Model.ModelObject)">
+            <summary>
+            Asserts that the given <see cref="T:Tekla.Structures.Model.ModelObject"/> is not null.
+            </summary>
+            <param name="modelObject">The <see cref="T:Tekla.Structures.Model.ModelObject"/> to assert.</param>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.AppliedAttributesSelector.FromStruct``2(``0,``1@)">
+            <summary>
+            Copies the data from the given <paramref name="source"/> to the given <paramref name="target"/>.
+            </summary>
+            <typeparam name="TObject">The type of the target object, must have a FromStruct(ref TValue) method.</typeparam>
+            <typeparam name="TValue">The type of the source value.</typeparam>
+            <param name="target">The target object.</param>
+            <param name="source">The source value.</param>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.AppliedAttributesSelector.ToStruct``2(``0,``1@)">
+            <summary>
+            Copies the data from the given <paramref name="source"/> to the given <paramref name="target"/>.
+            </summary>
+            <typeparam name="TObject">The type of the source object, must have a ToStruct(ref TValue) method.</typeparam>
+            <typeparam name="TValue">The type of the target value.</typeparam>
+            <param name="source">The source object.</param>
+            <param name="target">The target value.</param>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.AppliedAttributesSelector.SelectAppliedAttributes``1(Tekla.Structures.Model.ModelObject,Tekla.BIM.FuncByRef{``0,System.Int32})">
+            <summary>
+            Selects the current applied values for the given <paramref name="modelObject"/>.
+            </summary>
+            <typeparam name="TValue">The type of the struct through which the applied values need to be selected.</typeparam>
+            <param name="modelObject">The target <see cref="T:Tekla.Structures.Model.ModelObject"/> instance to set the applied values to.</param>
+            <param name="dotSelectAppliedAttributes">The method selecting the applied values to any <typeparamref name="TValue"/> instance.</param>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.AppliedAttributesSelector.DotExportSelectPartAppliedAttributes(Tekla.Structures.ModelInternal.dotPart_t@,Tekla.Structures.Dialog.Data.Native.dotMaterialType)">
+            <summary>
+            Selects the current applied values to <paramref name="part"/>.
+            It's expected that the target type to get the applied values for,
+            is indicated by <see cref="F:Tekla.Structures.ModelInternal.dotModelObject_t.Type"/> and <see cref="F:Tekla.Structures.ModelInternal.dotPart_t.SubType"/>.
+            </summary>
+            <param name="part">The <see cref="T:Tekla.Structures.ModelInternal.dotPart_t"/> instance to set the current applied values to.</param>
+            <param name="dotMaterialType">The type of material of the part to select the applied values for.</param>
+            <returns>Greater than zero on success; otherwise, zero.</returns>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.AppliedAttributesSelector.DotExportSelectColumnAppliedLevels(Tekla.Structures.Model.Beam.BeamTypeEnum,Tekla.Structures.Dialog.Data.Native.dotMaterialType,System.Double@,System.Double@)">
+            <summary>
+            Selects the current default bottom and top levels for a <see cref="T:Tekla.Structures.Model.Beam"/> with the given <see cref="T:Tekla.Structures.Model.Beam.BeamTypeEnum"/>.
+            </summary>
+            <param name="beamType">The type of beam to get the current applied levels for.</param>
+            <param name="dotMaterialType">The type of material of the beam to get the current applied levels for.</param>
+            <param name="bottomLevel">The offset to apply on <see cref="P:Tekla.Structures.Model.Beam.StartPoint"/> against a specific reference location.</param>
+            <param name="topLevel">The offset to apply on <see cref="P:Tekla.Structures.Model.Beam.EndPoint"/> against a specific reference location.</param>
+            <returns>Greater than zero on success; otherwise, zero.</returns>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.AppliedAttributesSelector.DotExportCreateRebarMeshFromInputValues(Tekla.Structures.Internal.dotIdentifier_t@,Tekla.Structures.Internal.dotPoint_t[],System.Int32,Tekla.Structures.ModelInternal.dotRebarMesh_t@)">
+            <summary>
+            Creates a <see cref="T:Tekla.Structures.ModelInternal.dotRebarMesh_t"/> from the given input values.
+            </summary>
+            <param name="fatherIdentifier">The identifier of the father part.</param>
+            <param name="inputPoints">The sequence of input points.</param>
+            <param name="amountOfInputPoints">The count of input points.</param>
+            <param name="dotRebarMesh">The constructed rebar mesh.</param>
+            <returns>Greater than zero on success; otherwise, zero.</returns>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.AppliedAttributesSelector.DotExportSelectSingleRebarApliedAttributes(Tekla.Structures.ModelInternal.dotSingleRebar_t@)">
+            <summary>
+            Selects the current applied values to <paramref name="singleRebar"/>.
+            </summary>
+            <param name="singleRebar">The <see cref="T:Tekla.Structures.ModelInternal.dotSingleRebar_t"/> instance to set the current applied values to.</param>
+            <returns>Greater than zero on success; otherwise, zero.</returns>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.AppliedAttributesSelector.DotExportSelectRebarGroupAppliedAttributes(Tekla.Structures.ModelInternal.dotRebarGroup_t@)">
+            <summary>
+            Selects the current applied values to <paramref name="rebarGroup"/>.
+            </summary>
+            <param name="rebarGroup">The <see cref="T:Tekla.Structures.ModelInternal.dotRebarGroup_t"/> instance to set the current applied values to.</param>
+            <returns>Greater than zero on success; otherwise, zero.</returns>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.AppliedAttributesSelector.DotExportSelectControlObjectAppliedAttributes(Tekla.Structures.ModelInternal.dotControlObject_t@)">
+            <summary>
+            Selects the current applied values to <paramref name="controlObject"/>.
+            It's expected that the target type to get the applied values for,
+            is indicated by <see cref="F:Tekla.Structures.ModelInternal.dotModelObject_t.Type"/> and <see cref="F:Tekla.Structures.ModelInternal.dotPart_t.SubType"/>.
+            </summary>
+            <param name="controlObject">The <see cref="T:Tekla.Structures.ModelInternal.dotControlObject_t"/> instance to set the current applied values to.</param>
+            <returns>Greater than zero on success; otherwise, zero.</returns>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.AppliedAttributesSelector.DotExportSelectGridAppliedAttributes(Tekla.Structures.ModelInternal.dotGrid_t@)">
+            <summary>
+            Selects the current applied values to <paramref name="grid"/>.
+            It's expected that the target type to get the applied values for,
+            is indicated by <see cref="F:Tekla.Structures.ModelInternal.dotModelObject_t.Type"/>.
+            </summary>
+            <param name="grid">The <see cref="T:Tekla.Structures.ModelInternal.dotGrid_t"/> instance to set the current applied values to.</param>
+            <returns>Greater than zero on success; otherwise, zero.</returns>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.AppliedAttributesSelector.DotExportSelectLoftedPlateAppliedAttributes(Tekla.Structures.ModelInternal.dotPart_t@,Tekla.Structures.Dialog.Data.Native.dotMaterialType,System.Int32@)">
+            <summary>
+            Selects the current applied values to <paramref name="part"/> which is <see cref="T:Tekla.Structures.Model.LoftedPlate"/>.
+            It's expected that the target type to get the applied values for,
+            is indicated by <see cref="F:Tekla.Structures.ModelInternal.dotModelObject_t.Type"/> and <see cref="F:Tekla.Structures.ModelInternal.dotPart_t.SubType"/>.
+            </summary>
+            <param name="part">The <see cref="T:Tekla.Structures.ModelInternal.dotPart_t"/> instance to set the current applied values to.</param>
+            <param name="dotMaterialType">The type of material of the part to select the applied values for.</param>
+            <param name="faceType">Lofted plate solid face type.</param>
+            <returns>Greater than zero on success; otherwise, zero.</returns>
+        </member>
+        <member name="T:Tekla.Structures.Dialog.Data.DefaultAppliedAttributesSelector">
+            <summary>
+            The <see cref="T:Tekla.Structures.Dialog.Data.DefaultAppliedAttributesSelector"/> class selects the current applied attributes for any <see cref="T:Tekla.Structures.Model.Part"/> instance.
+            </summary>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.DefaultAppliedAttributesSelector.SelectAppliedAttributes(Tekla.Structures.Model.Part,Tekla.Structures.Dialog.Data.MaterialType)">
+            <summary>
+            Selects the current applied attributes to the given <see cref="T:Tekla.Structures.Model.Part"/> instance.
+            </summary>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="part"/> is null.</exception>
+            <exception cref="T:System.ApplicationException">Thrown when the applied attributes cannot be selected for <paramref name="part"/>.</exception>
+            <param name="part">The <see cref="T:Tekla.Structures.Model.Part"/> to set the current applied values to.</param>
+            <param name="materialType">The type of material of <paramref name="part"/>.</param>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.DefaultAppliedAttributesSelector.SelectDefaultEndPoints(Tekla.Structures.Model.Beam,Tekla.Structures.Dialog.Data.MaterialType,Tekla.Common.Geometry.Vector3)">
+            <summary>
+            Selects the default end points to <paramref name="column"/> for the given <paramref name="referencePosition"/>.
+            The <see cref="P:Tekla.Structures.Model.Beam.Type"/> property of <paramref name="column"/> must be set to either <see cref="F:Tekla.Structures.Model.Beam.BeamTypeEnum.COLUMN"/> or <see cref="F:Tekla.Structures.Model.Beam.BeamTypeEnum.PAD_FOOTING"/>.
+            </summary>
+            <exception cref="T:System.ArgumentException">
+            Thrown when <paramref name="column"/> is neither of type <see cref="F:Tekla.Structures.Model.Beam.BeamTypeEnum.COLUMN"/> or <see cref="F:Tekla.Structures.Model.Beam.BeamTypeEnum.PAD_FOOTING"/>.
+            </exception>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown when <paramref name="column"/> is null.
+            </exception>
+            <exception cref="T:System.ApplicationException">
+            Thrown when the applied attributes cannot be selected for <paramref name="column"/>.
+            </exception>
+            <param name="column">The <see cref="T:Tekla.Structures.Model.Beam"/> to set the default <see cref="P:Tekla.Structures.Model.Beam.StartPoint"/> and <see cref="P:Tekla.Structures.Model.Beam.EndPoint"/> values on.</param>
+            <param name="materialType">The type of material of <paramref name="column"/>.</param>
+            <param name="referencePosition">The reference location to position <paramref name="column"/> against.</param>
+        </member>
+        <member name="T:Tekla.Structures.Dialog.Data.IAppliedAttributesSelector">
+            <summary>
+            The <see cref="T:Tekla.Structures.Dialog.Data.IAppliedAttributesSelector"/> defines the interface for selecting the current applied attributes for any <see cref="T:Tekla.Structures.Model.Part"/> instance.
+            </summary>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.IAppliedAttributesSelector.SelectAppliedAttributes(Tekla.Structures.Model.Part,Tekla.Structures.Dialog.Data.MaterialType)">
+            <summary>
+            Selects the current applied attributes to the given <see cref="T:Tekla.Structures.Model.Part"/> instance.
+            </summary>
+            <param name="part">The <see cref="T:Tekla.Structures.Model.Part"/> to set the current applied values to.</param>
+            <param name="materialType">The type of material of <paramref name="part"/>.</param>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.IAppliedAttributesSelector.SelectDefaultEndPoints(Tekla.Structures.Model.Beam,Tekla.Structures.Dialog.Data.MaterialType,Tekla.Common.Geometry.Vector3)">
+            <summary>
+            Selects the default end points to <paramref name="column"/> for the given <paramref name="referencePosition"/>.
+            The <see cref="P:Tekla.Structures.Model.Beam.Type"/> property of <paramref name="column"/> must be set to either <see cref="F:Tekla.Structures.Model.Beam.BeamTypeEnum.COLUMN"/> or <see cref="F:Tekla.Structures.Model.Beam.BeamTypeEnum.PAD_FOOTING"/>.
+            </summary>
+            <param name="column">The <see cref="T:Tekla.Structures.Model.Beam"/> to set the default <see cref="P:Tekla.Structures.Model.Beam.StartPoint"/> and <see cref="P:Tekla.Structures.Model.Beam.EndPoint"/> values on.</param>
+            <param name="materialType">The type of material of <paramref name="column"/>.</param>
+            <param name="referencePosition">The reference location to position <paramref name="column"/> against.</param>
+        </member>
+        <member name="T:Tekla.Structures.Dialog.Data.MaterialType">
+            <summary>
+            The <see cref="T:Tekla.Structures.Dialog.Data.MaterialType"/> enum describes different categories of material supported by Tekla Structures.
+            </summary>
+        </member>
+        <member name="F:Tekla.Structures.Dialog.Data.MaterialType.Steel">
+            <summary>
+            The steel material.
+            </summary>
+        </member>
+        <member name="F:Tekla.Structures.Dialog.Data.MaterialType.Concrete">
+            <summary>
+            The concrete material.
+            </summary>
+        </member>
+        <member name="T:Tekla.Structures.Dialog.Data.MaterialTypeExtensions">
+            <summary>
+            The <see cref="T:Tekla.Structures.Dialog.Data.MaterialTypeExtensions"/> class provides a set of extension methods for <see cref="T:Tekla.Structures.Dialog.Data.MaterialType"/> and <see cref="T:Tekla.Structures.Dialog.Data.Native.dotMaterialType"/>.
+            </summary>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.MaterialTypeExtensions.Convert(Tekla.Structures.Dialog.Data.MaterialType)">
+            <summary>
+            Converts an instance of <see cref="T:Tekla.Structures.Dialog.Data.MaterialType"/> to an instance of <see cref="T:Tekla.Structures.Dialog.Data.Native.dotMaterialType"/>.
+            </summary>
+            <param name="materialType">The <see cref="T:Tekla.Structures.Dialog.Data.MaterialType"/> to convert.</param>
+            <returns>The converted <see cref="T:Tekla.Structures.Dialog.Data.Native.dotMaterialType"/>.</returns>
+        </member>
+        <member name="T:Tekla.Structures.Dialog.Data.Native.dotMaterialType">
+            <summary>
+            The <see cref="T:Tekla.Structures.Dialog.Data.Native.dotMaterialType"/> enum defines the different types of material supported by Tekla Structures.
+            </summary>
+        </member>
+        <member name="F:Tekla.Structures.Dialog.Data.Native.dotMaterialType.Steel">
+            <summary>
+            The steel material.
+            </summary>
+        </member>
+        <member name="F:Tekla.Structures.Dialog.Data.Native.dotMaterialType.Concrete">
+            <summary>
+            The concrete material.
+            </summary>
+        </member>
+        <member name="T:Tekla.Structures.Dialog.Data.Native.AppliedAttributesSelectorImports">
+            <summary>
+            Wrapper class for <see cref="T:Tekla.Structures.Dialog.Data.AppliedAttributesSelector"/> imports.
+            </summary>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.Native.AppliedAttributesSelectorImports.DotExportSelectPartAppliedAttributes(Tekla.Structures.ModelInternal.dotPart_t@,Tekla.Structures.Dialog.Data.Native.dotMaterialType)">
+            <summary>
+            Selects the current applied values to <paramref name="part"/>.
+            It's expected that the target type to get the applied values for,
+            is indicated by <see cref="F:Tekla.Structures.ModelInternal.dotModelObject_t.Type"/> and <see cref="F:Tekla.Structures.ModelInternal.dotPart_t.SubType"/>.
+            </summary>
+            <param name="part">The <see cref="T:Tekla.Structures.ModelInternal.dotPart_t"/> instance to set the current applied values to.</param>
+            <param name="dotMaterialType">The type of material of the part to select the applied values for.</param>
+            <returns>Greater than zero on success; otherwise, zero.</returns>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.Native.AppliedAttributesSelectorImports.DotExportSelectColumnAppliedLevels(Tekla.Structures.Model.Beam.BeamTypeEnum,Tekla.Structures.Dialog.Data.Native.dotMaterialType,System.Double@,System.Double@)">
+            <summary>
+            Selects the current default bottom and top levels for a <see cref="T:Tekla.Structures.Model.Beam"/> with the given <see cref="T:Tekla.Structures.Model.Beam.BeamTypeEnum"/>.
+            </summary>
+            <param name="beamType">The type of beam to get the current applied levels for.</param>
+            <param name="dotMaterialType">The type of material of the beam to get the current applied levels for.</param>
+            <param name="bottomLevel">The offset to apply on <see cref="P:Tekla.Structures.Model.Beam.StartPoint"/> against a specific reference location.</param>
+            <param name="topLevel">The offset to apply on <see cref="P:Tekla.Structures.Model.Beam.EndPoint"/> against a specific reference location.</param>
+            <returns>Greater than zero on success; otherwise, zero.</returns>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.Native.AppliedAttributesSelectorImports.DotExportCreateRebarMeshFromInputValues(Tekla.Structures.Internal.dotIdentifier_t@,Tekla.Structures.Internal.dotPoint_t[],System.Int32,Tekla.Structures.ModelInternal.dotRebarMesh_t@)">
+            <summary>
+            Creates a <see cref="T:Tekla.Structures.ModelInternal.dotRebarMesh_t"/> from the given input values.
+            </summary>
+            <param name="pFatherIdentifier">The identifier of the father part.</param>
+            <param name="aInputPoints">The sequence of input points.</param>
+            <param name="nInputPoints">The count of input points.</param>
+            <param name="pDotRebarMesh">The constructed rebar mesh.</param>
+            <returns>Greater than zero on success; otherwise, zero.</returns>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.Native.AppliedAttributesSelectorImports.DotExportSelectSingleRebarApliedAttributes(Tekla.Structures.ModelInternal.dotSingleRebar_t@)">
+            <summary>
+            Selects the current applied values to <paramref name="singleRebar"/>.
+            </summary>
+            <param name="singleRebar">The <see cref="T:Tekla.Structures.ModelInternal.dotSingleRebar_t"/> instance to set the current applied values to.</param>
+            <returns>Greater than zero on success; otherwise, zero.</returns>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.Native.AppliedAttributesSelectorImports.DotExportSelectRebarGroupAppliedAttributes(Tekla.Structures.ModelInternal.dotRebarGroup_t@)">
+            <summary>
+            Selects the current applied values to <paramref name="rebarGroup"/>.
+            </summary>
+            <param name="rebarGroup">The <see cref="T:Tekla.Structures.ModelInternal.dotRebarGroup_t"/> instance to set the current applied values to.</param>
+            <returns>Greater than zero on success; otherwise, zero.</returns>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.Native.AppliedAttributesSelectorImports.DotExportSelectControlObjectAppliedAttributes(Tekla.Structures.ModelInternal.dotControlObject_t@)">
+            <summary>
+            Selects the current applied values to <paramref name="controlObject"/>.
+            It's expected that the target type to get the applied values for,
+            is indicated by <see cref="F:Tekla.Structures.ModelInternal.dotModelObject_t.Type"/> and <see cref="F:Tekla.Structures.ModelInternal.dotPart_t.SubType"/>.
+            </summary>
+            <param name="controlObject">The <see cref="T:Tekla.Structures.ModelInternal.dotControlObject_t"/> instance to set the current applied values to.</param>
+            <returns>Greater than zero on success; otherwise, zero.</returns>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.Native.AppliedAttributesSelectorImports.dotExportSelectGridAppliedAttributes(Tekla.Structures.ModelInternal.dotGrid_t@)">
+            <summary>
+            Selects the current applied values to <paramref name="grid"/>.
+            It's expected that the target type to get the applied values for,
+            is indicated by <see cref="F:Tekla.Structures.ModelInternal.dotModelObject_t.Type"/>.
+            </summary>
+            <param name="grid">The <see cref="T:Tekla.Structures.ModelInternal.dotGrid_t"/> instance to set the current applied values to.</param>
+            <returns>Greater than zero on success; otherwise, zero.</returns>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.Native.AppliedAttributesSelectorImports.DotExportSelectLoftedPlateAppliedAttributes(Tekla.Structures.ModelInternal.dotPart_t@,Tekla.Structures.Dialog.Data.Native.dotMaterialType,System.Int32@)">
+            <summary>
+            Selects the current applied values to <paramref name="part"/> which is <see cref="T:Tekla.Structures.Model.LoftedPlate"/>.
+            It's expected that the target type to get the applied values for,
+            is indicated by <see cref="F:Tekla.Structures.ModelInternal.dotModelObject_t.Type"/> and <see cref="F:Tekla.Structures.ModelInternal.dotPart_t.SubType"/>.
+            </summary>
+            <param name="part">The <see cref="T:Tekla.Structures.ModelInternal.dotPart_t"/> instance to set the current applied values to.</param>
+            <param name="dotMaterialType">The type of material of the part to select the applied values for.</param>
+            <param name="FaceType">Lofted plate solid face type.</param>
+            <returns>Greater than zero on success; otherwise, zero.</returns>
+        </member>
+        <member name="T:Tekla.Structures.Dialog.Data.DialogData">
+            <summary>
+            The <see cref="T:Tekla.Structures.Dialog.Data.DialogData"/> class is used for initializing Tekla Structures Model objects.
+            </summary>
+        </member>
+        <member name="F:Tekla.Structures.Dialog.Data.DialogData.dictionary">
+            <summary>
+            The dictionary for storing dialog data.
+            </summary>
+        </member>
+        <member name="F:Tekla.Structures.Dialog.Data.DialogData.componentName">
+            <summary>
+            The name of the current component.
+            </summary>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.DialogData.SetCurrentValues(Tekla.Structures.Model.BaseComponent)">
+            <summary>
+            Initializes the <see cref="T:Tekla.Structures.Model.Component"/> using the current values.
+            </summary>
+            <param name="component">The component instance.</param>
+            <returns>True if the current values were set correctly.</returns>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.DialogData.ApplyCurrentPositionValues(Tekla.Structures.Model.CustomPart)">
+            <summary>
+            Applies the current position values to the given custom part.
+            </summary>
+            <param name="customPart">The custom part instance.</param>
+            <returns>False if it was not possible to try to apply the values.</returns>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.DialogData.GetCurrentValuesFromTs(System.String)">
+            <summary>
+            Gets the applied dialog values for the given component from Tekla Structures.
+            </summary>
+            <param name="name">The component name.</param>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.DialogData.SetPositionOption(Tekla.Structures.Model.CustomPart,System.String,System.Int32)">
+            <summary>
+            Sets the custom part's position option that matches the <paramref name="attributeName"/>.
+            </summary>
+            <param name="customPart">The custom part.</param>
+            <param name="attributeName">The attribute name.</param>
+            <param name="value">The value of the position option.</param>
+        </member>
+        <member name="M:Tekla.Structures.Dialog.Data.DialogData.SetPositionOffset(Tekla.Structures.Model.CustomPart,System.String,System.Double)">
+            <summary>
+            Sets the custom part's position offset that matches the <paramref name="attributeName"/>.
+            </summary>
+            <param name="customPart">The custom part.</param>
+            <param name="attributeName">The attribute name.</param>
+            <param name="value">The value of the position offset.</param>
+        </member>
+    </members>
+</doc>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -13,6 +14,7 @@ using System.Windows.Data;
 using System.Windows.Ink;
 using BaseWPFLibrary.Annotations;
 using BaseWPFLibrary.Others;
+using Emasa_Optimizer.Bindings;
 using Emasa_Optimizer.FEA.Results;
 using Emasa_Optimizer.Opt;
 using Emasa_Optimizer.Opt.ParamDefinitions;
@@ -20,65 +22,71 @@ using Emasa_Optimizer.Opt.ProbQuantity;
 using Emasa_Optimizer.Properties;
 using Emasa_Optimizer.WpfResources;
 using Prism.Mvvm;
+using MPOC = MintPlayer.ObservableCollection;
 
 namespace Emasa_Optimizer.FEA
 {
     public class FeOptions : BindableBase
     {
-        [NotNull] private readonly SolveManager _owner;
-
-        public FeOptions([NotNull] SolveManager inOwner)
+        public FeOptions()
         {
-            _owner = inOwner ?? throw new ArgumentNullException(nameof(inOwner));
-
             // Creates the ResultClass Selection List
-            _resultOutputs = new FastObservableCollection<FeResultClassification>()
+            _resultOutputs = new MPOC.ObservableCollection<FeResultClassification>
                 {
                 // Perfect
                 new FeResultClassification(FeResultTypeEnum.Nodal_Reaction_Fx, false, FeAnalysisShapeEnum.PerfectShape),
+                new FeResultClassification(FeResultTypeEnum.Nodal_Reaction_Fy, false, FeAnalysisShapeEnum.PerfectShape),
+                new FeResultClassification(FeResultTypeEnum.Nodal_Reaction_Fz, false, FeAnalysisShapeEnum.PerfectShape),
+                new FeResultClassification(FeResultTypeEnum.Nodal_Reaction_Mx, false, FeAnalysisShapeEnum.PerfectShape),
                 new FeResultClassification(FeResultTypeEnum.Nodal_Reaction_My, false, FeAnalysisShapeEnum.PerfectShape),
                 new FeResultClassification(FeResultTypeEnum.Nodal_Reaction_Mz, false, FeAnalysisShapeEnum.PerfectShape),
-                new FeResultClassification(FeResultTypeEnum.Nodal_Reaction_Mx, false, FeAnalysisShapeEnum.PerfectShape),
-                new FeResultClassification(FeResultTypeEnum.Nodal_Reaction_Fz, false, FeAnalysisShapeEnum.PerfectShape),
-                new FeResultClassification(FeResultTypeEnum.Nodal_Reaction_Fy, false, FeAnalysisShapeEnum.PerfectShape),
+
                 new FeResultClassification(FeResultTypeEnum.Nodal_Displacement_Ux, false, FeAnalysisShapeEnum.PerfectShape),
                 new FeResultClassification(FeResultTypeEnum.Nodal_Displacement_Uy, false, FeAnalysisShapeEnum.PerfectShape),
                 new FeResultClassification(FeResultTypeEnum.Nodal_Displacement_Uz, false, FeAnalysisShapeEnum.PerfectShape),
                 new FeResultClassification(FeResultTypeEnum.Nodal_Displacement_Rx, false, FeAnalysisShapeEnum.PerfectShape),
                 new FeResultClassification(FeResultTypeEnum.Nodal_Displacement_Ry, false, FeAnalysisShapeEnum.PerfectShape),
                 new FeResultClassification(FeResultTypeEnum.Nodal_Displacement_Rz, false, FeAnalysisShapeEnum.PerfectShape),
-                new FeResultClassification(FeResultTypeEnum.Nodal_Displacement_UTotal, true, FeAnalysisShapeEnum.PerfectShape),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_S1, false, FeAnalysisShapeEnum.PerfectShape),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_S2, false, FeAnalysisShapeEnum.PerfectShape),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_S3, false, FeAnalysisShapeEnum.PerfectShape),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_SInt, false, FeAnalysisShapeEnum.PerfectShape),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_SEqv, false, FeAnalysisShapeEnum.PerfectShape),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTT1, false, FeAnalysisShapeEnum.PerfectShape),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTT2, false, FeAnalysisShapeEnum.PerfectShape),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTT3, false, FeAnalysisShapeEnum.PerfectShape),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTTInt, false, FeAnalysisShapeEnum.PerfectShape),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTTEqv, false, FeAnalysisShapeEnum.PerfectShape),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELDIR, false, FeAnalysisShapeEnum.PerfectShape),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELByT, false, FeAnalysisShapeEnum.PerfectShape),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELByB, false, FeAnalysisShapeEnum.PerfectShape),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELBzT, false, FeAnalysisShapeEnum.PerfectShape),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELBzB, false, FeAnalysisShapeEnum.PerfectShape),
+                new FeResultClassification(FeResultTypeEnum.Nodal_Displacement_UTotal, false, FeAnalysisShapeEnum.PerfectShape),
+
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Force_Fx, false, FeAnalysisShapeEnum.PerfectShape),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_Force_SFy, false, FeAnalysisShapeEnum.PerfectShape),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_Force_SFz, false, FeAnalysisShapeEnum.PerfectShape),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_Force_Tq, false, FeAnalysisShapeEnum.PerfectShape),
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Force_My, false, FeAnalysisShapeEnum.PerfectShape),
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Force_Mz, false, FeAnalysisShapeEnum.PerfectShape),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_Force_Tq, false, FeAnalysisShapeEnum.PerfectShape),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_Force_SFz, false, FeAnalysisShapeEnum.PerfectShape),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_Force_SFy, false, FeAnalysisShapeEnum.PerfectShape),
+                
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Strain_Ex, false, FeAnalysisShapeEnum.PerfectShape),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_Strain_SEy, false, FeAnalysisShapeEnum.PerfectShape),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_Strain_SEz, false, FeAnalysisShapeEnum.PerfectShape),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_Strain_Te, false, FeAnalysisShapeEnum.PerfectShape),
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Strain_Ky, false, FeAnalysisShapeEnum.PerfectShape),
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Strain_Kz, false, FeAnalysisShapeEnum.PerfectShape),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_Strain_SEz, false, FeAnalysisShapeEnum.PerfectShape),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_Strain_SEy, false, FeAnalysisShapeEnum.PerfectShape),
+
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Stress_SDir, false, FeAnalysisShapeEnum.PerfectShape),
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Stress_SByT, false, FeAnalysisShapeEnum.PerfectShape),
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Stress_SByB, false, FeAnalysisShapeEnum.PerfectShape),
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Stress_SBzT, false, FeAnalysisShapeEnum.PerfectShape),
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Stress_SBzB, false, FeAnalysisShapeEnum.PerfectShape),
+
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELDIR, false, FeAnalysisShapeEnum.PerfectShape),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELByT, false, FeAnalysisShapeEnum.PerfectShape),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELByB, false, FeAnalysisShapeEnum.PerfectShape),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELBzT, false, FeAnalysisShapeEnum.PerfectShape),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELBzB, false, FeAnalysisShapeEnum.PerfectShape),
+
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_S1, false, FeAnalysisShapeEnum.PerfectShape),
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_S2, false, FeAnalysisShapeEnum.PerfectShape),
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_S3, false, FeAnalysisShapeEnum.PerfectShape),
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_SInt, false, FeAnalysisShapeEnum.PerfectShape),
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_SEqv, false, FeAnalysisShapeEnum.PerfectShape),
+
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTT1, false, FeAnalysisShapeEnum.PerfectShape),
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTT2, false, FeAnalysisShapeEnum.PerfectShape),
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTT3, false, FeAnalysisShapeEnum.PerfectShape),
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTTInt, false, FeAnalysisShapeEnum.PerfectShape),
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTTEqv, false, FeAnalysisShapeEnum.PerfectShape),
+
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_CodeCheck, false, FeAnalysisShapeEnum.PerfectShape),
                 new FeResultClassification(FeResultTypeEnum.Element_StrainEnergy, false, FeAnalysisShapeEnum.PerfectShape),
                 new FeResultClassification(FeResultTypeEnum.Model_EigenvalueBuckling_Mode1Factor, false, FeAnalysisShapeEnum.PerfectShape),
@@ -86,13 +94,16 @@ namespace Emasa_Optimizer.FEA
                 new FeResultClassification(FeResultTypeEnum.Model_EigenvalueBuckling_Mode3Factor, false, FeAnalysisShapeEnum.PerfectShape),
 
 
-                // Imperfect - Full Stiffness
+
+
+                                // ImperfectShape_FullStiffness
                 new FeResultClassification(FeResultTypeEnum.Nodal_Reaction_Fx, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
+                new FeResultClassification(FeResultTypeEnum.Nodal_Reaction_Fy, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
+                new FeResultClassification(FeResultTypeEnum.Nodal_Reaction_Fz, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
+                new FeResultClassification(FeResultTypeEnum.Nodal_Reaction_Mx, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
                 new FeResultClassification(FeResultTypeEnum.Nodal_Reaction_My, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
                 new FeResultClassification(FeResultTypeEnum.Nodal_Reaction_Mz, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
-                new FeResultClassification(FeResultTypeEnum.Nodal_Reaction_Mx, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
-                new FeResultClassification(FeResultTypeEnum.Nodal_Reaction_Fz, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
-                new FeResultClassification(FeResultTypeEnum.Nodal_Reaction_Fy, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
+
                 new FeResultClassification(FeResultTypeEnum.Nodal_Displacement_Ux, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
                 new FeResultClassification(FeResultTypeEnum.Nodal_Displacement_Uy, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
                 new FeResultClassification(FeResultTypeEnum.Nodal_Displacement_Uz, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
@@ -100,37 +111,45 @@ namespace Emasa_Optimizer.FEA
                 new FeResultClassification(FeResultTypeEnum.Nodal_Displacement_Ry, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
                 new FeResultClassification(FeResultTypeEnum.Nodal_Displacement_Rz, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
                 new FeResultClassification(FeResultTypeEnum.Nodal_Displacement_UTotal, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_S1, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_S2, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_S3, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_SInt, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_SEqv, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTT1, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTT2, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTT3, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTTInt, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTTEqv, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELDIR, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELByT, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELByB, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELBzT, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELBzB, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
+
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Force_Fx, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_Force_SFy, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_Force_SFz, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_Force_Tq, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Force_My, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Force_Mz, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_Force_Tq, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_Force_SFz, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_Force_SFy, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
+
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Strain_Ex, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_Strain_SEy, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_Strain_SEz, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_Strain_Te, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Strain_Ky, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Strain_Kz, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_Strain_SEz, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_Strain_SEy, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
+
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Stress_SDir, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Stress_SByT, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Stress_SByB, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Stress_SBzT, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Stress_SBzB, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
+
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELDIR, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELByT, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELByB, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELBzT, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELBzB, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
+
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_S1, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_S2, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_S3, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_SInt, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_SEqv, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
+
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTT1, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTT2, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTT3, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTTInt, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTTEqv, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
+
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_CodeCheck, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
                 new FeResultClassification(FeResultTypeEnum.Element_StrainEnergy, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
                 new FeResultClassification(FeResultTypeEnum.Model_EigenvalueBuckling_Mode1Factor, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
@@ -138,13 +157,14 @@ namespace Emasa_Optimizer.FEA
                 new FeResultClassification(FeResultTypeEnum.Model_EigenvalueBuckling_Mode3Factor, false, FeAnalysisShapeEnum.ImperfectShape_FullStiffness),
 
 
-                // Imperfect - Softened
+                            // ImperfectShape_Softened
                 new FeResultClassification(FeResultTypeEnum.Nodal_Reaction_Fx, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+                new FeResultClassification(FeResultTypeEnum.Nodal_Reaction_Fy, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+                new FeResultClassification(FeResultTypeEnum.Nodal_Reaction_Fz, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+                new FeResultClassification(FeResultTypeEnum.Nodal_Reaction_Mx, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
                 new FeResultClassification(FeResultTypeEnum.Nodal_Reaction_My, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
                 new FeResultClassification(FeResultTypeEnum.Nodal_Reaction_Mz, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
-                new FeResultClassification(FeResultTypeEnum.Nodal_Reaction_Mx, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
-                new FeResultClassification(FeResultTypeEnum.Nodal_Reaction_Fz, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
-                new FeResultClassification(FeResultTypeEnum.Nodal_Reaction_Fy, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+
                 new FeResultClassification(FeResultTypeEnum.Nodal_Displacement_Ux, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
                 new FeResultClassification(FeResultTypeEnum.Nodal_Displacement_Uy, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
                 new FeResultClassification(FeResultTypeEnum.Nodal_Displacement_Uz, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
@@ -152,87 +172,85 @@ namespace Emasa_Optimizer.FEA
                 new FeResultClassification(FeResultTypeEnum.Nodal_Displacement_Ry, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
                 new FeResultClassification(FeResultTypeEnum.Nodal_Displacement_Rz, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
                 new FeResultClassification(FeResultTypeEnum.Nodal_Displacement_UTotal, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_S1, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_S2, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_S3, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_SInt, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_SEqv, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTT1, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTT2, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTT3, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTTInt, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
-                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTTEqv, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELDIR, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELByT, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELByB, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELBzT, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELBzB, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Force_Fx, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_Force_SFy, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_Force_SFz, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_Force_Tq, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Force_My, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Force_Mz, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_Force_Tq, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_Force_SFz, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_Force_SFy, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Strain_Ex, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_Strain_SEy, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_Strain_SEz, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_Strain_Te, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Strain_Ky, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Strain_Kz, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_Strain_SEz, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
-                new FeResultClassification(FeResultTypeEnum.ElementNodal_Strain_SEy, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Stress_SDir, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Stress_SByT, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Stress_SByB, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Stress_SBzT, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_Stress_SBzB, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELDIR, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELByT, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELByB, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELBzT, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+                new FeResultClassification(FeResultTypeEnum.ElementNodal_BendingStrain_EPELBzB, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_S1, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_S2, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_S3, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_SInt, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Stress_SEqv, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTT1, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTT2, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTT3, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTTInt, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+                new FeResultClassification(FeResultTypeEnum.SectionNode_Strain_EPTTEqv, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+
                 new FeResultClassification(FeResultTypeEnum.ElementNodal_CodeCheck, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
                 new FeResultClassification(FeResultTypeEnum.Element_StrainEnergy, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
                 new FeResultClassification(FeResultTypeEnum.Model_EigenvalueBuckling_Mode1Factor, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
                 new FeResultClassification(FeResultTypeEnum.Model_EigenvalueBuckling_Mode2Factor, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
                 new FeResultClassification(FeResultTypeEnum.Model_EigenvalueBuckling_Mode3Factor, false, FeAnalysisShapeEnum.ImperfectShape_Softened),
+
                 };
 
-            // Adds a listener to all the changes in any of the ResultsSelectStatuses
-            foreach (FeResultClassification feResult in _resultOutputs)
-            {
-                feResult.PropertyChanged += FeResultOnPropertyChanged;
-
-                // Also adds the selected ones to the list in the results tab
-                if (feResult.OutputData_IsSelected) _owner.ProblemQuantityAvailableTypes.Add(feResult);
-            }
-
-            // Creates the view for the Perfect Results
+            // Creates the view for the user interface selection of desired output
             CollectionViewSource allResults_cvs = new CollectionViewSource() {Source = _resultOutputs};
-            WpfResults = allResults_cvs.View;
-            WpfResults.Filter += inO => ((inO is FeResultClassification item) && item.IsSupportedBySolver(FeSolverType_Selected));
-            WpfResults.GroupDescriptions.Add(new PropertyGroupDescription("TargetShape"));
-            WpfResults.GroupDescriptions.Add(new PropertyGroupDescription("ResultFamily"));
-            WpfResults.SortDescriptions.Add(new SortDescription("TargetShape", ListSortDirection.Ascending));
-            WpfResults.SortDescriptions.Add(new SortDescription("ResultFamily", ListSortDirection.Ascending));
-            WpfResults.SortDescriptions.Add(new SortDescription("ResultType", ListSortDirection.Ascending));
-
-            // Creates the view for the Perfect Results
-            CollectionViewSource perfectResults_cvs = new CollectionViewSource() {Source = _resultOutputs};
-            WpfPerfectShapeResults = perfectResults_cvs.View;
-            WpfPerfectShapeResults.Filter += inO => ((inO is FeResultClassification item) && item.IsSupportedBySolver(FeSolverType_Selected) && item.TargetShape == FeAnalysisShapeEnum.PerfectShape);
-
-
-            // Creates the view for the Imperfect Full Stiffness Results
-            CollectionViewSource imperfectFullStiffnessResults_cvs = new CollectionViewSource() {Source = _resultOutputs};
-            WpfImperfectShapeFullStiffnessResults = imperfectFullStiffnessResults_cvs.View;
-            WpfImperfectShapeFullStiffnessResults.Filter += inO => ((inO is FeResultClassification item) && item.IsSupportedBySolver(FeSolverType_Selected) && item.TargetShape == FeAnalysisShapeEnum.ImperfectShape_FullStiffness);
-
-            // Creates the view for the Imperfect Softened Results
-            CollectionViewSource imperfectSoftenedResults_cvs = new CollectionViewSource() {Source = _resultOutputs};
-            WpfImperfectShapeSoftenedResults = imperfectSoftenedResults_cvs.View;
-            WpfImperfectShapeSoftenedResults.Filter += inO => ((inO is FeResultClassification item) && item.IsSupportedBySolver(FeSolverType_Selected) && item.TargetShape == FeAnalysisShapeEnum.ImperfectShape_Softened);
+            Wpf_AllResultsForInterface = allResults_cvs.View;
+            Wpf_AllResultsForInterface.Filter += inO => ((inO is FeResultClassification item) && item.IsSupportedByCurrentSolver);
+            Wpf_AllResultsForInterface.GroupDescriptions.Add(new PropertyGroupDescription("TargetShape"));
+            Wpf_AllResultsForInterface.GroupDescriptions.Add(new PropertyGroupDescription("ResultFamily"));
+            Wpf_AllResultsForInterface.SortDescriptions.Add(new SortDescription("TargetShape", ListSortDirection.Ascending));
+           // Wpf_AllResultsForInterface.SortDescriptions.Add(new SortDescription("ResultFamily", ListSortDirection.Ascending));
+           // Wpf_AllResultsForInterface.SortDescriptions.Add(new SortDescription("ResultType", ListSortDirection.Ascending));
+            // Setting live shaping
+            if (Wpf_AllResultsForInterface is ICollectionViewLiveShaping ls1)
+            {
+                ls1.LiveFilteringProperties.Add("IsSupportedByCurrentSolver");
+                ls1.IsLiveFiltering = true;
+            }
+            else throw new Exception($"List does not accept ICollectionViewLiveShaping.");
 
             // Creates the view for the Selected Output Results
             CollectionViewSource selectedResults_cvs = new CollectionViewSource() {Source = _resultOutputs};
-            WpfAllSelectedOutputResults = selectedResults_cvs.View;
-            WpfAllSelectedOutputResults.Filter += inO => ((inO is FeResultClassification item) && item.IsSupportedBySolver(FeSolverType_Selected) && item.OutputData_IsSelected);
-        }
+            Wpf_SelectedFiniteElementResultsForOutput = selectedResults_cvs.View;
+            Wpf_SelectedFiniteElementResultsForOutput.Filter += inO => ((inO is FeResultClassification item) && item.IsSupportedByCurrentSolver && item.OutputData_IsSelected);
+            // Setting live shaping
+            if (Wpf_SelectedFiniteElementResultsForOutput is ICollectionViewLiveShaping ls2)
+            {
+                ls2.LiveFilteringProperties.Add("IsSupportedByCurrentSolver");
+                ls2.LiveFilteringProperties.Add("OutputData_IsSelected");
+                ls2.IsLiveFiltering = true;
+            }
+            else throw new Exception($"List does not accept ICollectionViewLiveShaping.");
 
-        private readonly FeScreenShotOptions _screenShotOptions = new FeScreenShotOptions();
-        public FeScreenShotOptions ScreenShotOptions => _screenShotOptions;
+            Wpf_SelectedFiniteElementResultsForOutput.CollectionChanged += Wpf_SelectedFiniteElementResultsForOutputOnCollectionChanged;
+        }
         
         #region Solver Type and Basic Options
         private FeSolverTypeEnum _feSolverType_Selected = (FeSolverTypeEnum)Enum.Parse(typeof(FeSolverTypeEnum), Settings.Default.Default_FeSolverType);
@@ -245,11 +263,15 @@ namespace Emasa_Optimizer.FEA
 
                 // Updates dependent properties
                 RaisePropertyChanged("IsFeProblem");
+
+                // Updates the lists as they depend on the flag
+                Wpf_SelectedFiniteElementResultsForOutput.Refresh();
+                Wpf_AllResultsForInterface.Refresh();
             }
         }
         public Visibility IsFeProblem => FeSolverType_Selected == FeSolverTypeEnum.NotFeProblem ? Visibility.Hidden : Visibility.Visible;
 
-        public Dictionary<FeSolverTypeEnum, string> WfpCaption_FeSolverTypeEnum => ListDescriptionStaticHolder.ListDescSingleton.FeSolverTypeEnumStaticDescriptions;
+        public Dictionary<FeSolverTypeEnum, string> WfpCaption_FeSolverTypeEnum => ListDescSH.I.FeSolverTypeEnumStaticDescriptions;
 
         private int _eigenvalueBuckling_ShapesToCapture = Settings.Default.Default_Model_EigenvalueBuckling_ShapesToCapture;
         public int EigenvalueBuckling_ShapesToCapture
@@ -281,7 +303,7 @@ namespace Emasa_Optimizer.FEA
             set => SetProperty(ref _gravityDirectionEnum_Selected, value);
         }
 
-        public Dictionary<MainAxisDirectionEnum, string> WfpCaption_MainAxisDirectionEnum => ListDescriptionStaticHolder.ListDescSingleton.MainAxisDirectionEnumStaticDescriptions;
+        public Dictionary<MainAxisDirectionEnum, string> WfpCaption_MainAxisDirectionEnum => ListDescSH.I.MainAxisDirectionEnumStaticDescriptions;
         #endregion
 
         #region Imperfect Shape - Mode and Multiplier
@@ -332,13 +354,24 @@ namespace Emasa_Optimizer.FEA
         #endregion
 
         #region ResultClass Output
-        private readonly FastObservableCollection<FeResultClassification> _resultOutputs;
-        public ICollectionView WpfResults { get; private set; }
-        public ICollectionView WpfPerfectShapeResults { get; private set; }
-        public ICollectionView WpfImperfectShapeFullStiffnessResults { get; private set; }
-        public ICollectionView WpfImperfectShapeSoftenedResults { get; private set; }
-        public ICollectionView WpfAllSelectedOutputResults { get; private set; }
-        public List<FeResultClassification> SelectedOutputResults => WpfAllSelectedOutputResults.OfType<FeResultClassification>().ToList();
+        private readonly MPOC.ObservableCollection<FeResultClassification> _resultOutputs;
+        public ICollectionView Wpf_AllResultsForInterface { get; } // *grouped* and *sorted* - Used in the selection for output interface
+        public ICollectionView Wpf_SelectedFiniteElementResultsForOutput { get; }
+        private void Wpf_SelectedFiniteElementResultsForOutputOnCollectionChanged(object inSender, NotifyCollectionChangedEventArgs inE)
+        {
+            // Items have been removed from the list. This means that we must delete them from the lists of selected solution outputs for calculations
+            if (inE.Action == NotifyCollectionChangedAction.Remove)
+            {
+                if (inE.OldItems != null && inE.OldItems.Count > 0)
+                {
+                    // For each removed item
+                    foreach (FeResultClassification resClass in inE.OldItems)
+                    {
+                        AppSS.I.ProbQuantMgn.DeleteAllQuantities(resClass);
+                    }
+                } 
+            }
+        }
 
         public void SelectOrDeselect_AllResultsInShapeFamily(FeResultFamilyEnum inFamily, FeAnalysisShapeEnum inShape)
         {
@@ -353,112 +386,62 @@ namespace Emasa_Optimizer.FEA
 
         public void EvaluateRequiredFeOutputs()
         {
-            bool hasPerfectShape_EigenvalueBuckling = _owner.FeOptions.SelectedOutputResults.Any(a => a.TargetShape == FeAnalysisShapeEnum.PerfectShape &&
+            bool hasPerfectShape_EigenvalueBuckling = AppSS.I.FeOpt.Wpf_SelectedFiniteElementResultsForOutput.OfType<FeResultClassification>().Any(a => a.TargetShape == FeAnalysisShapeEnum.PerfectShape &&
                                                                                           a.IsEigenValueBuckling);
 
-            bool hasImperfectFullStiffness = _owner.FeOptions.SelectedOutputResults.Any(a => a.TargetShape == FeAnalysisShapeEnum.ImperfectShape_FullStiffness);
+            bool hasImperfectFullStiffness = AppSS.I.FeOpt.Wpf_SelectedFiniteElementResultsForOutput.OfType<FeResultClassification>().Any(a => a.TargetShape == FeAnalysisShapeEnum.ImperfectShape_FullStiffness);
 
-            bool hasImperfectSoftened = _owner.FeOptions.SelectedOutputResults.Any(a => a.TargetShape == FeAnalysisShapeEnum.ImperfectShape_Softened);
+            bool hasImperfectSoftened = AppSS.I.FeOpt.Wpf_SelectedFiniteElementResultsForOutput.OfType<FeResultClassification>().Any(a => a.TargetShape == FeAnalysisShapeEnum.ImperfectShape_Softened);
 
-            WpfIsPerfectShape_EigenvalueBucking_Required = hasPerfectShape_EigenvalueBuckling || hasImperfectFullStiffness || hasImperfectSoftened;
+            IsPerfectShape_EigenvalueBucking_Required = hasPerfectShape_EigenvalueBuckling || hasImperfectFullStiffness || hasImperfectSoftened;
 
 
             if (hasImperfectFullStiffness)
             {
-                WpfIsImperfectShapeFullStiffness_StaticAnalysis_Required = true;
+                IsImperfectShapeFullStiffness_StaticAnalysis_Required = true;
 
-                bool has_EigenvalueBuckling = _owner.FeOptions.SelectedOutputResults.Any(a => a.TargetShape == FeAnalysisShapeEnum.ImperfectShape_FullStiffness &&
-                                                                                              a.IsEigenValueBuckling);
+                bool has_EigenvalueBuckling = AppSS.I.FeOpt.Wpf_SelectedFiniteElementResultsForOutput.OfType<FeResultClassification>().Any(a => a.TargetShape == FeAnalysisShapeEnum.ImperfectShape_FullStiffness &&
+                                                                                            a.IsEigenValueBuckling);
 
-                WpfIsImperfectShapeFullStiffness_EigenvalueBuckling_Required = has_EigenvalueBuckling;
+                IsImperfectShapeFullStiffness_EigenvalueBuckling_Required = has_EigenvalueBuckling;
             }
             else // Nothing imperfect FullStiffness is required
             {
-                WpfIsImperfectShapeFullStiffness_StaticAnalysis_Required = false;
-                WpfIsImperfectShapeFullStiffness_EigenvalueBuckling_Required = false;
+                IsImperfectShapeFullStiffness_StaticAnalysis_Required = false;
+                IsImperfectShapeFullStiffness_EigenvalueBuckling_Required = false;
             }
 
 
             if (hasImperfectSoftened)
             {
-                WpfIsImperfectShapeSoftened_StaticAnalysis_Required = true;
+                IsImperfectShapeSoftened_StaticAnalysis_Required = true;
 
-                bool has_EigenvalueBuckling = _owner.FeOptions.SelectedOutputResults.Any(a => a.TargetShape == FeAnalysisShapeEnum.ImperfectShape_Softened &&
-                                                                                              a.IsEigenValueBuckling);
+                bool has_EigenvalueBuckling = AppSS.I.FeOpt.Wpf_SelectedFiniteElementResultsForOutput.OfType<FeResultClassification>().Any(a => a.TargetShape == FeAnalysisShapeEnum.ImperfectShape_Softened &&
+                                                                                           a.IsEigenValueBuckling);
 
-                WpfIsImperfectShapeSoftened_EigenvalueBuckling_Required = has_EigenvalueBuckling;
+                IsImperfectShapeSoftened_EigenvalueBuckling_Required = has_EigenvalueBuckling;
             }
             else // Nothing imperfect Softened is required
             {
-                WpfIsImperfectShapeSoftened_StaticAnalysis_Required = false;
-                WpfIsImperfectShapeSoftened_EigenvalueBuckling_Required = false;
+                IsImperfectShapeSoftened_StaticAnalysis_Required = false;
+                IsImperfectShapeSoftened_EigenvalueBuckling_Required = false;
             }
         }
-        private void FeResultOnPropertyChanged(object inSender, PropertyChangedEventArgs inE)
-        {
-            if (inSender is FeResultClassification resultClass && inE.PropertyName == "OutputData_IsSelected")
-            {
-                // Updates the selected result display 
-                WpfResults.Refresh();
-
-                // Also updates the list in the results tab
-                if (resultClass.OutputData_IsSelected) _owner.ProblemQuantityAvailableTypes.Add(resultClass);
-                else _owner.ProblemQuantityAvailableTypes.Remove(resultClass);
-            }
-        }
-
-        private bool _wpfIsPerfectShape_EigenvalueBucking_Required;
-        public bool WpfIsPerfectShape_EigenvalueBucking_Required
-        {
-            get => _wpfIsPerfectShape_EigenvalueBucking_Required;
-            set => SetProperty(ref _wpfIsPerfectShape_EigenvalueBucking_Required, value);
-        }
-
-        private bool _wpfIsImperfectShapeFullStiffness_StaticAnalysis_Required;
-        public bool WpfIsImperfectShapeFullStiffness_StaticAnalysis_Required
-        {
-            get => _wpfIsImperfectShapeFullStiffness_StaticAnalysis_Required;
-            set => SetProperty(ref _wpfIsImperfectShapeFullStiffness_StaticAnalysis_Required, value);
-        }
-
-        private bool _wpfIsImperfectShapeFullStiffness_EigenvalueBuckling_Required;
-        public bool WpfIsImperfectShapeFullStiffness_EigenvalueBuckling_Required
-        {
-            get => _wpfIsImperfectShapeFullStiffness_EigenvalueBuckling_Required;
-            set => SetProperty(ref _wpfIsImperfectShapeFullStiffness_EigenvalueBuckling_Required, value);
-        }
-
-        private bool _wpfIsImperfectShapeSoftened_StaticAnalysis_Required;
-        public bool WpfIsImperfectShapeSoftened_StaticAnalysis_Required
-        {
-            get => _wpfIsImperfectShapeSoftened_StaticAnalysis_Required;
-            set => SetProperty(ref _wpfIsImperfectShapeSoftened_StaticAnalysis_Required, value);
-        }
-
-        private bool _wpfIsImperfectShapeSoftened_EigenvalueBuckling_Required;
-        public bool WpfIsImperfectShapeSoftened_EigenvalueBuckling_Required
-        {
-            get => _wpfIsImperfectShapeSoftened_EigenvalueBuckling_Required;
-            set => SetProperty(ref _wpfIsImperfectShapeSoftened_EigenvalueBuckling_Required, value);
-        }
+        public bool IsPerfectShape_EigenvalueBucking_Required;
+        public bool IsImperfectShapeFullStiffness_StaticAnalysis_Required;
+        public bool IsImperfectShapeFullStiffness_EigenvalueBuckling_Required;
+        public bool IsImperfectShapeSoftened_StaticAnalysis_Required;
+        public bool IsImperfectShapeSoftened_EigenvalueBuckling_Required;
 
         #endregion
 
         #region Wpf
-        private FeResultClassification _selectedDisplayImageResultClassification;
-        public FeResultClassification SelectedDisplayImageResultClassification
-        {
-            get => _selectedDisplayImageResultClassification;
-            set => SetProperty(ref _selectedDisplayImageResultClassification, value);
-        }
-
         private IProblemQuantitySource _selectedDisplayDataResultClassification;
         public IProblemQuantitySource SelectedDisplayDataResultClassification
         {
             get => _selectedDisplayDataResultClassification;
             set => SetProperty(ref _selectedDisplayDataResultClassification, value);
         }
-
         #endregion
     }
     

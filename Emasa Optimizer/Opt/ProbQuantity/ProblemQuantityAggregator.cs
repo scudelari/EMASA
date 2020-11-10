@@ -20,7 +20,7 @@ namespace Emasa_Optimizer.Opt.ProbQuantity
         }
 
 
-        public Dictionary<Quantity_AggregateTypeEnum, string> Quantity_AggregateTypeEnumDescriptions => ListDescriptionStaticHolder.ListDescSingleton.Quantity_AggregateTypeEnumDescriptions;
+        public Dictionary<Quantity_AggregateTypeEnum, string> Quantity_AggregateTypeEnumDescriptions => ListDescSH.I.Quantity_AggregateTypeEnumDescriptions;
         private Quantity_AggregateTypeEnum _aggregateType = Quantity_AggregateTypeEnum.Max;
         public Quantity_AggregateTypeEnum AggregateType
         {
@@ -130,7 +130,7 @@ namespace Emasa_Optimizer.Opt.ProbQuantity
             get => _entityToFilter;
             set => SetProperty(ref _entityToFilter, value);
         }
-        public Visibility EntityFilter_ComboBoxVisibility => _useEntityFilter ? Visibility.Visible : Visibility.Hidden;
+        public Visibility EntityFilter_ComboBoxVisibility => UseEntityFilter ? Visibility.Visible : Visibility.Hidden;
 
 
         #region IEquitable based on values of all fields
@@ -188,8 +188,23 @@ namespace Emasa_Optimizer.Opt.ProbQuantity
                 return toRet;
             }
         }
-        
 
+        public Visibility Wpf_AbsoluteValues => UseTableAbsoluteValues ? Visibility.Visible : Visibility.Collapsed;
+        public string Wpf_FilterEntityName => UseEntityFilter && EntityToFilter != null ? EntityToFilter.Name : "All";
+        public Visibility Wpf_Scaled => HasScale ? Visibility.Visible : Visibility.Collapsed;
+        public string Wpf_AggregateTypeName => Quantity_AggregateTypeEnumDescriptions[AggregateType];
+
+        public string Wpf_SummaryToolTip
+        {
+            get
+            {
+                StringBuilder sb = new StringBuilder();
+                if (UseEntityFilter) sb.AppendLine($"Filtered by: {EntityToFilter.Name}");
+                if (UseTableAbsoluteValues) sb.AppendLine($"Aggregate Absolute Values");
+                if (HasScale) sb.AppendLine($"Has Scale: {ScaleRange.Range.Min:+0.000e+000;-0.000e+000;0.0} - {ScaleRange.Range.Max:+0.000e+000;-0.000e+000;0.0}");
+                return sb.ToString();
+            }
+        }
         #endregion
     }
 

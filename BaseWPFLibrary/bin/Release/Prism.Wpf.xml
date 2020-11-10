@@ -4,129 +4,33 @@
         <name>Prism.Wpf</name>
     </assembly>
     <members>
-        <member name="T:Prism.Bootstrapper">
+        <member name="T:Prism.Common.MvvmHelpers">
             <summary>
-            Base class that provides a basic bootstrapping sequence and hooks
-            that specific implementations can override
+            Helper class for MVVM.
+            </summary>
+        </member>
+        <member name="M:Prism.Common.MvvmHelpers.ViewAndViewModelAction``1(System.Object,System.Action{``0})">
+            <summary>
+            Perform an <see cref="T:System.Action`1"/> on a view and viewmodel.
             </summary>
             <remarks>
-            This class must be overridden to provide application specific configuration.
+            The action will be performed on the view and its viewmodel if they implement <typeparamref name="T"/>.
             </remarks>
+            <typeparam name="T">The <see cref="T:System.Action`1"/> parameter type.</typeparam>
+            <param name="view">The view to perform the <see cref="T:System.Action`1"/> on.</param>
+            <param name="action">The <see cref="T:System.Action`1"/> to perform.</param>
         </member>
-        <member name="P:Prism.Bootstrapper.Logger">
+        <member name="M:Prism.Common.MvvmHelpers.GetImplementerFromViewOrViewModel``1(System.Object)">
             <summary>
-            Gets the <see cref="T:Prism.Logging.ILoggerFacade"/> for the application.
-            </summary>
-            <value>A <see cref="T:Prism.Logging.ILoggerFacade"/> instance.</value>
-        </member>
-        <member name="P:Prism.Bootstrapper.ModuleCatalog">
-            <summary>
-            Gets the default <see cref="T:Prism.Modularity.IModuleCatalog"/> for the application.
-            </summary>
-            <value>The default <see cref="T:Prism.Modularity.IModuleCatalog"/> instance.</value>
-        </member>
-        <member name="P:Prism.Bootstrapper.Shell">
-            <summary>
-            Gets the shell user interface
-            </summary>
-            <value>The shell user interface.</value>
-        </member>
-        <member name="M:Prism.Bootstrapper.CreateContainerExtension">
-            <summary>
-            Creates the container extension used by Prism.
-            </summary>
-            <returns>The container extension</returns>
-        </member>
-        <member name="M:Prism.Bootstrapper.CreateLogger">
-            <summary>
-            Create the <see cref="T:Prism.Logging.ILoggerFacade" /> used by the bootstrapper.
+            Get an implementer from a view or viewmodel.
             </summary>
             <remarks>
-            The base implementation returns a new TextLogger.
+            If the view implements <typeparamref name="T"/> it will be returned.
+            Otherwise if the view's datacontext implements <typeparamref name="T"/> it will be returned instead.
             </remarks>
-        </member>
-        <member name="M:Prism.Bootstrapper.Run">
-            <summary>
-            Runs the bootstrapper process.
-            </summary>
-        </member>
-        <member name="M:Prism.Bootstrapper.CreateModuleCatalog">
-            <summary>
-            Creates the <see cref="T:Prism.Modularity.IModuleCatalog"/> used by Prism.
-            </summary>
-             <remarks>
-            The base implementation returns a new ModuleCatalog.
-            </remarks>
-        </member>
-        <member name="M:Prism.Bootstrapper.ConfigureModuleCatalog">
-            <summary>
-            Configures the <see cref="T:Prism.Modularity.IModuleCatalog"/> used by Prism.
-            </summary>
-        </member>
-        <member name="M:Prism.Bootstrapper.ConfigureViewModelLocator">
-            <summary>
-            Configures the <see cref="T:Prism.Mvvm.ViewModelLocator"/> used by Prism.
-            </summary>
-        </member>
-        <member name="M:Prism.Bootstrapper.RegisterFrameworkExceptionTypes">
-            <summary>
-            Registers the <see cref="T:System.Type"/>s of the Exceptions that are not considered 
-            root exceptions by the <see cref="T:System.ExceptionExtensions"/>.
-            </summary>
-        </member>
-        <member name="M:Prism.Bootstrapper.InitializeModules">
-            <summary>
-            Initializes the modules. May be overwritten in a derived class to use a custom Modules Catalog
-            </summary>
-        </member>
-        <member name="M:Prism.Bootstrapper.ConfigureRegionAdapterMappings">
-            <summary>
-            Configures the default region adapter mappings to use in the application, in order
-            to adapt UI controls defined in XAML to use a region and register it automatically.
-            May be overwritten in a derived class to add specific mappings required by the application.
-            </summary>
-            <returns>The <see cref="T:Prism.Regions.RegionAdapterMappings"/> instance containing all the mappings.</returns>
-        </member>
-        <member name="M:Prism.Bootstrapper.ConfigureDefaultRegionBehaviors">
-            <summary>
-            Configures the <see cref="T:Prism.Regions.IRegionBehaviorFactory"/>. 
-            This will be the list of default behaviors that will be added to a region. 
-            </summary>
-        </member>
-        <member name="M:Prism.Bootstrapper.CreateShell">
-            <summary>
-            Creates the shell or main window of the application.
-            </summary>
-            <returns>The shell of the application.</returns>
-            <remarks>
-            If the returned instance is a <see cref="T:System.Windows.DependencyObject"/>, the
-            <see cref="T:Prism.Bootstrapper"/> will attach the default <see cref="T:Prism.Regions.IRegionManager"/> of
-            the application in its <see cref="F:Prism.Regions.RegionManager.RegionManagerProperty"/> attached property
-            in order to be able to add regions by using the <see cref="F:Prism.Regions.RegionManager.RegionNameProperty"/>
-            attached property from XAML.
-            </remarks>
-        </member>
-        <member name="M:Prism.Bootstrapper.InitializeShell">
-            <summary>
-            Initializes the shell.
-            </summary>
-        </member>
-        <member name="M:Prism.Bootstrapper.Run(System.Boolean)">
-            <summary>
-            Run the bootstrapper process.
-            </summary>
-            <param name="runWithDefaultConfiguration">If <see langword="true"/>, registers default 
-            Prism Library services in the container. This is the default behavior.</param>
-        </member>
-        <member name="M:Prism.Bootstrapper.ConfigureServiceLocator">
-            <summary>
-            Configures the LocatorProvider for the <see cref="!:Microsoft.Practices.ServiceLocation.ServiceLocator" />.
-            </summary>
-        </member>
-        <member name="M:Prism.Bootstrapper.OnInitialized">
-            <summary>
-            Contains actions that should occur last.
-            </summary>
+            <typeparam name="T">The implementer type to get.</typeparam>
+            <param name="view">The view to get <typeparamref name="T"/> from.</param>
+            <returns>view or viewmodel as <typeparamref name="T"/>.</returns>
         </member>
         <member name="T:Prism.Common.ObservableObject`1">
             <summary>
@@ -176,11 +80,19 @@
             </summary>
             <param name="uri">The URI.</param>
         </member>
+        <member name="M:Prism.DependencyObjectExtensions.HasBinding(System.Windows.FrameworkElement,System.Windows.DependencyProperty)">
+            <summary>
+            Determines if a <see cref="T:System.Windows.DependencyProperty"/> has a binding set
+            </summary>
+            <param name="instance">The to use to search for the property</param>
+            <param name="property">The property to search</param>
+            <returns><c>true</c> if there is an active binding, otherwise <c>false</c></returns>
+        </member>
         <member name="T:Prism.Interactivity.CommandBehaviorBase`1">
             <summary>
             Base behavior to handle connecting a <see cref="T:System.Windows.Controls.Control"/> to a Command.
             </summary>
-            <typeparam name="T">The target object must derive from Control</typeparam>
+            <typeparam name="T">The target object must derive from Control.</typeparam>
             <remarks>
             CommandBehaviorBase can be used to provide new behaviors for commands.
             </remarks>
@@ -191,14 +103,20 @@
             </summary>
             <param name="targetObject">The target object the behavior is attached to.</param>
         </member>
+        <member name="P:Prism.Interactivity.CommandBehaviorBase`1.AutoEnable">
+            <summary>
+            If <c>true</c> the target object's IsEnabled property will update based on the commands ability to execute.
+            If <c>false</c> the target object's IsEnabled property will not update.
+            </summary>
+        </member>
         <member name="P:Prism.Interactivity.CommandBehaviorBase`1.Command">
             <summary>
-            Corresponding command to be execute and monitored for <see cref="E:System.Windows.Input.ICommand.CanExecuteChanged"/>
+            Corresponding command to be execute and monitored for <see cref="E:System.Windows.Input.ICommand.CanExecuteChanged"/>.
             </summary>
         </member>
         <member name="P:Prism.Interactivity.CommandBehaviorBase`1.CommandParameter">
             <summary>
-            The parameter to supply the command during execution
+            The parameter to supply the command during execution.
             </summary>
         </member>
         <member name="P:Prism.Interactivity.CommandBehaviorBase`1.TargetObject">
@@ -213,209 +131,7 @@
         </member>
         <member name="M:Prism.Interactivity.CommandBehaviorBase`1.ExecuteCommand(System.Object)">
             <summary>
-            Executes the command, if it's set, providing the <see cref="P:Prism.Interactivity.CommandBehaviorBase`1.CommandParameter"/>
-            </summary>
-        </member>
-        <member name="T:Prism.Interactivity.DefaultPopupWindows.DefaultConfirmationWindow">
-            <summary>
-            Interaction logic for ConfirmationChildWindow.xaml
-            </summary>
-            <summary>
-            DefaultConfirmationWindow
-            </summary>
-        </member>
-        <member name="M:Prism.Interactivity.DefaultPopupWindows.DefaultConfirmationWindow.#ctor">
-            <summary>
-            Creates a new instance of ConfirmationChildWindow.
-            </summary>
-        </member>
-        <member name="P:Prism.Interactivity.DefaultPopupWindows.DefaultConfirmationWindow.Confirmation">
-            <summary>
-            Sets or gets the <see cref="T:Prism.Interactivity.InteractionRequest.IConfirmation"/> shown by this window./>
-            </summary>
-        </member>
-        <member name="M:Prism.Interactivity.DefaultPopupWindows.DefaultConfirmationWindow.InitializeComponent">
-            <summary>
-            InitializeComponent
-            </summary>
-        </member>
-        <member name="T:Prism.Interactivity.DefaultPopupWindows.DefaultNotificationWindow">
-            <summary>
-            Interaction logic for NotificationChildWindow.xaml
-            </summary>
-            <summary>
-            DefaultNotificationWindow
-            </summary>
-        </member>
-        <member name="M:Prism.Interactivity.DefaultPopupWindows.DefaultNotificationWindow.#ctor">
-            <summary>
-            Creates a new instance of <see cref="T:Prism.Interactivity.DefaultPopupWindows.DefaultNotificationWindow"/>
-            </summary>
-        </member>
-        <member name="P:Prism.Interactivity.DefaultPopupWindows.DefaultNotificationWindow.Notification">
-            <summary>
-            Sets or gets the <see cref="T:Prism.Interactivity.InteractionRequest.INotification"/> shown by this window./>
-            </summary>
-        </member>
-        <member name="M:Prism.Interactivity.DefaultPopupWindows.DefaultNotificationWindow.InitializeComponent">
-            <summary>
-            InitializeComponent
-            </summary>
-        </member>
-        <member name="T:Prism.Interactivity.DefaultPopupWindows.DefaultWindow">
-            <summary>
-            Interaction logic for DefaultWindow.xaml
-            </summary>
-            <summary>
-            DefaultWindow
-            </summary>
-        </member>
-        <member name="M:Prism.Interactivity.DefaultPopupWindows.DefaultWindow.InitializeComponent">
-            <summary>
-            InitializeComponent
-            </summary>
-        </member>
-        <member name="T:Prism.Interactivity.InteractionRequest.Confirmation">
-            <summary>
-            Basic implementation of <see cref="T:Prism.Interactivity.InteractionRequest.IConfirmation"/>.
-            </summary>
-        </member>
-        <member name="P:Prism.Interactivity.InteractionRequest.Confirmation.Confirmed">
-            <summary>
-            Gets or sets a value indicating that the confirmation is confirmed.
-            </summary>
-        </member>
-        <member name="T:Prism.Interactivity.InteractionRequest.IConfirmation">
-            <summary>
-            Represents an interaction request used for confirmations.
-            </summary>
-        </member>
-        <member name="P:Prism.Interactivity.InteractionRequest.IConfirmation.Confirmed">
-            <summary>
-            Gets or sets a value indicating that the confirmation is confirmed.
-            </summary>
-        </member>
-        <member name="T:Prism.Interactivity.InteractionRequest.IInteractionRequest">
-            <summary>
-            Represents a request from user interaction.
-            </summary>
-            <remarks>
-            View models can expose interaction request objects through properties and raise them when user interaction
-            is required so views associated with the view models can materialize the user interaction using an appropriate
-            mechanism.
-            </remarks>
-        </member>
-        <member name="E:Prism.Interactivity.InteractionRequest.IInteractionRequest.Raised">
-            <summary>
-            Fired when the interaction is needed.
-            </summary>
-        </member>
-        <member name="T:Prism.Interactivity.InteractionRequest.IInteractionRequestAware">
-            <summary>
-            Interface used by the <see cref="T:Prism.Interactivity.PopupWindowAction"/>.
-            If the DataContext object of a view that is shown with this action implements this interface
-            it will be populated with the <see cref="T:Prism.Interactivity.InteractionRequest.INotification"/> data of the interaction request 
-            as well as an <see cref="T:System.Action"/> to finish the request upon invocation.
-            </summary>
-        </member>
-        <member name="P:Prism.Interactivity.InteractionRequest.IInteractionRequestAware.Notification">
-            <summary>
-            The <see cref="T:Prism.Interactivity.InteractionRequest.INotification"/> passed when the interaction request was raised.
-            </summary>
-        </member>
-        <member name="P:Prism.Interactivity.InteractionRequest.IInteractionRequestAware.FinishInteraction">
-            <summary>
-            An <see cref="T:System.Action"/> that can be invoked to finish the interaction.
-            </summary>
-        </member>
-        <member name="T:Prism.Interactivity.InteractionRequest.INotification">
-            <summary>
-            Represents an interaction request used for notifications.
-            </summary>
-        </member>
-        <member name="P:Prism.Interactivity.InteractionRequest.INotification.Title">
-            <summary>
-            Gets or sets the title to use for the notification.
-            </summary>
-        </member>
-        <member name="P:Prism.Interactivity.InteractionRequest.INotification.Content">
-            <summary>
-            Gets or sets the content of the notification.
-            </summary>
-        </member>
-        <member name="T:Prism.Interactivity.InteractionRequest.InteractionRequest`1">
-            <summary>
-            Implementation of the <see cref="T:Prism.Interactivity.InteractionRequest.IInteractionRequest"/> interface.
-            </summary>
-        </member>
-        <member name="E:Prism.Interactivity.InteractionRequest.InteractionRequest`1.Raised">
-            <summary>
-            Fired when interaction is needed.
-            </summary>
-        </member>
-        <member name="M:Prism.Interactivity.InteractionRequest.InteractionRequest`1.Raise(`0)">
-            <summary>
-            Fires the Raised event.
-            </summary>
-            <param name="context">The context for the interaction request.</param>
-        </member>
-        <member name="M:Prism.Interactivity.InteractionRequest.InteractionRequest`1.Raise(`0,System.Action{`0})">
-            <summary>
-            Fires the Raised event.
-            </summary>
-            <param name="context">The context for the interaction request.</param>
-            <param name="callback">The callback to execute when the interaction is completed.</param>
-        </member>
-        <member name="T:Prism.Interactivity.InteractionRequest.InteractionRequestedEventArgs">
-            <summary>
-            Event args for the <see cref="E:Prism.Interactivity.InteractionRequest.IInteractionRequest.Raised"/> event.
-            </summary>
-        </member>
-        <member name="M:Prism.Interactivity.InteractionRequest.InteractionRequestedEventArgs.#ctor(Prism.Interactivity.InteractionRequest.INotification,System.Action)">
-            <summary>
-            Constructs a new instance of <see cref="T:Prism.Interactivity.InteractionRequest.InteractionRequestedEventArgs"/>
-            </summary>
-            <param name="context"></param>
-            <param name="callback"></param>
-        </member>
-        <member name="P:Prism.Interactivity.InteractionRequest.InteractionRequestedEventArgs.Context">
-            <summary>
-            Gets the context for a requested interaction.
-            </summary>
-        </member>
-        <member name="P:Prism.Interactivity.InteractionRequest.InteractionRequestedEventArgs.Callback">
-            <summary>
-            Gets the callback to execute when an interaction is completed.
-            </summary>
-        </member>
-        <member name="T:Prism.Interactivity.InteractionRequest.InteractionRequestTrigger">
-            <summary>
-            Custom event trigger for using with <see cref="T:Prism.Interactivity.InteractionRequest.IInteractionRequest"/> objects.
-            </summary>
-            <remarks>
-            The standard <see cref="T:System.Windows.Interactivity.EventTrigger"/> class can be used instead, as long as the 'Raised' event 
-            name is specified.
-            </remarks>
-        </member>
-        <member name="M:Prism.Interactivity.InteractionRequest.InteractionRequestTrigger.GetEventName">
-            <summary>
-            Specifies the name of the Event this EventTriggerBase is listening for.
-            </summary>
-            <returns>This implementation always returns the Raised event name for ease of connection with <see cref="T:Prism.Interactivity.InteractionRequest.IInteractionRequest"/>.</returns>
-        </member>
-        <member name="T:Prism.Interactivity.InteractionRequest.Notification">
-            <summary>
-            Basic implementation of <see cref="T:Prism.Interactivity.InteractionRequest.INotification"/>.
-            </summary>
-        </member>
-        <member name="P:Prism.Interactivity.InteractionRequest.Notification.Title">
-            <summary>
-            Gets or sets the title to use for the notification.
-            </summary>
-        </member>
-        <member name="P:Prism.Interactivity.InteractionRequest.Notification.Content">
-            <summary>
-            Gets or sets the content of the notification.
+            Executes the command, if it's set, providing the <see cref="P:Prism.Interactivity.CommandBehaviorBase`1.CommandParameter"/>.
             </summary>
         </member>
         <member name="T:Prism.Interactivity.InvokeCommandAction">
@@ -490,7 +206,7 @@
             <summary>
             A CommandBehavior that exposes a public ExecuteCommand method. It provides the functionality to invoke commands and update Enabled state of the target control.
             It is not possible to make the <see cref="T:Prism.Interactivity.InvokeCommandAction"/> inherit from <see cref="T:Prism.Interactivity.CommandBehaviorBase`1"/>, since the <see cref="T:Prism.Interactivity.InvokeCommandAction"/>
-            must already inherit from <see cref="T:System.Windows.Interactivity.TriggerAction`1"/>, so we chose to follow the aggregation approach.
+            must already inherit from <see cref="T:Microsoft.Xaml.Behaviors.TriggerAction`1"/>, so we chose to follow the aggregation approach.
             </summary>
         </member>
         <member name="M:Prism.Interactivity.InvokeCommandAction.ExecutableCommandBehavior.#ctor(System.Windows.UIElement)">
@@ -504,105 +220,64 @@
             Executes the command, if it's set.
             </summary>
         </member>
-        <member name="T:Prism.Interactivity.PopupWindowAction">
+        <member name="T:Prism.Ioc.ContainerProviderExtension">
             <summary>
-            Shows a popup window in response to an <see cref="N:Prism.Interactivity.InteractionRequest"/> being raised.
+            Provides Types and Services registered with the Container
+            <example>
+            <para>
+            Usage as markup extension:
+            <![CDATA[
+              <TextBlock
+                Text="{Binding
+                  Path=Foo,
+                  Converter={prism:ContainerProvider {x:Type local:MyConverter}}}" />
+            ]]>
+            </para>
+            <para>
+            Usage as XML element:
+            <![CDATA[
+              <Window>
+                <Window.DataContext>
+                  <prism:ContainerProvider Type="{x:Type local:MyViewModel}" />
+                </Window.DataContext>
+              </Window>
+            ]]>
+            </para>
+            </example>
             </summary>
         </member>
-        <member name="F:Prism.Interactivity.PopupWindowAction.WindowContentProperty">
+        <member name="M:Prism.Ioc.ContainerProviderExtension.#ctor">
             <summary>
-            The content of the child window to display as part of the popup.
+            Initializes a new instance of the <see cref="T:Prism.Ioc.ContainerProviderExtension"/> class.
             </summary>
         </member>
-        <member name="F:Prism.Interactivity.PopupWindowAction.WindowContentTypeProperty">
+        <member name="M:Prism.Ioc.ContainerProviderExtension.#ctor(System.Type)">
             <summary>
-            The type of content of the child window to display as part of the popup.
+            Initializes a new instance of the <see cref="T:Prism.Ioc.ContainerProviderExtension"/> class.
+            </summary>
+            <param name="type">The type to Resolve</param>
+        </member>
+        <member name="P:Prism.Ioc.ContainerProviderExtension.Type">
+            <summary>
+            The type to Resolve
             </summary>
         </member>
-        <member name="F:Prism.Interactivity.PopupWindowAction.IsModalProperty">
+        <member name="P:Prism.Ioc.ContainerProviderExtension.Name">
             <summary>
-            Determines if the content should be shown in a modal window or not.
+            The Name used to register the type with the Container
             </summary>
         </member>
-        <member name="F:Prism.Interactivity.PopupWindowAction.CenterOverAssociatedObjectProperty">
+        <member name="M:Prism.Ioc.ContainerProviderExtension.ProvideValue(System.IServiceProvider)">
             <summary>
-            Determines if the content should be initially shown centered over the view that raised the interaction request or not.
+            Provide resolved object from <see cref="T:Prism.Ioc.ContainerLocator"/>
             </summary>
-        </member>
-        <member name="F:Prism.Interactivity.PopupWindowAction.WindowStartupLocationProperty">
-            <summary>
-            If set, applies this WindowStartupLocation to the child window.
-            </summary>
-        </member>
-        <member name="F:Prism.Interactivity.PopupWindowAction.WindowStyleProperty">
-            <summary>
-            If set, applies this Style to the child window.
-            </summary>
-        </member>
-        <member name="P:Prism.Interactivity.PopupWindowAction.WindowContent">
-            <summary>
-            Gets or sets the content of the window.
-            </summary>
-        </member>
-        <member name="P:Prism.Interactivity.PopupWindowAction.WindowContentType">
-            <summary>
-            Gets or sets the type of content of the window.
-            </summary>
-        </member>
-        <member name="P:Prism.Interactivity.PopupWindowAction.IsModal">
-            <summary>
-            Gets or sets if the window will be modal or not.
-            </summary>
-        </member>
-        <member name="P:Prism.Interactivity.PopupWindowAction.CenterOverAssociatedObject">
-            <summary>
-            Gets or sets if the window will be initially shown centered over the view that raised the interaction request or not.
-            </summary>
-        </member>
-        <member name="P:Prism.Interactivity.PopupWindowAction.WindowStartupLocation">
-            <summary>
-            Gets or sets the startup location of the Window.
-            </summary>
-        </member>
-        <member name="P:Prism.Interactivity.PopupWindowAction.WindowStyle">
-            <summary>
-            Gets or sets the Style of the Window.
-            </summary>
-        </member>
-        <member name="M:Prism.Interactivity.PopupWindowAction.Invoke(System.Object)">
-            <summary>
-            Displays the child window and collects results for <see cref="T:Prism.Interactivity.InteractionRequest.IInteractionRequest"/>.
-            </summary>
-            <param name="parameter">The parameter to the action. If the action does not require a parameter, the parameter may be set to a null reference.</param>
-        </member>
-        <member name="M:Prism.Interactivity.PopupWindowAction.GetWindow(Prism.Interactivity.InteractionRequest.INotification)">
-            <summary>
-            Returns the window to display as part of the trigger action.
-            </summary>
-            <param name="notification">The notification to be set as a DataContext in the window.</param>
+            <param name="serviceProvider"></param>
             <returns></returns>
         </member>
-        <member name="M:Prism.Interactivity.PopupWindowAction.PrepareContentForWindow(Prism.Interactivity.InteractionRequest.INotification,System.Windows.Window)">
+        <member name="T:Prism.Ioc.IContainerRegistryExtensions">
             <summary>
-            Checks if the WindowContent or its DataContext implements <see cref="T:Prism.Interactivity.InteractionRequest.IInteractionRequestAware"/>.
-            If so, it sets the corresponding values.
+            <see cref="T:Prism.Ioc.IContainerRegistry"/> extensions.
             </summary>
-            <param name="notification">The notification to be set as a DataContext in the HostWindow.</param>
-            <param name="wrapperWindow">The HostWindow</param>
-        </member>
-        <member name="M:Prism.Interactivity.PopupWindowAction.CreateWindow">
-            <summary>
-            Creates a Window that is used when providing custom Window Content
-            </summary>
-            <returns>The Window</returns>
-        </member>
-        <member name="M:Prism.Interactivity.PopupWindowAction.CreateDefaultWindow(Prism.Interactivity.InteractionRequest.INotification)">
-            <summary>
-            When no WindowContent is sent this method is used to create a default basic window to show
-            the corresponding <see cref="T:Prism.Interactivity.InteractionRequest.INotification"/> or <see cref="T:Prism.Interactivity.InteractionRequest.IConfirmation"/>.
-            </summary>
-            <param name="notification">The INotification or IConfirmation parameter to show.</param>
-            <returns></returns>
         </member>
         <member name="M:Prism.Ioc.IContainerRegistryExtensions.RegisterDialog``1(Prism.Ioc.IContainerRegistry,System.String)">
             <summary>
@@ -628,6 +303,14 @@
             <typeparam name="TWindow">The Type of the Window class that will be used to host dialogs in the IDialogService</typeparam>
             <param name="containerRegistry"></param>
         </member>
+        <member name="M:Prism.Ioc.IContainerRegistryExtensions.RegisterDialogWindow``1(Prism.Ioc.IContainerRegistry,System.String)">
+            <summary>
+            Registers an object that implements IDialogWindow to be used to host all dialogs in the IDialogService.
+            </summary>
+            <typeparam name="TWindow">The Type of the Window class that will be used to host dialogs in the IDialogService</typeparam>
+            <param name="containerRegistry"></param>
+            <param name="name">The name of the dialog window</param>
+        </member>
         <member name="M:Prism.Ioc.IContainerRegistryExtensions.RegisterForNavigation(Prism.Ioc.IContainerRegistry,System.Type,System.String)">
             <summary>
             Registers an object for navigation
@@ -652,51 +335,6 @@
             <typeparam name="TViewModel">The ViewModel to use as the DataContext for the view</typeparam>
             <param name="containerRegistry"></param>
             <param name="name">The unique name to register with the view</param>
-        </member>
-        <member name="T:Prism.Logging.TextLogger">
-            <summary>
-            Implementation of <see cref="T:Prism.Logging.ILoggerFacade"/> that logs into a <see cref="T:System.IO.TextWriter"/>.
-            </summary>
-        </member>
-        <member name="M:Prism.Logging.TextLogger.#ctor">
-            <summary>
-            Initializes a new instance of <see cref="T:Prism.Logging.TextLogger"/> that writes to
-            the console output.
-            </summary>
-        </member>
-        <member name="M:Prism.Logging.TextLogger.Log(System.String,Prism.Logging.Category,Prism.Logging.Priority)">
-            <summary>
-            Write a new log entry with the specified category and priority.
-            </summary>
-            <param name="message">Message body to log.</param>
-            <param name="category">Category of the entry.</param>
-            <param name="priority">The priority of the entry.</param>
-        </member>
-        <member name="M:Prism.Logging.TextLogger.Dispose(System.Boolean)">
-            <summary>
-            Disposes the associated <see cref="T:System.IO.TextWriter"/>.
-            </summary>
-            <param name="disposing">When <see langword="true"/>, disposes the associated <see cref="T:System.IO.TextWriter"/>.</param>
-        </member>
-        <member name="M:Prism.Logging.TextLogger.Dispose">
-            <summary>
-            Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-            </summary>
-             <remarks>Calls <see cref="M:Prism.Logging.TextLogger.Dispose(System.Boolean)"/></remarks>.
-            <filterpriority>2</filterpriority>
-        </member>
-        <member name="T:Prism.Logging.TraceLogger">
-            <summary>
-            Implementation of <see cref="T:Prism.Logging.ILoggerFacade"/> that logs to .NET <see cref="T:System.Diagnostics.Trace"/> class.
-            </summary>
-        </member>
-        <member name="M:Prism.Logging.TraceLogger.Log(System.String,Prism.Logging.Category,Prism.Logging.Priority)">
-            <summary>
-            Write a new log entry with the specified category and priority.
-            </summary>
-            <param name="message">Message body to log.</param>
-            <param name="category">Category of the entry.</param>
-            <param name="priority">The priority of the entry.</param>
         </member>
         <member name="T:Prism.Modularity.AssemblyResolver">
             <summary>
@@ -877,29 +515,37 @@
             </summary>
             <returns>A <see cref="T:Prism.Modularity.ModulesConfigurationSection"/> instance.</returns>
         </member>
+        <member name="T:Prism.Modularity.IModuleCatalogExtensions">
+            <summary>
+            <see cref="T:Prism.Modularity.IModuleCatalog"/> extensions.
+            </summary>
+        </member>
         <member name="M:Prism.Modularity.IModuleCatalogExtensions.AddModule``1(Prism.Modularity.IModuleCatalog,Prism.Modularity.InitializationMode,System.String[])">
             <summary>
-            Adds the module.
+            Adds the module to the <see cref="T:Prism.Modularity.IModuleCatalog"/>.
             </summary>
-            <returns>The module.</returns>
-            <param name="catalog">Catalog</param>
-            <param name="mode"><see cref="T:Prism.Modularity.InitializationMode"/></param>
+            <param name="catalog">The catalog to add the module to.</param>
+            <param name="mode">The <see cref="T:Prism.Modularity.InitializationMode"/> to use.</param>
+            <param name="dependsOn">Collection of module names (<see cref="P:Prism.Modularity.IModuleInfo.ModuleName"/>) of the modules on which the module to be added logically depends on.</param>
             <typeparam name="T">The <see cref="T:Prism.Modularity.IModule"/> type parameter.</typeparam>
+            <returns>The same <see cref="T:Prism.Modularity.IModuleCatalog"/> instance with the added module.</returns>
         </member>
         <member name="M:Prism.Modularity.IModuleCatalogExtensions.AddModule``1(Prism.Modularity.IModuleCatalog,System.String,Prism.Modularity.InitializationMode,System.String[])">
             <summary>
-            Adds the module.
+            Adds the module to the <see cref="T:Prism.Modularity.IModuleCatalog"/>.
             </summary>
-            <returns>The module.</returns>
-            <param name="catalog">Catalog.</param>
-            <param name="name">Name.</param>
-            <param name="mode"><see cref="T:Prism.Modularity.IModule"/>.</param>
+            <param name="catalog">The catalog to add the module to.</param>
+            <param name="name">Name of the module to be added.</param>
+            <param name="mode">The <see cref="T:Prism.Modularity.InitializationMode"/> to use.</param>
+            <param name="dependsOn">Collection of module names (<see cref="P:Prism.Modularity.IModuleInfo.ModuleName"/>) of the modules on which the module to be added logically depends on.</param>
             <typeparam name="T">The <see cref="T:Prism.Modularity.IModule"/> type parameter.</typeparam>
+            <returns>The same <see cref="T:Prism.Modularity.IModuleCatalog"/> instance with the added module.</returns>
         </member>
         <member name="M:Prism.Modularity.IModuleCatalogExtensions.AddModule(Prism.Modularity.IModuleCatalog,System.Type,System.String[])">
             <summary>
             Adds a groupless <see cref="T:Prism.Modularity.IModuleInfo"/> to the catalog.
             </summary>
+            <param name="catalog">The catalog to add the module to.</param>
             <param name="moduleType"><see cref="T:System.Type"/> of the module to be added.</param>
             <param name="dependsOn">Collection of module names (<see cref="P:Prism.Modularity.IModuleInfo.ModuleName"/>) of the modules on which the module to be added logically depends on.</param>
             <returns>The same <see cref="T:Prism.Modularity.IModuleCatalog"/> instance with the added module.</returns>
@@ -908,6 +554,7 @@
             <summary>
             Adds a groupless <see cref="T:Prism.Modularity.IModuleInfo"/> to the catalog.
             </summary>
+            <param name="catalog">The catalog to add the module to.</param>
             <param name="moduleType"><see cref="T:System.Type"/> of the module to be added.</param>
             <param name="initializationMode">Stage on which the module to be added will be initialized.</param>
             <param name="dependsOn">Collection of module names (<see cref="P:Prism.Modularity.IModuleInfo.ModuleName"/>) of the modules on which the module to be added logically depends on.</param>
@@ -915,61 +562,74 @@
         </member>
         <member name="M:Prism.Modularity.IModuleCatalogExtensions.AddModule(Prism.Modularity.IModuleCatalog,System.String,System.String,System.String[])">
             <summary>
-            Adds a groupless <see cref="T:Prism.Modularity.ModuleInfo"/> to the catalog.
+            Adds a groupless <see cref="T:Prism.Modularity.IModuleInfo"/> to the catalog.
             </summary>
+            <param name="catalog">The catalog to add the module to.</param>
             <param name="moduleName">Name of the module to be added.</param>
             <param name="moduleType"><see cref="T:System.Type"/> of the module to be added.</param>
-            <param name="dependsOn">Collection of module names (<see cref="P:Prism.Modularity.ModuleInfo.ModuleName"/>) of the modules on which the module to be added logically depends on.</param>
-            <returns>The same <see cref="T:Prism.Modularity.ModuleCatalog"/> instance with the added module.</returns>
+            <param name="dependsOn">Collection of module names (<see cref="P:Prism.Modularity.IModuleInfo.ModuleName"/>) of the modules on which the module to be added logically depends on.</param>
+            <returns>The same <see cref="T:Prism.Modularity.IModuleCatalog"/> instance with the added module.</returns>
         </member>
         <member name="M:Prism.Modularity.IModuleCatalogExtensions.AddModule(Prism.Modularity.IModuleCatalog,System.String,System.String,Prism.Modularity.InitializationMode,System.String[])">
             <summary>
             Adds a groupless <see cref="T:Prism.Modularity.ModuleInfo"/> to the catalog.
             </summary>
+            <param name="catalog">The catalog to add the module to.</param>
             <param name="moduleName">Name of the module to be added.</param>
             <param name="moduleType"><see cref="T:System.Type"/> of the module to be added.</param>
             <param name="initializationMode">Stage on which the module to be added will be initialized.</param>
             <param name="dependsOn">Collection of module names (<see cref="P:Prism.Modularity.ModuleInfo.ModuleName"/>) of the modules on which the module to be added logically depends on.</param>
-            <returns>The same <see cref="T:Prism.Modularity.ModuleCatalog"/> instance with the added module.</returns>
+            <returns>The same <see cref="T:Prism.Modularity.IModuleCatalog"/> instance with the added module.</returns>
         </member>
         <member name="M:Prism.Modularity.IModuleCatalogExtensions.AddModule(Prism.Modularity.IModuleCatalog,System.String,System.String,System.String,Prism.Modularity.InitializationMode,System.String[])">
             <summary>
             Adds a groupless <see cref="T:Prism.Modularity.ModuleInfo"/> to the catalog.
             </summary>
+            <param name="catalog">The catalog to add the module to.</param>
             <param name="moduleName">Name of the module to be added.</param>
             <param name="moduleType"><see cref="T:System.Type"/> of the module to be added.</param>
             <param name="refValue">Reference to the location of the module to be added assembly.</param>
             <param name="initializationMode">Stage on which the module to be added will be initialized.</param>
             <param name="dependsOn">Collection of module names (<see cref="P:Prism.Modularity.ModuleInfo.ModuleName"/>) of the modules on which the module to be added logically depends on.</param>
-            <returns>The same <see cref="T:Prism.Modularity.ModuleCatalog"/> instance with the added module.</returns>
+            <returns>The same <see cref="T:Prism.Modularity.IModuleCatalog"/> instance with the added module.</returns>
         </member>
         <member name="M:Prism.Modularity.IModuleCatalogExtensions.AddModule``1(Prism.Modularity.IModuleCatalog,Prism.Modularity.InitializationMode)">
             <summary>
-            Adds the module.
+            Adds the module to the <see cref="T:Prism.Modularity.IModuleCatalog"/>.
             </summary>
-            <returns>The module.</returns>
-            <param name="catalog">Catalog</param>
-            <param name="mode"><see cref="T:Prism.Modularity.InitializationMode"/></param>
+            <param name="catalog">The catalog to add the module to.</param>
+            <param name="mode">The <see cref="T:Prism.Modularity.InitializationMode"/> to use.</param>
             <typeparam name="T">The <see cref="T:Prism.Modularity.IModule"/> type parameter.</typeparam>
+            <returns>The same <see cref="T:Prism.Modularity.IModuleCatalog"/> instance with the added module.</returns>
+        </member>
+        <member name="M:Prism.Modularity.IModuleCatalogExtensions.AddModule``1(Prism.Modularity.IModuleCatalog,System.String)">
+            <summary>
+            Adds the module to the <see cref="T:Prism.Modularity.IModuleCatalog"/>.
+            </summary>
+            <param name="catalog">The catalog to add the module to.</param>
+            <param name="name">Name of the module to be added.</param>
+            <typeparam name="T">The <see cref="T:Prism.Modularity.IModule"/> type parameter.</typeparam>
+            <returns>The same <see cref="T:Prism.Modularity.IModuleCatalog"/> instance with the added module.</returns>
         </member>
         <member name="M:Prism.Modularity.IModuleCatalogExtensions.AddModule``1(Prism.Modularity.IModuleCatalog,System.String,Prism.Modularity.InitializationMode)">
             <summary>
-            Adds the module.
+            Adds the module to the <see cref="T:Prism.Modularity.IModuleCatalog"/>.
             </summary>
-            <returns>The module.</returns>
-            <param name="catalog">Catalog.</param>
-            <param name="name">Name.</param>
-            <param name="mode"><see cref="T:Prism.Modularity.IModule"/>.</param>
+            <param name="catalog">The catalog to add the module to.</param>
+            <param name="name">Name of the module to be added.</param>
+            <param name="mode">The <see cref="T:Prism.Modularity.InitializationMode"/> to use.</param>
             <typeparam name="T">The <see cref="T:Prism.Modularity.IModule"/> type parameter.</typeparam>
+            <returns>The same <see cref="T:Prism.Modularity.IModuleCatalog"/> instance with the added module.</returns>
         </member>
         <member name="M:Prism.Modularity.IModuleCatalogExtensions.AddGroup(Prism.Modularity.IModuleCatalog,Prism.Modularity.InitializationMode,System.String,Prism.Modularity.ModuleInfo[])">
             <summary>
             Creates and adds a <see cref="T:Prism.Modularity.ModuleInfoGroup"/> to the catalog.
             </summary>
+            <param name="catalog">The catalog to add the module to.</param>
             <param name="initializationMode">Stage on which the module group to be added will be initialized.</param>
             <param name="refValue">Reference to the location of the module group to be added.</param>
             <param name="moduleInfos">Collection of <see cref="T:Prism.Modularity.ModuleInfo"/> included in the group.</param>
-            <returns><see cref="T:Prism.Modularity.ModuleCatalog"/> with the added module group.</returns>
+            <returns>The same <see cref="T:Prism.Modularity.IModuleCatalog"/> with the added module group.</returns>
         </member>
         <member name="T:Prism.Modularity.IModuleTypeLoader">
             <summary>
@@ -1052,19 +712,12 @@
             </summary>
             <param name="modules">The initial list of modules.</param>
         </member>
-        <member name="M:Prism.Modularity.ModuleCatalog.CreateFromXaml(System.IO.Stream)">
+        <member name="M:Prism.Modularity.ModuleCatalog.GetFileAbsoluteUri(System.String)">
             <summary>
-            Creates a <see cref="T:Prism.Modularity.ModuleCatalog"/> from XAML.
+            Creates a valid file uri to locate the module assembly file
             </summary>
-            <param name="xamlStream"><see cref="T:System.IO.Stream"/> that contains the XAML declaration of the catalog.</param>
-            <returns>An instance of <see cref="T:Prism.Modularity.ModuleCatalog"/> built from the XAML.</returns>
-        </member>
-        <member name="M:Prism.Modularity.ModuleCatalog.CreateFromXaml(System.Uri)">
-            <summary>
-            Creates a <see cref="T:Prism.Modularity.ModuleCatalog"/> from a XAML included as an Application Resource.
-            </summary>
-            <param name="builderResourceUri">Relative <see cref="T:System.Uri"/> that identifies the XAML included as an Application Resource.</param>
-            <returns>An instance of <see cref="T:Prism.Modularity.ModuleCatalog"/> build from the XAML.</returns>
+            <param name="filePath">The relative path to the file</param>
+            <returns>The valid absolute file path</returns>
         </member>
         <member name="T:Prism.Modularity.ModuleConfigurationElement">
             <summary>
@@ -1661,12 +1314,11 @@
             Implements the <see cref="T:Prism.Modularity.IModuleInitializer"/> interface. Handles loading of a module based on a type.
             </summary>
         </member>
-        <member name="M:Prism.Modularity.ModuleInitializer.#ctor(Prism.Ioc.IContainerExtension,Prism.Logging.ILoggerFacade)">
+        <member name="M:Prism.Modularity.ModuleInitializer.#ctor(Prism.Ioc.IContainerExtension)">
             <summary>
             Initializes a new instance of <see cref="T:Prism.Modularity.ModuleInitializer"/>.
             </summary>
             <param name="containerExtension">The container that will be used to resolve the modules by specifying its type.</param>
-            <param name="loggerFacade">The logger to use.</param>
         </member>
         <member name="M:Prism.Modularity.ModuleInitializer.Initialize(Prism.Modularity.IModuleInfo)">
             <summary>
@@ -1677,7 +1329,7 @@
         <member name="M:Prism.Modularity.ModuleInitializer.HandleModuleInitializationError(Prism.Modularity.IModuleInfo,System.String,System.Exception)">
             <summary>
             Handles any exception occurred in the module Initialization process,
-            logs the error using the <see cref="T:Prism.Logging.ILoggerFacade"/> and throws a <see cref="T:Prism.Modularity.ModuleInitializeException"/>.
+            logs the error using the <see cref="!:ILoggerFacade"/> and throws a <see cref="T:Prism.Modularity.ModuleInitializeException"/>.
             This method can be overridden to provide a different behavior.
             </summary>
             <param name="moduleInfo">The module metadata where the error happenened.</param>
@@ -1707,17 +1359,21 @@
             Component responsible for coordinating the modules' type loading and module initialization process. 
             </summary>
         </member>
-        <member name="M:Prism.Modularity.ModuleManager.#ctor(Prism.Modularity.IModuleInitializer,Prism.Modularity.IModuleCatalog,Prism.Logging.ILoggerFacade)">
+        <member name="M:Prism.Modularity.ModuleManager.#ctor(Prism.Modularity.IModuleInitializer,Prism.Modularity.IModuleCatalog)">
             <summary>
             Initializes an instance of the <see cref="T:Prism.Modularity.ModuleManager"/> class.
             </summary>
             <param name="moduleInitializer">Service used for initialization of modules.</param>
             <param name="moduleCatalog">Catalog that enumerates the modules to be loaded and initialized.</param>
-            <param name="loggerFacade">Logger used during the load and initialization of modules.</param>
         </member>
         <member name="P:Prism.Modularity.ModuleManager.ModuleCatalog">
             <summary>
             The module catalog specified in the constructor.
+            </summary>
+        </member>
+        <member name="P:Prism.Modularity.ModuleManager.Modules">
+            <summary>
+            Gets all the <see cref="T:Prism.Modularity.IModuleInfo"/> classes that are in the <see cref="T:Prism.Modularity.IModuleCatalog"/>.
             </summary>
         </member>
         <member name="E:Prism.Modularity.ModuleManager.ModuleDownloadProgressChanged">
@@ -1737,7 +1393,7 @@
         </member>
         <member name="M:Prism.Modularity.ModuleManager.LoadModule(System.String)">
             <summary>
-            Loads and initializes the module on the <see cref="P:Prism.Modularity.ModuleManager.ModuleCatalog"/> with the name <paramref name="moduleName"/>.
+            Loads and initializes the module on the <see cref="T:Prism.Modularity.IModuleCatalog"/> with the name <paramref name="moduleName"/>.
             </summary>
             <param name="moduleName">Name of the module requested for initialization.</param>
         </member>
@@ -1756,7 +1412,7 @@
         <member name="M:Prism.Modularity.ModuleManager.HandleModuleTypeLoadingError(Prism.Modularity.IModuleInfo,System.Exception)">
             <summary>
             Handles any exception occurred in the module typeloading process,
-            logs the error using the <see cref="T:Prism.Logging.ILoggerFacade"/> and throws a <see cref="T:Prism.Modularity.ModuleTypeLoadingException"/>.
+            and throws a <see cref="T:Prism.Modularity.ModuleTypeLoadingException"/>.
             This method can be overridden to provide a different behavior.
             </summary>
             <param name="moduleInfo">The module metadata where the error happenened.</param>
@@ -1794,6 +1450,89 @@
             </summary>
             <value>A <see cref="T:Prism.Modularity.ModuleConfigurationElementCollection"/> of <see cref="T:Prism.Modularity.ModuleConfigurationElement"/>.</value>
         </member>
+        <member name="T:Prism.Modularity.ModuleTypeLoaderNotFoundException">
+            <summary>
+            Exception that's thrown when there is no <see cref="T:Prism.Modularity.IModuleTypeLoader"/> registered in 
+            <see cref="P:Prism.Modularity.ModuleManager.ModuleTypeLoaders"/> that can handle this particular type of module. 
+            </summary>
+        </member>
+        <member name="M:Prism.Modularity.ModuleTypeLoaderNotFoundException.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Prism.Modularity.ModuleTypeLoaderNotFoundException"/> class.
+            </summary>
+        </member>
+        <member name="M:Prism.Modularity.ModuleTypeLoaderNotFoundException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Prism.Modularity.ModuleTypeLoaderNotFoundException" /> class with a specified error message.
+            </summary>
+            <param name="message">
+            The message that describes the error. 
+            </param>
+        </member>
+        <member name="M:Prism.Modularity.ModuleTypeLoaderNotFoundException.#ctor(System.String,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Prism.Modularity.ModuleTypeLoaderNotFoundException" /> class with a specified error message.
+            </summary>
+            <param name="message">
+            The message that describes the error. 
+            </param>
+            <param name="innerException">The inner exception</param>
+        </member>
+        <member name="M:Prism.Modularity.ModuleTypeLoaderNotFoundException.#ctor(System.String,System.String,System.Exception)">
+            <summary>
+            Initializes the exception with a particular module, error message and inner exception that happened.
+            </summary>
+            <param name="moduleName">The name of the module.</param>
+            <param name="message">The error message that explains the reason for the exception.</param>
+            <param name="innerException">The exception that is the cause of the current exception, 
+            or a <see langword="null"/> reference if no inner exception is specified.</param>
+        </member>
+        <member name="M:Prism.Modularity.ModuleTypeLoaderNotFoundException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Initializes a new instance with serialized data.
+            </summary>
+            <param name="info">The <see cref="T:System.Runtime.Serialization.SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
+            <param name="context">The <see cref="T:System.Runtime.Serialization.StreamingContext"/> that contains contextual information about the source or destination.</param>
+        </member>
+        <member name="T:Prism.Modularity.XamlModuleCatalog">
+            <summary>
+            A catalog built from a XAML file.
+            </summary>
+        </member>
+        <member name="M:Prism.Modularity.XamlModuleCatalog.#ctor(System.String)">
+            <summary>
+            Creates an instance of a XamlResourceCatalog.
+            </summary>
+            <param name="fileName">The name of the XAML file</param>
+        </member>
+        <member name="M:Prism.Modularity.XamlModuleCatalog.#ctor(System.Uri)">
+            <summary>
+            Creates an instance of a XamlResourceCatalog.
+            </summary>
+            <param name="resourceUri">The pack url of the XAML file resource</param>
+        </member>
+        <member name="M:Prism.Modularity.XamlModuleCatalog.InnerLoad">
+            <summary>
+            Loads the catalog from the XAML file.
+            </summary>
+        </member>
+        <member name="M:Prism.Modularity.XamlModuleCatalog.GetFileAbsoluteUri(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Prism.Modularity.XamlModuleCatalog.CreateFromXaml(System.IO.Stream)">
+            <summary>
+            Creates a <see cref="T:Prism.Modularity.ModuleCatalog"/> from XAML.
+            </summary>
+            <param name="xamlStream"><see cref="T:System.IO.Stream"/> that contains the XAML declaration of the catalog.</param>
+            <returns>An instance of <see cref="T:Prism.Modularity.ModuleCatalog"/> built from the XAML.</returns>
+        </member>
+        <member name="M:Prism.Modularity.XamlModuleCatalog.CreateFromXaml(System.Uri)">
+            <summary>
+            Creates a <see cref="T:Prism.Modularity.ModuleCatalog"/> from a XAML included as an Application Resource.
+            </summary>
+            <param name="builderResourceUri">Relative <see cref="T:System.Uri"/> that identifies the XAML included as an Application Resource.</param>
+            <returns>An instance of <see cref="T:Prism.Modularity.ModuleCatalog"/> build from the XAML.</returns>
+        </member>
         <member name="T:Prism.Mvvm.ViewModelLocator">
             <summary>
             This class defines the attached property and related change handler that calls the ViewModelLocator in Prism.Mvvm.
@@ -1804,12 +1543,26 @@
             The AutoWireViewModel attached property.
             </summary>
         </member>
+        <member name="M:Prism.Mvvm.ViewModelLocator.GetAutoWireViewModel(System.Windows.DependencyObject)">
+            <summary>
+            Gets the value for the <see cref="F:Prism.Mvvm.ViewModelLocator.AutoWireViewModelProperty"/> attached property.
+            </summary>
+            <param name="obj">The target element.</param>
+            <returns>The <see cref="F:Prism.Mvvm.ViewModelLocator.AutoWireViewModelProperty"/> attached to the <paramref name="obj"/> element.</returns>
+        </member>
+        <member name="M:Prism.Mvvm.ViewModelLocator.SetAutoWireViewModel(System.Windows.DependencyObject,System.Nullable{System.Boolean})">
+            <summary>
+            Sets the <see cref="F:Prism.Mvvm.ViewModelLocator.AutoWireViewModelProperty"/> attached property.
+            </summary>
+            <param name="obj">The target element.</param>
+            <param name="value">The value to attach.</param>
+        </member>
         <member name="M:Prism.Mvvm.ViewModelLocator.Bind(System.Object,System.Object)">
             <summary>
-            Sets the DataContext of a View
+            Sets the DataContext of a View.
             </summary>
-            <param name="view">The View to set the DataContext on</param>
-            <param name="viewModel">The object to use as the DataContext for the View</param>
+            <param name="view">The View to set the DataContext on.</param>
+            <param name="viewModel">The object to use as the DataContext for the View.</param>
         </member>
         <member name="T:Prism.PrismApplicationBase">
             <summary>
@@ -1823,6 +1576,12 @@
             <summary>
             The dependency injection container used to resolve objects
             </summary>
+        </member>
+        <member name="M:Prism.PrismApplicationBase.OnStartup(System.Windows.StartupEventArgs)">
+            <summary>
+            Raises the System.Windows.Application.Startup event.
+            </summary>
+            <param name="e">A System.Windows.StartupEventArgs that contains the event data.</param>
         </member>
         <member name="M:Prism.PrismApplicationBase.InitializeInternal">
             <summary>
@@ -1910,9 +1669,110 @@
             Initializes the modules.
             </summary>
         </member>
-        <member name="M:Prism.PrismApplicationBase.ConfigureServiceLocator">
+        <member name="T:Prism.PrismBootstrapperBase">
             <summary>
-            Configures the LocatorProvider for the <see cref="!:Microsoft.Practices.ServiceLocation.ServiceLocator" />.
+            Base class that provides a basic bootstrapping sequence and hooks
+            that specific implementations can override
+            </summary>
+            <remarks>
+            This class must be overridden to provide application specific configuration.
+            </remarks>
+        </member>
+        <member name="P:Prism.PrismBootstrapperBase.Container">
+            <summary>
+            The dependency injection container used to resolve objects
+            </summary>
+        </member>
+        <member name="P:Prism.PrismBootstrapperBase.Shell">
+            <summary>
+            Gets the shell user interface
+            </summary>
+            <value>The shell user interface.</value>
+        </member>
+        <member name="M:Prism.PrismBootstrapperBase.Run">
+            <summary>
+            Runs the bootstrapper process.
+            </summary>
+        </member>
+        <member name="M:Prism.PrismBootstrapperBase.ConfigureViewModelLocator">
+            <summary>
+            Configures the <see cref="T:Prism.Mvvm.ViewModelLocator"/> used by Prism.
+            </summary>
+        </member>
+        <member name="M:Prism.PrismBootstrapperBase.Initialize">
+            <summary>
+            Runs the initialization sequence to configure the Prism application.
+            </summary>
+        </member>
+        <member name="M:Prism.PrismBootstrapperBase.CreateContainerExtension">
+            <summary>
+            Creates the container used by Prism.
+            </summary>
+            <returns>The container</returns>
+        </member>
+        <member name="M:Prism.PrismBootstrapperBase.CreateModuleCatalog">
+            <summary>
+            Creates the <see cref="T:Prism.Modularity.IModuleCatalog"/> used by Prism.
+            </summary>
+             <remarks>
+            The base implementation returns a new ModuleCatalog.
+            </remarks>
+        </member>
+        <member name="M:Prism.PrismBootstrapperBase.RegisterRequiredTypes(Prism.Ioc.IContainerRegistry)">
+            <summary>
+            Registers all types that are required by Prism to function with the container.
+            </summary>
+            <param name="containerRegistry"></param>
+        </member>
+        <member name="M:Prism.PrismBootstrapperBase.RegisterTypes(Prism.Ioc.IContainerRegistry)">
+            <summary>
+            Used to register types with the container that will be used by your application.
+            </summary>
+        </member>
+        <member name="M:Prism.PrismBootstrapperBase.ConfigureDefaultRegionBehaviors(Prism.Regions.IRegionBehaviorFactory)">
+            <summary>
+            Configures the <see cref="T:Prism.Regions.IRegionBehaviorFactory"/>. 
+            This will be the list of default behaviors that will be added to a region. 
+            </summary>
+        </member>
+        <member name="M:Prism.PrismBootstrapperBase.ConfigureRegionAdapterMappings(Prism.Regions.RegionAdapterMappings)">
+            <summary>
+            Configures the default region adapter mappings to use in the application, in order
+            to adapt UI controls defined in XAML to use a region and register it automatically.
+            May be overwritten in a derived class to add specific mappings required by the application.
+            </summary>
+            <returns>The <see cref="T:Prism.Regions.RegionAdapterMappings"/> instance containing all the mappings.</returns>
+        </member>
+        <member name="M:Prism.PrismBootstrapperBase.RegisterFrameworkExceptionTypes">
+            <summary>
+            Registers the <see cref="T:System.Type"/>s of the Exceptions that are not considered 
+            root exceptions by the <see cref="T:System.ExceptionExtensions"/>.
+            </summary>
+        </member>
+        <member name="M:Prism.PrismBootstrapperBase.CreateShell">
+            <summary>
+            Creates the shell or main window of the application.
+            </summary>
+            <returns>The shell of the application.</returns>
+        </member>
+        <member name="M:Prism.PrismBootstrapperBase.InitializeShell(System.Windows.DependencyObject)">
+            <summary>
+            Initializes the shell.
+            </summary>
+        </member>
+        <member name="M:Prism.PrismBootstrapperBase.OnInitialized">
+            <summary>
+            Contains actions that should occur last.
+            </summary>
+        </member>
+        <member name="M:Prism.PrismBootstrapperBase.ConfigureModuleCatalog(Prism.Modularity.IModuleCatalog)">
+            <summary>
+            Configures the <see cref="T:Prism.Modularity.IModuleCatalog"/> used by Prism.
+            </summary>
+        </member>
+        <member name="M:Prism.PrismBootstrapperBase.InitializeModules">
+            <summary>
+            Initializes the modules.
             </summary>
         </member>
         <member name="T:Prism.Properties.Resources">
@@ -2383,6 +2243,25 @@
             <summary>
             Remove the instance of this class from <see cref="F:Prism.Regions.Behaviors.DelayedRegionCreationBehavior._instanceTracker"/>
             so it can eventually be garbage collected
+            </summary>
+        </member>
+        <member name="T:Prism.Regions.Behaviors.DestructibleRegionBehavior">
+            <summary>
+            Calls <see cref="M:Prism.Navigation.IDestructible.Destroy"/> on Views and ViewModels
+            removed from the <see cref="P:Prism.Regions.IRegion.Views"/> collection.
+            </summary>
+            <remarks>
+            The View and/or ViewModels must implement <see cref="T:Prism.Navigation.IDestructible"/> for this behavior to work.
+            </remarks>
+        </member>
+        <member name="F:Prism.Regions.Behaviors.DestructibleRegionBehavior.BehaviorKey">
+            <summary>
+            The key of this behavior.
+            </summary>
+        </member>
+        <member name="M:Prism.Regions.Behaviors.DestructibleRegionBehavior.OnAttach">
+            <summary>
+            Attaches the <see cref="T:Prism.Regions.Behaviors.DestructibleRegionBehavior"/> to the <see cref="P:Prism.Regions.IRegion.Views"/> collection.
             </summary>
         </member>
         <member name="T:Prism.Regions.Behaviors.IHostAwareRegionBehavior">
@@ -2910,7 +2789,7 @@
             Adds a particular type of RegionBehavior if it was not already registered. the <paramref name="behaviorKey"/> string is used to check if the behavior is already present
             </summary>
             <param name="behaviorKey">The behavior key that's used to find if a certain behavior is already added.</param>
-            <param name="behaviorType">Type of the behavior to add. .</param>
+            <param name="behaviorType">Type of the behavior to add.</param>
         </member>
         <member name="M:Prism.Regions.IRegionBehaviorFactory.ContainsKey(System.String)">
             <summary>
@@ -2927,6 +2806,19 @@
             </summary>
             <param name="key">The key that's used to register a behavior type.</param>
             <returns>The created behavior. </returns>
+        </member>
+        <member name="T:Prism.Regions.IRegionBehaviorFactoryExtensions">
+            <summary>
+            Extention methods for the IRegionBehaviorFactory.
+            </summary>
+        </member>
+        <member name="M:Prism.Regions.IRegionBehaviorFactoryExtensions.AddIfMissing``1(Prism.Regions.IRegionBehaviorFactory,System.String)">
+            <summary>
+            Adds a particular type of RegionBehavior if it was not already registered. the <paramref name="behaviorKey"/> string is used to check if the behavior is already present
+            </summary>
+            <typeparam name="T">Type of the behavior to add.</typeparam>
+            <param name="regionBehaviorFactory">The IRegionBehaviorFactory instance</param>
+            <param name="behaviorKey">The behavior key that's used to find if a certain behavior is already added.</param>
         </member>
         <member name="T:Prism.Regions.IRegionCollection">
             <summary>
@@ -3152,7 +3044,7 @@
             Gets a value that indicates whether there is at least one entry in the forward navigation history.
             </summary>
             <value>
-            	<c>true</c> if this instance can go forward; otherwise, <c>false</c>.
+            <c>true</c> if this instance can go forward; otherwise, <c>false</c>.
             </value>
         </member>
         <member name="P:Prism.Regions.IRegionNavigationJournal.CurrentEntry">
@@ -3185,6 +3077,7 @@
             Records the navigation to the entry..
             </summary>
             <param name="entry">The entry to record.</param>
+            <param name="persistInHistory">Keep Navigation object in memory when OnNavigationFrom is called</param>
         </member>
         <member name="M:Prism.Regions.IRegionNavigationJournal.Clear">
             <summary>
@@ -3457,18 +3350,8 @@
             Represents Navigation parameters.
             </summary>
             <remarks>
-            This class can be used to to pass object parameters during Navigation. 
+            This class can be used to to pass object parameters during Navigation.
             </remarks>
-        </member>
-        <member name="P:Prism.Regions.NavigationParameters.Count">
-            <summary>
-            Gets the number of parameters contained in the NavigationParameters
-            </summary>
-        </member>
-        <member name="P:Prism.Regions.NavigationParameters.Keys">
-            <summary>
-            Gets an IEnumerable containing the keys in the NavigationParameters
-            </summary>
         </member>
         <member name="M:Prism.Regions.NavigationParameters.#ctor">
             <summary>
@@ -3477,65 +3360,9 @@
         </member>
         <member name="M:Prism.Regions.NavigationParameters.#ctor(System.String)">
             <summary>
-            Initializes a new instance of the <see cref="T:Prism.Regions.NavigationParameters"/> class with a query string.
+            Constructs a list of parameters
             </summary>
-            <param name="query">The query string.</param>
-        </member>
-        <member name="P:Prism.Regions.NavigationParameters.Item(System.String)">
-            <summary>
-            Gets the <see cref="T:System.String"/> with the specified key.
-            </summary>
-            <returns>The value for the specified key, or <see langword="null"/> if the query does not contain such a key.</returns>
-        </member>
-        <member name="M:Prism.Regions.NavigationParameters.GetEnumerator">
-            <summary>
-            Gets the enumerator.
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:Prism.Regions.NavigationParameters.Add(System.String,System.Object)">
-            <summary>
-            Adds the specified key and value.
-            </summary>
-            <param name="key">The name.</param>
-            <param name="value">The value.</param>
-        </member>
-        <member name="M:Prism.Regions.NavigationParameters.ContainsKey(System.String)">
-            <summary>
-            Determines whether the NavigationParameters contains the specified key
-            </summary>
-            <param name="key">The key to locate</param>
-        </member>
-        <member name="M:Prism.Regions.NavigationParameters.GetValue``1(System.String)">
-            <summary>
-            Gets a strongly typed value with the specified key.
-            </summary>
-            <typeparam name="T">The type to cast/convert the value to.</typeparam>
-            <param name="key">The key.</param>
-            <returns>The value.</returns>
-        </member>
-        <member name="M:Prism.Regions.NavigationParameters.TryGetValue``1(System.String,``0@)">
-            <summary>
-            Gets a strongly typed value with the specified key.
-            </summary>
-            <typeparam name="T">The type to cast/convert the value to.</typeparam>
-            <param name="key">The key.</param>
-            <param name="value">Key value if such key exists.</param>
-            <returns>True if such key exists.</returns>
-        </member>
-        <member name="M:Prism.Regions.NavigationParameters.GetValues``1(System.String)">
-            <summary>
-            Gets a strongly typed collection containing the values with the specified key.
-            </summary>
-            <typeparam name="T">The type to cast/convert the value to.</typeparam>
-            <param name="key">The key.</param>
-            <returns>The collection of values.</returns>
-        </member>
-        <member name="M:Prism.Regions.NavigationParameters.ToString">
-            <summary>
-            Converts the list of key value pairs to a query string.
-            </summary>
-            <returns></returns>
+            <param name="query">Query string to be parsed</param>
         </member>
         <member name="T:Prism.Regions.NavigationResult">
             <summary>
@@ -3801,6 +3628,19 @@
             <exception cref="T:System.ArgumentNullException">When any of <paramref name="controlType"/> or <paramref name="adapter"/> are <see langword="null" />.</exception>
             <exception cref="T:System.InvalidOperationException">If a mapping for <paramref name="controlType"/> already exists.</exception>
         </member>
+        <member name="M:Prism.Regions.RegionAdapterMappings.RegisterMapping``1(Prism.Regions.IRegionAdapter)">
+            <summary>
+            Registers the mapping between a type and an adapter.
+            </summary>
+            <typeparam name="TControl">The type of the control</typeparam>
+        </member>
+        <member name="M:Prism.Regions.RegionAdapterMappings.RegisterMapping``2">
+            <summary>
+            Registers the mapping between a type and an adapter.
+            </summary>
+            <typeparam name="TControl">The type of the control</typeparam>
+            <typeparam name="TAdapter">The type of the IRegionAdapter to use with the TControl</typeparam>
+        </member>
         <member name="M:Prism.Regions.RegionAdapterMappings.GetMapping(System.Type)">
             <summary>
             Returns the adapter associated with the type provided.
@@ -3812,6 +3652,18 @@
             If there is no registered type for <paramref name="controlType"/> or any of its ancestors,
             an exception will be thrown.</remarks>
             <exception cref="T:System.Collections.Generic.KeyNotFoundException">When there is no registered type for <paramref name="controlType"/> or any of its ancestors.</exception>
+        </member>
+        <member name="M:Prism.Regions.RegionAdapterMappings.GetMapping``1">
+            <summary>
+            Returns the adapter associated with the type provided.
+            </summary>
+            <typeparam name="T">The control type used to obtain the <see cref="T:Prism.Regions.IRegionAdapter"/> mapped.</typeparam>
+            <returns>The <see cref="T:Prism.Regions.IRegionAdapter"/> mapped to the <typeparamref name="T"/>.</returns>
+            <remarks>This class will look for a registered type for <typeparamref name="T"/> and if there is not any,
+            it will look for a registered type for any of its ancestors in the class hierarchy.
+            If there is no registered type for <typeparamref name="T"/> or any of its ancestors,
+            an exception will be thrown.</remarks>
+            <exception cref="T:System.Collections.Generic.KeyNotFoundException">When there is no registered type for <typeparamref name="T"/> or any of its ancestors.</exception>
         </member>
         <member name="T:Prism.Regions.RegionBehavior">
             <summary>
@@ -3896,11 +3748,11 @@
             be added to the <see cref="T:Prism.Regions.IRegionBehaviorCollection"/> of all <see cref="T:Prism.Regions.IRegion"/>s, unless overridden on a 'per-region' basis.
             </summary>
         </member>
-        <member name="M:Prism.Regions.RegionBehaviorFactory.#ctor(CommonServiceLocator.IServiceLocator)">
+        <member name="M:Prism.Regions.RegionBehaviorFactory.#ctor(Prism.Ioc.IContainerExtension)">
             <summary>
             Initializes a new instance of <see cref="T:Prism.Regions.RegionBehaviorFactory"/>.
             </summary>
-            <param name="serviceLocator"><see cref="T:CommonServiceLocator.IServiceLocator"/> used to create the instance of the behavior from its <see cref="T:System.Type"/>.</param>
+            <param name="container"><see cref="T:Prism.Ioc.IContainerExtension"/> used to create the instance of the behavior from its <see cref="T:System.Type"/>.</param>
         </member>
         <member name="M:Prism.Regions.RegionBehaviorFactory.AddIfMissing(System.String,System.Type)">
             <summary>
@@ -4098,6 +3950,16 @@
             <param name="view">The view to add to the views collection</param>
             <returns>The RegionManager, to easily add several views. </returns>
         </member>
+        <member name="M:Prism.Regions.RegionManager.RegisterViewWithRegion``1(System.String)">
+            <summary>
+            Associate a view with a region, by registering a type. When the region get's displayed
+            this type will be resolved using the ServiceLocator into a concrete instance. The instance
+            will be added to the Views collection of the region
+            </summary>
+            <param name="regionName">The name of the region to associate the view with.</param>
+            <typeparam name="T">The type of the view to register</typeparam>
+            <returns>The regionmanager, for adding several views easily</returns>
+        </member>
         <member name="M:Prism.Regions.RegionManager.RegisterViewWithRegion(System.String,System.Type)">
             <summary>
             Associate a view with a region, by registering a type. When the region get's displayed
@@ -4211,15 +4073,15 @@
         </member>
         <member name="T:Prism.Regions.RegionNavigationContentLoader">
             <summary>
-            Implementation of <see cref="T:Prism.Regions.IRegionNavigationContentLoader"/> that relies on a <see cref="T:CommonServiceLocator.IServiceLocator"/>
+            Implementation of <see cref="T:Prism.Regions.IRegionNavigationContentLoader"/> that relies on a <see cref="T:Prism.Ioc.IContainerProvider"/>
             to create new views when necessary.
             </summary>
         </member>
-        <member name="M:Prism.Regions.RegionNavigationContentLoader.#ctor(CommonServiceLocator.IServiceLocator)">
+        <member name="M:Prism.Regions.RegionNavigationContentLoader.#ctor(Prism.Ioc.IContainerExtension)">
             <summary>
             Initializes a new instance of the <see cref="T:Prism.Regions.RegionNavigationContentLoader"/> class with a service locator.
             </summary>
-            <param name="serviceLocator">The service locator.</param>
+            <param name="container">The <see cref="T:Prism.Ioc.IContainerExtension" />.</param>
         </member>
         <member name="M:Prism.Regions.RegionNavigationContentLoader.LoadContent(Prism.Regions.IRegion,Prism.Regions.NavigationContext)">
             <summary>
@@ -4408,11 +4270,11 @@
             Provides navigation for regions.
             </summary>
         </member>
-        <member name="M:Prism.Regions.RegionNavigationService.#ctor(CommonServiceLocator.IServiceLocator,Prism.Regions.IRegionNavigationContentLoader,Prism.Regions.IRegionNavigationJournal)">
+        <member name="M:Prism.Regions.RegionNavigationService.#ctor(Prism.Ioc.IContainerExtension,Prism.Regions.IRegionNavigationContentLoader,Prism.Regions.IRegionNavigationJournal)">
             <summary>
             Initializes a new instance of the <see cref="T:Prism.Regions.RegionNavigationService"/> class.
             </summary>
-            <param name="serviceLocator">The service locator.</param>
+            <param name="container">The <see cref="T:Prism.Ioc.IContainerExtension" />.</param>
             <param name="regionNavigationContentLoader">The navigation target handler.</param>
             <param name="journal">The journal.</param>
         </member>
@@ -4463,11 +4325,11 @@
             Defines a registry for the content of the regions used on View Discovery composition.
             </summary>
         </member>
-        <member name="M:Prism.Regions.RegionViewRegistry.#ctor(CommonServiceLocator.IServiceLocator)">
+        <member name="M:Prism.Regions.RegionViewRegistry.#ctor(Prism.Ioc.IContainerExtension)">
             <summary>
             Creates a new instance of the <see cref="T:Prism.Regions.RegionViewRegistry"/> class.
             </summary>
-            <param name="locator"><see cref="T:CommonServiceLocator.IServiceLocator"/> used to create the instance of the views from its <see cref="T:System.Type"/>.</param>
+            <param name="container"><see cref="T:Prism.Ioc.IContainerExtension"/> used to create the instance of the views from its <see cref="T:System.Type"/>.</param>
         </member>
         <member name="E:Prism.Regions.RegionViewRegistry.ContentRegistered">
             <summary>
@@ -4762,12 +4624,255 @@
             </summary>
             <value>The hint to use for sorting.</value>
         </member>
+        <member name="T:Prism.Services.Dialogs.ButtonResult">
+            <summary>
+            The result of the dialog.
+            </summary>
+        </member>
+        <member name="F:Prism.Services.Dialogs.ButtonResult.Abort">
+            <summary>
+            Abort.
+            </summary>
+        </member>
+        <member name="F:Prism.Services.Dialogs.ButtonResult.Cancel">
+            <summary>
+            Cancel.
+            </summary>
+        </member>
+        <member name="F:Prism.Services.Dialogs.ButtonResult.Ignore">
+            <summary>
+            Ignore.
+            </summary>
+        </member>
+        <member name="F:Prism.Services.Dialogs.ButtonResult.No">
+            <summary>
+            No.
+            </summary>
+        </member>
+        <member name="F:Prism.Services.Dialogs.ButtonResult.None">
+            <summary>
+            No result returned.
+            </summary>
+        </member>
+        <member name="F:Prism.Services.Dialogs.ButtonResult.OK">
+            <summary>
+            OK.
+            </summary>
+        </member>
+        <member name="F:Prism.Services.Dialogs.ButtonResult.Retry">
+            <summary>
+            Retry.
+            </summary>
+        </member>
+        <member name="F:Prism.Services.Dialogs.ButtonResult.Yes">
+            <summary>
+            Yes.
+            </summary>
+        </member>
+        <member name="T:Prism.Services.Dialogs.Dialog">
+            <summary>
+            This class contains <see cref="T:Prism.Services.Dialogs.IDialogWindow"/> attached properties.
+            </summary>
+        </member>
+        <member name="F:Prism.Services.Dialogs.Dialog.WindowStyleProperty">
+            <summary>
+            Identifies the WindowStyle attached property.
+            </summary>
+            <remarks>
+            This attached property is used to specify the style of a <see cref="T:Prism.Services.Dialogs.IDialogWindow"/>.
+            </remarks>
+        </member>
+        <member name="M:Prism.Services.Dialogs.Dialog.GetWindowStyle(System.Windows.DependencyObject)">
+            <summary>
+            Gets the value for the <see cref="F:Prism.Services.Dialogs.Dialog.WindowStyleProperty"/> attached property.
+            </summary>
+            <param name="obj">The target element.</param>
+            <returns>The <see cref="F:Prism.Services.Dialogs.Dialog.WindowStyleProperty"/> attached to the <paramref name="obj"/> element.</returns>
+        </member>
+        <member name="M:Prism.Services.Dialogs.Dialog.SetWindowStyle(System.Windows.DependencyObject,System.Windows.Style)">
+            <summary>
+            Sets the <see cref="F:Prism.Services.Dialogs.Dialog.WindowStyleProperty"/> attached property.
+            </summary>
+            <param name="obj">The target element.</param>
+            <param name="value">The Style to attach.</param>
+        </member>
+        <member name="F:Prism.Services.Dialogs.Dialog.WindowStartupLocationProperty">
+            <summary>
+            Identifies the WindowStartupLocation attached property.
+            </summary>
+            <remarks>
+            This attached property is used to specify the startup location of a <see cref="T:Prism.Services.Dialogs.IDialogWindow"/>.
+            The default startup location is <c>WindowStartupLocation.CenterOwner</c>.
+            </remarks>
+        </member>
+        <member name="M:Prism.Services.Dialogs.Dialog.GetWindowStartupLocation(System.Windows.DependencyObject)">
+            <summary>
+            Gets the value for the <see cref="F:Prism.Services.Dialogs.Dialog.WindowStartupLocationProperty"/> attached property.
+            </summary>
+            <param name="obj">The target element.</param>
+            <returns>The <see cref="F:Prism.Services.Dialogs.Dialog.WindowStartupLocationProperty"/> attached to the <paramref name="obj"/> element.</returns>
+        </member>
+        <member name="M:Prism.Services.Dialogs.Dialog.SetWindowStartupLocation(System.Windows.DependencyObject,System.Windows.WindowStartupLocation)">
+            <summary>
+            Sets the <see cref="F:Prism.Services.Dialogs.Dialog.WindowStartupLocationProperty"/> attached property.
+            </summary>
+            <param name="obj">The target element.</param>
+            <param name="value">The WindowStartupLocation to attach.</param>
+        </member>
+        <member name="T:Prism.Services.Dialogs.DialogParameters">
+            <summary>
+            Represents Dialog parameters.
+            </summary>
+            <remarks>
+            This class can be used to to pass object parameters during the showing and closing of Dialogs.
+            </remarks>
+        </member>
+        <member name="M:Prism.Services.Dialogs.DialogParameters.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Prism.Services.Dialogs.DialogParameters"/> class.
+            </summary>
+        </member>
+        <member name="M:Prism.Services.Dialogs.DialogParameters.#ctor(System.String)">
+            <summary>
+            Constructs a list of parameters.
+            </summary>
+            <param name="query">Query string to be parsed.</param>
+        </member>
+        <member name="T:Prism.Services.Dialogs.DialogResult">
+            <summary>
+            An <see cref="T:Prism.Services.Dialogs.IDialogResult"/> that contains <see cref="T:Prism.Services.Dialogs.IDialogParameters"/> from the dialog
+            and the <see cref="T:Prism.Services.Dialogs.ButtonResult"/> of the dialog.
+            </summary>
+        </member>
+        <member name="P:Prism.Services.Dialogs.DialogResult.Parameters">
+            <summary>
+            The parameters from the dialog.
+            </summary>
+        </member>
+        <member name="P:Prism.Services.Dialogs.DialogResult.Result">
+            <summary>
+            The result of the dialog.
+            </summary>
+        </member>
+        <member name="M:Prism.Services.Dialogs.DialogResult.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Prism.Services.Dialogs.DialogResult"/> class.
+            </summary>
+        </member>
+        <member name="M:Prism.Services.Dialogs.DialogResult.#ctor(Prism.Services.Dialogs.ButtonResult)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Prism.Services.Dialogs.DialogResult"/> class.
+            </summary>
+            <param name="result">The result of the dialog.</param>
+        </member>
+        <member name="M:Prism.Services.Dialogs.DialogResult.#ctor(Prism.Services.Dialogs.ButtonResult,Prism.Services.Dialogs.IDialogParameters)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Prism.Services.Dialogs.DialogResult"/> class.
+            </summary>
+            <param name="result">The result of the dialog.</param>
+            <param name="parameters">The parameters from the dialog.</param>
+        </member>
+        <member name="T:Prism.Services.Dialogs.DialogService">
+            <summary>
+            Implements <see cref="T:Prism.Services.Dialogs.IDialogService"/> to show modal and non-modal dialogs.
+            </summary>
+            <remarks>
+            The dialog's ViewModel must implement IDialogAware.
+            </remarks>
+        </member>
+        <member name="M:Prism.Services.Dialogs.DialogService.#ctor(Prism.Ioc.IContainerExtension)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Prism.Services.Dialogs.DialogService"/> class.
+            </summary>
+            <param name="containerExtension"></param>
+        </member>
+        <member name="M:Prism.Services.Dialogs.DialogService.Show(System.String,Prism.Services.Dialogs.IDialogParameters,System.Action{Prism.Services.Dialogs.IDialogResult})">
+            <summary>
+            Shows a non-modal dialog.
+            </summary>
+            <param name="name">The name of the dialog to show.</param>
+            <param name="parameters">The parameters to pass to the dialog.</param>
+            <param name="callback">The action to perform when the dialog is closed.</param>
+        </member>
+        <member name="M:Prism.Services.Dialogs.DialogService.Show(System.String,Prism.Services.Dialogs.IDialogParameters,System.Action{Prism.Services.Dialogs.IDialogResult},System.String)">
+            <summary>
+            Shows a non-modal dialog.
+            </summary>
+            <param name="name">The name of the dialog to show.</param>
+            <param name="parameters">The parameters to pass to the dialog.</param>
+            <param name="callback">The action to perform when the dialog is closed.</param>
+            <param name="windowName">The name of the hosting window registered with the IContainerRegistry.</param>
+        </member>
+        <member name="M:Prism.Services.Dialogs.DialogService.ShowDialog(System.String,Prism.Services.Dialogs.IDialogParameters,System.Action{Prism.Services.Dialogs.IDialogResult})">
+            <summary>
+            Shows a modal dialog.
+            </summary>
+            <param name="name">The name of the dialog to show.</param>
+            <param name="parameters">The parameters to pass to the dialog.</param>
+            <param name="callback">The action to perform when the dialog is closed.</param>
+        </member>
+        <member name="M:Prism.Services.Dialogs.DialogService.ShowDialog(System.String,Prism.Services.Dialogs.IDialogParameters,System.Action{Prism.Services.Dialogs.IDialogResult},System.String)">
+            <summary>
+            Shows a modal dialog.
+            </summary>
+            <param name="name">The name of the dialog to show.</param>
+            <param name="parameters">The parameters to pass to the dialog.</param>
+            <param name="callback">The action to perform when the dialog is closed.</param>
+            <param name="windowName">The name of the hosting window registered with the IContainerRegistry.</param>
+        </member>
+        <member name="M:Prism.Services.Dialogs.DialogService.ShowDialogWindow(Prism.Services.Dialogs.IDialogWindow,System.Boolean)">
+            <summary>
+            Shows the dialog window.
+            </summary>
+            <param name="dialogWindow">The dialog window to show.</param>
+            <param name="isModal">If true; dialog is shown as a modal</param>
+        </member>
+        <member name="M:Prism.Services.Dialogs.DialogService.CreateDialogWindow(System.String)">
+            <summary>
+            Create a new <see cref="T:Prism.Services.Dialogs.IDialogWindow"/>.
+            </summary>
+            <param name="name">The name of the hosting window registered with the IContainerRegistry.</param>
+            <returns>The created <see cref="T:Prism.Services.Dialogs.IDialogWindow"/>.</returns>
+        </member>
+        <member name="M:Prism.Services.Dialogs.DialogService.ConfigureDialogWindowContent(System.String,Prism.Services.Dialogs.IDialogWindow,Prism.Services.Dialogs.IDialogParameters)">
+            <summary>
+            Configure <see cref="T:Prism.Services.Dialogs.IDialogWindow"/> content.
+            </summary>
+            <param name="dialogName">The name of the dialog to show.</param>
+            <param name="window">The hosting window.</param>
+            <param name="parameters">The parameters to pass to the dialog.</param>
+        </member>
+        <member name="M:Prism.Services.Dialogs.DialogService.ConfigureDialogWindowEvents(Prism.Services.Dialogs.IDialogWindow,System.Action{Prism.Services.Dialogs.IDialogResult})">
+            <summary>
+            Configure <see cref="T:Prism.Services.Dialogs.IDialogWindow"/> and <see cref="T:Prism.Services.Dialogs.IDialogAware"/> events.
+            </summary>
+            <param name="dialogWindow">The hosting window.</param>
+            <param name="callback">The action to perform when the dialog is closed.</param>
+        </member>
+        <member name="M:Prism.Services.Dialogs.DialogService.ConfigureDialogWindowProperties(Prism.Services.Dialogs.IDialogWindow,System.Windows.FrameworkElement,Prism.Services.Dialogs.IDialogAware)">
+            <summary>
+            Configure <see cref="T:Prism.Services.Dialogs.IDialogWindow"/> properties.
+            </summary>
+            <param name="window">The hosting window.</param>
+            <param name="dialogContent">The dialog to show.</param>
+            <param name="viewModel">The dialog's ViewModel.</param>
+        </member>
         <member name="T:Prism.Services.Dialogs.DialogWindow">
             <summary>
-            Interaction logic for DialogWindow.xaml
+            Prism's default dialog host.
             </summary>
             <summary>
             DialogWindow
+            </summary>
+        </member>
+        <member name="P:Prism.Services.Dialogs.DialogWindow.Result">
+            <summary>
+            The <see cref="T:Prism.Services.Dialogs.IDialogResult"/> of the dialog.
+            </summary>
+        </member>
+        <member name="M:Prism.Services.Dialogs.DialogWindow.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Prism.Services.Dialogs.DialogWindow"/> class.
             </summary>
         </member>
         <member name="M:Prism.Services.Dialogs.DialogWindow.InitializeComponent">
@@ -4775,11 +4880,16 @@
             InitializeComponent
             </summary>
         </member>
+        <member name="T:Prism.Services.Dialogs.IDialogAware">
+            <summary>
+            Interface that provides dialog functions and events to ViewModels.
+            </summary>
+        </member>
         <member name="M:Prism.Services.Dialogs.IDialogAware.CanCloseDialog">
             <summary>
             Determines if the dialog can be closed.
             </summary>
-            <returns>True: close the dialog; False: the dialog will not close</returns>
+            <returns>If <c>true</c> the dialog can be closed. If <c>false</c> the dialog will not close.</returns>
         </member>
         <member name="M:Prism.Services.Dialogs.IDialogAware.OnDialogClosed">
             <summary>
@@ -4790,21 +4900,85 @@
             <summary>
             Called when the dialog is opened.
             </summary>
-            <param name="parameters">The parameters passed to the dialog</param>
+            <param name="parameters">The parameters passed to the dialog.</param>
         </member>
         <member name="P:Prism.Services.Dialogs.IDialogAware.Title">
             <summary>
-            The title of the dialog that will show in the Window title bar.
+            The title of the dialog that will show in the window title bar.
             </summary>
         </member>
         <member name="E:Prism.Services.Dialogs.IDialogAware.RequestClose">
             <summary>
-            Instructs the IDialogWindow to close the dialog.
+            Instructs the <see cref="T:Prism.Services.Dialogs.IDialogWindow"/> to close the dialog.
+            </summary>
+        </member>
+        <member name="T:Prism.Services.Dialogs.IDialogParameters">
+            <summary>
+            Represents Dialog parameters.
+            </summary>
+            <remarks>
+            A class that implements this interface can be used to pass
+            object parameters during the showing and closing of Dialogs.
+            </remarks>
+        </member>
+        <member name="M:Prism.Services.Dialogs.IDialogParameters.Add(System.String,System.Object)">
+            <summary>
+            Adds the key and value to the collection.
+            </summary>
+            <param name="key">The key to reference this parameter value in the collection.</param>
+            <param name="value">The parameter value to store.</param>
+        </member>
+        <member name="M:Prism.Services.Dialogs.IDialogParameters.ContainsKey(System.String)">
+            <summary>
+            Checks the collection for the presence of a key.
+            </summary>
+            <param name="key">The key to check.</param>
+            <returns><c>true</c> if key exists; <c>false</c> otherwise.</returns>
+        </member>
+        <member name="P:Prism.Services.Dialogs.IDialogParameters.Count">
+            <summary>
+            The number of parameters in the collection.
+            </summary>
+        </member>
+        <member name="P:Prism.Services.Dialogs.IDialogParameters.Keys">
+            <summary>
+            The keys in the collection.
+            </summary>
+        </member>
+        <member name="M:Prism.Services.Dialogs.IDialogParameters.GetValue``1(System.String)">
+            <summary>
+            Gets the parameter value referenced by a key.
+            </summary>
+            <typeparam name="T">The type of object to be returned.</typeparam>
+            <param name="key">The key of the parameter value to be returned.</param>
+            <returns>The matching parameter of type <typeparamref name="T"/>.</returns>
+        </member>
+        <member name="M:Prism.Services.Dialogs.IDialogParameters.GetValues``1(System.String)">
+             <summary>
+             Gets all parameter values referenced by a key.
+             </summary>
+             <typeparam name="T">The type of object to be returned.</typeparam>
+             <param name="key">The key of the parameter values to be returned.</param>
+            <returns>All matching parameter values of type <typeparamref name="T"/>.</returns>
+        </member>
+        <member name="M:Prism.Services.Dialogs.IDialogParameters.TryGetValue``1(System.String,``0@)">
+            <summary>
+            Gets the parameter value if the referenced key exists.
+            </summary>
+            <typeparam name="T">The type of object to be returned.</typeparam>
+            <param name="key">The key of the parameter value to be returned.</param>
+            <param name="value">The matching parameter of type <typeparamref name="T"/> if the key exists.</param>
+            <returns><c>true</c> if the parameter exists; <c>false</c> otherwise.</returns>
+        </member>
+        <member name="T:Prism.Services.Dialogs.IDialogResult">
+            <summary>
+            Contains <see cref="T:Prism.Services.Dialogs.IDialogParameters"/> from the dialog
+            and the <see cref="T:Prism.Services.Dialogs.ButtonResult"/> of the dialog.
             </summary>
         </member>
         <member name="P:Prism.Services.Dialogs.IDialogResult.Parameters">
             <summary>
-            The parameters from the dialog
+            The parameters from the dialog.
             </summary>
         </member>
         <member name="P:Prism.Services.Dialogs.IDialogResult.Result">
@@ -4812,21 +4986,155 @@
             The result of the dialog.
             </summary>
         </member>
+        <member name="T:Prism.Services.Dialogs.IDialogService">
+            <summary>
+            Interface to show modal and non-modal dialogs.
+            </summary>
+        </member>
         <member name="M:Prism.Services.Dialogs.IDialogService.Show(System.String,Prism.Services.Dialogs.IDialogParameters,System.Action{Prism.Services.Dialogs.IDialogResult})">
             <summary>
-            Shows a non-modal dialog
+            Shows a non-modal dialog.
             </summary>
-            <param name="name">The name of the dialog to show</param>
-            <param name="parameters">The parameters to pass to the dialog</param>
+            <param name="name">The name of the dialog to show.</param>
+            <param name="parameters">The parameters to pass to the dialog.</param>
             <param name="callback">The action to perform when the dialog is closed.</param>
+        </member>
+        <member name="M:Prism.Services.Dialogs.IDialogService.Show(System.String,Prism.Services.Dialogs.IDialogParameters,System.Action{Prism.Services.Dialogs.IDialogResult},System.String)">
+            <summary>
+            Shows a non-modal dialog.
+            </summary>
+            <param name="name">The name of the dialog to show.</param>
+            <param name="parameters">The parameters to pass to the dialog.</param>
+            <param name="callback">The action to perform when the dialog is closed.</param>
+            <param name="windowName">The name of the hosting window registered with the IContainerRegistry.</param>
         </member>
         <member name="M:Prism.Services.Dialogs.IDialogService.ShowDialog(System.String,Prism.Services.Dialogs.IDialogParameters,System.Action{Prism.Services.Dialogs.IDialogResult})">
             <summary>
-            Shows a modal dialog
+            Shows a modal dialog.
             </summary>
-            <param name="name">The name of the dialog to show</param>
-            <param name="parameters">The parameters to pass to the dialog</param>
+            <param name="name">The name of the dialog to show.</param>
+            <param name="parameters">The parameters to pass to the dialog.</param>
             <param name="callback">The action to perform when the dialog is closed.</param>
+        </member>
+        <member name="M:Prism.Services.Dialogs.IDialogService.ShowDialog(System.String,Prism.Services.Dialogs.IDialogParameters,System.Action{Prism.Services.Dialogs.IDialogResult},System.String)">
+            <summary>
+            Shows a modal dialog.
+            </summary>
+            <param name="name">The name of the dialog to show.</param>
+            <param name="parameters">The parameters to pass to the dialog.</param>
+            <param name="callback">The action to perform when the dialog is closed.</param>
+            <param name="windowName">The name of the hosting window registered with the IContainerRegistry.</param>
+        </member>
+        <member name="T:Prism.Services.Dialogs.IDialogServiceExtensions">
+            <summary>
+            Extensions for the IDialogService
+            </summary>
+        </member>
+        <member name="M:Prism.Services.Dialogs.IDialogServiceExtensions.Show(Prism.Services.Dialogs.IDialogService,System.String)">
+            <summary>
+            Shows a non-modal dialog.
+            </summary>
+            <param name="dialogService">The DialogService</param>
+            <param name="name">The name of the dialog to show.</param>
+        </member>
+        <member name="M:Prism.Services.Dialogs.IDialogServiceExtensions.Show(Prism.Services.Dialogs.IDialogService,System.String,System.Action{Prism.Services.Dialogs.IDialogResult})">
+            <summary>
+            Shows a non-modal dialog.
+            </summary>
+            <param name="dialogService">The DialogService</param>
+            <param name="name">The name of the dialog to show.</param>
+            <param name="callback">The action to perform when the dialog is closed.</param>
+        </member>
+        <member name="M:Prism.Services.Dialogs.IDialogServiceExtensions.ShowDialog(Prism.Services.Dialogs.IDialogService,System.String)">
+            <summary>
+            Shows a modal dialog.
+            </summary>
+            <param name="dialogService">The DialogService</param>
+            <param name="name">The name of the dialog to show.</param>
+        </member>
+        <member name="M:Prism.Services.Dialogs.IDialogServiceExtensions.ShowDialog(Prism.Services.Dialogs.IDialogService,System.String,System.Action{Prism.Services.Dialogs.IDialogResult})">
+            <summary>
+            Shows a modal dialog.
+            </summary>
+            <param name="dialogService">The DialogService</param>
+            <param name="name">The name of the dialog to show.</param>
+            <param name="callback">The action to perform when the dialog is closed.</param>
+        </member>
+        <member name="T:Prism.Services.Dialogs.IDialogWindow">
+            <summary>
+            Interface for a dialog hosting window.
+            </summary>
+        </member>
+        <member name="P:Prism.Services.Dialogs.IDialogWindow.Content">
+            <summary>
+            Dialog content.
+            </summary>
+        </member>
+        <member name="M:Prism.Services.Dialogs.IDialogWindow.Close">
+            <summary>
+            Close the window.
+            </summary>
+        </member>
+        <member name="P:Prism.Services.Dialogs.IDialogWindow.Owner">
+            <summary>
+            The window's owner.
+            </summary>
+        </member>
+        <member name="M:Prism.Services.Dialogs.IDialogWindow.Show">
+            <summary>
+            Show a non-modal dialog.
+            </summary>
+        </member>
+        <member name="M:Prism.Services.Dialogs.IDialogWindow.ShowDialog">
+            <summary>
+            Show a modal dialog.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:Prism.Services.Dialogs.IDialogWindow.DataContext">
+            <summary>
+            The data context of the window.
+            </summary>
+            <remarks>
+            The data context must implement <see cref="T:Prism.Services.Dialogs.IDialogAware"/>.
+            </remarks>
+        </member>
+        <member name="E:Prism.Services.Dialogs.IDialogWindow.Loaded">
+            <summary>
+            Called when the window is loaded.
+            </summary>
+        </member>
+        <member name="E:Prism.Services.Dialogs.IDialogWindow.Closed">
+            <summary>
+            Called when the window is closed.
+            </summary>
+        </member>
+        <member name="E:Prism.Services.Dialogs.IDialogWindow.Closing">
+            <summary>
+            Called when the window is closing.
+            </summary>
+        </member>
+        <member name="P:Prism.Services.Dialogs.IDialogWindow.Result">
+            <summary>
+            The result of the dialog.
+            </summary>
+        </member>
+        <member name="P:Prism.Services.Dialogs.IDialogWindow.Style">
+            <summary>
+            The window style.
+            </summary>
+        </member>
+        <member name="T:Prism.Services.Dialogs.IDialogWindowExtensions">
+            <summary>
+            <see cref="T:Prism.Services.Dialogs.IDialogWindow"/> extensions.
+            </summary>
+        </member>
+        <member name="M:Prism.Services.Dialogs.IDialogWindowExtensions.GetDialogViewModel(Prism.Services.Dialogs.IDialogWindow)">
+            <summary>
+            Get the <see cref="T:Prism.Services.Dialogs.IDialogAware"/> ViewModel from a <see cref="T:Prism.Services.Dialogs.IDialogWindow"/>.
+            </summary>
+            <param name="dialogWindow"><see cref="T:Prism.Services.Dialogs.IDialogWindow"/> to get ViewModel from.</param>
+            <returns>ViewModel as a <see cref="T:Prism.Services.Dialogs.IDialogAware"/>.</returns>
         </member>
         <member name="T:System.Collections.ObjectModel.CollectionExtensions">
             <summary>
@@ -4842,72 +5150,6 @@
             <param name="items">The items to add to the collection.</param>
             <returns>The collection.</returns>
             <exception cref="T:System.ArgumentNullException">An <see cref="T:System.ArgumentNullException"/> is thrown if <paramref name="collection"/> or <paramref name="items"/> is <see langword="null"/>.</exception>
-        </member>
-        <member name="T:System.ExceptionExtensions">
-            <summary>
-            Class that provides extension methods for the Exception class. These extension methods provide
-            a mechanism for developers to get more easily to the root cause of an exception, especially in combination with 
-            DI-containers such as Unity. 
-            </summary>
-        </member>
-        <member name="M:System.ExceptionExtensions.RegisterFrameworkExceptionType(System.Type)">
-            <summary>
-            Register the type of an Exception that is thrown by the framework. The <see cref="M:System.ExceptionExtensions.GetRootException(System.Exception)"/> method uses
-            this list of Exception types to find out if something has gone wrong.  
-            </summary>
-            <param name="frameworkExceptionType">The type of exception to register.</param>
-        </member>
-        <member name="M:System.ExceptionExtensions.IsFrameworkExceptionRegistered(System.Type)">
-            <summary>
-            Determines whether the exception type is already registered using the <see cref="M:System.ExceptionExtensions.RegisterFrameworkExceptionType(System.Type)"/> 
-            method
-            </summary>
-            <param name="frameworkExceptionType">The type of framework exception to find.</param>
-            <returns>
-            	<c>true</c> if the exception type is already registered; otherwise, <c>false</c>.
-            </returns>
-        </member>
-        <member name="M:System.ExceptionExtensions.GetRootException(System.Exception)">
-            <summary>
-            Looks at all the inner exceptions of the <paramref name="exception"/> parameter to find the 
-            most likely root cause of the exception. This works by skipping all registered exception types.
-            </summary>
-            <remarks>
-            This method is not 100% accurate and should only be used to point a developer into the most likely direction.
-            It should not be used to replace the Inner Exception stack of an exception, because this might hide required exception
-            information. 
-            </remarks>
-            <param name="exception">The exception that will provide the list of inner exeptions to examine.</param>
-            <returns>
-            The exception that most likely caused the exception to occur. If it can't find the root exception, it will return the 
-            <paramref name="exception"/> value itself.
-            </returns>
-        </member>
-        <member name="T:CommonServiceLocator.ServiceLocatorExtensions">
-            <summary>
-            Defines extension methods for the <see cref="T:CommonServiceLocator.ServiceLocator"/> class.
-            </summary>
-        </member>
-        <member name="M:CommonServiceLocator.ServiceLocatorExtensions.TryResolve(CommonServiceLocator.IServiceLocator,System.Type)">
-            <summary>
-            Attempts to resolve specified type from the underlying <see cref="T:CommonServiceLocator.IServiceLocator"/>.
-            </summary>
-            <remarks>
-            This will return null on any <see cref="T:CommonServiceLocator.ActivationException"/>.</remarks>
-            <param name="locator">Locator to use in resolving.</param>
-            <param name="type">Type to resolve.</param>
-            <returns>T or null</returns>
-            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="locator"/> is <see langword="null"/>.</exception>
-        </member>
-        <member name="M:CommonServiceLocator.ServiceLocatorExtensions.TryResolve``1(CommonServiceLocator.IServiceLocator)">
-            <summary>
-            Attempts to resolve specified type from the underlying <see cref="T:CommonServiceLocator.IServiceLocator"/>.
-            </summary>
-            <remarks>
-            This will return null on any <see cref="T:CommonServiceLocator.ActivationException"/>.</remarks>
-            <typeparam name="T">Type to resolve.</typeparam>
-            <param name="locator">Locator to use in resolving.</param>
-            <returns>T or null</returns>
         </member>
     </members>
 </doc>
