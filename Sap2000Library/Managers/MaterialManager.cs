@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using BaseWPFLibrary;
+using BaseWPFLibrary.Annotations;
 using BaseWPFLibrary.Bindings;
 using SAP2000v1;
 
@@ -35,8 +36,7 @@ namespace Sap2000Library.Managers
 
             return ret == 0;
         }
-        public bool SetOtherSteelMaterialProperties(string inName,
-            double inFy, double inFu, double inExpectedFy, double inExpectedFu)
+        public bool SetOtherSteelMaterialProperties(string inName, double inFy, double inFu, double inExpectedFy, double inExpectedFu)
         {
             return 0 == SapApi.PropMaterial.SetOSteel_1(inName, inFy, inFu, inFy,inFu, 0, 0, 0, 0, 0, 0);
         }
@@ -99,6 +99,20 @@ namespace Sap2000Library.Managers
 
             if (ret == 0 && names != null && names.Length != 0) return names.ToList();
             else return null;
+        }
+
+        public bool SoftenMaterial([NotNull] string inMatName, double inFactor)
+        {
+            if (inMatName == null) throw new ArgumentNullException(nameof(inMatName));
+
+            double e = 0d, u = 0d, a = 0d, g = 0d;
+
+            // Gets the material properties
+            if (SapApi.PropMaterial.GetMPIsotropic(inMatName, ref e, ref u, ref a, ref g) != 0) throw new S2KHelperException($"Could not get the isotropic material properties of material {inMatName}.");
+
+            if (SapApi.PropMaterial.SetMPIsotropic(inMatName, e * inFactor, u, a) != 0) throw new S2KHelperException($"Could not change the isotropic material properties of material {inMatName}.");
+
+            return true;
         }
     }
 }

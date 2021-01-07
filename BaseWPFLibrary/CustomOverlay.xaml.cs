@@ -23,48 +23,78 @@ namespace BaseWPFLibrary
     {
         public CustomOverlay()
         {
+            // Saves a reference to the this BusyOverlay Instance
+            CustomOverlayBindings.SaveReferenceToElement(this, "UserControlInternalName_CustomOverlay");
+
             InitializeComponent();
-            CustomOverlayBindings.Start(this);
+
+            // Sets the data context of the content grid to this class
+            CustomOverlay_ContentGrid.DataContext = this;
+            // Sets the data context of the content grid to this class
+            CustomOverlay_AdditionalContentPresenter.DataContext = this;
+
+            // Sets this visibility to hidden
+            this.Visibility = Visibility.Collapsed;
         }
 
         public object AdditionalContent
         {
-            get { return (object)GetValue(AdditionalContentProperty); }
-            set { SetValue(AdditionalContentProperty, value); }
+            get => (object)GetValue(AdditionalContentProperty);
+            set => SetValue(AdditionalContentProperty, value);
         }
         public static readonly DependencyProperty AdditionalContentProperty = DependencyProperty.Register("AdditionalContent", typeof(object), typeof(CustomOverlay), new PropertyMetadata(null));
-
-        public void SetAdditionalContentDataContext(object inDataContext)
+        public void SetAdditionalContent_DataContext(object inDataContext)
         {
-            if (AdditionalContent is FrameworkElement fe)
+            // The additional content already begins with the Grid
+
+            if (AdditionalContent is FrameworkElement addContent)
             {
-                fe.DataContext = inDataContext;
+                addContent.DataContext = inDataContext;
             }
         }
 
-        public double BackgroundOpacity
-        {
-            get => (double)GetValue(BackgroundOpacityProperty);
-            set => SetValue(BackgroundOpacityProperty, value);
-        }
-        public static readonly DependencyProperty BackgroundOpacityProperty =
-            DependencyProperty.Register("BackgroundOpacity", typeof(double), typeof(CustomOverlay), new PropertyMetadata(0.7d));
 
-        public Visibility ProgressBarVisibility
+        #region Overlay Config Variables
+        /// <summary>
+        /// The margin of the overlay background from the corners of the container.
+        /// </summary>
+        public Thickness ContentWindowMargin
         {
-            get => (Visibility)GetValue(ProgressBarVisibilityProperty);
-            set => SetValue(ProgressBarVisibilityProperty, value);
+            get => (Thickness)GetValue(ContentWindowMarginProperty);
+            set => SetValue(ContentWindowMarginProperty, value);
         }
-        public static readonly DependencyProperty ProgressBarVisibilityProperty =
-            DependencyProperty.Register("ProgressBarVisibility", typeof(Visibility), typeof(CustomOverlay), new PropertyMetadata(Visibility.Visible));
+        /// <summary>
+        /// Identified the Label dependency property
+        /// </summary>
+        public static readonly DependencyProperty ContentWindowMarginProperty = DependencyProperty.Register("ContentWindowMargin", typeof(Thickness), typeof(CustomOverlay), new PropertyMetadata(new Thickness(40)));
 
-        public SolidColorBrush BackgroundColor
+
+        /// <summary>
+        /// The color of the overlay Background.
+        /// </summary>
+        public Brush OverlayBackground
         {
-            get => (SolidColorBrush)GetValue(BackgroundColorProperty);
-            set => SetValue(BackgroundColorProperty, value);
+            get => (Brush)GetValue(OverlayBackgroundProperty);
+            set => SetValue(OverlayBackgroundProperty, value);
         }
-        public static readonly DependencyProperty BackgroundColorProperty =
-            DependencyProperty.Register("BackgroundColor", typeof(SolidColorBrush), typeof(CustomOverlay), new PropertyMetadata(new SolidColorBrush(Colors.DimGray)));
+        /// <summary>
+        /// Identified the Label dependency property
+        /// </summary>
+        public static readonly DependencyProperty OverlayBackgroundProperty = DependencyProperty.Register("OverlayBackground", typeof(Brush), typeof(CustomOverlay), new PropertyMetadata(new SolidColorBrush(Colors.DimGray)));
+
+
+        /// <summary>
+        /// The opacity of the overlay Background.
+        /// </summary>
+        public double OverlayBackgroundOpacity
+        {
+            get => (double)GetValue(OverlayBackgroundOpacityProperty);
+            set => SetValue(OverlayBackgroundOpacityProperty, value);
+        }
+        /// <summary>
+        /// Identified the Label dependency property
+        /// </summary>
+        public static readonly DependencyProperty OverlayBackgroundOpacityProperty = DependencyProperty.Register("OverlayBackgroundOpacity", typeof(double), typeof(CustomOverlay), new PropertyMetadata(0.7d));
 
 
         public HorizontalAlignment ContentHorizontalAlignment
@@ -72,8 +102,7 @@ namespace BaseWPFLibrary
             get => (HorizontalAlignment)GetValue(ContentHorizontalAlignmentProperty);
             set => SetValue(ContentHorizontalAlignmentProperty, value);
         }
-        public static readonly DependencyProperty ContentHorizontalAlignmentProperty =
-            DependencyProperty.Register("ContentHorizontalAlignment", typeof(HorizontalAlignment), typeof(CustomOverlay), new PropertyMetadata(HorizontalAlignment.Stretch));
+        public static readonly DependencyProperty ContentHorizontalAlignmentProperty = DependencyProperty.Register("ContentHorizontalAlignment", typeof(HorizontalAlignment), typeof(CustomOverlay), new PropertyMetadata(HorizontalAlignment.Stretch));
 
 
         public VerticalAlignment ContentVerticalAlignment
@@ -81,32 +110,9 @@ namespace BaseWPFLibrary
             get => (VerticalAlignment)GetValue(ContentVerticalAlignmentProperty);
             set => SetValue(ContentVerticalAlignmentProperty, value);
         }
-        public static readonly DependencyProperty ContentVerticalAlignmentProperty =
-            DependencyProperty.Register("ContentVerticalAlignment", typeof(VerticalAlignment), typeof(CustomOverlay), new PropertyMetadata(VerticalAlignment.Stretch));
+        public static readonly DependencyProperty ContentVerticalAlignmentProperty = DependencyProperty.Register("ContentVerticalAlignment", typeof(VerticalAlignment), typeof(CustomOverlay), new PropertyMetadata(VerticalAlignment.Stretch));
 
-        public Thickness ContentMargin
-        {
-            get => (Thickness)GetValue(ContentMarginProperty);
-            set => SetValue(ContentMarginProperty, value);
-        }
-        public static readonly DependencyProperty ContentMarginProperty =
-            DependencyProperty.Register("ContentMargin", typeof(Thickness), typeof(CustomOverlay), new PropertyMetadata(new Thickness(0d)));
 
-        public void HideOverlayAndReset()
-        {
-            CustomOverlayBindings.I.HideOverlayAndReset();
-        }
-        public void ShowOverlay()
-        {
-            CustomOverlayBindings.I.ShowOverlay();
-        }
-
-        
-
-        private void UserControl_Loaded(object sender, RoutedEventArgs e)
-        {
-            Binding binding = new Binding("OverlayVisibility");
-            SetBinding(VisibilityProperty, binding);
-        }
+        #endregion
     }
 }

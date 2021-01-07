@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media;
 using Emasa_Optimizer.FEA;
 using Emasa_Optimizer.FEA.Items;
 using Emasa_Optimizer.FEA.Results;
@@ -167,6 +168,7 @@ namespace Emasa_Optimizer.WpfResources
             {
                 {FeSolverTypeEnum.NotFeProblem, "Not FEA"},
                 {FeSolverTypeEnum.Ansys, "Ansys"},
+                {FeSolverTypeEnum.Sap2000, "Sap2000"},
             };
         public Dictionary<NLoptAlgorithm, string> NlOptAlgorithmEnumDescriptions = new Dictionary<NLoptAlgorithm, string>()
             {
@@ -254,6 +256,38 @@ namespace Emasa_Optimizer.WpfResources
                 {NlOpt_OptimizeTerminationCodeEnum.Success, "Success"},
 
                 {NlOpt_OptimizeTerminationCodeEnum.Converged, "Converged"},
+            };
+
+
+        public SolidColorBrush[] ChartAvailableColors = new[]
+            {
+            new SolidColorBrush(Colors.Red),
+            new SolidColorBrush(Colors.DarkBlue),
+            new SolidColorBrush(Colors.DarkGreen),
+            new SolidColorBrush(Colors.Yellow),
+            new SolidColorBrush(Colors.Violet),
+            new SolidColorBrush(Colors.Indigo),
+            new SolidColorBrush(Colors.Orange),
+
+            new SolidColorBrush(Colors.LightCoral),
+            new SolidColorBrush(Colors.CornflowerBlue),
+            new SolidColorBrush(Colors.LimeGreen),
+            new SolidColorBrush(Colors.DimGray),
+            new SolidColorBrush(Colors.DarkRed),
+            new SolidColorBrush(Colors.MediumVioletRed),
+            new SolidColorBrush(Colors.OrangeRed),
+            };
+
+
+        public Dictionary<NlOpt_Point_PhaseEnum, string> NlOpt_Point_PhaseEnumDescriptions = new Dictionary<NlOpt_Point_PhaseEnum, string>()
+            {
+                {NlOpt_Point_PhaseEnum.Initializing, "Initializing"},
+                {NlOpt_Point_PhaseEnum.Grasshopper_Updating, "Updating Grasshopper"},
+                {NlOpt_Point_PhaseEnum.FiniteElement_Running, "Running Fe Model"},
+                {NlOpt_Point_PhaseEnum.Outputs_Initializing, "Initializing Outputs"},
+                {NlOpt_Point_PhaseEnum.ObjectiveFunctionResult_Calculating, "Calculating Objective Function"},
+                {NlOpt_Point_PhaseEnum.Gradients_Running, "Calculating Gradients"},
+                {NlOpt_Point_PhaseEnum.Ended, "Ended Successfully"},
             };
     }
 }

@@ -1,0 +1,10 @@
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\NlOptNewVersion\bin\Release\NlOptNewVersion.exe.config
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\NlOptNewVersion\bin\Release\NlOptNewVersion.exe
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\NlOptNewVersion\bin\Release\NlOptNewVersion.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\NlOptNewVersion\bin\Release\NLoptNet.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\NlOptNewVersion\bin\Release\NLoptNet.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\NlOptNewVersion\obj\Release\NlOptNewVersion.csprojAssemblyReference.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\NlOptNewVersion\obj\Release\NlOptNewVersion.csproj.CoreCompileInputs.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\NlOptNewVersion\obj\Release\NlOptNewVersion.csproj.CopyComplete
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\NlOptNewVersion\obj\Release\NlOptNewVersion.exe
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\NlOptNewVersion\obj\Release\NlOptNewVersion.pdb

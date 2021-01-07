@@ -169,7 +169,21 @@ namespace Emasa_Optimizer.FEA.Results
             get
             {
                 // TODO: Will need to be improved if different FeSolvers are added.
-                if (AppSS.I.FeOpt != null) return AppSS.I.FeOpt.FeSolverType_Selected == FeSolverTypeEnum.Ansys;
+                if (AppSS.I.FeOpt != null)
+                {
+                    if (AppSS.I.FeOpt.FeSolverType_Selected == FeSolverTypeEnum.Ansys) return true;
+                    else if (AppSS.I.FeOpt.FeSolverType_Selected == FeSolverTypeEnum.Sap2000)
+                    {
+                        if (ResultFamily == FeResultFamilyEnum.ElementNodal_BendingStrain ||
+                            ResultFamily == FeResultFamilyEnum.ElementNodal_Strain ||
+                            ResultFamily == FeResultFamilyEnum.SectionNode_Strain ||
+                            ResultFamily == FeResultFamilyEnum.ElementNodal_Stress ||
+                            ResultType == FeResultTypeEnum.Element_StrainEnergy ||
+                            ResultType == FeResultTypeEnum.SectionNode_Stress_SInt) return false;
+                        return true;
+                    } 
+                    else return true;
+                }
                 else return true; // The default is Ansys
             }
         }
@@ -219,6 +233,218 @@ namespace Emasa_Optimizer.FEA.Results
             }
         }
 
+        public string _concernedResultColumnName = null;
+        public string ConcernedResultColumnName
+        {
+            get
+            {
+                if (_concernedResultColumnName == null)
+                {
+                    switch (ResultType)
+                    {
+                        case FeResultTypeEnum.Nodal_Reaction_Fx:
+                            _concernedResultColumnName = "FX (N)";
+                            break;
+
+                        case FeResultTypeEnum.Nodal_Reaction_Fy:
+                            _concernedResultColumnName = "FY (N)";
+                            break;
+
+                        case FeResultTypeEnum.Nodal_Reaction_Fz:
+                            _concernedResultColumnName = "FZ (N)";
+                            break;
+
+                        case FeResultTypeEnum.Nodal_Reaction_Mx:
+                            _concernedResultColumnName = "MX (Nm)";
+                            break;
+
+                        case FeResultTypeEnum.Nodal_Reaction_My:
+                            _concernedResultColumnName = "MY (Nm)";
+                            break;
+
+                        case FeResultTypeEnum.Nodal_Reaction_Mz:
+                            _concernedResultColumnName = "MZ (Nm)";
+                            break;
+
+                        case FeResultTypeEnum.Nodal_Displacement_Ux:
+                            _concernedResultColumnName = "Ux (m)";
+                            break;
+
+                        case FeResultTypeEnum.Nodal_Displacement_Uy:
+                            _concernedResultColumnName = "Uy (m)";
+                            break;
+
+                        case FeResultTypeEnum.Nodal_Displacement_Uz:
+                            _concernedResultColumnName = "Uz (m)";
+                            break;
+
+                        case FeResultTypeEnum.Nodal_Displacement_Rx:
+                            _concernedResultColumnName = "Rx (rad)";
+                            break;
+
+                        case FeResultTypeEnum.Nodal_Displacement_Ry:
+                            _concernedResultColumnName = "Ry (rad)";
+                            break;
+
+                        case FeResultTypeEnum.Nodal_Displacement_Rz:
+                            _concernedResultColumnName = "Rz (rad)";
+                            break;
+
+                        case FeResultTypeEnum.Nodal_Displacement_UTotal:
+                            _concernedResultColumnName = "U Tot (m)";
+                            break;
+
+                        case FeResultTypeEnum.SectionNode_Stress_S1:
+                            _concernedResultColumnName = "Stress - Principal 1 (Pa)";
+                            break;
+
+                        case FeResultTypeEnum.SectionNode_Stress_S2:
+                            _concernedResultColumnName = "Stress - Principal 2 (Pa)";
+                            break;
+
+                        case FeResultTypeEnum.SectionNode_Stress_S3:
+                            _concernedResultColumnName = "Stress - Principal 3 (Pa)";
+                            break;
+
+                        case FeResultTypeEnum.SectionNode_Stress_SInt:
+                            _concernedResultColumnName = "Stress - Intensity (Pa)";
+                            break;
+
+                        case FeResultTypeEnum.SectionNode_Stress_SEqv:
+                            _concernedResultColumnName = "Stress - Von-Mises (Pa)";
+                            break;
+
+                        case FeResultTypeEnum.SectionNode_Strain_EPTT1:
+                            _concernedResultColumnName = "Strain - Principal 1";
+                            break;
+
+                        case FeResultTypeEnum.SectionNode_Strain_EPTT2:
+                            _concernedResultColumnName = "Strain - Principal 2";
+                            break;
+
+                        case FeResultTypeEnum.SectionNode_Strain_EPTT3:
+                            _concernedResultColumnName = "Strain - Principal 3";
+                            break;
+
+                        case FeResultTypeEnum.SectionNode_Strain_EPTTInt:
+                            _concernedResultColumnName = "Strain - Intensity";
+                            break;
+
+                        case FeResultTypeEnum.SectionNode_Strain_EPTTEqv:
+                            _concernedResultColumnName = "Strain - Von-Mises";
+                            break;
+
+                        case FeResultTypeEnum.ElementNodal_BendingStrain_EPELDIR:
+                            _concernedResultColumnName = "Axial Strain at End";
+                            break;
+
+                        case FeResultTypeEnum.ElementNodal_BendingStrain_EPELByT:
+                            _concernedResultColumnName = "Bending Strain +Y";
+                            break;
+
+                        case FeResultTypeEnum.ElementNodal_BendingStrain_EPELByB:
+                            _concernedResultColumnName = "Bending Strain -Y";
+                            break;
+
+                        case FeResultTypeEnum.ElementNodal_BendingStrain_EPELBzT:
+                            _concernedResultColumnName = "Bending Strain +Z";
+                            break;
+
+                        case FeResultTypeEnum.ElementNodal_BendingStrain_EPELBzB:
+                            _concernedResultColumnName = "Bending Strain -Z";
+                            break;
+
+                        case FeResultTypeEnum.ElementNodal_Force_Fx:
+                            _concernedResultColumnName = "Axial - Fx (N)";
+                            break;
+
+                        case FeResultTypeEnum.ElementNodal_Force_SFy:
+                            _concernedResultColumnName = "Shear - SFy (N)";
+                            break;
+
+                        case FeResultTypeEnum.ElementNodal_Force_SFz:
+                            _concernedResultColumnName = "Shear - SFz (N)";
+                            break;
+
+                        case FeResultTypeEnum.ElementNodal_Force_Tq:
+                            _concernedResultColumnName = "Torque - Mx (Nm)";
+                            break;
+
+                        case FeResultTypeEnum.ElementNodal_Force_My:
+                            _concernedResultColumnName = "Moment - My (Nm)";
+                            break;
+
+                        case FeResultTypeEnum.ElementNodal_Force_Mz:
+                            _concernedResultColumnName = "Moment - Mz (Nm)";
+                            break;
+
+                        case FeResultTypeEnum.ElementNodal_Strain_Ex:
+                            _concernedResultColumnName = "Axial - Ex";
+                            break;
+
+                        case FeResultTypeEnum.ElementNodal_Strain_Ky:
+                            _concernedResultColumnName = "Curvature - y";
+                            break;
+
+                        case FeResultTypeEnum.ElementNodal_Strain_Kz:
+                            _concernedResultColumnName = "Curvature - z";
+                            break;
+
+                        case FeResultTypeEnum.ElementNodal_Strain_Te:
+                            _concernedResultColumnName = "Torsional - Te";
+                            break;
+
+                        case FeResultTypeEnum.ElementNodal_Strain_SEz:
+                            _concernedResultColumnName = "Shear - SEy";
+                            break;
+
+                        case FeResultTypeEnum.ElementNodal_Strain_SEy:
+                            _concernedResultColumnName = "Shear - SEz";
+                            break;
+
+                        case FeResultTypeEnum.ElementNodal_Stress_SDir:
+                            _concernedResultColumnName = "Axial Direct Stress (Pa)";
+                            break;
+
+                        case FeResultTypeEnum.ElementNodal_Stress_SByT:
+                            _concernedResultColumnName = "Bending Stress +Y";
+                            break;
+
+                        case FeResultTypeEnum.ElementNodal_Stress_SByB:
+                            _concernedResultColumnName = "Bending Stress -Y";
+                            break;
+
+                        case FeResultTypeEnum.ElementNodal_Stress_SBzT:
+                            _concernedResultColumnName = "Bending Stress +Z";
+                            break;
+
+                        case FeResultTypeEnum.ElementNodal_Stress_SBzB:
+                            _concernedResultColumnName = "Bending Stress -Z";
+                            break;
+
+                        case FeResultTypeEnum.ElementNodal_CodeCheck:
+                            _concernedResultColumnName = "Total Ratio";
+                            break;
+
+                        case FeResultTypeEnum.Element_StrainEnergy:
+                            _concernedResultColumnName = "Strain Energy";
+                            break;
+
+                        case FeResultTypeEnum.Model_EigenvalueBuckling_Mode1Factor:
+                        case FeResultTypeEnum.Model_EigenvalueBuckling_Mode2Factor:
+                        case FeResultTypeEnum.Model_EigenvalueBuckling_Mode3Factor:
+                            _concernedResultColumnName = "Multiplier";
+                            break;
+
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
+
+                return _concernedResultColumnName;
+            }
+        }
+
         public string Wpf_ProblemQuantityName => $"{ListDescSH.I.FeResultLocationEnumDescriptions[ResultLocation].Item1} - {ListDescSH.I.FeResultTypeEnumDescriptions[ResultType].Item1}";
         public string Wpf_ProblemQuantityGroup => $"{ListDescSH.I.FeAnalysisShapeEnumDescriptions[TargetShape].Item1} - {ListDescSH.I.FeResultFamilyEnumDescriptions[ResultFamily].Item1}";
         public string Wpf_Explanation => $@"Target Shape: {ListDescSH.I.FeAnalysisShapeEnumDescriptions[TargetShape].Item2}
@@ -262,13 +488,14 @@ Location: {ListDescSH.I.FeResultLocationEnumDescriptions[ResultLocation].Item2}"
         Nodal_Reaction,
         Nodal_Displacement,
 
+        ElementNodal_Force,
+        ElementNodal_Stress,
+
+        ElementNodal_Strain,
+        ElementNodal_BendingStrain,
+
         SectionNode_Stress,
         SectionNode_Strain,
-
-        ElementNodal_BendingStrain,
-        ElementNodal_Force,
-        ElementNodal_Strain,
-        ElementNodal_Stress,
 
         Others,
     }

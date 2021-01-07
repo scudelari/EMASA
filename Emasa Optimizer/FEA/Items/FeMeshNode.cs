@@ -11,14 +11,14 @@ namespace Emasa_Optimizer.FEA.Items
 {
     public class FeMeshNode : IEquatable<FeMeshNode>, IFeEntity
     {
-        public FeMeshNode(int inId, Point3d inPoint, FeJoint inMatchingJoint = null)
+        public FeMeshNode(string inId, Point3d inPoint, FeJoint inMatchingJoint = null)
         {
             Id = inId;
             Point = inPoint;
             if (inMatchingJoint != null) MatchingJoint = inMatchingJoint;
         }
 
-        public int Id { get; set; }
+        public string Id { get; set; }
 
         private Point3d _point;
         public Point3d Point
@@ -36,14 +36,14 @@ namespace Emasa_Optimizer.FEA.Items
             get
             {
                 string s = "";
-                LinkedElements.Aggregate(s, (inS, inElement) => s += inElement + " | ");
+                LinkedElements.Aggregate(s, (inS, inElement) => s += inElement.Id + " | ");
                 s = s.Substring(0, s.Length - 3);
                 return s;
             }
         }
 
         public List<FeMeshNode_SectionNode> SectionNodes { get; } = new List<FeMeshNode_SectionNode>();
-        public FeMeshNode_SectionNode GetSectionNodebyId(int inId)
+        public FeMeshNode_SectionNode GetSectionNodeById(int inId)
         {
             return SectionNodes.FirstOrDefault(a => a.Id == inId);
         }

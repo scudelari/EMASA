@@ -1,5 +1,6 @@
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\GHComponents\bin\GHComponents.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\GHComponents\bin\GHComponents.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\GHComponents\obj\Release\GHComponents.csprojAssemblyReference.cache
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\GHComponents\obj\Release\GHComponents.Properties.Resources.resources
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\GHComponents\obj\Release\GHComponents.csproj.GenerateResource.cache
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\GHComponents\obj\Release\GHComponents.csproj.CoreCompileInputs.cache

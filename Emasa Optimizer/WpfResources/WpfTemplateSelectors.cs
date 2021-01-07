@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using Emasa_Optimizer.Opt;
 using Emasa_Optimizer.Opt.ParamDefinitions;
 using Emasa_Optimizer.Opt.ProbQuantity;
+using LiveCharts.Wpf;
 
 namespace Emasa_Optimizer.WpfResources
 {
@@ -29,6 +30,30 @@ namespace Emasa_Optimizer.WpfResources
 
                     default:
                         throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            return null;
+        }
+    }
+
+    public class ProblemConfig_ChartSelector_Template : DataTemplateSelector
+    {
+        public override DataTemplate SelectTemplate(object item, DependencyObject container)
+        {
+            if (container is FrameworkElement element && item != null && item is ChartDisplayData cData)
+            {
+                if (cData.RelatedQuantity is ProblemQuantity)
+                {
+                    return element.FindResource("ProblemConfig_ChartSelector_ProblemQuantity") as DataTemplate;
+                }
+                if (cData.RelatedQuantity is Double_Input_ParamDef)
+                {
+                    return element.FindResource("ProblemConfig_ChartSelector_Double_Input_ParamDef") as DataTemplate;
+                }
+                if (cData.RelatedQuantity is Point_Input_ParamDef)
+                {
+                    return element.FindResource("ProblemConfig_ChartSelector_Point_Input_ParamDef") as DataTemplate;
                 }
             }
 
@@ -149,6 +174,26 @@ namespace Emasa_Optimizer.WpfResources
 
                     case Point_Input_ParamDef _:
                         return element.FindResource("NlOpt_Point_GhInputNL_InputTypePoint") as DataTemplate;
+                }
+            }
+
+            return null;
+        }
+    }
+
+    public class NlOpt_Point_GhInputNL_InputType_TemplateSelector_ForGrid : DataTemplateSelector
+    {
+        public override DataTemplate SelectTemplate(object item, DependencyObject container)
+        {
+            if (container is FrameworkElement element && item != null && item is KeyValuePair<Input_ParamDefBase, object> kvp)
+            {
+                switch (kvp.Key)
+                {
+                    case Double_Input_ParamDef _:
+                        return element.FindResource("NlOpt_Point_GhInputNL_InputTypeDouble_ForGrid") as DataTemplate;
+
+                    case Point_Input_ParamDef _:
+                        return element.FindResource("NlOpt_Point_GhInputNL_InputTypePoint_ForGrid") as DataTemplate;
                 }
             }
 

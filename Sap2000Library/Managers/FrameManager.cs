@@ -71,52 +71,6 @@ namespace Sap2000Library.Managers
             return toRet;
         }
 
-        [Obsolete]
-        public List<SapFrame> GetAll(IProgress<ProgressData> ReportProgress)
-        {
-            //if (ReportProgress != null) ReportProgress.Report(ProgressData.SetMessage("Getting all frames from SAP2000.", true));
-
-            // Gets all names
-            int count = 0;
-            string[] names = null;
-
-            if (SapApi.FrameObj.GetNameList(ref count, ref names) != 0) return null;
-
-            List<SapFrame> toReturn = new List<SapFrame>();
-
-            for (int i = 0; i < count; i++)
-            {
-                toReturn.Add(GetByName(names[i]));
-
-                if (ReportProgress != null) ReportProgress.Report(ProgressData.UpdateProgress(i,count));
-            }
-
-            if (ReportProgress != null) ReportProgress.Report(ProgressData.Reset());
-
-            return toReturn;
-        }
-        public List<SapFrame> GetAll(BusyOverlay BusyOverlay)
-        {
-            if (BusyOverlay != null) BusyOverlay.SetDeterminate($"Getting all frames from SAP2000.", "Frame");
-
-            // Gets all names
-            int count = 0;
-            string[] names = null;
-
-            if (SapApi.FrameObj.GetNameList(ref count, ref names) != 0) return null;
-
-            List<SapFrame> toReturn = new List<SapFrame>();
-
-            for (int i = 0; i < count; i++)
-            {
-                toReturn.Add(GetByName(names[i]));
-
-                if (BusyOverlay != null) BusyOverlay.UpdateProgress(i, count, names[i]);
-            }
-
-            BusyOverlay.Stop();
-            return toReturn;
-        }
         public List<SapFrame> GetAll(bool inUpdateInterface = false)
         {
             if (inUpdateInterface) BusyOverlayBindings.I.SetDeterminate($"SAP2000: Getting All Frames.", "Frame");
@@ -139,74 +93,7 @@ namespace Sap2000Library.Managers
             return toReturn;
         }
 
-        [Obsolete]
-        public List<SapFrame> GetSelected(IProgress<ProgressData> ReportProgress = null)
-        {
-            //if (ReportProgress != null) ReportProgress.Report(ProgressData.SetMessage(@"Getting List of Selected Frames. [[Frame: ***]]"));
-
-            int count = 0;
-            int[] objectType = null;
-            string[] selectedNames = null;
-
-            int ret = SapApi.SelectObj.GetSelected(ref count, ref objectType, ref selectedNames);
-            if (ret != 0 || count == 0) return new List<SapFrame>();
-
-            // Gets count of desired element types
-            int typeCount = (from a in objectType
-                             where a == (int)SelectObjectType.FrameObject
-                             select a).Count();
-            int currType = 0;
-
-            // Declares the return
-            List<SapFrame> toReturn = new List<SapFrame>();
-
-            for (int i = 0; i < count; i++)
-            {
-                if (objectType[i] == (int)SelectObjectType.FrameObject)
-                {
-                    toReturn.Add(GetByName(selectedNames[i]));
-
-                    if (ReportProgress != null) ReportProgress.Report(ProgressData.UpdateProgress(++currType,count, selectedNames[i]));
-                }
-            }
-
-            if (ReportProgress != null) ReportProgress.Report(ProgressData.Reset());
-
-            return toReturn;
-        }
-        [Obsolete]
-        public List<SapFrame> GetSelected(BusyOverlay BusyOverlay)
-        {
-            if (BusyOverlay != null) BusyOverlay.SetDeterminate($"Getting selected frames from SAP2000.", "Frame");
-
-            int count = 0;
-            int[] objectType = null;
-            string[] selectedNames = null;
-
-            int ret = SapApi.SelectObj.GetSelected(ref count, ref objectType, ref selectedNames);
-            if (ret != 0 || count == 0) return new List<SapFrame>();
-
-            // Gets count of desired element types
-            int currType = 0;
-            int typeCount = objectType.Count(a => a == (int)SelectObjectType.FrameObject);
-            // Declares the return
-            List<SapFrame> toReturn = new List<SapFrame>();
-
-            for (int i = 0; i < count; i++)
-            {
-                if (objectType[i] == (int)SelectObjectType.FrameObject)
-                {
-                    toReturn.Add(GetByName(selectedNames[i]));
-
-                    if (BusyOverlay != null) BusyOverlay.UpdateProgress(currType, typeCount, selectedNames[i]);
-                    currType++;
-                }
-            }
-
-            BusyOverlay.Stop();
-            return toReturn;
-        }
-        public List<SapFrame> GetSelected(bool inUpdateInterface)
+        public List<SapFrame> GetSelected(bool inUpdateInterface = false)
         {
             if (inUpdateInterface) BusyOverlayBindings.I.SetDeterminate($"SAP2000: Getting selected Frames.", "Frame");
 

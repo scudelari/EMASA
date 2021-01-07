@@ -61,6 +61,7 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\ExcelData
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\LibOptimization.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\MathNet.Numerics.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\MathNet.Spatial.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\Microsoft.Xaml.Behaviors.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\MoreLinq.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\Newtonsoft.Json.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\Prism.dll
@@ -70,7 +71,6 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\Sap2000Li
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\System.Data.SQLite.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\System.Data.SQLite.Linq.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\System.ValueTuple.dll
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\System.Windows.Interactivity.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\Rhino3dmIO.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\BaseWPFLibrary.pdb
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\BaseWPFLibrary.dll.config
@@ -84,6 +84,8 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\ExcelData
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\ExcelDataReader.DataSet.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\MathNet.Numerics.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\MathNet.Spatial.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\Microsoft.Xaml.Behaviors.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\Microsoft.Xaml.Behaviors.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\MoreLinq.pdb
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\MoreLinq.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\Newtonsoft.Json.xml
@@ -92,15 +94,15 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\Prism.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\Prism.Wpf.pdb
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\Prism.Wpf.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\System.Data.SQLite.xml
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\System.Data.SQLite.dll.config
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\System.ValueTuple.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Release\EmasaSapTools.csprojAssemblyReference.cache
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Release\EmasaSapTools.csproj.ResolveComReference.cache
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Release\MainWindow.baml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Release\App.baml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Release\MainWindow.g.cs
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Release\App.g.cs
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Release\EmasaSapTools_MarkupCompile.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Release\EmasaSapTools_MarkupCompile.lref
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Release\MainWindow.baml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Release\EmasaSapTools.g.resources
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Release\EmasaSapTools.Properties.Resources.resources
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Release\EmasaSapTools.csproj.GenerateResource.cache

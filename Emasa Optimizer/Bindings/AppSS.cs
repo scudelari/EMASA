@@ -7,12 +7,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
+using BaseWPFLibrary;
 using BaseWPFLibrary.Bindings;
 using BaseWPFLibrary.Events;
 using BaseWPFLibrary.Forms;
 using BaseWPFLibrary.Others;
 using Emasa_Optimizer.FEA;
 using Emasa_Optimizer.Opt;
+using Emasa_Optimizer.Opt.ProbQuantity;
 using Prism.Commands;
 using RhinoInterfaceLibrary;
 
@@ -37,8 +39,7 @@ namespace Emasa_Optimizer.Bindings
             get => _screenShotOpt;
             set => SetProperty(ref _screenShotOpt, value);
         }
-
-
+        
         private GhAlgorithm _gh_alg;
         public GhAlgorithm Gh_Alg { get => _gh_alg; }
 
@@ -58,6 +59,13 @@ namespace Emasa_Optimizer.Bindings
         private ProblemConfig_Options _pcOpt;
         public ProblemConfig_Options PcOpt { get => _pcOpt; }
 
+        public ChartDisplayManager ChartDisplayMgr { get; private set; }
+
+        public ProblemQuantityAggregator NlOptDetails_DisplayAggregator { get; private set; }
+        public void NlOptDetails_DisplayAggregator_Changed()
+        {
+            RaisePropertyChanged("NlOptDetails_DisplayAggregator");
+        }
         /// <summary>
         /// This is the Entry Point Constructor
         /// </summary>
@@ -69,12 +77,12 @@ namespace Emasa_Optimizer.Bindings
             // Creates the screenshot options
             _screenShotOpt = new ScreenShotOptions();
 
-            // Creates the Problem Quantity Manager
-            _probQuantMgn = new ProblemQuantityManager();
-
             // Initializes Grasshopper link
             _gh_alg = new GhAlgorithm();
 
+            // Creates the Problem Quantity Manager
+            _probQuantMgn = new ProblemQuantityManager();
+            
             // Initializes the solver manager
             _solveMgr = new SolveManager();
             
@@ -86,8 +94,21 @@ namespace Emasa_Optimizer.Bindings
 
             // Creates the Objective Function Handler
             _nlOptObjFunc = new NlOpt_ObjectiveFunction();
+
+            // Creates the class that will be used as manager to the display of charts
+            ChartDisplayMgr = new ChartDisplayManager();
+
+            // The manager of the aggregator that is used in th point detail results
+            NlOptDetails_DisplayAggregator = new ProblemQuantityAggregator() { IsDisplayOnly = true };
         }
-        
+
+        public override void OnMainWindowLoaded()
+        {
+            base.OnMainWindowLoaded();
+
+            ChartDisplayMgr.InitializeCharts();
+        }
+
         private FeSolverBase _feSolver = null;
         public FeSolverBase FeSolver
         {
@@ -96,6 +117,14 @@ namespace Emasa_Optimizer.Bindings
         }
 
         #region Wpf Calculating General Exhibitions
+        private Visibility _lockedInterfaceMessageVisibility = Visibility.Collapsed;
+        public Visibility LockedInterfaceMessageVisibility
+        {
+            get => _lockedInterfaceMessageVisibility;
+            set => SetProperty(ref _lockedInterfaceMessageVisibility, value);
+        }
+
+
         private string _overlay_TopMessage_GradientReportMemory;
         private string _overlay_TopMessage;
         public string Overlay_TopMessage
@@ -113,9 +142,12 @@ namespace Emasa_Optimizer.Bindings
             if (inGradientReport == null) _overlay_TopMessage_GradientReportMemory = "";
             else if (inGradientReport != "") _overlay_TopMessage_GradientReportMemory = inGradientReport;
 
-            Overlay_TopMessage =
-$@"Working with problem configuration #{SolveMgr.CurrentCalculatingProblemConfig.Index:D5}. Evaluating Function Point #{SolveMgr.CurrentCalculatingProblemConfig.TotalPointCount}.
+            if (SolveMgr.CurrentCalculatingProblemConfig != null)
+            {
+                Overlay_TopMessage =
+                    $@"Working with problem configuration #{SolveMgr.CurrentCalculatingProblemConfig.Index}. Evaluating Function Point #{SolveMgr.CurrentCalculatingProblemConfig.TotalPointCount}.
 {inCurrentStatus} {_overlay_TopMessage_GradientReportMemory}";
+            }
         }
 
         private Visibility _overlay_ProblemConfigDetailsVisible = Visibility.Collapsed;
@@ -142,6 +174,28 @@ $@"Working with problem configuration #{SolveMgr.CurrentCalculatingProblemConfig
         {
             get => _overlay_ProgressBarIndeterminate;
             set => SetProperty(ref _overlay_ProgressBarIndeterminate, value);
+        }
+
+        public void Overlay_Reset()
+        {
+            #region Resetting the overlay's variables.
+
+            // Resets the progress bar
+            AppSS.I.Overlay_ProgressBarMaximum = 1;
+            AppSS.I.Overlay_ProgressBarCurrent = 0;
+
+            AppSS.I.LockedInterfaceMessageVisibility = Visibility.Collapsed;
+
+            // Resets the messages
+            AppSS.I.Overlay_TopMessage = "";
+
+            // Hides the currently solve details
+            AppSS.I.Overlay_ProblemConfigDetailsVisible = Visibility.Collapsed;
+
+            // Clears the chart
+            AppSS.I.ChartDisplayMgr.ClearSeriesValues(AppSS.I.ChartDisplayMgr.CalculatingEvalPlot_CartesianChart);
+
+            #endregion
         }
         #endregion
 

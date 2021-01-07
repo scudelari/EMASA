@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using BaseWPFLibrary.Annotations;
@@ -31,6 +32,7 @@ namespace Emasa_Optimizer.FEA
 
         //public abstract void RunAnalysisAndGetResults(List<ResultOutput> inDesiredResults, int inEigenvalueBucklingMode = 0, double inEigenvalueBucklingScaleFactor = double.NaN);
         public abstract void RunAnalysisAndCollectResults(FeModel inModel);
+        public abstract void GeneratePointModel(FeModel inModel, string inSaveFolder, string inFileName);
 
         #region Disposable Block
         private void ReleaseUnmanagedResources()
@@ -86,5 +88,27 @@ namespace Emasa_Optimizer.FEA
                 process.KillProcessAndChildren();
             }
         }
+    }
+
+
+    public class FeSolverException : Exception
+    {
+        public FeSolverException()
+        {
+        }
+
+        public FeSolverException(string message) : base(message)
+        {
+        }
+
+        public FeSolverException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
+        protected FeSolverException([NotNull] SerializationInfo info, StreamingContext context) : base(info, context)
+        {
+        }
+
+        public bool SolutionNotConverged { get; set; } = false;
     }
 }

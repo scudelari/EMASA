@@ -487,6 +487,11 @@ namespace Emasa_Optimizer.Opt
             throw new InvalidOperationException($"{this.GetType()} does not support this method.");
         }
         public string DataTableName => "Screenshot has no table!";
+
+        // Must have to match live filtering
+        public bool IsSupportedByCurrentSolver => true;
+        public bool OutputData_IsSelected => true;
+        public string ConcernedResultColumnName => null;
     }
     public class SpecialScreenShot_FeModelOverview_Keypoints : IProblemQuantitySource
     {
@@ -516,6 +521,11 @@ namespace Emasa_Optimizer.Opt
             throw new InvalidOperationException($"{this.GetType()} does not support this method.");
         }
         public string DataTableName => "Screenshot has no table!";
+
+        // Must have to match live filtering
+        public bool IsSupportedByCurrentSolver => true;
+        public bool OutputData_IsSelected => true;
+        public string ConcernedResultColumnName => null;
     }
     public class SpecialScreenShot_FeModelOverview_Lines : IProblemQuantitySource
     {
@@ -545,5 +555,10 @@ namespace Emasa_Optimizer.Opt
             throw new InvalidOperationException($"{this.GetType()} does not support this method.");
         }
         public string DataTableName => "Screenshot has no table!";
+
+        // Must have to match live filtering
+        public bool IsSupportedByCurrentSolver => true;
+        public bool OutputData_IsSelected => true;
+        public string ConcernedResultColumnName => null;
     }
 }

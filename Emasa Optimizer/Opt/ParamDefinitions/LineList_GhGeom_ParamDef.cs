@@ -18,6 +18,7 @@ namespace Emasa_Optimizer.Opt.ParamDefinitions
     public class LineList_GhGeom_ParamDef : GhGeom_ParamDefBase, IProblemConfig_CombinableVariable, IGhElement_HasFeRestraint
     {
         public override string TypeName => "LineList";
+        public override string Wpf_TypeNameString => "Lines";
 
         public LineList_GhGeom_ParamDef(string inName, FeRestraint inDefaultRestraint = null) : base(inName)
         {

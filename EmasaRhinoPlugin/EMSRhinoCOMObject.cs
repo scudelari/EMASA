@@ -5,18 +5,23 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Runtime.Serialization.Json;
 using Rhino;
 using Rhino.DocObjects;
 using Rhino.Geometry;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Runtime.Serialization;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Serialization;
 using Eto.Threading;
+using GHComponents;
 using Grasshopper.Kernel;
+using Grasshopper.GUI.Canvas;
+using Grasshopper.Kernel.Types;
 using Rhino.Commands;
 using Rhino.Display;
 using Rhino.FileIO;
@@ -84,7 +89,22 @@ namespace EmasaRhinoPlugin
 
             return null;
         }
-        
+        public string AddPointWithName(string inPointName, double[] coords)
+        {
+            Point3d pnt = new Point3d(coords[0], coords[1], coords[2]);
+
+            Guid inPntGuid = ActiveDoc.Objects.AddPoint(pnt, new ObjectAttributes() { Name = inPointName, ColorSource = ObjectColorSource.ColorFromObject, ObjectColor = Color.White });
+            if (inPntGuid == Guid.Empty) throw new InvalidOperationException($"Could not add point {inPointName} to the Rhino Document.");
+
+            if (!inPntGuid.Equals(Guid.Empty))
+            {
+                ActiveDoc.Views.Redraw();
+                return inPntGuid.ToString();
+            }
+
+            return null;
+        }
+
         public bool RunScript(string script, bool echo)
         {
             script = script.TrimStart('!');
@@ -369,7 +389,6 @@ namespace EmasaRhinoPlugin
 
             return Grasshopper.Instances.ActiveCanvas.Document.FilePath;
         }
-
         public string GetActiveGrasshopperDocumentDescription()
         {
             dynamic gh = RhinoApp.GetPlugInObject("Grasshopper");
@@ -381,7 +400,6 @@ namespace EmasaRhinoPlugin
 
             return Grasshopper.Instances.ActiveCanvas.Document.Properties.Description;
         }
-
         public string[,] Grasshopper_GetDocumentMessages()
         {
             dynamic gh = RhinoApp.GetPlugInObject("Grasshopper");
@@ -431,7 +449,261 @@ namespace EmasaRhinoPlugin
 
             return toRet; 
         }
+
+
+
+
+
         #endregion
+
+        #region Managing Communication With EMASA Components
+        public byte[] Grasshopper_GetAllEmasaOutputs_JSON()
+        {
+            dynamic gh = RhinoApp.GetPlugInObject("Grasshopper");
+
+            if (!gh.IsEditorLoaded()) return null;
+
+            // The document has not been saved or we could not get an open document
+            if (Grasshopper.Instances.ActiveCanvas.Document == null) return null;
+
+            // Gets the custom output parameters
+            GH_Document ghDoc = Grasshopper.Instances.ActiveCanvas.Document;
+            IEnumerable<IGH_DocumentObject> emsOutputs = ghDoc.FilterObjects(enabledObjects: GH_Filter.Include)
+                .Where(a => a is GHEmsOutput_DoubleParameter || a is GHEmsOutput_LineParameter || a is GHEmsOutput_PointParameter);
+
+            // Declares the wrapper that will be used for serialization
+            GrasshopperAllEmasaOutputWrapper wrapper = new GrasshopperAllEmasaOutputWrapper();
+
+            // Fills the wrapper
+            foreach (IGH_DocumentObject gh_DocumentObject in emsOutputs)
+            {
+                switch (gh_DocumentObject)
+                {
+                    case GHEmsOutput_DoubleParameter ghFileOutputDoubleParameter:
+                        wrapper.DoubleLists.Add(ghFileOutputDoubleParameter.VariableName, ghFileOutputDoubleParameter.Doubles);
+                        break;
+
+                    case GHEmsOutput_LineParameter ghFileOutputLineParameter:
+                        wrapper.LineLists.Add(ghFileOutputLineParameter.VariableName, ghFileOutputLineParameter.Lines);
+                        break;
+
+                    case GHEmsOutput_PointParameter ghFileOutputPointParameter:
+                        wrapper.PointLists.Add(ghFileOutputPointParameter.VariableName, ghFileOutputPointParameter.Points);
+                        break;
+
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(gh_DocumentObject), "Unexpected Grasshopper parameter type.");
+                }
+            }
+
+            try
+            {
+                // JSON Serializer
+                DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(GrasshopperAllEmasaOutputWrapper), new DataContractJsonSerializerSettings()
+                    {
+                    UseSimpleDictionaryFormat = true
+                    });
+
+                byte[] toRet = null;
+                using (MemoryStream stream1 = new MemoryStream())
+                {
+                    // Writes the serialized wrapper
+                    ser.WriteObject(stream1, wrapper);
+                    toRet = stream1.ToArray();
+                }
+
+                return toRet;
+            }
+            catch {}
+
+            return null;
+        }
+        public byte[] Grasshopper_GetAllEmasaInputDefs_JSON()
+        {
+            dynamic gh = RhinoApp.GetPlugInObject("Grasshopper");
+
+            if (!gh.IsEditorLoaded()) return null;
+
+            // The document has not been saved or we could not get an open document
+            if (Grasshopper.Instances.ActiveCanvas.Document == null) return null;
+
+            // Gets the custom input parameters
+            GH_Document ghDoc = Grasshopper.Instances.ActiveCanvas.Document;
+            IEnumerable<IGH_DocumentObject> emsInputs = ghDoc.FilterObjects(enabledObjects: GH_Filter.Include)
+                .Where(a => a is GHEmsInput_IntegerParameter || a is GHEmsInput_DoubleParameter || a is GHEmsInput_PointParameter);
+
+            // Declares the serialization wrapper
+            GrasshopperAllEmasaInputDefsWrapper wrapper = new GrasshopperAllEmasaInputDefsWrapper();
+
+            foreach (IGH_DocumentObject gh_DocumentObject in emsInputs)
+            {
+                switch (gh_DocumentObject)
+                {
+                    case GHEmsInput_IntegerParameter ghFileInputIntegerParameter:
+                        wrapper.IntegerInputs.Add(ghFileInputIntegerParameter.VariableName);
+                        break;
+
+                    case GHEmsInput_PointParameter ghFileInputPointParameter:
+                        wrapper.PointInputs.Add(ghFileInputPointParameter.VariableName, new Tuple<Point3d, Point3d, Point3d>(ghFileInputPointParameter.CurrentValue, ghFileInputPointParameter.LowerBound, ghFileInputPointParameter.UpperBound));
+                        break;
+
+                    case GHEmsInput_DoubleParameter ghFileInputDoubleParameter:
+                        wrapper.DoubleInputs.Add(ghFileInputDoubleParameter.VariableName, new Tuple<double, double, double>(ghFileInputDoubleParameter.CurrentValue, ghFileInputDoubleParameter.LowerBound, ghFileInputDoubleParameter.UpperBound));
+                        break;
+
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(gh_DocumentObject), "Unexpected Grasshopper parameter type.");
+                }
+            }
+
+            try
+            {
+                // JSON Serializer
+                DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(GrasshopperAllEmasaInputDefsWrapper), new DataContractJsonSerializerSettings()
+                    {
+                    UseSimpleDictionaryFormat = true
+                    });
+
+                byte[] toRet = null;
+                using (MemoryStream stream1 = new MemoryStream())
+                {
+                    // Writes the serialized wrapper
+                    ser.WriteObject(stream1, wrapper);
+                    toRet = stream1.ToArray();
+                }
+
+                return toRet;
+            }
+            catch { }
+
+            return null;
+        }
+
+        public bool Grasshopper_UpdateEmasaInputs(string[] inNames, double[,] inValues, bool inRecomputeGrasshopper)
+        {
+            // Checks if the lengths are the same
+            if (inNames.Length != inValues.GetLength(0)) return false;
+
+            // Checks if the second length of the inValues is of 3 values
+            if (inValues.GetLength(1) != 3) return false;
+
+            dynamic gh = RhinoApp.GetPlugInObject("Grasshopper");
+            if (!gh.IsEditorLoaded()) return false;
+
+            // The document has not been saved or we could not get an open document
+            if (Grasshopper.Instances.ActiveCanvas.Document == null) return false;
+
+            // Gets the custom input parameters
+            GH_Document ghDoc = Grasshopper.Instances.ActiveCanvas.Document;
+            List<GHEMSParameterInterface> emsInputs = ghDoc.FilterObjects(enabledObjects: GH_Filter.Include)
+                .Where(a => a is GHEmsInput_IntegerParameter || a is GHEmsInput_DoubleParameter || a is GHEmsInput_PointParameter).Cast<GHEMSParameterInterface>().ToList();
+
+            // Iterates the parameters
+            for (int index = 0; index < inNames.Length; index++)
+            {
+                string pName = inNames[index];
+                // Finds the parameter with this name
+                GHEMSParameterInterface iParam = emsInputs.FirstOrDefault(a => a.VariableName == pName);
+                if (iParam == null) throw new Exception($"Could not find input parameter named {pName}");
+
+                switch (iParam)
+                {
+                    case GHEmsInput_DoubleParameter ghFileInputDoubleParameter:
+                        ghFileInputDoubleParameter.CurrentValue = inValues[index, 0];
+                        break;
+
+                    case GHEmsInput_IntegerParameter ghFileInputIntegerParameter:
+                        ghFileInputIntegerParameter.CurrentValue = (int)inValues[index, 0];
+                        break;
+
+                    case GHEmsInput_PointParameter ghFileInputPointParameter:
+                        ghFileInputPointParameter.CurrentValue = new Point3d(inValues[index, 0], inValues[index, 1], inValues[index, 2]);
+                        break;
+
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(iParam), "Unexpected Grasshopper parameter type.");
+                }
+            }
+
+            if (inRecomputeGrasshopper)
+            {
+                gh.RunSolver(true);
+            }
+
+            return true;
+        }
+
+        public bool Grasshopper_UpdateEmasaInput_Integer(string inName, int inValue, bool inRecomputeGrasshopper)
+        {
+            dynamic gh = RhinoApp.GetPlugInObject("Grasshopper");
+            if (!gh.IsEditorLoaded()) return false;
+
+            // The document has not been saved or we could not get an open document
+            if (Grasshopper.Instances.ActiveCanvas.Document == null) return false;
+
+            // Gets the custom input parameters
+            GH_Document ghDoc = Grasshopper.Instances.ActiveCanvas.Document;
+            GHEmsInput_IntegerParameter emsParam = ghDoc.FilterObjects(enabledObjects: GH_Filter.Include).FirstOrDefault(a => a is GHEmsInput_IntegerParameter p && p.Name == inName) as GHEmsInput_IntegerParameter;
+            if (emsParam == null) throw new Exception($"Could not find input parameter named {inName}");
+
+            // Updates the current value
+            emsParam.CurrentValue = inValue;
+
+            if (inRecomputeGrasshopper)
+            {
+                gh.RunSolver(true);
+            }
+
+            return true;
+        }
+        public bool Grasshopper_UpdateEmasaInput_Double(string inName, double inValue, bool inRecomputeGrasshopper)
+        {
+            dynamic gh = RhinoApp.GetPlugInObject("Grasshopper");
+            if (!gh.IsEditorLoaded()) return false;
+
+            // The document has not been saved or we could not get an open document
+            if (Grasshopper.Instances.ActiveCanvas.Document == null) return false;
+
+            // Gets the custom input parameters
+            GH_Document ghDoc = Grasshopper.Instances.ActiveCanvas.Document;
+            GHEmsInput_DoubleParameter emsParam = ghDoc.FilterObjects(enabledObjects: GH_Filter.Include).FirstOrDefault(a => a is GHEmsInput_DoubleParameter p && p.Name == inName) as GHEmsInput_DoubleParameter;
+            if (emsParam == null) throw new Exception($"Could not find input parameter named {inName}");
+
+            // Updates the current value
+            emsParam.CurrentValue = inValue;
+
+            if (inRecomputeGrasshopper)
+            {
+                gh.RunSolver(true);
+            }
+
+            return true;
+        }
+        public bool Grasshopper_UpdateEmasaInput_Point(string inName, double[] inValues, bool inRecomputeGrasshopper)
+        {
+            dynamic gh = RhinoApp.GetPlugInObject("Grasshopper");
+            if (!gh.IsEditorLoaded()) return false;
+
+            // The document has not been saved or we could not get an open document
+            if (Grasshopper.Instances.ActiveCanvas.Document == null) return false;
+
+            // Gets the custom input parameters
+            GH_Document ghDoc = Grasshopper.Instances.ActiveCanvas.Document;
+            GHEmsInput_PointParameter emsParam = ghDoc.FilterObjects(enabledObjects: GH_Filter.Include).FirstOrDefault(a => a is GHEmsInput_PointParameter p && p.Name == inName) as GHEmsInput_PointParameter;
+            if (emsParam == null) throw new Exception($"Could not find input parameter named {inName}");
+
+            // Updates the current value
+            emsParam.CurrentValue = new Point3d(inValues[0], inValues[1], inValues[2]);
+
+            if (inRecomputeGrasshopper)
+            {
+                gh.RunSolver(true);
+            }
+
+            return true;
+        }
+        #endregion
+
 
         #region ImageGeneration
         public bool PrepareRhinoViewForImageAcquire()
@@ -561,7 +833,7 @@ namespace EmasaRhinoPlugin
                         ActiveDoc.Views.ActiveView.ActiveViewport.ZoomExtents();
                         ActiveDoc.Views.ActiveView.Redraw();
 
-                        Bitmap bp = ActiveDoc.Views.ActiveView.CaptureToBitmap(false, true, false);
+                        Bitmap bp = ActiveDoc.Views.ActiveView.CaptureToBitmap(true, true, false);
 
                         // Converts to Byte Array
                         using (MemoryStream ms = new MemoryStream())
@@ -659,5 +931,31 @@ namespace EmasaRhinoPlugin
             }
         }
         #endregion
+    }
+
+    [DataContract]
+    internal class GrasshopperAllEmasaOutputWrapper
+    {
+        [DataMember]
+        public Dictionary<string, List<double>> DoubleLists { get; set; } = new Dictionary<string, List<double>>();
+
+        [DataMember]
+        public Dictionary<string, List<Point3d>> PointLists { get; set; } = new Dictionary<string, List<Point3d>>();
+
+        [DataMember]
+        public Dictionary<string, List<Line>> LineLists { get; set; } = new Dictionary<string, List<Line>>();
+    }
+
+    [DataContract]
+    internal class GrasshopperAllEmasaInputDefsWrapper
+    {
+        [DataMember]
+        public List<string> IntegerInputs { get; set; } = new List<string>();
+
+        [DataMember]
+        public Dictionary<string, Tuple<double, double, double>> DoubleInputs { get; set; } = new Dictionary<string, Tuple<double, double, double>>();
+
+        [DataMember]
+        public Dictionary<string, Tuple<Point3d, Point3d, Point3d>> PointInputs { get; set; } = new Dictionary<string, Tuple<Point3d, Point3d, Point3d>>();
     }
 }

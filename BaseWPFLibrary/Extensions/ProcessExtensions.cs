@@ -5,7 +5,6 @@ using System.Linq;
 using System.Management;
 using System.Text;
 using System.Threading.Tasks;
-using BaseWPFLibrary.Annotations;
 
 namespace BaseWPFLibrary.Extensions
 {

@@ -35,7 +35,7 @@ namespace Emasa_Optimizer.FEA.Items
                     _materialList.Add(new FeMaterial(MaterialIdCounter++,
                         "S355",
                         7850, // kg/m3
-                        2.1e11, // N/m2
+                        2e11, // N/m2
                         0.3,    // Poisson
                         inFy: 3.55e8,    // N/mm2
                         inFu: 5.1e8,     // N/mm2
@@ -116,6 +116,17 @@ namespace Emasa_Optimizer.FEA.Items
             set => SetProperty(ref _thermalCoefficient, value);
         }
 
+
+        public double AISC_360_16_phi_compression = 0.9d;
+        public double AISC_360_16_phi_bending = 0.9d;
+        public double AISC_360_16_phi_shear = 0.9d;
+        public double AISC_360_16_phi_torsion = 0.9d;
+        public double AISC_360_16_phi_tension = 0.9d;
+        public double AISC_360_16_phi_tension_rupturenet = 0.75d;
+
+
+
+
         #region Equality - Based on the name
         public bool Equals(FeMaterial other)
         {
@@ -151,4 +162,5 @@ namespace Emasa_Optimizer.FEA.Items
 
         public string WpfName => $"{GetType().Name} - {Name}";
     }
+
 }

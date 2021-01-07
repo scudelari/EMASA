@@ -154,7 +154,7 @@ namespace EmasaSapTools.Bindings
 
         private DelegateCommand _updateSelectedCasesButtonCommand;
         public DelegateCommand UpdateSelectedCasesButtonCommand =>
-            _updateSelectedCasesButtonCommand ?? (_updateSelectedCasesButtonCommand = new DelegateCommand(ExecuteUpdateSelectedCasesButtonCommand).ObservesCanExecute(()=>BoundToChildrenNoErrors));
+            _updateSelectedCasesButtonCommand ?? (_updateSelectedCasesButtonCommand = new DelegateCommand(ExecuteUpdateSelectedCasesButtonCommand));
         public async void ExecuteUpdateSelectedCasesButtonCommand()
         {
             StringBuilder endMessages = new StringBuilder();

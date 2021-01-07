@@ -81,6 +81,8 @@ namespace Emasa_Optimizer.FEA.Items
             set => SetProperty(ref _torsionalConstant, value);
         }
 
+        public virtual double TorsionalShearConstant => double.NaN;
+
         protected double _momentInertia2;
         public virtual double MomentInertia2
         {
@@ -181,6 +183,43 @@ namespace Emasa_Optimizer.FEA.Items
             }
         }
 
+
+
+        public AISC_360_16_SectionClass_AxialCompression AISC_360_16_SectionClass_AxialCompression
+        {
+            get
+            {
+                switch (this)
+                {
+                    case FeSectionPipe pipe:
+                        if ((pipe.OuterDiameter / pipe.Thickness) <= 0.11d * (Material.YoungModulus / Material.Fy)) return Items.AISC_360_16_SectionClass_AxialCompression.Compact;
+                        else return Items.AISC_360_16_SectionClass_AxialCompression.NonCompact;
+
+                    default:
+                        throw new ArgumentOutOfRangeException($"Type of secton {GetType()} is not supported.");
+                }
+            }
+        }
+        public AISC_360_16_SectionClass_FlexureCompression AISC_360_16_SectionClass_FlexureCompression
+        {
+            get
+            {
+                switch (this)
+                {
+                    case FeSectionPipe pipe:
+                        if ((pipe.OuterDiameter / pipe.Thickness) <= 0.07d * (Material.YoungModulus / Material.Fy)) return Items.AISC_360_16_SectionClass_FlexureCompression.Compact;
+                        if ((pipe.OuterDiameter / pipe.Thickness) <= 0.31d * (Material.YoungModulus / Material.Fy)) return Items.AISC_360_16_SectionClass_FlexureCompression.NonCompact;
+                        if ((pipe.OuterDiameter / pipe.Thickness) < 0.45d * (Material.YoungModulus / Material.Fy)) return Items.AISC_360_16_SectionClass_FlexureCompression.Slender;
+                        else return AISC_360_16_SectionClass_FlexureCompression.Invalid_TooSlender;
+
+                    default:
+                        throw new ArgumentOutOfRangeException($"Type of secton {GetType()} is not supported.");
+                }
+            }
+        }
+
+
+
         public override string ToString()
         {
             return $"{Id}:{GetType().Name}:[{DimensionString}]";
@@ -242,7 +281,7 @@ namespace Emasa_Optimizer.FEA.Items
         {
             return _sectionList.First(a => a.Name == inName);
         }
-        public static List<FeSection> GetAllSections()
+        public static List<FeSection> GetAllSections(bool inFilterCompactOnly = true)
         {
             lock (_lock)
             {
@@ -756,6 +795,12 @@ namespace Emasa_Optimizer.FEA.Items
                     #endregion
                 }
 
+                if (inFilterCompactOnly)
+                {
+                    _sectionList.RemoveAll(sec => sec.AISC_360_16_SectionClass_AxialCompression != AISC_360_16_SectionClass_AxialCompression.Compact ||
+                                                  sec.AISC_360_16_SectionClass_FlexureCompression != AISC_360_16_SectionClass_FlexureCompression.Compact);
+                }
+
                 return _sectionList;
             }
         }
@@ -806,5 +851,19 @@ namespace Emasa_Optimizer.FEA.Items
         {
             return obj.Family.GetHashCode();
         }
+    }
+
+    public enum AISC_360_16_SectionClass_AxialCompression
+    {
+        Compact,
+        NonCompact
+    }
+
+    public enum AISC_360_16_SectionClass_FlexureCompression
+    {
+        Compact,
+        NonCompact,
+        Slender,
+        Invalid_TooSlender
     }
 }

@@ -155,5 +155,8 @@ namespace Sap2000Library.Managers
 
             return toRet;
         }
+
+        // Attempts reading through the SAP2000 Automation
+
     }
 }

@@ -11,14 +11,14 @@ namespace Emasa_Optimizer.FEA.Items
     [Serializable]
     public class FeJoint : IEquatable<FeJoint>, IFeEntity
     {
-        public FeJoint(int inId, Point3d inPoint)
+        public FeJoint(string inId, Point3d inPoint)
         {
             _id = inId;
             _point = inPoint;
         }
 
-        private int _id;
-        public int Id
+        private string _id;
+        public string Id
         {
             get => _id;
             set => _id = value;

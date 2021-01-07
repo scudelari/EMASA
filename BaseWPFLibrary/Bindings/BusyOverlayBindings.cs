@@ -15,27 +15,30 @@ namespace BaseWPFLibrary.Bindings
         public override void SetOrReset()
         {
             LongTextHeight = 200d;
-            HideOverlayAndReset();
+
+            // Resets all data
+            Title = "Working ...";
+            MessageText = "Busy.";
+            ElementType = "";
+            CurrentElementName = "";
+            CurrentElementVisibility = Visibility.Collapsed;
+            ButtonVisibility = Visibility.Collapsed;
+            ButtonCaption = "Cancel";
+            ProgressIsIndeterminate = true;
+            ProgressCurrentProgress = 0;
+            ProgressTextVisibility = Visibility.Collapsed;
+
+            // Including the cancellation source
+            _tokenSource = new CancellationTokenSource();
+
+            LongReport_Visibility = Visibility.Collapsed;
+            LongReport_Text = "";
+
+            AutomationWarning_Visibility = Visibility.Collapsed;
         }
 
-        private Visibility _overlayVisibility;
-        public Visibility OverlayVisibility
-        {
-            get
-            {
-                lock (_padLock)
-                {
-                    return _overlayVisibility;
-                }
-            }
-            set
-            {
-                lock (_padLock)
-                {
-                    SetProperty(ref _overlayVisibility, value);
-                }
-            }
-        }
+        // Special link to the FrameworkElement
+        public BusyOverlay OverlayElement => (BusyOverlay)GetReferencedFrameworkElement("UserControlInternalName_BusyOverlay");
 
         private string _title;
         public string Title
@@ -142,10 +145,13 @@ namespace BaseWPFLibrary.Bindings
             set { lock (_padLock) { SetProperty(ref _progressTextVisibility, value); } }
         }
 
+
         public void HideOverlayAndReset()
         {
-            OverlayVisibility = Visibility.Collapsed;
+            // Changes the visibility directly to the element itself
+            OverlayElement.Visibility = Visibility.Collapsed;
 
+            // Resets all data
             Title = "Working ...";
             MessageText = "Busy.";
             ElementType = "";
@@ -157,6 +163,7 @@ namespace BaseWPFLibrary.Bindings
             ProgressCurrentProgress = 0;
             ProgressTextVisibility = Visibility.Collapsed;
 
+            // Including the cancellation source
             _tokenSource = new CancellationTokenSource();
 
             LongReport_Visibility = Visibility.Collapsed;
@@ -164,10 +171,10 @@ namespace BaseWPFLibrary.Bindings
 
             AutomationWarning_Visibility = Visibility.Collapsed;
         }
-
         public void ShowOverlay()
         {
-            OverlayVisibility = Visibility.Visible;
+            // Changes the visibility directly to the element itself
+            OverlayElement.Visibility = Visibility.Visible;
         }
 
         /// <summary>

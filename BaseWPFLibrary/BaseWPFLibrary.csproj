@@ -79,6 +79,7 @@
     <Compile Include="Bindings\BindableSingleton.cs" />
     <Compile Include="Bindings\CustomOverlayBindings.cs" />
     <Compile Include="Converters\EnumBooleanConverter.cs" />
+    <Compile Include="Converters\VisibilityToBool_FalseHidden_Converter.cs" />
     <Compile Include="CustomOverlay.xaml.cs">
       <DependentUpon>CustomOverlay.xaml</DependentUpon>
     </Compile>
@@ -101,12 +102,6 @@
     <Compile Include="Extensions\GenericType.cs" />
     <Compile Include="Extensions\ProcessExtensions.cs" />
     <Compile Include="Others\EmasaWPFLibStaticMethods.cs" />
-    <Compile Include="Forms\BusyForm.xaml.cs">
-      <DependentUpon>BusyForm.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Forms\CancelOpForm.xaml.cs">
-      <DependentUpon>CancelOpForm.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Forms\ExceptionViewer.xaml.cs">
       <DependentUpon>ExceptionViewer.xaml</DependentUpon>
     </Compile>
@@ -136,14 +131,6 @@
     <Page Include="CustomOverlay.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Forms\BusyForm.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Forms\CancelOpForm.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="Forms\ExceptionViewer.xaml">
       <Generator>MSBuild:Compile</Generator>

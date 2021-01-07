@@ -20,6 +20,9 @@ namespace Emasa_Optimizer.Opt.ParamDefinitions
         #endregion
 
         #region UI Helpers
+
+        public virtual string Wpf_TypeNameString => TypeName;
+
         #endregion
     }
 }

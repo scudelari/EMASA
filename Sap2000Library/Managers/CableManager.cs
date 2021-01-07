@@ -49,7 +49,7 @@ namespace Sap2000Library.Managers
         }
         public List<SapCable> GetAll(BusyOverlay BusyOverlay)
         {
-            if (BusyOverlay != null) BusyOverlay.SetDeterminate($"Getting all cables from SAP2000.", "Cable");
+            //if (BusyOverlay != null) BusyOverlay.SetDeterminate($"Getting all cables from SAP2000.", "Cable");
 
             // Gets all names
             int count = 0;
@@ -63,10 +63,10 @@ namespace Sap2000Library.Managers
             {
                 toReturn.Add(GetByName(names[i]));
 
-                if (BusyOverlay != null) BusyOverlay.UpdateProgress(i, count, names[i]);
+                //if (BusyOverlay != null) BusyOverlay.UpdateProgress(i, count, names[i]);
             }
 
-            BusyOverlay.Stop();
+            //BusyOverlay.Stop();
             return toReturn;
         }
         public List<SapCable> GetAll(bool inUpdateInteraface = false)

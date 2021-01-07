@@ -53,6 +53,8 @@ namespace Emasa_Optimizer.FEA.Items
         public override double OuterDiameter => Dimensions["OuterDiameter"];
         public override double Thickness => Dimensions["Thickness"];
 
+        public override double TorsionalShearConstant => (Math.PI * Thickness * Math.Pow(OuterDiameter - Thickness,2d)) / 2d;
+
         private static List<FeSectionPipe> _allSectionsOfThisType = null;
         public static List<FeSectionPipe> GetAllSectionsOfThisType()
         {

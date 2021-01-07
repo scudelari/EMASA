@@ -17,6 +17,7 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
 using BaseWPFLibrary.Annotations;
+using BaseWPFLibrary.Bindings;
 using BaseWPFLibrary.Forms;
 using BaseWPFLibrary.Others;
 using Emasa_Optimizer.Bindings;
@@ -27,10 +28,12 @@ using Emasa_Optimizer.Opt;
 using Emasa_Optimizer.Opt.ParamDefinitions;
 using Emasa_Optimizer.Opt.ProbQuantity;
 using Emasa_Optimizer.WpfResources;
+using LiveCharts;
 using NLoptNet;
 using MPOC = MintPlayer.ObservableCollection;
 using Prism.Mvvm;
 using RhinoInterfaceLibrary;
+using Sap2000Library;
 
 namespace Emasa_Optimizer.Opt
 {
@@ -58,11 +61,11 @@ namespace Emasa_Optimizer.Opt
             //    ls.IsLiveFiltering = true;
             //}
             //else throw new Exception($"List does not accept ICollectionViewLiveShaping.");
-
         }
         
         #region Problem Configuration Data & Management
         public bool Wpf_ConfigurationsHaveBeenGenerated => _problemConfigs.Count > 0;
+        public bool Wpf_HaveNotStartedProblems => _problemConfigs.Any(p => p.NlOptSolverWrapper.OptimizeTerminationException.OptimizeTerminationCode == NlOpt_OptimizeTerminationCodeEnum.NotStarted);
         public int Wpf_ConfigurationCount_Generated => ProblemConfigs.Count;
         public int Wpf_ConfigurationCount_Successful => ProblemConfigs.Count(a => a.NlOptSolverWrapper.OptimizeTerminationException.OptimizeTerminationCode == NlOpt_OptimizeTerminationCodeEnum.Success || a.NlOptSolverWrapper.OptimizeTerminationException.OptimizeTerminationCode == NlOpt_OptimizeTerminationCodeEnum.Converged);
 
@@ -185,14 +188,16 @@ namespace Emasa_Optimizer.Opt
                 ExceptionViewer.Show(e);
             }
         }
-        public void WpfCommand_ClearConfigurations()
+        public void WpfCommand_DeleteAllConfigurations()
         {
-            ProblemConfigs.Clear();
+            foreach (ProblemConfig pc in ProblemConfigs) pc.Reset();
+                ProblemConfigs.Clear();
         }
 
         private readonly MPOC.ObservableCollection<ProblemConfig> _problemConfigs = new MPOC.ObservableCollection<ProblemConfig>();
         private void ProblemConfigsOnCollectionChanged(object inSender, NotifyCollectionChangedEventArgs inE)
         {
+            RaisePropertyChanged("Wpf_HaveNotStartedProblems");
             RaisePropertyChanged("Wpf_ConfigurationsHaveBeenGenerated");
             RaisePropertyChanged("Wpf_ConfigurationCount_Generated");
         }
@@ -208,7 +213,10 @@ namespace Emasa_Optimizer.Opt
                 SetProperty(ref _currentCalculatingProblemConfig, value);
 
                 // Tries to make it visible in the list
-                AppSS.I.BringListChildIntoView("OverlayProblemConfigurationList", _currentCalculatingProblemConfig, "BusyOptimizingOverlay");
+                AppSS.I.BringListChildIntoView("OverlayProblemConfigurationList", _currentCalculatingProblemConfig, AppSS.GetReferencedFrameworkElement("CustomOverlay_ContentGrid"));
+
+                // Clears the chart in the overlay
+                AppSS.I.ChartDisplayMgr.ClearSeriesValues(AppSS.I.ChartDisplayMgr.CalculatingEvalPlot_CartesianChart);
             }
         }
 
@@ -216,23 +224,97 @@ namespace Emasa_Optimizer.Opt
         public ProblemConfig Wpf_CurrentlySelected_ProblemConfig
         {
             get => _wpf_CurrentlySelected_ProblemConfig;
-            set => SetProperty(ref _wpf_CurrentlySelected_ProblemConfig, value);
+            set
+            {
+                // We are setting it to a problem config that exists
+                if (value != null)
+                {
+                    // It is the first time - sets the default visibility of the charts
+                    if (_wpf_CurrentlySelected_ProblemConfig == null)
+                    {
+                        foreach (ChartDisplayData chartDisplay in value.ChartData)
+                        {
+                            if (chartDisplay.RelatedQuantity is Input_ParamDefBase inputParam)
+                            {
+                                // Shows on left
+                                foreach (ChartDisplayData_Series t in chartDisplay.SeriesData)
+                                {
+                                    t.IsPairSelected_AxisOnLeftSide = true;
+                                    t.IsPairSelected_AxisOnRightSide = false;
+                                }
+                            }
+                            else if (chartDisplay.RelatedQuantity is ProblemQuantity probConf)
+                            {
+                                if (probConf.IsObjectiveFunctionMinimize)
+                                {
+                                    // Shows on right side
+                                    foreach (ChartDisplayData_Series t in chartDisplay.SeriesData)
+                                    {
+                                        t.IsPairSelected_AxisOnLeftSide = false;
+                                        t.IsPairSelected_AxisOnRightSide = true;
+                                    }
+                                }
+                                else
+                                {
+                                    // Both not visible
+                                    foreach (ChartDisplayData_Series t in chartDisplay.SeriesData)
+                                    {
+                                        t.IsPairSelected_AxisOnLeftSide = false;
+                                        t.IsPairSelected_AxisOnRightSide = false;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    { // Copies the existing visibility
+                        foreach (ChartDisplayData currentDisplay in _wpf_CurrentlySelected_ProblemConfig.ChartData)
+                        {
+                            // Finds the right chart data in the new set
+                            ChartDisplayData newDisplay = value.ChartData.FirstOrDefault(a => a.RelatedQuantity == currentDisplay.RelatedQuantity);
+                            if (newDisplay != null)
+                            {
+                                for (int i = 0; i < newDisplay.SeriesData.Length; i++)
+                                {
+                                    newDisplay.SeriesData[i].IsPairSelected_AxisOnLeftSide = currentDisplay.SeriesData[i].IsPairSelected_AxisOnLeftSide;
+                                    newDisplay.SeriesData[i].IsPairSelected_AxisOnRightSide = currentDisplay.SeriesData[i].IsPairSelected_AxisOnRightSide;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Effectively selects the problem config
+                SetProperty(ref _wpf_CurrentlySelected_ProblemConfig, value);
+
+                // Clears the Eval chart
+                AppSS.I.ChartDisplayMgr.ClearSeriesValues(AppSS.I.ChartDisplayMgr.PointPlotSummaryEvalPlot_CartesianChart);
+                // Fills the Objective function eval chart
+                AppSS.I.ChartDisplayMgr.AddSeriesValue(AppSS.I.ChartDisplayMgr.PointPlotSummaryEvalPlot_CartesianChart, Wpf_CurrentlySelected_ProblemConfig?.ObjectiveFunctionEvals);
+
+                // Updates the Problem Config Quantity Plots
+                AppSS.I.ChartDisplayMgr.UpdateChart(AppSS.I.ChartDisplayMgr.ProblemConfigDetailPlot_CartesianChart, Wpf_CurrentlySelected_ProblemConfig.ChartData);
+
+                // Makes sure there is a point that is selected
+                if (Wpf_CurrentlySelected_ProblemConfig.Wpf_SelectedDisplayFunctionPoint == null) Wpf_CurrentlySelected_ProblemConfig.Wpf_SelectedDisplayFunctionPoint = Wpf_CurrentlySelected_ProblemConfig.LastPoint;
+                // Ensures visibility of the point in the list
+                if (Wpf_CurrentlySelected_ProblemConfig.Wpf_SelectedDisplayFunctionPoint != null)
+                    AppSS.I.BringListChildIntoView( AppSS.GetReferencedFrameworkElement("NlOptPointDetails_PointSelectionList"), Wpf_CurrentlySelected_ProblemConfig.Wpf_SelectedDisplayFunctionPoint);
+            }
         }
 
-        private ProblemConfig _wpf_BestEval_ProblemConfig;
-        public ProblemConfig Wpf_BestEval_ProblemConfig
+        public void Wpf_SelectBestEvalProblemConfig()
         {
-            get => _wpf_BestEval_ProblemConfig;
-            set => SetProperty(ref _wpf_BestEval_ProblemConfig, value);
-        }
-        public void Update_Wpf_BestEval_ProblemConfig()
-        {
-            Wpf_BestEval_ProblemConfig = ProblemConfigs
-                .Where(a => a.LastPoint.AllConstraintsRespected &&
+            // Attempts to select the best problem config that converged
+            ProblemConfig toSelect = ProblemConfigs
+                .Where(a => a.LastPoint != null && a.LastPoint.AllConstraintsRespected &&
                             (a.NlOptSolverWrapper.OptimizeTerminationException.OptimizeTerminationCode == NlOpt_OptimizeTerminationCodeEnum.Converged ||
                              a.NlOptSolverWrapper.OptimizeTerminationException.OptimizeTerminationCode == NlOpt_OptimizeTerminationCodeEnum.Success))
                 .OrderBy(a => a.LastPoint.ObjectiveFunctionEval)
                 .FirstOrDefault();
+
+            // Selects the best if found, otherwise selects the first
+            Wpf_CurrentlySelected_ProblemConfig = toSelect ?? ProblemConfigs.First();
         }
         #endregion
 
@@ -250,86 +332,257 @@ namespace Emasa_Optimizer.Opt
             set => SetProperty(ref _totalOptimizationElapsedTime, value);
         }
 
-        public double AverageTotalSeconds_ConfigurationElapsedTime => _problemConfigs.Average(a => a.ProblemConfigOptimizeElapsedTime.TotalSeconds);
+        public double AverageTotalSeconds_ConfigurationElapsedTime => _problemConfigs.Count > 0 ? _problemConfigs.Average(a => a.ProblemConfigOptimizeElapsedTime.TotalSeconds) : 0d;
         
         #region Actions!
-        public void OptimizeMissingProblemConfigurations()
+        private DateTime LastOptimizationFinishTime;
+        public async void WpfCommand_OptimizeMissingProblemConfigurations()
         {
-            // The missing problem configurations are:
-            List<ProblemConfig> toOptimize = (from a in _problemConfigs
-                where a.NlOptSolverWrapper.OptimizeTerminationException.OptimizeTerminationCode == NlOpt_OptimizeTerminationCodeEnum.NotStarted ||
-                      a.NlOptSolverWrapper.OptimizeTerminationException.OptimizeTerminationCode == NlOpt_OptimizeTerminationCodeEnum.Forced_Stop
-                select a).ToList();
-
-            if (toOptimize.Count == 0) return;
-
             Stopwatch sw = Stopwatch.StartNew();
-
-            // Resets the cancellation source
-            AppSS.I.SolveMgr.CancelSource = new CancellationTokenSource();
-
-            // Instantiates the Fe Solver software
-            AppSS.I.FeOpt.EvaluateRequiredFeOutputs();
-            switch (AppSS.I.FeOpt.FeSolverType_Selected)
-            {
-                case FeSolverTypeEnum.Ansys:
-                    AppSS.I.FeSolver = new FeSolverBase_Ansys();
-                    break;
-
-                case FeSolverTypeEnum.NotFeProblem:
-                    AppSS.I.FeSolver = null;
-                    break;
-
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
 
             try
             {
-                // Prepares Rhino for Screenshot output
-                RhinoModel.RM.PrepareRhinoViewForImageAcquire();
+                AppSS.I.Overlay_Reset();
+                CustomOverlayBindings.I.ShowOverlay();
 
-                // Sets the progress bar
-                AppSS.I.Overlay_ProgressBarMaximum = toOptimize.Count;
-                AppSS.I.Overlay_ProgressBarIndeterminate = false;
-
-                // Sets the default selections for the screenshots
-                AppSS.I.ScreenShotOpt.SelectedDisplayImageResultClassification = AppSS.I.ScreenShotOpt.Wpf_ScreenshotList.OfType<IProblemQuantitySource>().FirstOrDefault();
-                AppSS.I.ScreenShotOpt.SelectedDisplayDirection = AppSS.I.ScreenShotOpt.ImageCapture_ViewDirectionsEnumerable.FirstOrDefault();
-
-                // Runs optimizations for missing Problem Configurations
-                for (int i = 0; i < toOptimize.Count; i++)
+                void lf_Work()
                 {
-                    AppSS.I.Overlay_ProgressBarCurrent = i;
+                    // Starts the Optimize Manager, initializing the connection with GrassHopper and other variables
+                    CustomOverlayBindings.I.Title = "Working";
 
-                    ProblemConfig pc = toOptimize[i];
 
-                    // Sets the current problem configuration
-                    CurrentCalculatingProblemConfig = pc;
-                    CurrentCalculatingProblemConfig.Optimize();
+                    // The missing problem configurations are:
+                    List<ProblemConfig> toOptimize = (from a in _problemConfigs
+                                                      where a.NlOptSolverWrapper.OptimizeTerminationException.OptimizeTerminationCode == NlOpt_OptimizeTerminationCodeEnum.NotStarted ||
+                                                            a.NlOptSolverWrapper.OptimizeTerminationException.OptimizeTerminationCode == NlOpt_OptimizeTerminationCodeEnum.Forced_Stop
+                                                      select a).ToList();
 
-                    // User cancelled
-                    if (CancelSource.IsCancellationRequested) break;
+                    if (toOptimize.Count == 0) return;
+
+                    // Resets the cancellation source
+                    AppSS.I.SolveMgr.CancelSource = new CancellationTokenSource();
+
+                    // Instantiates the Fe Solver software
+                    AppSS.I.FeOpt.EvaluateRequiredFeOutputs();
+                    switch (AppSS.I.FeOpt.FeSolverType_Selected)
+                    {
+                        case FeSolverTypeEnum.Ansys:
+                            AppSS.I.FeSolver = new FeSolverBase_Ansys();
+                            break;
+
+                        case FeSolverTypeEnum.Sap2000:
+                            AppSS.I.FeSolver = new FeSolverBase_Sap2000();
+                            AppSS.I.LockedInterfaceMessageVisibility = Visibility.Visible;
+                            break;
+
+                        case FeSolverTypeEnum.NotFeProblem:
+                            AppSS.I.FeSolver = null;
+                            break;
+
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+
+                    try
+                    {
+                        // Prepares Rhino for Screenshot output
+                        RhinoModel.RM.PrepareRhinoViewForImageAcquire();
+
+                        // Sets the progress bar
+                        AppSS.I.Overlay_ProgressBarMaximum = toOptimize.Count;
+                        AppSS.I.Overlay_ProgressBarIndeterminate = false;
+
+                        // Sets the default selections for the screenshots
+                        AppSS.I.ScreenShotOpt.SelectedDisplayImageResultClassification = AppSS.I.ScreenShotOpt.Wpf_ScreenshotList.OfType<IProblemQuantitySource>().FirstOrDefault();
+                        AppSS.I.ScreenShotOpt.SelectedDisplayDirection = AppSS.I.ScreenShotOpt.ImageCapture_ViewDirectionsEnumerable.FirstOrDefault();
+
+                        // Runs optimizations for missing Problem Configurations
+                        for (int i = 0; i < toOptimize.Count; i++)
+                        {
+                            AppSS.I.Overlay_ProgressBarCurrent = i;
+
+                            ProblemConfig pc = toOptimize[i];
+
+                            // Sets the current problem configuration
+                            CurrentCalculatingProblemConfig = pc;
+                            CurrentCalculatingProblemConfig.Optimize();
+
+                            // User cancelled
+                            if (CancelSource.IsCancellationRequested) break;
+                        }
+                    }
+                    finally
+                    {
+                        // Terminates the Finite Element Solver
+                        AppSS.I.FeSolver?.Dispose();
+                        AppSS.I.FeSolver = null;
+
+                        // Returns Rhino to its default view state
+                        RhinoModel.RM.RestoreRhinoViewFromImageAcquire();
+                    }
                 }
+
+                // Runs the job async
+                Task task = new Task(lf_Work);
+                task.Start();
+                await task;
+            }
+            catch (Exception ex)
+            {
+                ExceptionViewer.Show(ex);
             }
             finally
             {
-                Update_Wpf_BestEval_ProblemConfig();
-
                 CurrentCalculatingProblemConfig = null;
-
-                // Terminates the Finite Element Solver
-                AppSS.I.FeSolver?.Dispose();
-                AppSS.I.FeSolver = null;
-
-                // Returns Rhino to its default view state
-                RhinoModel.RM.RestoreRhinoViewFromImageAcquire();
 
                 // Saves the total elapsed time
                 sw.Stop();
                 TotalOptimizationElapsedTime = sw.Elapsed;
-                
                 RaisePropertyChanged("AverageTotalSeconds_ConfigurationElapsedTime");
+
+
+                // Makes some default configurations in the views
+                
+                // Selects the Problem config with best eval
+                Wpf_SelectBestEvalProblemConfig();
+
+                // Forces a selection of the output quantity in the point details report to be the first used at the objective function
+                AppSS.I.ProbQuantMgn.Wpf_SelectedProblemQuantityTypeForOutputDisplay = AppSS.I.ProbQuantMgn.WpfProblemQuantities_ObjectiveFunction.OfType<ProblemQuantity>().First().QuantitySource;
+                // Ensures visibility of the item in the list
+                AppSS.I.BringListChildIntoView( AppSS.GetReferencedFrameworkElement("NlOptPointDetails_AvailableQuantitiesSelectionList"), AppSS.I.ProbQuantMgn.Wpf_SelectedProblemQuantityTypeForOutputDisplay);
+                
+
+                // Selects the results tab item
+                if (AppSS.FirstReferencedWindow is MainWindow mw)
+                {
+                    mw.ResultsTabItem.IsSelected = true;
+                    mw.ResultsTab_SummarySubTabItem.IsSelected = true;
+                }
+
+                // Saves the finish time - this is a marker for outputs
+                LastOptimizationFinishTime = DateTime.Now;
+
+                // Closes the overlay
+                CustomOverlayBindings.I.HideOverlayAndReset();
+            }
+        }
+        #endregion
+
+        #region Pointwise Model Creation
+        public async void WpfCommand_PointwiseModelShape_ToRhino()
+        {
+            try
+            {
+                // Is it really selected?
+                if (Wpf_CurrentlySelected_ProblemConfig == null) throw new Exception($"There is no selected Problem Config.");
+                if (Wpf_CurrentlySelected_ProblemConfig.Wpf_SelectedDisplayFunctionPoint == null) throw new Exception($"There is no selected Point.");
+
+                BusyOverlayBindings.I.Title = $"Updating Grasshopper Geometry for Problem Config #{Wpf_CurrentlySelected_ProblemConfig.Index} - Point #{Wpf_CurrentlySelected_ProblemConfig.Wpf_SelectedDisplayFunctionPoint.PointIndex}";
+                BusyOverlayBindings.I.SetIndeterminate("Updating Grasshopper.");
+                BusyOverlayBindings.I.ShowOverlay();
+
+                void lf_Work()
+                {
+                    AppSS.I.Gh_Alg.UpdateGrasshopperGeometry(Wpf_CurrentlySelected_ProblemConfig.Wpf_SelectedDisplayFunctionPoint);
+                }
+
+                // Runs the job async
+                Task task = new Task(lf_Work);
+                task.Start();
+                await task;
+            }
+            catch (Exception ex)
+            {
+                ExceptionViewer.Show(ex);
+            }
+            finally
+            {
+                // Closes the overlay
+                BusyOverlayBindings.I.HideOverlayAndReset();
+            }
+        }
+        
+        private string DataOutputFolderRoot => Path.Combine(Path.GetDirectoryName(AppSS.I.Gh_Alg.GrasshopperFullFileName), Path.GetFileNameWithoutExtension(AppSS.I.Gh_Alg.GrasshopperFullFileName), "Output", $"{LastOptimizationFinishTime:yyyy_MM_dd_HH_mm}");
+        public async void WpfCommand_PointwiseModelShape_ToSap2000()
+        {
+            try
+            {
+                // Is SAP2000 Alive?
+                //if (S2KModel.SM.IsAlive) throw new Exception($"There must be no instance of SAP2000 linked to this application. Please close SAP2000.");
+
+                // Is it really selected?
+                if (Wpf_CurrentlySelected_ProblemConfig == null) throw new Exception($"There is no selected Problem Config.");
+                if (Wpf_CurrentlySelected_ProblemConfig.Wpf_SelectedDisplayFunctionPoint == null) throw new Exception($"There is no selected Point.");
+
+                string pointModelPath = Path.Combine(DataOutputFolderRoot, $"Prob#{Wpf_CurrentlySelected_ProblemConfig.Index:D2} P#{Wpf_CurrentlySelected_ProblemConfig.Wpf_SelectedDisplayFunctionPoint.PointIndex:D5}");
+                if (!Directory.Exists(pointModelPath)) Directory.CreateDirectory(pointModelPath);
+
+                string pointFileName = $"SAP2000 Prob#{Wpf_CurrentlySelected_ProblemConfig.Index:D2} P#{Wpf_CurrentlySelected_ProblemConfig.Wpf_SelectedDisplayFunctionPoint.PointIndex:D5}";
+
+                BusyOverlayBindings.I.Title = $"Generating SAP2000 model for #{Wpf_CurrentlySelected_ProblemConfig.Index} - Point #{Wpf_CurrentlySelected_ProblemConfig.Wpf_SelectedDisplayFunctionPoint.PointIndex}";
+                BusyOverlayBindings.I.SetIndeterminate("Generating SAP2000.");
+                BusyOverlayBindings.I.ShowOverlay();
+
+                void lf_Work()
+                {
+                    FeSolverBase_Sap2000 sapSolverBase = new FeSolverBase_Sap2000();
+                    sapSolverBase.GeneratePointModel(Wpf_CurrentlySelected_ProblemConfig.Wpf_SelectedDisplayFunctionPoint.FeModel, pointModelPath, pointFileName);
+                }
+
+                // Runs the job async
+                Task task = new Task(lf_Work);
+                task.Start();
+                await task;
+            }
+            catch (Exception ex)
+            {
+                ExceptionViewer.Show(ex);
+            }
+            finally
+            {
+                // Closes the overlay
+                BusyOverlayBindings.I.HideOverlayAndReset();
+            }
+        }
+        public async void WpfCommand_PointwiseModelShape_ToAnsys()
+        {
+            try
+            {
+                FeSolverBase_Ansys solverAnsys = new FeSolverBase_Ansys();
+                // Is Ansys Alive?
+                if (solverAnsys.GetAllRunningProcesses().Count > 0) throw new Exception($"There must be no instance of Ansys linked to this application. Please close Ansys.");
+
+                // Is it really selected?
+                if (Wpf_CurrentlySelected_ProblemConfig == null) throw new Exception($"There is no selected Problem Config.");
+                if (Wpf_CurrentlySelected_ProblemConfig.Wpf_SelectedDisplayFunctionPoint == null) throw new Exception($"There is no selected Point.");
+
+                string pointModelPath = Path.Combine(DataOutputFolderRoot, $"Prob#{Wpf_CurrentlySelected_ProblemConfig.Index:D2} P#{Wpf_CurrentlySelected_ProblemConfig.Wpf_SelectedDisplayFunctionPoint.PointIndex:D5}");
+                if (!Directory.Exists(pointModelPath)) Directory.CreateDirectory(pointModelPath);
+
+                string pointFileName = $"Ansys Prob#{Wpf_CurrentlySelected_ProblemConfig.Index:D2} P#{Wpf_CurrentlySelected_ProblemConfig.Wpf_SelectedDisplayFunctionPoint.PointIndex:D5}";
+
+                BusyOverlayBindings.I.Title = $"Generating Ansys model for #{Wpf_CurrentlySelected_ProblemConfig.Index} - Point #{Wpf_CurrentlySelected_ProblemConfig.Wpf_SelectedDisplayFunctionPoint.PointIndex}";
+                BusyOverlayBindings.I.SetIndeterminate("Generating Ansys.");
+                BusyOverlayBindings.I.ShowOverlay();
+
+                void lf_Work()
+                {
+                    solverAnsys.GeneratePointModel(Wpf_CurrentlySelected_ProblemConfig.Wpf_SelectedDisplayFunctionPoint.FeModel, pointModelPath, pointFileName);
+                }
+
+                // Runs the job async
+                Task task = new Task(lf_Work);
+                task.Start();
+                await task;
+            }
+            catch (Exception ex)
+            {
+                ExceptionViewer.Show(ex);
+            }
+            finally
+            {
+                // Closes the overlay
+                BusyOverlayBindings.I.HideOverlayAndReset();
             }
         }
         #endregion

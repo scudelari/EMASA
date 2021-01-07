@@ -135,13 +135,8 @@ namespace WpfApp1
         {
             try
             {
-                RhinoModel.RM.PrepareRhinoViewForImageAcquire();
+                GrasshopperAllEmasaOutputWrapper_AsRhino3dm a =  RhinoModel.RM.Grasshopper_GetAllEmasaOutputs();
 
-                string[] dirs = new[] { "Top_Towards_ZNeg", "Front_Towards_YPos" };
-
-                List<(string dir, Image image)> xmlWithImages = RhinoModel.RM.GetScreenshots(dirs);
-
-                RhinoModel.RM.RestoreRhinoViewFromImageAcquire();
             }
             catch (Exception ex)
             {

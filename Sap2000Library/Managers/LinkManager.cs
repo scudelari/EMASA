@@ -74,7 +74,7 @@ namespace Sap2000Library.Managers
         }
         public List<SapLink> GetSelected(BusyOverlay BusyOverlay)
         {
-            if (BusyOverlay != null) BusyOverlay.SetDeterminate($"Getting selected links from SAP2000.", "Link");
+            //if (BusyOverlay != null) BusyOverlay.SetDeterminate($"Getting selected links from SAP2000.", "Link");
 
             int count = 0;
             int[] objectType = null;
@@ -95,12 +95,12 @@ namespace Sap2000Library.Managers
                 {
                     toReturn.Add(GetByName(selectedNames[i]));
 
-                    if (BusyOverlay != null) BusyOverlay.UpdateProgress(currType, typeCount, selectedNames[i]);
+                    //if (BusyOverlay != null) BusyOverlay.UpdateProgress(currType, typeCount, selectedNames[i]);
                     currType++;
                 }
             }
 
-            BusyOverlay.Stop();
+            //BusyOverlay.Stop();
             return toReturn;
         }
 

@@ -18,14 +18,22 @@ using BaseWPFLibrary.Bindings;
 namespace BaseWPFLibrary
 {
     /// <summary>
-    /// Interaction logic for UserControl1.xaml
+    /// Interaction logic for BusyOverlay.xaml
     /// </summary>
     public partial class BusyOverlay : UserControl
     {
         public BusyOverlay()
         {
+            // Saves a reference to the this BusyOverlay Instance
+            BusyOverlayBindings.SaveReferenceToElement(this, "UserControlInternalName_BusyOverlay");
+
             InitializeComponent();
-            BusyOverlayBindings.Start(this);
+
+            // Sets the data context of the content grid to this class
+            BusyOverlay_ContentGrid.DataContext = this;
+
+            // Sets this visibility to hidden
+            this.Visibility = Visibility.Collapsed;
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
@@ -33,128 +41,47 @@ namespace BaseWPFLibrary
             BusyOverlayBindings.I.CancelOperation();
         }
 
-        public Visibility OverlayVisibility {
-            get => BusyOverlayBindings.I.OverlayVisibility;
-            set => BusyOverlayBindings.I.OverlayVisibility = value;
+        #region Overlay Config Variables
+        /// <summary>
+        /// Gets or sets the Label which is displayed next to the field
+        /// </summary>
+        public Thickness ContentWindowMargin
+        {
+            get => (Thickness)GetValue(ContentWindowMarginProperty);
+            set => SetValue(ContentWindowMarginProperty, value);
         }
+        /// <summary>
+        /// Identified the Label dependency property
+        /// </summary>
+        public static readonly DependencyProperty ContentWindowMarginProperty = DependencyProperty.Register("ContentWindowMargin", typeof(Thickness), typeof(BusyOverlay), new PropertyMetadata(new Thickness(40)));
 
-        public string Title
-        {
-            get => BusyOverlayBindings.I.Title;
-            set => BusyOverlayBindings.I.Title = value;
-        }
 
-        public string MessageText
+        /// <summary>
+        /// Gets or sets the Label which is displayed next to the field
+        /// </summary>
+        public Brush OverlayBackground
         {
-            get => BusyOverlayBindings.I.MessageText;
-            set => BusyOverlayBindings.I.MessageText = value;
+            get => (Brush)GetValue(OverlayBackgroundProperty);
+            set => SetValue(OverlayBackgroundProperty, value);
         }
+        /// <summary>
+        /// Identified the Label dependency property
+        /// </summary>
+        public static readonly DependencyProperty OverlayBackgroundProperty = DependencyProperty.Register("OverlayBackground", typeof(Brush), typeof(BusyOverlay), new PropertyMetadata(new SolidColorBrush(Colors.DimGray)));
 
-        public string ElementType
-        {
-            get => BusyOverlayBindings.I.ElementType;
-            set => BusyOverlayBindings.I.ElementType = value;
-        }
 
-        public void HideOverlayAndReset()
+        /// <summary>
+        /// Gets or sets the Label which is displayed next to the field
+        /// </summary>
+        public double OverlayBackgroundOpacity
         {
-            BusyOverlayBindings.I.HideOverlayAndReset();
+            get => (double)GetValue(OverlayBackgroundOpacityProperty);
+            set => SetValue(OverlayBackgroundOpacityProperty, value);
         }
-        public void ShowOverlay()
-        {
-            BusyOverlayBindings.I.ShowOverlay();
-        }
-        public void SetBasic(string message, string title = null, string elementType = null, string buttonCaption = null)
-        {
-            BusyOverlayBindings.I.SetBasic(message, inTitle: title, inElementType: elementType, inButtonCaption: buttonCaption);
-        }
-
-        public void SetDeterminate(string message = null, string elementType = null)
-        {
-            BusyOverlayBindings.I.SetDeterminate(message: message, elementType: elementType);
-        }
-        public void UpdateProgress(int current, int maximum, string currentName = null)
-        {
-            BusyOverlayBindings.I.UpdateProgress(current, maximum, currentName: currentName);
-        }
-        public void UpdateProgress(long current, long maximum, string currentName = null)
-        {
-            BusyOverlayBindings.I.UpdateProgress(current, maximum, currentName: currentName);
-        }
-        public void SetIndeterminate(string message = null)
-        {
-            BusyOverlayBindings.I.SetIndeterminate(message: message);
-        }
-        public void Stop()
-        {
-            BusyOverlayBindings.I.Stop();
-        }
-
-        public void CancelOperation()
-        {
-            BusyOverlayBindings.I.CancelOperation();
-        }
-        public CancellationToken Token => BusyOverlayBindings.I.Token;
-        public bool IsCancellationRequested => Token.IsCancellationRequested;
-
-        public Visibility LongReport_Visibility
-        {
-            get => BusyOverlayBindings.I.LongReport_Visibility;
-            set => BusyOverlayBindings.I.LongReport_Visibility = value;
-        }
-        public string LongReport_Text
-        {
-            get => BusyOverlayBindings.I.LongReport_Text;
-            set => BusyOverlayBindings.I.LongReport_Text = value;
-        }
-        public void LongReport_AddLine(string line)
-        {
-            BusyOverlayBindings.I.LongReport_AddLine(line);
-        }
-
-        public Visibility AutomationWarning_Visibility
-        {
-            get => BusyOverlayBindings.I.AutomationWarning_Visibility;
-            set => BusyOverlayBindings.I.AutomationWarning_Visibility = value;
-        }
-
-        private void UpdateSize(double newSize)
-        {
-            double newLongTextHeight = newSize;
-
-            double margin = 100d;
-            double redbar = 26d;
-            double titlebar = 26d;
-            double button = 30d + 2 * 5d;
-            double progress = 30d + 2 * 10d;
-            double textborderpadding = 2 * 5d + 2 * 5d;
-            double messagetext = 14d;
-            double elementtext = 14d + 5d;
-            double longtextborder = 6d;
-            double scrollmargin = 2 * 5d;
-
-            newLongTextHeight -= 2 * margin;
-            if (BusyOverlayBindings.I.AutomationWarning_Visibility == Visibility.Visible) newLongTextHeight -= 2 * redbar;
-            newLongTextHeight -= titlebar;
-            if (BusyOverlayBindings.I.ButtonVisibility == Visibility.Visible) newLongTextHeight -= button;
-            newLongTextHeight -= progress;
-            newLongTextHeight -= messagetext;
-            if (BusyOverlayBindings.I.CurrentElementVisibility == Visibility.Visible) newLongTextHeight -= elementtext;
-            newLongTextHeight -= longtextborder;
-            newLongTextHeight -= textborderpadding;
-            newLongTextHeight -= scrollmargin;
-
-            BusyOverlayBindings.I.LongTextHeight = newLongTextHeight;
-        }
-        private void UserControl_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            UpdateSize(e.NewSize.Height);
-        }
-
-        private void UserControl_Loaded(object sender, RoutedEventArgs e)
-        {
-            Binding binding = new Binding("OverlayVisibility");
-            SetBinding(VisibilityProperty, binding);
-        }
+        /// <summary>
+        /// Identified the Label dependency property
+        /// </summary>
+        public static readonly DependencyProperty OverlayBackgroundOpacityProperty = DependencyProperty.Register("OverlayBackgroundOpacity", typeof(double), typeof(BusyOverlay), new PropertyMetadata(0.7d));
+        #endregion
     }
 }

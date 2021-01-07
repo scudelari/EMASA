@@ -32,6 +32,7 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\bin\Release\Tekla.S
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\bin\Release\Newtonsoft.Json.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\bin\Release\Tekla.BIM.DirectManipulation.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\bin\Release\Tekla.BIM.Geometry.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\obj\Release\EmasaTeklaTools.csprojAssemblyReference.cache
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\obj\Release\MainWindow.baml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\obj\Release\MainWindow.g.cs
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\obj\Release\EmasaTeklaTools_Content.g.cs

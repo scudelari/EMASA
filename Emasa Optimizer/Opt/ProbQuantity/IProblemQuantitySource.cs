@@ -15,5 +15,11 @@
         void AddProblemQuantity_FunctionObjective();
         void AddProblemQuantity_ConstraintObjective();
         void AddProblemQuantity_OutputOnly();
+
+        // Must have to match live filtering
+        bool IsSupportedByCurrentSolver { get; }
+        bool OutputData_IsSelected { get; }
+
+        string ConcernedResultColumnName { get; }
     }
 }

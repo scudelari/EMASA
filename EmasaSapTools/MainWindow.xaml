@@ -2,6 +2,7 @@
     x:Class="EmasaSapTools.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:bindings="clr-namespace:EmasaSapTools.Bindings"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:e="clr-namespace:BaseWPFLibrary;assembly=BaseWPFLibrary"
     xmlns:eb="clr-namespace:BaseWPFLibrary.Bindings;assembly=BaseWPFLibrary"
@@ -21,6 +22,8 @@
     <DockPanel>
         <StatusBar
             x:Name="WindowStatusBar"
+            d:DataContext="{d:DesignInstance bindings:StatusBarBindings}"
+            DataContext="{x:Static bindings:StatusBarBindings.I}"
             DockPanel.Dock="Bottom"
             FontFamily="Courier New">
             <StatusBar.ItemsPanel>
@@ -78,6 +81,8 @@
                             <GroupBox
                                 x:Name="ConstraintsAddGroupBox"
                                 Grid.Row="0"
+                                d:DataContext="{d:DesignInstance bindings:MonitorConstraintsManipulationBindings}"
+                                DataContext="{x:Static bindings:MonitorConstraintsManipulationBindings.I}"
                                 Header="Constraints - Monitor and Manipulator"
                                 Style="{DynamicResource Blue_GroupBox}">
                                 <StackPanel Orientation="Vertical">
@@ -354,6 +359,8 @@
                             <GroupBox
                                 x:Name="ConstraintCleanup_GroupBox"
                                 Grid.Row="1"
+                                d:DataContext="{d:DesignInstance bindings:ConstraintCleanupBindings}"
+                                DataContext="{x:Static bindings:ConstraintCleanupBindings.I}"
                                 Header="Constraints - Cleanup"
                                 Style="{DynamicResource Blue_GroupBox}">
                                 <DockPanel>
@@ -453,6 +460,8 @@
                         <StackPanel
                             x:Name="Test_StackPanel"
                             Width="300"
+                            d:DataContext="{d:DesignInstance bindings:TestBindings}"
+                            DataContext="{x:Static bindings:TestBindings.I}"
                             DockPanel.Dock="Right">
                             <TextBlock
                                 Margin="0,10"
@@ -592,7 +601,6 @@
                                             Width="100"
                                             Margin="30,0,0,0"
                                             HorizontalAlignment="Stretch"
-                                            Click="BeginAlignAreaButton_Click"
                                             Content="Align" />
                                     </StackPanel>
                                     <Button
@@ -626,7 +634,6 @@
                                             Width="100"
                                             Margin="30,0,0,0"
                                             HorizontalAlignment="Stretch"
-                                            Click="BeginAlignFrameButton_Click"
                                             Content="Align" />
                                     </StackPanel>
                                     <Button
@@ -697,7 +704,6 @@
                                                     x:Name="BeginAlignJointToSelectedFramesButton"
                                                     Grid.Column="0"
                                                     Margin="5,5,5,0"
-                                                    Click="BeginAlignJointToSelectedFramesButton_Click"
                                                     Content="Align" />
                                                 <Button
                                                     x:Name="AlignPointSwapButton"
@@ -716,6 +722,8 @@
                 </TabItem>
                 <TabItem
                     x:Name="ManipulateItems_TabItem"
+                    d:DataContext="{d:DesignInstance bindings:ManipulateItemsBindings}"
+                    DataContext="{x:Static bindings:ManipulateItemsBindings.I}"
                     Header="Manipulate Items"
                     IsEnabled="{Binding SapAvailableIsEnabled}">
                     <Grid>
@@ -817,7 +825,6 @@
                                                     x:Name="ExtendFrameProceedToOthersButton"
                                                     Width="100"
                                                     HorizontalAlignment="Center"
-                                                    Click="ExtendFrameProceedToOthersButton_Click"
                                                     Content="Proceed" />
                                             </StackPanel>
                                         </GroupBox>
@@ -1015,7 +1022,10 @@
                     </Grid>
                 </TabItem>
                 <TabItem Header="Staged Construction" IsEnabled="{Binding SapAvailableIsEnabled}">
-                    <DockPanel x:Name="StagedConstruction_TabItem_Panel">
+                    <DockPanel
+                        x:Name="StagedConstruction_TabItem_Panel"
+                        d:DataContext="{d:DesignInstance bindings:StagedConstructionBindings}"
+                        DataContext="{x:Static bindings:StagedConstructionBindings.I}">
                         <GroupBox
                             DockPanel.Dock="Top"
                             Header="Select Excel File"
@@ -1607,6 +1617,8 @@
                             Grid.Row="0"
                             Grid.RowSpan="2"
                             Grid.Column="0"
+                            d:DataContext="{d:DesignInstance bindings:LoadCasesSolverOptionsBindings}"
+                            DataContext="{x:Static bindings:LoadCasesSolverOptionsBindings.I}"
                             Header="Non-Linear Cases Solver Options"
                             Style="{DynamicResource Blue_GroupBox}">
                             <DockPanel>
@@ -2007,6 +2019,8 @@
                             x:Name="LoadCasesGeneralAction_GroupBox"
                             Grid.RowSpan="5"
                             Grid.Column="2"
+                            d:DataContext="{d:DesignInstance bindings:LoadCasesGeneralActionBindings}"
+                            DataContext="{x:Static bindings:LoadCasesGeneralActionBindings.I}"
                             Header="General Actions"
                             Style="{DynamicResource Blue_GroupBox}">
                             <StackPanel Orientation="Vertical">
@@ -2036,7 +2050,11 @@
                     </Grid>
                 </TabItem>
                 <TabItem Header="Rename" IsEnabled="{Binding SapAvailableIsEnabled}">
-                    <StackPanel x:Name="Rename_TabItem_Panel" Orientation="Horizontal">
+                    <StackPanel
+                        x:Name="Rename_TabItem_Panel"
+                        d:DataContext="{d:DesignInstance bindings:RenameItemsBindings}"
+                        DataContext="{x:Static bindings:RenameItemsBindings.I}"
+                        Orientation="Horizontal">
                         <StackPanel
                             Width="300"
                             DockPanel.Dock="Left"
@@ -2147,8 +2165,13 @@
                         </StackPanel>
                     </StackPanel>
                 </TabItem>
-                <TabItem Header="Selection" IsEnabled="{Binding SapAvailableIsEnabled}">
-                    <DockPanel x:Name="Selection_TabItem_Panel">
+                <TabItem
+                    x:Name="Selection_TabItem"
+                    d:DataContext="{d:DesignInstance bindings:SelectionInfoBindings}"
+                    DataContext="{x:Static bindings:SelectionInfoBindings.I}"
+                    Header="Selection"
+                    IsEnabled="{Binding SapAvailableIsEnabled}">
+                    <DockPanel>
                         <Border
                             Width="300"
                             BorderBrush="DarkGray"
@@ -2171,6 +2194,7 @@
                                                     TextWrapping="Wrap">
                                                     <Run Foreground="DarkSlateBlue" Text="Select a list of elements whose names are on the clipboard.The names must be separated by lines, tabs or from Excel." />
                                                 </TextBlock>
+                                                <CheckBox Content="Invert - Select NOT in List" HorizontalAlignment="Center" Margin="0 0 0 5" IsChecked="{Binding SelectMisc_FromClipboard_SelectNotInListIsChecked}" />
                                                 <UniformGrid Margin="5,0,5,5" Columns="3">
                                                     <CheckBox Content="Joints" IsChecked="{Binding SelectMisc_FromClipboard_JointIsChecked}" />
                                                     <CheckBox Content="Frames" IsChecked="{Binding SelectMisc_FromClipboard_FrameIsChecked}" />
@@ -2318,6 +2342,7 @@
                                             CanUserResizeColumns="False"
                                             CanUserResizeRows="False"
                                             CanUserSortColumns="False"
+                                            DataContext="{Binding SelMonitor_GroupsDataGridItems}"
                                             IsEnabled="{Binding ExcelFile_IsOk}"
                                             IsReadOnly="True"
                                             ItemsSource="{Binding}"
@@ -2635,7 +2660,11 @@
                         <Grid />
                     </DockPanel>
                 </TabItem>
-                <TabItem x:Name="RhinoOperations_TabItem" Header="Rhino Operations">
+                <TabItem
+                    x:Name="RhinoOperations_TabItem"
+                    d:DataContext="{d:DesignInstance bindings:RhinoOperationsBindings}"
+                    DataContext="{x:Static bindings:RhinoOperationsBindings.I}"
+                    Header="Rhino Operations">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="300" />
@@ -2679,6 +2708,18 @@
                                     Margin="25,5,25,10"
                                     Click="AddPointsAndTriadsToRhinoButton_Click"
                                     Content="Add Points and Triads to Rhino" />
+                                <Separator Margin="4" />
+                                <TextBlock
+                                    Margin="3"
+                                    Foreground="Gray"
+                                    TextWrapping="Wrap">
+                                    <Run>Will add the points listed in the clipboard to the currently open Rhino6 document.</Run>
+                                </TextBlock>
+                                <Button
+                                    x:Name="AddPointsToRhinoButton"
+                                    Margin="25,5,25,10"
+                                    Click="AddPointsToRhinoButton_Click"
+                                    Content="Add Points to Rhino" />
                             </StackPanel>
                         </GroupBox>
                         <GroupBox
@@ -2795,153 +2836,11 @@
                         </StackPanel>
                     </Grid>
                 </TabItem>
-                <TabItem x:Name="TrussSolverTabItem" Header="Truss Solver">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-                        <StackPanel
-                            Grid.Row="0"
-                            HorizontalAlignment="Center"
-                            Orientation="Vertical">
-                            <TextBlock
-                                Margin="5"
-                                Style="{DynamicResource Explanation_TextBlock}"
-                                TextAlignment="Center">
-                                <Run
-                                    FontSize="16"
-                                    Foreground="DimGray"
-                                    TextDecorations="Underline">
-                                    Truss Direct Analysis Limit Solver
-                                </Run>
-                            </TextBlock>
-                            <Border Style="{DynamicResource DarkBlue_Border}">
-                                <StackPanel Margin="10,5" Style="{DynamicResource ExplText_StackPanel}">
-                                    <TextBlock>This tool will find the lateral displacement that will yield a maximum utilization ratio of 1.</TextBlock>
-                                    <TextBlock>
-                                        <Run TextDecorations="Underline">Attention:</Run>
-                                        <Run>The model must be correctly configured for Direct Analysis.</Run>
-                                    </TextBlock>
-
-                                    <ListBox Foreground="{DynamicResource EmsExplanationSolidBrush}" Style="{DynamicResource Bullet_ListBox}">
-                                        <ListBox.Items>
-                                            <system:String>The Young's Modulus of the material properties must be reduced.</system:String>
-                                            <system:String>The load case must be correctly set (with displacement control, control joint and DOF).</system:String>
-                                            <system:String>The load combination must be defined. It MUST have the format &quot;C_load_case_name&quot;</system:String>
-                                            <system:String>Everything concerning code check (global and overwrites) must be set.</system:String>
-                                        </ListBox.Items>
-                                    </ListBox>
-
-                                </StackPanel>
-                            </Border>
-                        </StackPanel>
-                        <Separator
-                            Grid.Row="1"
-                            Margin="5"
-                            Foreground="LightGray"
-                            Style="{DynamicResource H_Separator}" />
-                        <DockPanel Grid.Row="2" VerticalAlignment="Stretch">
-                            <GroupBox
-                                DockPanel.Dock="Left"
-                                Header="Control"
-                                Style="{DynamicResource Blue_GroupBox}">
-                                <StackPanel Width="250" Orientation="Vertical">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="80" />
-                                            <ColumnDefinition Width="*" />
-                                        </Grid.ColumnDefinitions>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition />
-                                            <RowDefinition />
-                                            <RowDefinition />
-                                            <RowDefinition />
-                                            <RowDefinition />
-                                        </Grid.RowDefinitions>
-                                        <TextBlock
-                                            Grid.Row="0"
-                                            Grid.Column="0"
-                                            Margin="5,0"
-                                            VerticalAlignment="Center"
-                                            Text="Load Case:" />
-                                        <ComboBox
-                                            x:Name="TrusSolver_LoadCase_ComboBox"
-                                            Grid.Row="0"
-                                            Grid.Column="1"
-                                            Margin="5,5"
-                                            ItemsSource="{Binding Global_NonLinearCases_Available}"
-                                            SelectedItem="{Binding TrussSolverLoadCase_Selected}"
-                                            ToolTip="The load case that will be manipulated." />
-                                        <TextBlock
-                                            Grid.Row="1"
-                                            Grid.Column="0"
-                                            Margin="5,0"
-                                            VerticalAlignment="Center"
-                                            Text="Start Displ.:" />
-                                        <TextBox
-                                            Grid.Row="1"
-                                            Grid.Column="1"
-                                            Margin="5,5"
-                                            Text="{Binding StartDisplacement}"
-                                            ToolTip="The first displacement that will be analysed." />
-                                        <TextBlock
-                                            Grid.Row="2"
-                                            Grid.Column="0"
-                                            Margin="5,0"
-                                            VerticalAlignment="Center"
-                                            Text="Start Step:" />
-                                        <TextBox
-                                            Grid.Row="2"
-                                            Grid.Column="1"
-                                            Margin="5,5"
-                                            Text="{Binding StartStep}"
-                                            ToolTip="The initial step for the displacement iteration. It will be halved for each step that fails." />
-                                        <TextBlock
-                                            Grid.Row="3"
-                                            Grid.Column="0"
-                                            Margin="5,0"
-                                            VerticalAlignment="Center"
-                                            Text="Target Ratio:" />
-                                        <TextBox
-                                            Grid.Row="3"
-                                            Grid.Column="1"
-                                            Margin="5,5"
-                                            Text="{Binding TargetUtilizationRatio}"
-                                            ToolTip="The target utilization ratio." />
-                                        <TextBlock
-                                            Grid.Row="4"
-                                            Grid.Column="0"
-                                            Margin="5,0"
-                                            VerticalAlignment="Center"
-                                            Text="Ratio Tol.:" />
-                                        <TextBox
-                                            Grid.Row="4"
-                                            Grid.Column="1"
-                                            Margin="5,5"
-                                            Text="{Binding UtilizationRatioTolerance}"
-                                            ToolTip="The tolerance that will be used to search for the ratio." />
-                                    </Grid>
-                                    <Button
-                                        x:Name="TrussSolver_SolveButton"
-                                        Width="150"
-                                        Margin="5"
-                                        Click="TrussSolver_SolveButton_Click"
-                                        Content="Solve!" />
-                                </StackPanel>
-                            </GroupBox>
-                            <ScrollViewer Margin="5" VerticalScrollBarVisibility="Visible">
-                                <TextBox
-                                    FontFamily="Courier New"
-                                    Foreground="DimGray"
-                                    IsReadOnly="True"
-                                    Text="{Binding Report}" />
-                            </ScrollViewer>
-                        </DockPanel>
-                    </Grid>
-                </TabItem>
-                <TabItem x:Name="CanopySurveyTabItem" Header="Canopy Survey">
+                <TabItem
+                    x:Name="CanopySurveyTabItem"
+                    d:DataContext="{d:DesignInstance bindings:DisneyCanopySurveyBindings}"
+                    DataContext="{x:Static bindings:DisneyCanopySurveyBindings.I}"
+                    Header="Canopy Survey">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition />
@@ -2952,122 +2851,160 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
-                        <GroupBox
+                        <Grid
                             Grid.Row="0"
                             Grid.RowSpan="3"
-                            Grid.Column="0"
-                            Header="Results"
-                            Style="{DynamicResource Blue_GroupBox}">
-                            <StackPanel Orientation="Vertical">
-                                <GroupBox Margin="3,0,3,3" Header="Displacements">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="50" />
-                                            <ColumnDefinition Width="*" />
-                                        </Grid.ColumnDefinitions>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="Auto" />
-                                        </Grid.RowDefinitions>
-                                        <TextBlock
-                                            Grid.Row="0"
-                                            Grid.ColumnSpan="100"
-                                            Style="{DynamicResource Explanation_TextBlock}"
-                                            TextWrapping="Wrap">
-                                            <Run Text="Will output the displacements of the selected groups and the selected cases. Results will be for the last step." />
-                                            <LineBreak />
-                                            <Run Text="Current Units: " />
-                                            <Run Text="{Binding CurrentUnits}" />
-                                        </TextBlock>
-                                        <TextBlock
-                                            Grid.Row="1"
-                                            Grid.Column="0"
-                                            Margin="0,0,5,0"
-                                            VerticalAlignment="Center"
-                                            Text="Output Cases:"
-                                            TextAlignment="Right"
-                                            TextWrapping="Wrap" />
-                                        <ListBox
-                                            Grid.Row="1"
-                                            Grid.Column="1"
-                                            Height="150"
-                                            Margin="0,5,0,5"
-                                            ec:MultiSelectorBehaviours.SynchronizedSelectedItems="{Binding ResultsDisplacements_Cases_Selected}"
-                                            ItemsSource="{Binding ResultsDisplacements_Cases_ViewItems}"
-                                            SelectionMode="Extended" />
-                                        <TextBlock
-                                            Grid.Row="2"
-                                            Grid.Column="0"
-                                            Margin="0,0,5,0"
-                                            VerticalAlignment="Center"
-                                            Text="Groups:"
-                                            TextAlignment="Right" />
-                                        <ListBox
-                                            Grid.Row="2"
-                                            Grid.Column="1"
-                                            Height="150"
-                                            Margin="0,0,0,5"
-                                            ec:MultiSelectorBehaviours.SynchronizedSelectedItems="{Binding ResultsDisplacements_Groups_Selected}"
-                                            ItemsSource="{Binding ResultsDisplacements_Groups_ViewItems}"
-                                            SelectionMode="Extended" />
-                                        <Border
-                                            Grid.Row="3"
-                                            Grid.ColumnSpan="100"
-                                            Margin="3"
-                                            BorderBrush="DeepSkyBlue"
-                                            BorderThickness="1,1,1,1"
-                                            CornerRadius="5">
-                                            <StackPanel Orientation="Vertical">
-                                                <TextBlock
-                                                    Margin="5"
-                                                    Style="{DynamicResource Explanation_TextBlock}"
-                                                    TextWrapping="Wrap">
-                                                    <Run>Duplicate lines for joints whose names may be split by the separator. It will create a new line for each split joint name and remove the merged line.</Run>
-                                                </TextBlock>
-                                                <Grid Margin="5,0,5,5">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto" />
-                                                        <ColumnDefinition Width="*" />
-                                                    </Grid.ColumnDefinitions>
-                                                    <CheckBox
-                                                        Grid.Column="0"
-                                                        Margin="0,1,0,0"
-                                                        Content="Duplicate and Split Lines"
-                                                        IsChecked="{Binding DuplicateAndSplit_IsChecked}" />
-                                                    <TextBox
-                                                        Grid.Column="1"
-                                                        Margin="25,0,5,0"
-                                                        HorizontalAlignment="Stretch"
-                                                        Text="{Binding DuplicateAndSplit_SeparatorText}"
-                                                        ToolTip="Separator" />
-                                                </Grid>
-                                            </StackPanel>
-                                        </Border>
-                                        <Button
-                                            Grid.Row="4"
-                                            Grid.ColumnSpan="100"
-                                            Margin="50,5"
-                                            Command="{Binding GetResultDisplacementCommand}"
-                                            Content="Get Results" />
-                                    </Grid>
-                                </GroupBox>
-                                <GroupBox Margin="3,0,3,3" Header="Support Falls">
-                                    <StackPanel>
-                                        <TextBlock
-                                            Margin="5"
-                                            Style="{DynamicResource Explanation_TextBlock}"
-                                            Text="Gets the amount that each support falls when removed." />
-                                        <Button
-                                            Margin="50,0,50,5"
-                                            Command="{Binding GetResultDisplacementSupportFall}"
-                                            Content="Get Support Falls" />
-                                    </StackPanel>
-                                </GroupBox>
-                            </StackPanel>
-                        </GroupBox>
+                            Grid.Column="0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <GroupBox Header="Results" Style="{DynamicResource Blue_GroupBox}">
+                                <StackPanel Orientation="Vertical">
+                                    <GroupBox Margin="3,0,3,3" Header="Displacements">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="50" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.ColumnSpan="100"
+                                                Style="{DynamicResource Explanation_TextBlock}"
+                                                TextWrapping="Wrap">
+                                                <Run Text="Will output the displacements of the selected groups and the selected cases. Results will be for the last step." />
+                                                <LineBreak />
+                                                <Run Text="Current Units: " />
+                                                <Run Text="{Binding CurrentUnits}" />
+                                            </TextBlock>
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="0"
+                                                Margin="0,0,5,0"
+                                                VerticalAlignment="Center"
+                                                Text="Output Cases:"
+                                                TextAlignment="Right"
+                                                TextWrapping="Wrap" />
+                                            <ListBox
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Height="150"
+                                                Margin="0,5,0,5"
+                                                ec:MultiSelectorBehaviours.SynchronizedSelectedItems="{Binding ResultsDisplacements_Cases_Selected}"
+                                                ItemsSource="{Binding ResultsDisplacements_Cases_ViewItems}"
+                                                SelectionMode="Extended" />
+                                            <TextBlock
+                                                Grid.Row="2"
+                                                Grid.Column="0"
+                                                Margin="0,0,5,0"
+                                                VerticalAlignment="Center"
+                                                Text="Groups:"
+                                                TextAlignment="Right" />
+                                            <ListBox
+                                                Grid.Row="2"
+                                                Grid.Column="1"
+                                                Height="150"
+                                                Margin="0,0,0,5"
+                                                ec:MultiSelectorBehaviours.SynchronizedSelectedItems="{Binding ResultsDisplacements_Groups_Selected}"
+                                                ItemsSource="{Binding ResultsDisplacements_Groups_ViewItems}"
+                                                SelectionMode="Extended" />
+                                            <Border
+                                                Grid.Row="3"
+                                                Grid.ColumnSpan="100"
+                                                Margin="3"
+                                                BorderBrush="DeepSkyBlue"
+                                                BorderThickness="1,1,1,1"
+                                                CornerRadius="5">
+                                                <StackPanel Orientation="Vertical">
+                                                    <TextBlock
+                                                        Margin="5"
+                                                        Style="{DynamicResource Explanation_TextBlock}"
+                                                        TextWrapping="Wrap">
+                                                        <Run>Duplicate lines for joints whose names may be split by the separator. It will create a new line for each split joint name and remove the merged line.</Run>
+                                                    </TextBlock>
+                                                    <Grid Margin="5,0,5,5">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <CheckBox
+                                                            Grid.Column="0"
+                                                            Margin="0,1,0,0"
+                                                            Content="Duplicate and Split Lines"
+                                                            IsChecked="{Binding DuplicateAndSplit_IsChecked}" />
+                                                        <TextBox
+                                                            Grid.Column="1"
+                                                            Margin="25,0,5,0"
+                                                            HorizontalAlignment="Stretch"
+                                                            Text="{Binding DuplicateAndSplit_SeparatorText}"
+                                                            ToolTip="Separator" />
+                                                    </Grid>
+                                                </StackPanel>
+                                            </Border>
+                                            <Button
+                                                Grid.Row="4"
+                                                Grid.ColumnSpan="100"
+                                                Margin="50,5"
+                                                Command="{Binding GetResultDisplacementCommand}"
+                                                Content="Get Results" />
+                                        </Grid>
+                                    </GroupBox>
+                                    <GroupBox Margin="3,0,3,3" Header="Support Falls">
+                                        <StackPanel>
+                                            <TextBlock
+                                                Margin="5"
+                                                Style="{DynamicResource Explanation_TextBlock}"
+                                                Text="Gets the amount that each support falls when removed." />
+                                            <Button
+                                                Margin="50,0,50,5"
+                                                Command="{Binding GetResultDisplacementSupportFall}"
+                                                Content="Get Support Falls" />
+                                        </StackPanel>
+                                    </GroupBox>
+                                </StackPanel>
+                            </GroupBox>
+                            <GroupBox
+                                Grid.Row="1"
+                                Header="More General"
+                                Style="{DynamicResource Blue_GroupBox}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition />
+                                    </Grid.RowDefinitions>
+                                    <GroupBox Header="Add Prescribed Displacements" ToolTip="From a given Excel that has a spreadsheet named SURVEY with columns joint_name, x, y, z it will add a prescribed displacement with the given delta. The displacements will be added to a load case with the same name as the excel sheet.">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition />
+                                                <ColumnDefinition />
+                                                <ColumnDefinition />
+                                            </Grid.ColumnDefinitions>
+                                            <RadioButton
+                                                Grid.Column="0"
+                                                Content="Deltas"
+                                                IsChecked="{Binding AddPrescribedDisplacements_ContainsDeltas}"
+                                                ToolTip="The Excel's x, y, z contain deltas." />
+                                            <RadioButton
+                                                Grid.Column="1"
+                                                Content="Final Coordinates"
+                                                IsChecked="{Binding AddPrescribedDisplacements_ContainsFinalPositions}"
+                                                ToolTip="The Excel's x, y, z contain final coordinates." />
+                                            <Button
+                                                Grid.Column="2"
+                                                Command="{Binding AddPrescribedDisplacementsCommand}"
+                                                Content="Add" />
+                                        </Grid>
+                                    </GroupBox>
+                                </Grid>
+                            </GroupBox>
+                        </Grid>
 
                         <GroupBox
                             Grid.Row="0"
@@ -3136,9 +3073,26 @@
                             Grid.Row="1"
                             Grid.Column="1"
                             Margin="5"
-                            Header="Solver - Match Position for DEAD case"
+                            Header="Solver - Match Position for Selected case"
                             Style="{DynamicResource Blue_GroupBox}">
                             <StackPanel Margin="5" Orientation="Vertical">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Case:" />
+                                    <ComboBox
+                                        Grid.Column="2"
+                                        ItemsSource="{Binding ResultsDisplacements_Cases_ViewItems}"
+                                        SelectedItem="{Binding SolverMatchCasePosition_SelectedCase}" />
+                                </Grid>
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    Style="{StaticResource Explanation_TextBlock}"
+                                    Text="SQLite will get the Results of the JointNewCoordinates view. Excel will get the values in the first sheet, with columns called Joint, TargetX, TargetY, TargetZ."
+                                    TextWrapping="Wrap" />
                                 <TextBlock HorizontalAlignment="Center" Text="Messages" />
                                 <Border Style="{DynamicResource LightBlue_Border}">
                                     <TextBox
@@ -3146,6 +3100,8 @@
                                         Margin="3"
                                         BorderThickness="0"
                                         IsReadOnly="True"
+                                        ScrollViewer.CanContentScroll="True"
+                                        ScrollViewer.VerticalScrollBarVisibility="Visible"
                                         Text="{Binding DeadMatchSolverMessages}" />
                                 </Border>
                                 <TextBlock

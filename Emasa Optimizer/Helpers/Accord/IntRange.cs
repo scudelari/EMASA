@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using BaseWPFLibrary.Annotations;
 
 namespace Emasa_Optimizer.Helpers.Accord
 {
@@ -49,7 +52,7 @@ namespace Emasa_Optimizer.Helpers.Accord
     /// <seealso cref="IntRange"/>
     ///
     [Serializable]
-    public struct IntRange : IRange<int>, IEquatable<IntRange>, IEnumerable<int>
+    public class IntRange : IRange<int>, IEquatable<IntRange>, IEnumerable<int>, INotifyPropertyChanged
     {
         private int min, max;
 
@@ -64,7 +67,12 @@ namespace Emasa_Optimizer.Helpers.Accord
         public int Min
         {
             get { return min; }
-            set { min = value; }
+            set
+            {
+                min = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(Length));
+            }
         }
 
         /// <summary>
@@ -78,7 +86,12 @@ namespace Emasa_Optimizer.Helpers.Accord
         public int Max
         {
             get { return max; }
-            set { max = value; }
+            set
+            {
+                max = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(Length));
+            }
         }
 
         /// <summary>
@@ -320,6 +333,14 @@ namespace Emasa_Optimizer.Helpers.Accord
         {
             for (int i = min; i < max; i++)
                 yield return i;
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        private void OnPropertyChanged([CallerMemberName] string inPropertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(inPropertyName));
         }
     }
 }

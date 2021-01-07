@@ -97,7 +97,7 @@ namespace Emasa_Optimizer
 
             // Updates the grasshopper geometry of the NlOpt_Point
             AppSS.I.UpdateOverlayTopMessage("Updating Grasshopper and Acquiring Geometry Data.", "");
-            AppSS.I.Gh_Alg.UpdateGrasshopperGeometry(local_solPoint);
+            AppSS.I.Gh_Alg.UpdateGrasshopperGeometryAndGetResults(local_solPoint);
 
             // If it is a Fe Problem, runs the model
             if (AppSS.I.FeOpt.FeSolverType_Selected != FeSolverTypeEnum.NotFeProblem)
@@ -155,7 +155,7 @@ namespace Emasa_Optimizer
             } 
             #endregion
 
-            // Sends the input array to the currently calculating just for fun!
+            // Sends the input array to the currently calculating problem config!
             AppSS.I.SolveMgr.CurrentCalculatingProblemConfig.CurrentlyCalculatingInput = inPointVars.Clone() as double[];
 
             Stopwatch swPointTotalEval = Stopwatch.StartNew();

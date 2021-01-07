@@ -28,7 +28,6 @@ namespace Emasa_Optimizer.Opt
 {
     public class GhAlgorithm : BindableBase
     {
-        //[NotNull] private readonly SolveManager _owner;
         public GhAlgorithm()
         {
             // In the constructor, we will build the input files
@@ -38,101 +37,56 @@ namespace Emasa_Optimizer.Opt
             GrasshopperFullFileName = RhinoModel.RM.GrasshopperFullFileName;
             WpfGrasshopperFileDescription = RhinoModel.RM.GrasshopperDescription;
 
-            #region Read the Grasshopper input list
-            string[] inputVarFiles = Directory.GetFiles(GhInputDirPath);
+            #region Gets the Grasshopper Input List
+            GrasshopperAllEmasaInputDefsWrapper_AsRhino3dm inputDefs = RhinoModel.RM.Grasshopper_GetAllEmasaInputDefs();
 
-            foreach (string varDataFile in inputVarFiles)
+            // Integers
+            foreach (string integerInput in inputDefs.IntegerInputs)
             {
-                string varExtension = Path.GetExtension(varDataFile);
-                string varName = Path.GetFileNameWithoutExtension(varDataFile);
+                Integer_GhConfig_ParamDef intParam = new Integer_GhConfig_ParamDef(inName: integerInput);
+                ConfigDefs.Add(intParam);
+            }
 
-                if (varExtension.EndsWith("Range")) continue; // Ignores the ranges as they are accounted together with their variable
+            // Doubles
+            foreach (var doubleInput in inputDefs.DoubleInputs)
+            {
+                Double_Input_ParamDef bdlInputParam = new Double_Input_ParamDef(inName: doubleInput.Key, inRange: new DoubleValueRange(doubleInput.Value.Item2, doubleInput.Value.Item3));
+                bdlInputParam.Start = doubleInput.Value.Item1;
 
-                switch (varExtension)
-                {
-                    case ".Double":
-                    {
-                        string varRangeFile = varDataFile + "Range";
-                        if (!File.Exists(varRangeFile)) throw new IOException($"The range file for GH input variable {varDataFile} could not be found.");
+                AddParameterToInputs(bdlInputParam);
+            }
 
-                        Double_Input_ParamDef bdlInputParam = new Double_Input_ParamDef(inName: varName, inRange: ReadDoubleValueRange(varRangeFile));
-                        double startVal = ReadDouble(varDataFile);
-                        if (!double.IsNaN(startVal))
-                        {
-                            try
-                            {
-                                bdlInputParam.Start = startVal;
-                            }
-                            catch (Exception)
-                            {
-                                bdlInputParam.Start = bdlInputParam.SearchRange.Mid;
-                            }
-                        }
+            // Points
+            foreach (var pointInputs in inputDefs.PointInputs)
+            {
+                Point_Input_ParamDef pntParam = new Point_Input_ParamDef(inName: pointInputs.Key, inRange: new PointValueRange(pointInputs.Value.Item2, pointInputs.Value.Item3));
+                pntParam.Start = pointInputs.Value.Item1;
 
-                        AddParameterToInputs(bdlInputParam);
-                        break;
-                    }
-
-                    case ".Point":
-                    {
-                        string varRangeFile = varDataFile + "Range";
-                        if (!File.Exists(varRangeFile)) throw new IOException($"The range file for GH input variable {varDataFile} could not be found.");
-
-                        Point_Input_ParamDef pntParam = new Point_Input_ParamDef(inName: varName, inRange: ReadPointValueRange(varRangeFile));
-                        try
-                        {
-                            pntParam.Start = ReadPoint(varDataFile);
-                        }
-                        catch
-                        {
-                            pntParam.Start = pntParam.SearchRange.MaxPoint;
-                        }
-
-                        AddParameterToInputs(pntParam);
-                        break;
-                    }
-
-                    case ".Integer":
-                    {
-                        Integer_GhConfig_ParamDef intParam = new Integer_GhConfig_ParamDef(inName: varName);
-                        ConfigDefs.Add(intParam);
-                        break;
-                    }
-
-                    default:
-                        throw new InvalidDataException($"The format given by extension {varExtension} is not supported as GH input.");
-                }
+                AddParameterToInputs(pntParam);
+                break;
             }
             #endregion
-            
-            #region Read the Grasshopper output list
-            string[] ghGeometryFiles = Directory.GetFiles(GhGeometryDirPath);
 
-            foreach (string varDataFile in ghGeometryFiles)
+            #region Gets the Grasshopper Output List
+            GrasshopperAllEmasaOutputWrapper_AsRhino3dm outputDefs = RhinoModel.RM.Grasshopper_GetAllEmasaOutputs();
+
+            // Line Lists
+            foreach (var lineList in outputDefs.LineLists)
             {
-                string varExtension = Path.GetExtension(varDataFile);
-                string varName = Path.GetFileNameWithoutExtension(varDataFile);
+                GeometryDefs.Add(new LineList_GhGeom_ParamDef(lineList.Key));
+            }
 
-                switch (varExtension)
-                {
-                    case ".LineList":
-                        GeometryDefs.Add(new LineList_GhGeom_ParamDef(varName));
-                        break;
+            // Double Lists
+            foreach (var doubleList in outputDefs.DoubleLists)
+            {
+                DoubleList_GhGeom_ParamDef dlParam = new DoubleList_GhGeom_ParamDef(doubleList.Key);
+                GeometryDefs.Add(dlParam);
+            }
 
-                    case ".DoubleList":
-                        DoubleList_GhGeom_ParamDef dlParam = new DoubleList_GhGeom_ParamDef(varName);
-                        GeometryDefs.Add(dlParam);
-                        // Also adds it to the list of available problem quantity types
-                        AppSS.I.ProbQuantMgn.ProblemQuantityAvailableTypes.Add(dlParam);
-                        break;
-
-                    case ".PointList":
-                        GeometryDefs.Add(new PointList_GhGeom_ParamDef(varName));
-                        break;
-
-                    default:
-                        throw new InvalidDataException($"The format given by extension {varExtension} is not supported as GH input.");
-                }
+            // Point Lists
+            foreach (var pointList in outputDefs.PointLists)
+            {
+                GeometryDefs.Add(new PointList_GhGeom_ParamDef(pointList.Key));
             }
             #endregion
 
@@ -161,23 +115,22 @@ namespace Emasa_Optimizer.Opt
             GeometryDefs_PointList_View.Filter += inO => inO is PointList_GhGeom_ParamDef;
             HasGeometryDef_PointList = GeometryDefs_PointList_View.IsEmpty ? Visibility.Collapsed : Visibility.Visible;
 
-            CollectionViewSource geometryDefs_LineList_Cvs = new CollectionViewSource() { Source = GeometryDefs };
-            GeometryDefs_LineList_View = geometryDefs_LineList_Cvs.View;
+
+            GeometryDefs_LineList_View = (new CollectionViewSource() { Source = GeometryDefs }).View;
             GeometryDefs_LineList_View.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
             //GeometryDefs_LineList_View.GroupDescriptions.Add(new PropertyGroupDescription("TypeName"));
             GeometryDefs_LineList_View.Filter += inO => inO is LineList_GhGeom_ParamDef;
             HasGeometryDef_LineList = GeometryDefs_LineList_View.IsEmpty ? Visibility.Collapsed : Visibility.Visible;
 
-            CollectionViewSource geometryDefs_DoubleList_Cvs = new CollectionViewSource() { Source = GeometryDefs };
-            GeometryDefs_DoubleList_View = geometryDefs_DoubleList_Cvs.View;
+
+            GeometryDefs_DoubleList_View = (new CollectionViewSource() { Source = GeometryDefs }).View;
             GeometryDefs_DoubleList_View.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
             //GeometryDefs_DoubleList_View.GroupDescriptions.Add(new PropertyGroupDescription("TypeName"));
             GeometryDefs_DoubleList_View.Filter += inO => inO is DoubleList_GhGeom_ParamDef;
             HasGeometryDef_DoubleList = GeometryDefs_DoubleList_View.IsEmpty ? Visibility.Collapsed : Visibility.Visible;
 
 
-            CollectionViewSource geometryDefs_PointLineBundle_Cvs = new CollectionViewSource() { Source = GeometryDefs };
-            GeometryDefs_PointLineListBundle_View = geometryDefs_PointLineBundle_Cvs.View;
+            GeometryDefs_PointLineListBundle_View = (new CollectionViewSource() { Source = GeometryDefs }).View;
             GeometryDefs_PointLineListBundle_View.SortDescriptions.Add(new SortDescription("TypeName", ListSortDirection.Ascending));
             GeometryDefs_PointLineListBundle_View.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
             GeometryDefs_PointLineListBundle_View.Filter += inO => inO is LineList_GhGeom_ParamDef || inO is PointList_GhGeom_ParamDef;
@@ -308,7 +261,7 @@ namespace Emasa_Optimizer.Opt
             double[] center = new double[lower.Length];
             for (int i = 0; i < center.Length; i++)
             {
-                center[i] = ((upper[i] + lower[i]) / 2d) + lower[i];
+                center[i] = ((upper[i] - lower[i]) / 2d) + lower[i];
             }
 
             // Gets the user values
@@ -436,48 +389,54 @@ namespace Emasa_Optimizer.Opt
         {
             if (inSolPoint == null) throw new ArgumentNullException(nameof(inSolPoint));
 
-            Stopwatch sw = Stopwatch.StartNew();
+            // Data that will be sent to Grasshopper
+            Dictionary<string, object> inValuePairs = new Dictionary<string, object>();
 
             // Writes the data to the config files
             foreach (Integer_GhConfig_ParamDef intGhConfig in ConfigDefs.OfType<Integer_GhConfig_ParamDef>())
             {
-                string inputVarFilePath = Path.Combine(GhInputDirPath, $"{intGhConfig.Name}.{intGhConfig.TypeName}");
+                inValuePairs.Add(intGhConfig.Name, inSolPoint.Owner.GetGhIntegerConfig(intGhConfig));
+                //string inputVarFilePath = Path.Combine(GhInputDirPath, $"{intGhConfig.Name}.{intGhConfig.TypeName}");
 
-                try
-                {
-                    // Finds the configuration value
-                    object configValue = AppSS.I.SolveMgr.CurrentCalculatingProblemConfig.GetGhIntegerConfig(intGhConfig);
-                    File.WriteAllText(inputVarFilePath, configValue.ToString());
-                }
-                catch (Exception e)
-                {
-                    throw new Exception($"Could not write the Grasshopper configuration input {intGhConfig.Name} to {inputVarFilePath}.", e);
-                }
+                //try
+                //{
+                //    // Finds the configuration value
+
+                //    //object configValue = AppSS.I.SolveMgr.CurrentCalculatingProblemConfig.GetGhIntegerConfig(intGhConfig);
+                //    object configValue = inSolPoint.Owner.GetGhIntegerConfig(intGhConfig);
+                //    File.WriteAllText(inputVarFilePath, configValue.ToString());
+                //}
+                //catch (Exception e)
+                //{
+                //    throw new Exception($"Could not write the Grasshopper configuration input {intGhConfig.Name} to {inputVarFilePath}.", e);
+                //}
             }
 
             // Writes the data to the input files
             foreach (Input_ParamDefBase input_ParamDefBase in InputDefs)
             {
-                string inputVarFilePath = Path.Combine(GhInputDirPath, $"{input_ParamDefBase.Name}.{input_ParamDefBase.TypeName}");
-                try
-                {
-                    object solPointValue = inSolPoint.GhInput_Values[input_ParamDefBase];
-                    File.WriteAllText(inputVarFilePath, solPointValue.ToString());
-                }
-                catch (Exception e)
-                {
-                    throw new Exception($"Could not write the Grasshopper input {input_ParamDefBase.Name} to {inputVarFilePath}.", e);
-                }
+                inValuePairs.Add(input_ParamDefBase.Name, inSolPoint.GhInput_Values[input_ParamDefBase]);
+                //string inputVarFilePath = Path.Combine(GhInputDirPath, $"{input_ParamDefBase.Name}.{input_ParamDefBase.TypeName}");
+                //try
+                //{
+                //    object solPointValue = inSolPoint.GhInput_Values[input_ParamDefBase];
+                //    File.WriteAllText(inputVarFilePath, solPointValue.ToString());
+                //}
+                //catch (Exception e)
+                //{
+                //    throw new Exception($"Could not write the Grasshopper input {input_ParamDefBase.Name} to {inputVarFilePath}.", e);
+                //}
             }
 
             try
             {
-                // Runs Grasshopper
-                RhinoModel.RM.SolveGrasshopper();
+                // Updates the input and Runs Grasshopper
+                //RhinoModel.RM.SolveGrasshopper();
+                RhinoModel.RM.Grasshopper_UpdateEmasaInputs(inValuePairs, true);
             }
             catch (Exception e)
             {
-                throw new COMException("Could not solve the Grasshopper Algorithm. Error in the COM interface.", e);
+                throw new COMException("Could not update the input parameters and solve the Grasshopper Algorithm. Error in the COM interface.", e);
             }
 
             // Checks if the Grasshopper result has anything to say
@@ -489,7 +448,7 @@ namespace Emasa_Optimizer.Opt
                 // Adds the message to the buffer
                 for (int i = 0; i < ghMessages.GetLength(0); i++)
                 {
-                    switch (ghMessages[i,0])
+                    switch (ghMessages[i, 0])
                     {
                         case "Error":
                             errors += $"{ghMessages[i, 1]}{Environment.NewLine}";
@@ -506,14 +465,56 @@ namespace Emasa_Optimizer.Opt
                         default:
                             errors += $"A grasshopper message type was unexpected: {ghMessages[i, 0]}. Message: {ghMessages[i, 1]}{Environment.NewLine}";
                             break;
-                    }    
+                    }
                 }
 
                 // There was an error, so we must throw
-                if (!string.IsNullOrWhiteSpace(errors)) throw new Exception($"Grasshopper errors.{Environment.NewLine}{errors}");
+                if (!string.IsNullOrWhiteSpace(errors)) throw new Exception($"Grasshopper errors. {Environment.NewLine}{errors}");
             }
+        }
+        public void UpdateGrasshopperGeometryAndGetResults([NotNull] NlOpt_Point inSolPoint)
+        {
+            if (inSolPoint == null) throw new ArgumentNullException(nameof(inSolPoint));
+
+            Stopwatch sw = Stopwatch.StartNew();
+
+            // Writes the data in the files and updated the Grasshopper Geometry
+            UpdateGrasshopperGeometry(inSolPoint);
 
             // Reads the geometry into the solution point
+            GrasshopperAllEmasaOutputWrapper_AsRhino3dm outputDefs = RhinoModel.RM.Grasshopper_GetAllEmasaOutputs();
+            foreach (GhGeom_ParamDefBase output_ParamDefBase in GeometryDefs)
+            {
+                try
+                {
+                    switch (output_ParamDefBase)
+                    {
+                        case DoubleList_GhGeom_ParamDef doubleList_Output_ParamDef:
+                            List<double> doubles = outputDefs.DoubleLists[doubleList_Output_ParamDef.Name];
+                            inSolPoint.GhGeom_Values[output_ParamDefBase] = doubles;
+                            break;
+
+                        case LineList_GhGeom_ParamDef lineList_Output_ParamDef:
+                            List<Line> lines = outputDefs.LineLists[lineList_Output_ParamDef.Name];
+                            inSolPoint.GhGeom_Values[output_ParamDefBase] = lines;
+                            break;
+
+                        case PointList_GhGeom_ParamDef pointList_Output_ParamDef:
+                            List<Point3d> points = outputDefs.PointLists[pointList_Output_ParamDef.Name];
+                            inSolPoint.GhGeom_Values[output_ParamDefBase] = points;
+                            break;
+
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(output_ParamDefBase));
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new Exception($"Could not read the Grasshopper geometry {output_ParamDefBase.Name}.", e);
+                }
+            }
+
+            /*
             foreach (GhGeom_ParamDefBase output_ParamDefBase in GeometryDefs)
             {
                 string geometryVarFilePath = Path.Combine(GhGeometryDirPath, $"{output_ParamDefBase.Name}.{output_ParamDefBase.TypeName}");
@@ -558,6 +559,7 @@ namespace Emasa_Optimizer.Opt
                     throw new Exception($"Could not read the Grasshopper geometry {output_ParamDefBase.Name}.", e);
                 }
             }
+            */
 
             // Obtains the Rhino Screenshots
             try

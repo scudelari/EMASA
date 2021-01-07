@@ -61,11 +61,6 @@ namespace Emasa_Optimizer.FEA
         }
         protected override void InitializeSoftware()
         {
-            // Closes an old instance if it exists
-            {
-
-            }
-
             string jobEaterString = $@"! JOB EATER
 ! -------------------------------------
 
@@ -199,6 +194,7 @@ end_exists = 0
             }
         }
 
+
         public Process GetRunningCmdInstance()
         {
             List<Process> ansysProcs = GetAllRunningProcesses();
@@ -256,7 +252,7 @@ end_exists = 0
 
             // Must clean-up the data for the next iteration
             DirectoryInfo dInfo = new DirectoryInfo(FeWorkFolder);
-            if (!dInfo.Exists) throw new AnsysSolverException("Could not reset the Ansys folder between iterations.", new IOException($"The model directory does not exist; something is really wrong."));
+            if (!dInfo.Exists) throw new FeSolverException("Could not reset the Ansys folder between iterations.", new IOException($"The model directory does not exist; something is really wrong."));
 
             while (true)
             {
@@ -284,7 +280,7 @@ end_exists = 0
                 {
                     // Stops to check the elapsed time
                     attemptStopWatch.Stop();
-                    if (attemptStopWatch.Elapsed.TotalSeconds > 2d) throw new AnsysSolverException("Could not reset the Ansys folder between iterations. Retried for 2 seconds.", e);
+                    if (attemptStopWatch.Elapsed.TotalSeconds > 2d) throw new FeSolverException("Could not reset the Ansys folder between iterations. Retried for 2 seconds.", e);
 
                     // Resumes counting time
                     attemptStopWatch.Start();
@@ -298,43 +294,11 @@ end_exists = 0
 
         private HashSet<string> ExpectedOutputNotConsumedList = new HashSet<string>();
 
-        public override void RunAnalysisAndCollectResults([NotNull] FeModel inModel)
+        /// <summary>
+        /// Based on the information existing in the _model, will create a complete APDL into the Sb string builder
+        /// </summary>
+        private void CreateInputFile()
         {
-            if (inModel == null) throw new ArgumentNullException(nameof(inModel));
-            
-            // Refreshes the link to the running Apdl instance, if it exists
-            _commandLineProcess = GetRunningCmdInstance();
-            if (_commandLineProcess == null)
-            {
-                Stopwatch sw = Stopwatch.StartNew();
-
-                AppSS.I.UpdateOverlayTopMessage("Ansys: Initializing APDL Solver.", "");
-
-                // Starts the software
-                CleanUpDirectory();
-                InitializeSoftware();
-
-                sw.Stop();
-                InitializingSoftwareTimeSpan += sw.Elapsed;
-            }
-
-            // Cleanup of previous analysis
-            try
-            {
-                ResetSoftwareData();
-            }
-            catch (Exception e)
-            {
-                throw new AnsysSolverException($"Error while resetting the Ansys software data. {e.Message}");
-            }
-            _errorLogLines.Clear();
-            Sb.Clear();
-            _model = null;
-            ExpectedOutputNotConsumedList.Clear();
-
-            // Saves temporarily a reference to the model for simpler access in the helper functions
-            _model = inModel;
-            AppSS.I.UpdateOverlayTopMessage("Ansys: Generating Analysis Input File.", "");
             try
             {
                 #region Writes the Input File
@@ -372,9 +336,6 @@ end_exists = 0
                 {
                     WriteHelper_WriteScreenShots(feResultSelectStatusClass);
                 }
-
-
-
                 #endregion
 
                 // Should we add more analysis and results?
@@ -543,8 +504,48 @@ end_exists = 0
             }
             catch (Exception e)
             {
-                throw new AnsysSolverException($"Could not create the input file text. {e.Message}");
+                throw new FeSolverException($"Could not create the input file text. {e.Message}");
             }
+        }
+
+        public override void RunAnalysisAndCollectResults([NotNull] FeModel inModel)
+        {
+            if (inModel == null) throw new ArgumentNullException(nameof(inModel));
+            
+            // Refreshes the link to the running Apdl instance, if it exists
+            _commandLineProcess = GetRunningCmdInstance();
+            if (_commandLineProcess == null)
+            {
+                Stopwatch sw = Stopwatch.StartNew();
+
+                AppSS.I.UpdateOverlayTopMessage("Ansys: Initializing APDL Solver.", "");
+
+                // Starts the software
+                CleanUpDirectory();
+                InitializeSoftware();
+
+                sw.Stop();
+                InitializingSoftwareTimeSpan += sw.Elapsed;
+            }
+
+            // Cleanup of previous analysis
+            try
+            {
+                ResetSoftwareData();
+            }
+            catch (Exception e)
+            {
+                throw new FeSolverException($"Error while resetting the Ansys software data. {e.Message}");
+            }
+            _errorLogLines.Clear();
+            Sb.Clear();
+            _model = null;
+            ExpectedOutputNotConsumedList.Clear();
+
+            // Saves temporarily a reference to the model for simpler access in the helper functions
+            _model = inModel;
+            AppSS.I.UpdateOverlayTopMessage("Ansys: Generating Analysis Input File.", "");
+            CreateInputFile();
 
             try
             {
@@ -553,8 +554,10 @@ end_exists = 0
             }
             catch (Exception e)
             {
-                throw new AnsysSolverException($"Could not write the input file to the disk. {e.Message}");
+                throw new FeSolverException($"Could not write the input file to the disk. {e.Message}");
             }
+
+            AppSS.I.UpdateOverlayTopMessage("Ansys: Solving and Writing Results.", "");
 
             #region Sends a signal to start the analysis
             try
@@ -565,7 +568,7 @@ end_exists = 0
             }
             catch (Exception e)
             {
-                throw new AnsysSolverException($"Could not send (write to disk) the ems_signal_start.control signal. {e.Message}");
+                throw new FeSolverException($"Could not send (write to disk) the ems_signal_start.control signal. {e.Message}");
             }
             #endregion
 
@@ -604,7 +607,8 @@ end_exists = 0
             }
             #endregion
 
-            AppSS.I.UpdateOverlayTopMessage("Ansys: Solving and Parsing Results.", "");
+            AppSS.I.UpdateOverlayTopMessage("Ansys: Reading the Results.", "");
+
             try
             {
                 #region Reading the results
@@ -623,7 +627,7 @@ end_exists = 0
                             break;
                         }
 
-                        throw new AnsysSolverException($"Problem reading the ems_output_meshinfo_nodal_locations file.txt");
+                        throw new FeSolverException($"Problem reading the ems_output_meshinfo_nodal_locations file.txt");
                     }
 
                     Thread.Sleep(50);
@@ -643,7 +647,7 @@ end_exists = 0
                             break;
                         }
 
-                        throw new AnsysSolverException($"Problem reading the ems_output_meshinfo_elements_of_lines file.txt");
+                        throw new FeSolverException($"Problem reading the ems_output_meshinfo_elements_of_lines file.txt");
                     }
 
                     Thread.Sleep(50);
@@ -686,8 +690,48 @@ end_exists = 0
             }
             catch (Exception e)
             {
-                throw new AnsysSolverException($"Failed to read results. {e.Message}", e);
+                throw new FeSolverException($"Failed to read results. {e.Message}", e);
             }
+        }
+        public override void GeneratePointModel(FeModel inModel, string inSaveFolder, string inFileName)
+        {
+            _errorLogLines.Clear();
+            Sb.Clear();
+            _model = null;
+            ExpectedOutputNotConsumedList.Clear();
+            _model = inModel;
+            CreateInputFile();
+
+            // Creates the Input File
+            CreateInputFile();
+
+            // Saves the file
+            try
+            {
+                // Writes the file
+                File.WriteAllText(Path.Combine(inSaveFolder, $"{inFileName}.dat"), Sb.ToString());
+            }
+            catch (Exception e)
+            {
+                throw new FeSolverException($"Could not write the input file to the disk. {e.Message}");
+            }
+
+            void lf_LaunchAnsys()
+            {
+                // Starts the APDL program loading the input file
+                _commandLineProcess = new Process
+                    {
+                    StartInfo =
+                        {
+                        FileName = _ansysExeLocation,
+                        Arguments = $"-s noread -g -j {_jobName} -dir \"{inSaveFolder}\"",
+                        WorkingDirectory = inSaveFolder,
+                        }
+                    };
+                _commandLineProcess.Start();
+            }
+            Task t = new Task(lf_LaunchAnsys);
+            t.Start();
         }
 
         #region Ansys Functions to Write the Input File
@@ -724,8 +768,16 @@ end_exists = 0
                 File_AppendCommandWithComment($"MP,EX,{feMaterial.Id},{feMaterial.YoungModulus}", "Setting Young's Modulus");
                 File_AppendCommandWithComment($"MP,PRXY,{feMaterial.Id},{feMaterial.Poisson}", "Setting Poisson's Ratio");
                 File_AppendCommandWithComment($"MP,DENS,{feMaterial.Id},{feMaterial.Density}", "Setting Density");
+                // Adding the custom values for the UC
                 File_AppendCommandWithComment($"mat_prop_table({feMaterial.Id},1) = {feMaterial.Fy}", "Column 1 has the Fy");
                 File_AppendCommandWithComment($"mat_prop_table({feMaterial.Id},2) = {feMaterial.Fu}", "Column 2 has the Fu");
+                File_AppendCommandWithComment($"mat_prop_table({feMaterial.Id},3) = {feMaterial.AISC_360_16_phi_compression}", "Column 3 has the AISC_360_16_phi_compression");
+                File_AppendCommandWithComment($"mat_prop_table({feMaterial.Id},4) = {feMaterial.AISC_360_16_phi_bending}", "Column 4 has the AISC_360_16_phi_bending");
+                File_AppendCommandWithComment($"mat_prop_table({feMaterial.Id},5) = {feMaterial.AISC_360_16_phi_shear}", "Column 5 has the AISC_360_16_phi_shear");
+                File_AppendCommandWithComment($"mat_prop_table({feMaterial.Id},6) = {feMaterial.AISC_360_16_phi_torsion}", "Column 6 has the AISC_360_16_phi_torsion");
+                File_AppendCommandWithComment($"mat_prop_table({feMaterial.Id},7) = {feMaterial.AISC_360_16_phi_tension}", "Column 7 has the AISC_360_16_phi_tension");
+                File_AppendCommandWithComment($"mat_prop_table({feMaterial.Id},8) = {feMaterial.AISC_360_16_phi_tension_rupturenet}", "Column 8 has the AISC_360_16_phi_tension_rupturenet");
+                File_AppendCommandWithComment($"mat_prop_table({feMaterial.Id},9) = {feMaterial.YoungModulus}", "Column 9 has the Youngs Modulus");
                 Sb.AppendLine();
             }
             File_EndSection();
@@ -739,6 +791,12 @@ end_exists = 0
                 File_AppendCommandWithComment($"sec_prop_table({feSection.Id},1) = {feSection.Area}", "Column 1 has the Area");
                 File_AppendCommandWithComment($"sec_prop_table({feSection.Id},2) = {feSection.PlasticModulus2}", "Column 2 has the Plastic Modulus 2");
                 File_AppendCommandWithComment($"sec_prop_table({feSection.Id},3) = {feSection.PlasticModulus3}", "Column 3 has the Plastic Modulus 3");
+                File_AppendCommandWithComment($"sec_prop_table({feSection.Id},4) = {feSection.LeastGyrationRadius}", "Column 4 has the Least Gyration Radius");
+                File_AppendCommandWithComment($"sec_prop_table({feSection.Id},5) = {feSection.Dimensions.Values.ElementAt(0)}", "Column 5 has the Dimension 1");
+                File_AppendCommandWithComment($"sec_prop_table({feSection.Id},6) = {feSection.Dimensions.Values.ElementAt(1)}", "Column 6 has the Dimension 2");
+                File_AppendCommandWithComment($"sec_prop_table({feSection.Id},7) = {feSection.TorsionalConstant}", "Column 7 has the Torsional Constant");
+                File_AppendCommandWithComment($"sec_prop_table({feSection.Id},8) = {feSection.TorsionalShearConstant}", "Column 8 has the Torsional Shear Constant");
+
                 Sb.AppendLine();
             }
             File_EndSection();
@@ -787,7 +845,7 @@ end_exists = 0
             foreach (FeRestraint r in distinctRestraints.Where(a => a.ExistAny))
             {
                 File_AppendCommandWithComment("KSEL,NONE", $"Selecting KeyPoints with restraint {r}");
-                foreach (KeyValuePair<int, FeJoint> kv in _model.Joints.Where(a => a.Value.Restraint == r))
+                foreach (KeyValuePair<string, FeJoint> kv in _model.Joints.Where(a => a.Value.Restraint == r))
                 {
                     Sb.AppendLine($"KSEL,A,KP,,{kv.Key}");
                 }
@@ -817,6 +875,19 @@ end_exists = 0
                         File_AppendCommandWithComment(feLoad_Inertial.AnsysInertialLoadLine, $"{feLoad_Inertial}");
                         break;
 
+                    case FeLoad_Point feLoad_Point:
+                        File_AppendCommandWithComment("KSEL,NONE", $"Selecting joints for Point Load");
+                        foreach (FeJoint j in _model.Groups[feLoad_Point.GhGeom.FeGroupNameHelper].Joints)
+                        {
+                            Sb.AppendLine($"KSEL,A,KP,,{j.Id}");
+                        }
+                        
+                        if (feLoad_Point.Nominal.X != 0d) File_AppendCommandWithComment($"FK,ALL,FX,{feLoad_Point.Nominal.X * feLoad_Point.Multiplier}", $"Adding the Point Load - X Direction");
+                        if (feLoad_Point.Nominal.Y != 0d) File_AppendCommandWithComment($"FK,ALL,FY,{feLoad_Point.Nominal.Y * feLoad_Point.Multiplier}", $"Adding the Point Load - Y Direction");
+                        if (feLoad_Point.Nominal.Z != 0d) File_AppendCommandWithComment($"FK,ALL,FZ,{feLoad_Point.Nominal.Z * feLoad_Point.Multiplier}", $"Adding the Point Load - Z Direction");
+                        
+                        break;
+
                     default:
                         throw new ArgumentOutOfRangeException(nameof(feLoadBase));
                 }
@@ -832,7 +903,12 @@ end_exists = 0
             File_AppendCommandWithComment("PSTRES,1", "Stores the pre-stress values because they will be used for the future eigenvalue buckling analysis.");
             File_AppendCommandWithComment("OUTPR,ALL", "Prints all solution");
             File_AppendCommandWithComment("ALLSEL,ALL", "Somehow, and for any weird-ass reason, Ansys will only pass KeyPoints definitions onwards if they are selected.");
-            File_AppendCommandWithComment("DELTIM, 1, 1, 50", "Sets the number of time steps for this analysis.");
+            File_AppendCommandWithComment("AUTOTS,ON", "Sets Automatic Time Stepping.");
+            File_AppendCommandWithComment("LNSRCH,AUTO", "Sets the usage of Line Search to Auto.");
+            File_AppendCommandWithComment("PRED,AUTO", "Turns Automatic DOF Prediction to Auto.");
+            File_AppendCommandWithComment("NSUBST,20,1000,20", "Sets the number of time steps for this analysis.");
+            File_AppendCommandWithComment("KBC,0", "Sets the load application to be ramped.");
+            File_AppendCommandWithComment("TIME,1", "Sets the time at the end of this load step.");
             File_AppendCommandWithComment("SOLVE", "Solves the problem");
             File_EndSection();
 
@@ -879,6 +955,7 @@ elemindex = 1 ! The element index in the array
 	
 	LSEL,S,LINE,,nextline,,,1 ! Selects the next line and its associated elements
 	*GET,currentLineMat,LINE,nextline,ATTR,MAT ! Gets the number of the material of this Line
+    *GET,currentLineLength,LINE,nextline,LENG ! Gets the length of this Line
 
 	currentelement = 0 ! Declares a start number for the current element
 	*GET,lecount,ELEM,0,COUNT ! Gets the number of selected elements
@@ -902,6 +979,7 @@ elemindex = 1 ! The element index in the array
 		line_element_match(elemindex,5) = e_k
         line_element_match(elemindex,6) = currentLineMat
         line_element_match(elemindex,7) = elemSection
+        line_element_match(elemindex,8) = currentLineLength
 		
 		currentelement = nextelement ! updates for the next iteration
 		elemindex = elemindex + 1 ! Increments the element index counter
@@ -939,7 +1017,12 @@ elemindex = 1 ! The element index in the array
                 File_AppendCommandWithComment("PSTRES,1", "Stores the pre-stress values because they will be used for the future eigenvalue buckling analysis.");
                 File_AppendCommandWithComment("OUTPR,ALL", "Prints all solution");
                 File_AppendCommandWithComment("ALLSEL,ALL", "Somehow, and for any weird-ass reason, Ansys will only pass KeyPoints definitions onwards if they are selected.");
-                File_AppendCommandWithComment("DELTIM, 1, 1, 50", "Sets the number of time steps for this analysis.");
+                File_AppendCommandWithComment("AUTOTS,ON", "Sets Automatic Time Stepping.");
+                File_AppendCommandWithComment("LNSRCH,AUTO", "Sets the usage of Line Search to Auto.");
+                File_AppendCommandWithComment("PRED,AUTO", "Turns Automatic DOF Prediction to Auto.");
+                File_AppendCommandWithComment("NSUBST,20,1000,20", "Sets the number of time steps for this analysis.");
+                File_AppendCommandWithComment("KBC,0", "Sets the load application to be ramped.");
+                File_AppendCommandWithComment("TIME,1", "Sets the time at the end of this load step.");
                 File_AppendCommandWithComment("SOLVE", "Solves the problem - without NLGEOM to be used in the Eigenvalue Buckling analysis");
 
             }
@@ -952,7 +1035,12 @@ elemindex = 1 ! The element index in the array
             File_AppendCommandWithComment("MXPAND, ALL, , , 1,,,,", "Tells that we want to know the displacements at the nodes. Energy outputs may also be given, if required. TODO");
             File_AppendCommandWithComment("OUTPR,ALL", "Prints all solution");
             File_AppendCommandWithComment("ALLSEL,ALL", "Somehow, and for any weird-ass reason, Ansys will only pass KeyPoints definitions onwards if they are selected.");
-            File_AppendCommandWithComment("DELTIM, 1, 1, 50", "Sets the number of time steps for this analysis.");
+            File_AppendCommandWithComment("AUTOTS,ON", "Sets Automatic Time Stepping.");
+            File_AppendCommandWithComment("LNSRCH,AUTO", "Sets the usage of Line Search to Auto.");
+            File_AppendCommandWithComment("PRED,AUTO", "Turns Automatic DOF Prediction to Auto.");
+            File_AppendCommandWithComment("NSUBST,20,1000,20", "Sets the number of time steps for this analysis.");
+            File_AppendCommandWithComment("KBC,0", "Sets the load application to be ramped.");
+            File_AppendCommandWithComment("TIME,1", "Sets the time at the end of this load step.");
             File_AppendCommandWithComment("SOLVE", "Solves the problem");
             File_AppendCommandWithComment("/POST1", "Post-Processing Environment");
             File_EndSection();
@@ -980,7 +1068,12 @@ elemindex = 1 ! The element index in the array
             File_AppendCommandWithComment("PSTRES,1", "Stores the pre-stress values because they will be used for the future eigenvalue buckling analysis.");
             File_AppendCommandWithComment("OUTPR,ALL", "Prints all solution");
             File_AppendCommandWithComment("ALLSEL,ALL", "Somehow, and for any weird-ass reason, Ansys will only pass KeyPoints definitions onwards if they are selected.");
-            File_AppendCommandWithComment("DELTIM, 1, 1, 50", "Sets the number of time steps for this analysis.");
+            File_AppendCommandWithComment("AUTOTS,ON", "Sets Automatic Time Stepping.");
+            File_AppendCommandWithComment("LNSRCH,AUTO", "Sets the usage of Line Search to Auto.");
+            File_AppendCommandWithComment("PRED,AUTO", "Turns Automatic DOF Prediction to Auto.");
+            File_AppendCommandWithComment("NSUBST,20,1000,20", "Sets the number of time steps for this analysis.");
+            File_AppendCommandWithComment("KBC,0", "Sets the load application to be ramped.");
+            File_AppendCommandWithComment("TIME,1", "Sets the time at the end of this load step.");
             File_AppendCommandWithComment("SOLVE", "Solves the problem");
             File_EndSection();
 
@@ -1252,7 +1345,7 @@ ETABLE, jSFy, SMISC, 19  ! Shear Force Z
 ETABLE, iEx, SMISC, 7  ! Axial Strain
 ETABLE, iKy, SMISC, 8  ! Curvature Y
 ETABLE, iKz, SMISC, 9  ! Curvature Z
-ETABLE, iTE, SMISC, 10 ! Torsional Strain
+ETABLE, iTe, SMISC, 10 ! Torsional Strain
 ETABLE, iSEz, SMISC, 11  ! Strain Z
 ETABLE, iSEy, SMISC, 12  ! Strain Y
 
@@ -1264,14 +1357,14 @@ ETABLE, iSEy, SMISC, 12  ! Strain Y
 *VGET,ibasics(1,3),ELEM,1,ETAB,iKz
 *VGET,ibasics(1,4),ELEM,1,ETAB,iSEz
 *VGET,ibasics(1,5),ELEM,1,ETAB,iSEy
-*VGET,ibasics(1,6),ELEM,1,ETAB,iTE
+*VGET,ibasics(1,6),ELEM,1,ETAB,iTe
 
 ! Writes the data to file
 *CFOPEN,'{tempFileName}_inode','txt' ! Opens the file
 
 ! Writes the header
 *VWRITE,'ELEMENT', ',' ,'iEx', ',' , 'iKy' , ',' , 'iKz', ',' , 'iSEz', ',' , 'iSEy', ',' , 'iTe'
-(A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12)
+(A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12)
 
 ! Writes the data
 *VWRITE,SEQU, ',' ,ibasics(1,1), ',' , ibasics(1,2) , ',' , ibasics(1,3), ',' , ibasics(1,4), ',' , ibasics(1,5), ',' , ibasics(1,6)
@@ -1282,7 +1375,7 @@ ETABLE, iSEy, SMISC, 12  ! Strain Y
 ETABLE, jEx, SMISC, 20  ! Axial Strain
 ETABLE, jKy, SMISC, 21  ! Curvature Y
 ETABLE, jKz, SMISC, 22  ! Curvature Z
-ETABLE, jTE, SMISC, 23 ! Torsional Strain
+ETABLE, jTe, SMISC, 23 ! Torsional Strain
 ETABLE, jSEz, SMISC, 24  ! Strain Z
 ETABLE, jSEy, SMISC, 25  ! Strain Y
 
@@ -1293,14 +1386,14 @@ ETABLE, jSEy, SMISC, 25  ! Strain Y
 *VGET,jbasics(1,3),ELEM,1,ETAB,jKz
 *VGET,jbasics(1,4),ELEM,1,ETAB,jSEz
 *VGET,jbasics(1,5),ELEM,1,ETAB,jSEy
-*VGET,jbasics(1,6),ELEM,1,ETAB,jTE
+*VGET,jbasics(1,6),ELEM,1,ETAB,jTe
 
 ! Writes the data to file
 *CFOPEN,'{tempFileName}_jnode','txt' ! Opens the file
 
 ! Writes the header
 *VWRITE,'ELEMENT', ',' ,'jEx', ',' , 'jKy' , ',' , 'jKz', ',' , 'jSEz', ',' , 'jSEy', ',' , 'jTe'
-(A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12)
+(A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12)
 
 ! Writes the data
 *VWRITE,SEQU, ',' ,jbasics(1,1), ',' , jbasics(1,2) , ',' , jbasics(1,3), ',' , jbasics(1,4), ',' , jbasics(1,5), ',' , jbasics(1,6)
@@ -1400,100 +1493,306 @@ ETABLE, jSBzB, SMISC, 40 ! Bending stress on the element -Z side of the beam
 ETABLE, iFx, SMISC, 1
 ETABLE, iMy, SMISC, 2
 ETABLE, iMz, SMISC, 3
-!ETABLE, iTq, SMISC, 4  ! Torsional Moment
-!ETABLE, iSFz, SMISC, 5  ! Shear Force Z
-!ETABLE, iSFy, SMISC, 6  ! Shear Force Z
+ETABLE, iTq, SMISC, 4  ! Torsional Moment
+ETABLE, iSFz, SMISC, 5  ! Shear Force Z
+ETABLE, iSFy, SMISC, 6  ! Shear Force Z
 
 ETABLE, jFx, SMISC, 14
 ETABLE, jMy, SMISC, 15
 ETABLE, jMz, SMISC, 16
-!ETABLE, jTq, SMISC, 17 ! Torsional Moment
-!ETABLE, jSFz, SMISC, 18  ! Shear Force Z
-!ETABLE, jSFy, SMISC, 19  ! Shear Force Z
+ETABLE, jTq, SMISC, 17 ! Torsional Moment
+ETABLE, jSFz, SMISC, 18  ! Shear Force Z
+ETABLE, jSFy, SMISC, 19  ! Shear Force Z
 
 ! WRITE: I NODE BASIC FORCE DATA
-*DIM,uctable,ARRAY,total_element_count,40
+*DIM,uctable,ARRAY,total_element_count,75
+
 *VGET,uctable(1,1),ELEM,1,ETAB,iFx
 *VGET,uctable(1,2),ELEM,1,ETAB,iMy
 *VGET,uctable(1,3),ELEM,1,ETAB,iMz
-!*VGET,uctable(1,4),ELEM,1,ETAB,iTq
-!*VGET,uctable(1,5),ELEM,1,ETAB,iSFz
-!*VGET,uctable(1,6),ELEM,1,ETAB,iSFy
+*VGET,uctable(1,4),ELEM,1,ETAB,iTq
+*VGET,uctable(1,5),ELEM,1,ETAB,iSFz
+*VGET,uctable(1,6),ELEM,1,ETAB,iSFy
 
-*VGET,uctable(1,11),ELEM,1,ETAB,jFx
-*VGET,uctable(1,12),ELEM,1,ETAB,jMy
-*VGET,uctable(1,13),ELEM,1,ETAB,jMz
-!*VGET,uctable(1,14),ELEM,1,ETAB,jTq
-!*VGET,uctable(1,15),ELEM,1,ETAB,jSFz
-!*VGET,uctable(1,16),ELEM,1,ETAB,jSFy
+*VGET,uctable(1,7),ELEM,1,ETAB,jFx
+*VGET,uctable(1,8),ELEM,1,ETAB,jMy
+*VGET,uctable(1,9),ELEM,1,ETAB,jMz
+*VGET,uctable(1,10),ELEM,1,ETAB,jTq
+*VGET,uctable(1,11),ELEM,1,ETAB,jSFz
+*VGET,uctable(1,12),ELEM,1,ETAB,jSFy
 
 ! *MOPER,sort_vec,line_element_match,SORT,,2 ! Sorts the line_element_table based on col 2 
 
+! line_element_match(1,1) => (element's line)
 ! line_element_match(1,2) => (element number)
 ! line_element_match(1,6) => (element material)
 ! line_element_match(1,7) => (element section)
+! line_element_match(1,8) => (element's line length)
 
 *GET,uctable_lines,PARM,uctable,DIM,1
 *DO,i,1,uctable_lines ! loops on all elements at the result array
     ! i => current element
-    uctable(i,10) = i ! Saves the element number
+    uctable(i,13) = i ! Saves the element number
     
-    *VFILL,line_element_match(1,10),RAMP,i,0                                             ! Fills col 10 with the current element number
+    ! This is all to search the for the current element in the line_element_match table so that we can find the material and the section of the current element
+    *VFILL,line_element_match(1,10),RAMP,i,0                                             ! Fills col 10 with the current element number (all the same, no ramp - I hate APDL)
     *VOPER,line_element_match(1,11),line_element_match(1,10),EQ,line_element_match(1,2)  ! Matches them for first search
     *VSCFUN,elemLine,FIRST,line_element_match(1,11)                                      ! The line at the line_element_match
     
+    c_elementLine = line_element_match(elemLine,1) ! Grabs the line of the current element
+    c_elementLineLength = line_element_match(elemLine,8) ! Grabs the length of the line of the current element
     c_matLine = line_element_match(elemLine,6) ! Grabs the material ID [Matches the line number in the mat_prop_table]
     c_secLine = line_element_match(elemLine,7) ! Grabs the section ID [Matches the line number in the sec_prop_table]
 
     c_matFy = mat_prop_table(c_matLine,1)
     c_matFu = mat_prop_table(c_matLine,2)
+    c_matPhiCompression = mat_prop_table(c_matLine,3)
+    c_matPhiBending = mat_prop_table(c_matLine,4)
+    c_matPhiShear = mat_prop_table(c_matLine,5)
+    c_matPhiTorsion = mat_prop_table(c_matLine,6)
+    c_matPhiTension = mat_prop_table(c_matLine,7)
+    c_matPhiTensionRuptureNet = mat_prop_table(c_matLine,8)
+    c_matYoungModulus = mat_prop_table(c_matLine,9)
 
     c_secArea = sec_prop_table(c_secLine,1)
     c_secPlMod2 = sec_prop_table(c_secLine,2)
     c_secPlMod3 = sec_prop_table(c_secLine,3)
+    c_secLeastGyrRadius = sec_prop_table(c_secLine,4)
+    c_secDim1 = sec_prop_table(c_secLine,5)
+    c_secDim2 = sec_prop_table(c_secLine,6)
+    c_secTorsionalShearConstant = sec_prop_table(c_secLine,8)
 
     ! Fills the array for further processing
-    uctable(i,30) = c_matFy
-    uctable(i,31) = c_matFu
-    uctable(i,32) = 0.9  ! Material Partial Multiplier
-    uctable(i,33) = uctable(i,30)*uctable(i,32) ! G_MAT_FY = Fy * gamma_mat Fy with partial factor
+    uctable(i,14) = c_elementLine
+    uctable(i,15) = c_elementLineLength
 
-    uctable(i,35) = c_secArea
-    uctable(i,36) = c_secPlMod2
-    uctable(i,37) = c_secPlMod3
+    uctable(i,16) = c_matFy
+    uctable(i,17) = c_matFu
+    uctable(i,18) = c_matPhiCompression
+    uctable(i,19) = c_matPhiBending
+    uctable(i,20) = c_matPhiShear
+    uctable(i,21) = c_matPhiTorsion
+    uctable(i,22) = c_matPhiTension
+    uctable(i,23) = c_matPhiTensionRuptureNet
+    uctable(i,24) = c_matYoungModulus
 
-    ! Calculating the I Node
-    uctable(i,20) = (uctable(i,1) / uctable(i,35))  ! P_A = Fx / c_secArea
-    uctable(i,21) = (uctable(i,2) / uctable(i,36))  ! M2_Z2 = My / c_secPlMod2
-    uctable(i,22) = (uctable(i,3) / uctable(i,37))  ! M3_Z3 = Mz / c_secPlMod3
-    uctable(i,23) = (uctable(i,20) + uctable(i,21) + uctable(i,22) )  ! SUM
-    uctable(i,24) = (uctable(i,23) / uctable(i,33) )     ! I Node Utilization Ratio
+    uctable(i,27) = c_secArea
+    uctable(i,28) = c_secPlMod2
+    uctable(i,29) = c_secPlMod3
+    uctable(i,30) = c_secDim1
+    uctable(i,31) = c_secDim2
+    uctable(i,31) = c_secTorsionalShearConstant
+	uctable(i,32) = c_secLeastGyrRadius
 
-    ! Calculating the J Node
-    uctable(i,25) = (uctable(i,11) / uctable(i,35))
-    uctable(i,26) = (uctable(i,12) / uctable(i,36))
-    uctable(i,27) = (uctable(i,13) / uctable(i,37))
-    uctable(i,28) = (uctable(i,25) + uctable(i,26) + uctable(i,27))
-    uctable(i,29) = (uctable(i,28) / uctable(i,33) )     ! J Node Utilization Ratio
+    ! Checking Slenderness
+    !------------------------------------------
+    uctable(i,35) = c_elementLineLength/c_secLeastGyrRadius     ! Line Slenderness
+
+    i_slendernessLimit = 0
+    *IF,uctable(i,1),GT,0,THEN ! TENSION
+        i_slendernessLimit = 300
+    *ELSE ! COMPRESSION
+        i_slendernessLimit = 200
+    *ENDIF
+    j_slendernessLimit = 0
+    *IF,uctable(i,7),GT,0,THEN ! TENSION
+        j_slendernessLimit = 300
+    *ELSE ! COMPRESSION
+        j_slendernessLimit = 200
+    *ENDIF
+
+    uctable(i,36) = i_slendernessLimit
+    uctable(i,37) = uctable(i,35)/uctable(i,36)     ! Line Slenderness I Node Factor
+    uctable(i,38) = i_slendernessLimit
+    uctable(i,39) = uctable(i,35)/uctable(i,38)     ! Line Slenderness J Node Factor
+
+
+    ! Checking Tension
+    !------------------------------------------
+    pn_tension_D2_1 = c_matFy*c_secArea
+    pn_tension_D2_2 = c_matFu*c_secArea
+
+    pn_phi_tension = 0
+    *IF,pn_tension_D2_1,LT,pn_tension_D2_2,THEN
+        pn_phi_tension = pn_tension_D2_1*c_matPhiTension
+    *ELSE
+        pn_phi_tension = pn_tension_D2_2*c_matPhiTensionRuptureNet
+    *ENDIF
+
+    uctable(i,40) = pn_phi_tension
+
+    *IF,uctable(i,1),GT,0,THEN ! TENSION
+        uctable(i,41) = ABS(uctable(i,1))/pn_phi_tension
+    *ELSE ! COMPRESSION
+        uctable(i,41) = 0
+    *ENDIF
+
+    *IF,uctable(i,7),GT,0,THEN ! TENSION
+        uctable(i,42) = ABS(uctable(i,7))/pn_phi_tension
+    *ELSE ! COMPRESSION
+        uctable(i,42) = 0
+    *ENDIF
+
+
+    ! Checking Compression
+    !------------------------------------------
+    elastic_buckling_stress = (((3.1415927**2)*c_matYoungModulus)/(uctable(i,35)**2))
+    comp_slend_threshold = c_matFy/elastic_buckling_stress
+    
+    comp_critical_stress = 0
+    *IF,comp_slend_threshold,LE,2.25,THEN
+        comp_critical_stress = (0.658**comp_slend_threshold)*c_matFy
+    *ELSE
+        comp_critical_stress = 0.877*elastic_buckling_stress
+    *ENDIF
+
+    pn_phi_compression = c_matPhiCompression*comp_critical_stress*c_secArea
+
+    uctable(i,44) = elastic_buckling_stress
+    uctable(i,45) = comp_critical_stress
+    uctable(i,46) = pn_phi_compression
+
+    *IF,uctable(i,1),GT,0,THEN ! TENSION
+        uctable(i,47) = 0
+    *ELSE ! COMPRESSION
+        uctable(i,47) = ABS(uctable(i,1))/pn_phi_compression
+    *ENDIF
+
+    *IF,uctable(i,7),GT,0,THEN ! TENSION
+        uctable(i,48) = 0
+    *ELSE ! COMPRESSION
+        uctable(i,48) = ABS(uctable(i,7))/pn_phi_compression
+    *ENDIF
+
+    ! Checking Flexure (Both Axis)
+    !------------------------------------------    
+    
+    mn_phi_2 = c_matPhiBending*c_matFy*c_secPlMod2
+    mn_phi_3 = c_matPhiBending*c_matFy*c_secPlMod3
+    ! Local Buckling not Applicable for Compact - the software filters for compact only
+
+    uctable(i,50) = mn_phi_2
+    uctable(i,51) = mn_phi_3
+
+    uctable(i,52) = ABS(uctable(i,2))/mn_phi_2
+    uctable(i,53) = ABS(uctable(i,3))/mn_phi_3
+
+    uctable(i,54) = ABS(uctable(i,8))/mn_phi_2
+    uctable(i,55) = ABS(uctable(i,9))/mn_phi_3
+
+
+    ! Checking for Shear
+    !------------------------------------------
+        
+    shear_fcr = (0.78*c_matYoungModulus)/((c_secDim1/c_secDim2)**1.5)
+
+    vn_phi = (shear_fcr*c_secArea*c_matPhiShear) / 2
+
+    uctable(i,57) = vn_phi
+    uctable(i,58) = ABS(uctable(i,5))/vn_phi
+    uctable(i,59) = ABS(uctable(i,6))/vn_phi
+    uctable(i,60) = SQRT(uctable(i,5)**2+uctable(i,6)**2)/vn_phi
+
+    uctable(i,61) = ABS(uctable(i,11))/vn_phi
+    uctable(i,62) = ABS(uctable(i,12))/vn_phi
+    uctable(i,63) = SQRT(uctable(i,11)**2+uctable(i,12)**2)/vn_phi
+
+
+    ! Checking for Torsion
+    !-----------------------------------------
+    
+    tor_fcr_H3_2a = (1.23*c_matYoungModulus)/(SQRT(c_elementLineLength/c_secDim1)*(c_secDim1/c_secDim2)**(5/4))
+    tor_fcr_H3_2b = (0.60*c_matYoungModulus)/((c_secDim1/c_secDim2)**(3/2))
+    tor_fcr_H3_2c = 0.6*c_matFy
+
+    tor_fcr = 0
+    *IF,tor_fcr_H3_2a,GT,tor_fcr_H3_2b,THEN 
+        tor_fcr = tor_fcr_H3_2a
+    *ELSE 
+        tor_fcr = tor_fcr_H3_2b
+    *ENDIF
+    *IF,tor_fcr,GT,tor_fcr_H3_2c,THEN 
+        tor_fcr = tor_fcr_H3_2c
+    *ENDIF
+
+    tn_phi = c_matPhiTorsion*tor_fcr*c_secTorsionalShearConstant
+
+    uctable(i,65) = tn_phi
+    uctable(i,66) = ABS(uctable(i,4))/tn_phi
+    uctable(i,67) = ABS(uctable(i,10))/tn_phi
+
+
+    ! Checking Combined 
+    !------------------------------------------
+
+    axialRatio_1 = 0 
+    *IF,uctable(i,1),GT,0,THEN ! TENSION
+        axialRatio_1 = uctable(i,41) 
+    *ELSE ! COMPRESSION
+        axialRatio_1 = uctable(i,47) 
+    *ENDIF
+
+    comb_ratio_1 = 0
+    *IF,uctable(i,66),LE,0.2,THEN  ! Torsion Ignored
+
+        *IF,axialRatio_1,GE,0.2,THEN 
+            comb_ratio_1 = axialRatio_1+(8/9)*SQRT(uctable(i,52)**2+uctable(i,53)**2)
+        *ELSE
+            comb_ratio_1 = (axialRatio_1/2)+SQRT(uctable(i,52)**2+uctable(i,53)**2)
+        *ENDIF
+    
+    *ELSE
+            ! Torsion Considered
+        comb_ratio_1 = axialRatio_1+SQRT(uctable(i,52)**2+uctable(i,53)**2)+(SQRT(uctable(i,58)**2+uctable(i,59)**2)+uctable(i,66))**2
+
+    *ENDIF
+
+
+    axialRatio_2 = 0 
+    *IF,uctable(i,7),GT,0,THEN ! TENSION
+        axialRatio_2 = uctable(i,42) 
+    *ELSE ! COMPRESSION
+        axialRatio_2 = uctable(i,48) 
+    *ENDIF
+
+    
+    comb_ratio_2 = 0
+    *IF,uctable(i,67),LE,0.2,THEN   ! Torsion Ignored
+
+        *IF,axialRatio_2,GE,0.2,THEN 
+            comb_ratio_2 = axialRatio_2+(8/9)*SQRT(uctable(i,54)**2+uctable(i,55)**2)
+        *ELSE
+            comb_ratio_2 = (axialRatio_2/2)+SQRT(uctable(i,54)**2+uctable(i,55)**2)
+        *ENDIF
+    
+    *ELSE
+            ! Torsion Considered
+        comb_ratio_2 = axialRatio_2+SQRT(uctable(i,54)**2+uctable(i,55)**2)+(SQRT(uctable(i,61)**2+uctable(i,62)**2)+uctable(i,67))**2
+    *ENDIF
+
+    uctable(i,69) = axialRatio_1
+    uctable(i,70) = comb_ratio_1
+    uctable(i,71) = axialRatio_2
+    uctable(i,72) = comb_ratio_2
 
 *ENDDO
 
 ! Puts them in an ETABLE for future data display and acquire
 ETABLE, iUC, SMISC, 1    ! Grabs bogus data to define an ETABLE
-*VPUT,uctable(1,24),ELEM,1,ETAB,iUC  ! Overwrites the element table data for printouts
+*VPUT,uctable(1,70),ELEM,1,ETAB,iUC  ! Overwrites the element table data for printouts
 ETABLE, jUC, SMISC, 14   ! Grabs bogus data to define an ETABLE
-*VPUT,uctable(1,29),ELEM,1,ETAB,jUC  ! Overwrites the element table data for printouts
+*VPUT,uctable(1,72),ELEM,1,ETAB,jUC  ! Overwrites the element table data for printouts
 
 ! Writes the data to file
 *CFOPEN,'{tempFileName}_inode','txt' ! Opens the file
 
 ! Writes the header
-*VWRITE,'ELEMENT', ',' ,'P_A', ',' , 'M2_Z2' , ',' , 'M3_Z3', ',' , 'SUM', ',' , 'G_MAT_FY' , ',' , 'RATIO'
-(A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12)
+*VWRITE,'ELEMENT','Pr','MrMajor','MrMinor','VrMajor','VrMinor','Tr','PRatio','MMajRatio','MMinRatio','VMajRatio','VMinRatio','TorRatio','PcComp','PcTension','McMajor','McMinor','TotalRatio'
+%C,%C,%C,%C,%C,%C,%C,%C,%C,%C,%C,%C,%C,%C,%C,%C,%C,%C
 
 ! Writes the data
-*VWRITE,SEQU, ',' ,uctable(1,20), ',' , uctable(1,21) , ',' , uctable(1,22), ',' , uctable(1,23), ',' , uctable(1,33), ',' , uctable(1,24)
-%I%C%30.6G%C%30.6G%C%30.6G%C%30.6G%C%30.6G%C%30.6G
+*VWRITE,SEQU,uctable(1,1),uctable(1,2),uctable(1,3),uctable(1,5),uctable(1,6),uctable(1,4),uctable(1,69),uctable(1,52),uctable(1,53),uctable(1,58),uctable(1,59),uctable(1,66),uctable(1,46),uctable(1,40),uctable(1,50),uctable(1,51),uctable(1,70)
+%I,%30.6G,%30.6G,%30.6G,%30.6G,%30.6G,%30.6G,%30.6G,%30.6G,%30.6G,%30.6G,%30.6G,%30.6G,%30.6G,%30.6G,%30.6G,%30.6G,%30.6G
 
 *CFCLOSE
 
@@ -1502,12 +1801,13 @@ ETABLE, jUC, SMISC, 14   ! Grabs bogus data to define an ETABLE
 *CFOPEN,'{tempFileName}_jnode','txt' ! Opens the file
 
 ! Writes the header
-*VWRITE,'ELEMENT', ',' ,'P_A', ',' , 'M2_Z2' , ',' , 'M3_Z3', ',' , 'SUM', ',' , 'G_MAT_FY' , ',' , 'RATIO'
-(A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12,A1,A12)
+*VWRITE,'ELEMENT','Pr','MrMajor','MrMinor','VrMajor','VrMinor','Tr','PRatio','MMajRatio','MMinRatio','VMajRatio','VMinRatio','TorRatio','PcComp','PcTension','McMajor','McMinor','TotalRatio'
+%C,%C,%C,%C,%C,%C,%C,%C,%C,%C,%C,%C,%C,%C,%C,%C,%C,%C
 
 ! Writes the data
-*VWRITE,SEQU, ',' ,uctable(1,25), ',' , uctable(1,26) , ',' , uctable(1,27), ',' , uctable(1,28), ',' , uctable(1,33), ',' , uctable(1,29)
-%I%C%30.6G%C%30.6G%C%30.6G%C%30.6G%C%30.6G%C%30.6G
+*VWRITE,SEQU,uctable(1,7),uctable(1,8),uctable(1,9),uctable(1,11),uctable(1,12),uctable(1,10),uctable(1,71),uctable(1,54),uctable(1,55),uctable(1,61),uctable(1,62),uctable(1,67),uctable(1,46),uctable(1,40),uctable(1,50),uctable(1,51),uctable(1,72)
+%I,%30.6G,%30.6G,%30.6G,%30.6G,%30.6G,%30.6G,%30.6G,%30.6G,%30.6G,%30.6G,%30.6G,%30.6G,%30.6G,%30.6G,%30.6G,%30.6G,%30.6G
+
 
 *CFCLOSE
 ");
@@ -2169,7 +2469,10 @@ PNGR,TMOD,1
                 accumulatedErrors += message;
             }
 
-            if (!string.IsNullOrWhiteSpace(accumulatedErrors)) throw new AnsysSolverException(accumulatedErrors);
+            if (!string.IsNullOrWhiteSpace(accumulatedErrors))
+            {
+                throw new FeSolverException(accumulatedErrors) { SolutionNotConverged = accumulatedErrors.Contains("Solution not converged") };
+            }
         }
 
         private bool ReadHelper_ReadResultFile(string inFullFileName)
@@ -2193,7 +2496,7 @@ PNGR,TMOD,1
                             Match m = lineRegex.Match(line);
                             if (!m.Success) continue;
 
-                            int nodeId = int.Parse(m.Groups["NODE"].Value);
+                            string nodeId = m.Groups["NODE"].Value.Trim();
 
                             // Do we have a matching joint?
                             Point3d nodeCoords = new Point3d(double.Parse(m.Groups["X"].Value), double.Parse(m.Groups["Y"].Value), double.Parse(m.Groups["Z"].Value));
@@ -2204,7 +2507,7 @@ PNGR,TMOD,1
                     }
                     catch (Exception)
                     {
-                        throw new AnsysSolverException($"Could not parse the line {line} into a FeMeshNode while reading the results.");
+                        throw new FeSolverException($"Could not parse the line {line} into a FeMeshNode while reading the results.");
                     }
                 }
 
@@ -2226,21 +2529,21 @@ PNGR,TMOD,1
 
                         var line_element_data_def = new
                             {
-                            LINE = default(int),
-                            ELEM = default(int),
-                            INODE = default(int),
-                            JNODE = default(int),
-                            KNODE = default(int),
+                            LINE = default(string),
+                            ELEM = default(string),
+                            INODE = default(string),
+                            JNODE = default(string),
+                            KNODE = default(string),
                             };
                         var records = csv.GetRecords(line_element_data_def);
 
                         // Saves all the elements in the element list for quick queries down the line
-                        HashSet<int> addedList = new HashSet<int>();
+                        HashSet<string> addedList = new HashSet<string>();
                         foreach (var r in records)
                         {
                             if (addedList.Add(r.ELEM))
                             {
-                                FeMeshBeamElement feBeamElement = new FeMeshBeamElement(r.ELEM, _model.MeshNodes[r.INODE], _model.MeshNodes[r.JNODE], _model.MeshNodes[r.KNODE]);
+                                FeMeshBeamElement feBeamElement = new FeMeshBeamElement(r.ELEM, _model.MeshNodes[r.INODE], _model.MeshNodes[r.JNODE], r.KNODE == "0" ? null : _model.MeshNodes[r.KNODE]);
 
                                 _model.MeshBeamElements.Add(r.ELEM, feBeamElement);
 
@@ -2251,7 +2554,8 @@ PNGR,TMOD,1
                                 // Saves the reference of this Beam Element into its MeshNodes
                                 _model.MeshNodes[r.INODE].LinkedElements.Add(feBeamElement);
                                 _model.MeshNodes[r.JNODE].LinkedElements.Add(feBeamElement);
-                                _model.MeshNodes[r.KNODE].LinkedElements.Add(feBeamElement);
+                                
+                                if (r.KNODE != "0") _model.MeshNodes[r.KNODE].LinkedElements.Add(feBeamElement);
                             }
                         }
 
@@ -2290,13 +2594,13 @@ PNGR,TMOD,1
                                 string line = null;
                                 while ((line = reader.ReadLine()) != null)
                                 {
-                                    int? nodeId = null;
+                                    string nodeId = null;
                                     FeResultValue_NodalReactions react = new FeResultValue_NodalReactions();
                                     try
                                     {
                                         int start = 1;
-                                        nodeId = int.Parse(line.Substring(start, 10));
-                                        start += 10;
+                                        nodeId = line.Substring(start, 10).Trim();
+                                        start += 11;
 
                                         // Fx
                                         string dataChunk = line.Substring(start, 20);
@@ -2326,23 +2630,22 @@ PNGR,TMOD,1
                                         dataChunk = line.Substring(start, 20);
                                         if (!string.IsNullOrWhiteSpace(dataChunk)) react.MZ = double.Parse(dataChunk);
                                     }
-                                    catch // Got to the end of line :)
+                                    catch {}
+                                    finally
                                     {
-                                        if (nodeId.HasValue && react.ContainsAnyValue)
+                                        if (!string.IsNullOrWhiteSpace(nodeId) && react.ContainsAnyValue)
                                         {
                                             _model.Results.Add(new FeResultItem(
-                                                inResultClass: feResult, 
-                                                inFeLocation: FeResultLocation.CreateMeshNodeLocation(_model, _model.MeshNodes[nodeId.Value]), 
+                                                inResultClass: feResult,
+                                                inFeLocation: FeResultLocation.CreateMeshNodeLocation(_model, _model.MeshNodes[nodeId]),
                                                 inResultValue: react));
                                         }
-
-                                        continue;
                                     }
                                 }
                             }
                             catch (Exception)
                             {
-                                throw new AnsysSolverException($"Could not parse file {inFullFileName} to read the Nodal Results.");
+                                throw new FeSolverException($"Could not parse file {inFullFileName} to read the Nodal Results.");
                             }
                         }
                     }
@@ -2358,7 +2661,7 @@ PNGR,TMOD,1
 
                                 var anonymousTypeDef = new
                                     {
-                                    NODE = default(int),
+                                    NODE = default(string),
                                     UX = default(double),
                                     UY = default(double),
                                     UZ = default(double),
@@ -2399,21 +2702,21 @@ PNGR,TMOD,1
                             try
                             {
                                 string line = null;
-                                int currentElementId = -1;
-                                int currentNodeId = -1;
+                                string currentElementId = null;
+                                string currentNodeId = null;
                                 while ((line = reader.ReadLine()) != null)
                                 {
                                     Match elementIdMatch = elementIdRegex.Match(line);
                                     if (elementIdMatch.Success)
                                     {
-                                        currentElementId = int.Parse(elementIdMatch.Groups["ID"].Value);
+                                        currentElementId = elementIdMatch.Groups["ID"].Value.Trim();
                                         continue;
                                     }
 
                                     Match nodeIdMatch = nodeIdRegex.Match(line);
                                     if (nodeIdMatch.Success)
                                     {
-                                        currentNodeId = int.Parse(nodeIdMatch.Groups["ID"].Value);
+                                        currentNodeId = nodeIdMatch.Groups["ID"].Value.Trim();
                                         continue;
                                     }
 
@@ -2449,7 +2752,7 @@ PNGR,TMOD,1
                             }
                             catch (Exception e)
                             {
-                                throw new AnsysSolverException($"Could not parse file {inFullFileName} to read the Nodal Stress Results by OptimizationSection Point.", e);
+                                throw new FeSolverException($"Could not parse file {inFullFileName} to read the Nodal Stress Results by OptimizationSection Point.", e);
                             }
                         }
                     }
@@ -2468,21 +2771,21 @@ PNGR,TMOD,1
                             try
                             {
                                 string line = null;
-                                int currentElementId = -1;
-                                int currentNodeId = -1;
+                                string currentElementId = null;
+                                string currentNodeId = null;
                                 while ((line = reader.ReadLine()) != null)
                                 {
                                     Match elementIdMatch = elementIdRegex.Match(line);
                                     if (elementIdMatch.Success)
                                     {
-                                        currentElementId = int.Parse(elementIdMatch.Groups["ID"].Value);
+                                        currentElementId = elementIdMatch.Groups["ID"].Value.Trim();
                                         continue;
                                     }
 
                                     Match nodeIdMatch = nodeIdRegex.Match(line);
                                     if (nodeIdMatch.Success)
                                     {
-                                        currentNodeId = int.Parse(nodeIdMatch.Groups["ID"].Value);
+                                        currentNodeId = nodeIdMatch.Groups["ID"].Value.Trim();
                                         continue;
                                     }
 
@@ -2518,7 +2821,7 @@ PNGR,TMOD,1
                             }
                             catch (Exception ex)
                             {
-                                throw new AnsysSolverException($"Could not parse file {inFullFileName} to read the Nodal Strain Results by OptimizationSection Point.", ex);
+                                throw new FeSolverException($"Could not parse file {inFullFileName} to read the Nodal Strain Results by OptimizationSection Point.", ex);
                             }
                         }
                     }
@@ -2536,7 +2839,7 @@ PNGR,TMOD,1
 
                                     var anonymousTypeDef = new
                                         {
-                                        ELEMENT = default(int),
+                                        ELEMENT = default(string),
                                         iEPELDIR = default(double),
                                         iEPELByT = default(double),
                                         iEPELByB = default(double),
@@ -2575,7 +2878,7 @@ PNGR,TMOD,1
 
                                     var anonymousTypeDef = new
                                         {
-                                        ELEMENT = default(int),
+                                        ELEMENT = default(string),
                                         jEPELDIR = default(double),
                                         jEPELByT = default(double),
                                         jEPELByB = default(double),
@@ -2619,7 +2922,7 @@ PNGR,TMOD,1
 
                                     var anonymousTypeDef = new
                                         {
-                                        ELEMENT = default(int),
+                                        ELEMENT = default(string),
                                         iFx = default(double),
                                         iMy = default(double),
                                         iMz = default(double),
@@ -2660,7 +2963,7 @@ PNGR,TMOD,1
 
                                     var anonymousTypeDef = new
                                         {
-                                        ELEMENT = default(int),
+                                        ELEMENT = default(string),
                                         jFx = default(double),
                                         jMy = default(double),
                                         jMz = default(double),
@@ -2706,7 +3009,7 @@ PNGR,TMOD,1
 
                                     var anonymousTypeDef = new
                                         {
-                                        ELEMENT = default(int),
+                                        ELEMENT = default(string),
                                         iEx = default(double),
                                         iKy = default(double),
                                         iKz = default(double),
@@ -2747,7 +3050,7 @@ PNGR,TMOD,1
 
                                     var anonymousTypeDef = new
                                         {
-                                        ELEMENT = default(int),
+                                        ELEMENT = default(string),
                                         jEx = default(double),
                                         jKy = default(double),
                                         jKz = default(double),
@@ -2793,7 +3096,7 @@ PNGR,TMOD,1
 
                                     var anonymousTypeDef = new
                                         {
-                                        ELEMENT = default(int),
+                                        ELEMENT = default(string),
                                         iSDIR = default(double),
                                         iSByT = default(double),
                                         iSByB = default(double),
@@ -2832,7 +3135,7 @@ PNGR,TMOD,1
 
                                     var anonymousTypeDef = new
                                         {
-                                        ELEMENT = default(int),
+                                        ELEMENT = default(string),
                                         jSDIR = default(double),
                                         jSByT = default(double),
                                         jSByB = default(double),
@@ -2870,166 +3173,211 @@ PNGR,TMOD,1
                         {
                             case FeResultTypeEnum.ElementNodal_CodeCheck:
                             {
+                                {
+                                    if (fileName.Contains("_inode"))
+                                    {
+                                        using (StreamReader reader = new StreamReader(inFullFileName))
                                         {
-                                            if (fileName.Contains("_inode"))
+                                            using (CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture))
                                             {
-                                                using (StreamReader reader = new StreamReader(inFullFileName))
+                                                csv.Configuration.TrimOptions = TrimOptions.Trim;
+
+                                                var anonymousTypeDef = new
                                                 {
-                                                    using (CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture))
-                                                    {
-                                                        csv.Configuration.TrimOptions = TrimOptions.Trim;
+                                                    ELEMENT = default(string),
+                                                    Pr = default(double),
+                                                    MrMajor = default(double),
+                                                    MrMinor = default(double),
+                                                    VrMajor = default(double),
+                                                    VrMinor = default(double),
+                                                    Tr = default(double),
+                                                    PRatio = default(double),
+                                                    MMajRatio = default(double),
+                                                    MMinRatio = default(double),
+                                                    VMajRatio = default(double),
+                                                    VMinRatio = default(double),
+                                                    TorRatio = default(double),
+                                                    PcComp = default(double),
+                                                    PcTension = default(double),
+                                                    McMajor = default(double),
+                                                    McMinor = default(double),
+                                                    TotalRatio = default(double),
+                                
+                                                };
+                                                var records = csv.GetRecords(anonymousTypeDef);
 
-                                                        var anonymousTypeDef = new
-                                                        {
-                                                            ELEMENT = default(int),
-                                                            P_A = default(double),
-                                                            M2_Z2 = default(double),
-                                                            M3_Z3 = default(double),
-                                                            SUM = default(double),
-                                                            G_MAT_FY = default(double),
-                                                            RATIO = default(double),
-                                                        };
-                                                        var records = csv.GetRecords(anonymousTypeDef);
-
-                                                        foreach (var r in records)
-                                                        {
-                                                            FeMeshBeamElement beam = _model.MeshBeamElements[r.ELEMENT];
-                                                            FeMeshNode node = beam.INode;
-
-                                                            _model.Results.Add(new FeResultItem(
-                                                                inResultClass: feResult,
-                                                                inFeLocation: FeResultLocation.CreateElementNodeLocation(_model, beam, node),
-                                                                inResultValue: new FeResultValue_ElementNodalCodeCheck()
-                                                                {
-                                                                    P_A = r.P_A,
-                                                                    M2_Z2 = r.M2_Z2,
-                                                                    M3_Z3 = r.M3_Z3,
-                                                                    SUM = r.SUM,
-                                                                    G_MAT_FY = r.G_MAT_FY,
-                                                                    RATIO = r.RATIO
-                                                                }));
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            else if (fileName.Contains("_jnode"))
-                                            {
-                                                using (StreamReader reader = new StreamReader(inFullFileName))
+                                                foreach (var r in records)
                                                 {
-                                                    using (CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture))
-                                                    {
-                                                        csv.Configuration.TrimOptions = TrimOptions.Trim;
+                                                    FeMeshBeamElement beam = _model.MeshBeamElements[r.ELEMENT];
+                                                    FeMeshNode node = beam.INode;
 
-                                                        var anonymousTypeDef = new
+                                                    _model.Results.Add(new FeResultItem(
+                                                        inResultClass: feResult,
+                                                        inFeLocation: FeResultLocation.CreateElementNodeLocation(_model, beam, node),
+                                                        inResultValue: new FeResultValue_ElementNodalCodeCheck()
                                                         {
-                                                            ELEMENT = default(int),
-                                                            P_A = default(double),
-                                                            M2_Z2 = default(double),
-                                                            M3_Z3 = default(double),
-                                                            SUM = default(double),
-                                                            G_MAT_FY = default(double),
-                                                            RATIO = default(double),
-                                                        };
-                                                        var records = csv.GetRecords(anonymousTypeDef);
-
-                                                        foreach (var r in records)
-                                                        {
-                                                            FeMeshBeamElement beam = _model.MeshBeamElements[r.ELEMENT];
-                                                            FeMeshNode node = beam.INode;
-
-                                                            _model.Results.Add(new FeResultItem(
-                                                                inResultClass: feResult,
-                                                                inFeLocation: FeResultLocation.CreateElementNodeLocation(_model, beam, node),
-                                                                inResultValue: new FeResultValue_ElementNodalCodeCheck()
-                                                                    {
-                                                                    P_A = r.P_A,
-                                                                    M2_Z2 = r.M2_Z2,
-                                                                    M3_Z3 = r.M3_Z3,
-                                                                    SUM = r.SUM,
-                                                                    G_MAT_FY = r.G_MAT_FY,
-                                                                    RATIO = r.RATIO
-                                                                    }));
-                                                        }
-                                                    }
+                                                            Pr = r.Pr,
+                                                            MrMajor = r.MrMajor,
+                                                            MrMinor = r.MrMinor,
+                                                            VrMajor = r.VrMajor,
+                                                            VrMinor = r.VrMinor,
+                                                            Tr = r.Tr,
+                                                            PRatio = r.PRatio,
+                                                            MMajRatio = r.MMajRatio,
+                                                            MMinRatio = r.MMinRatio,
+                                                            VMajRatio = r.VMajRatio,
+                                                            VMinRatio = r.VMinRatio,
+                                                            TorRatio = r.TorRatio,
+                                                            PcComp = r.PcComp,
+                                                            PcTension = r.PcTension,
+                                                            McMajor = r.McMajor,
+                                                            McMinor = r.McMinor,
+                                                            TotalRatio = r.TotalRatio,
+                                                        }));
                                                 }
                                             }
                                         }
                                     }
-                                    break;
-
-                                case FeResultTypeEnum.Element_StrainEnergy:
-                                {
-                                    using (StreamReader reader = new StreamReader(inFullFileName))
+                                    else if (fileName.Contains("_jnode"))
                                     {
-                                        using (CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+                                        using (StreamReader reader = new StreamReader(inFullFileName))
                                         {
-                                            csv.Configuration.TrimOptions = TrimOptions.Trim;
-
-                                            var anonymousTypeDef = new
-                                                {
-                                                ELEMENT = default(int),
-                                                e_StrEn = default(double),
-                                                };
-                                            var records = csv.GetRecords(anonymousTypeDef);
-
-                                            foreach (var r in records)
+                                            using (CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture))
                                             {
-                                                _model.Results.Add(new FeResultItem(
-                                                    inResultClass: feResult,
-                                                    inFeLocation: FeResultLocation.CreateElementLocation(_model, _model.MeshBeamElements[r.ELEMENT]), 
-                                                    inResultValue: new FeResultValue_ElementStrainEnergy(r.e_StrEn)));
+                                                csv.Configuration.TrimOptions = TrimOptions.Trim;
+
+                                                var anonymousTypeDef = new
+                                                {
+                                                    ELEMENT = default(string),
+                                                Pr = default(double),
+                                                MrMajor = default(double),
+                                                MrMinor = default(double),
+                                                VrMajor = default(double),
+                                                VrMinor = default(double),
+                                                Tr = default(double),
+                                                PRatio = default(double),
+                                                MMajRatio = default(double),
+                                                MMinRatio = default(double),
+                                                VMajRatio = default(double),
+                                                VMinRatio = default(double),
+                                                TorRatio = default(double),
+                                                PcComp = default(double),
+                                                PcTension = default(double),
+                                                McMajor = default(double),
+                                                McMinor = default(double),
+                                                TotalRatio = default(double),
+                                                };
+                                                var records = csv.GetRecords(anonymousTypeDef);
+
+                                                foreach (var r in records)
+                                                {
+                                                    FeMeshBeamElement beam = _model.MeshBeamElements[r.ELEMENT];
+                                                    FeMeshNode node = beam.JNode;
+
+                                                    _model.Results.Add(new FeResultItem(
+                                                        inResultClass: feResult,
+                                                        inFeLocation: FeResultLocation.CreateElementNodeLocation(_model, beam, node),
+                                                        inResultValue: new FeResultValue_ElementNodalCodeCheck()
+                                                            {
+                                                            Pr = r.Pr,
+                                                            MrMajor = r.MrMajor,
+                                                            MrMinor = r.MrMinor,
+                                                            VrMajor = r.VrMajor,
+                                                            VrMinor = r.VrMinor,
+                                                            Tr = r.Tr,
+                                                            PRatio = r.PRatio,
+                                                            MMajRatio = r.MMajRatio,
+                                                            MMinRatio = r.MMinRatio,
+                                                            VMajRatio = r.VMajRatio,
+                                                            VMinRatio = r.VMinRatio,
+                                                            TorRatio = r.TorRatio,
+                                                            PcComp = r.PcComp,
+                                                            PcTension = r.PcTension,
+                                                            McMajor = r.McMajor,
+                                                            McMinor = r.McMinor,
+                                                            TotalRatio = r.TotalRatio,
+                                                        }));
+                                                }
                                             }
                                         }
                                     }
                                 }
-                                    break;
+                            }
+                                break;
 
-                                case FeResultTypeEnum.Model_EigenvalueBuckling_Mode1Factor:
-                                case FeResultTypeEnum.Model_EigenvalueBuckling_Mode2Factor:
-                                case FeResultTypeEnum.Model_EigenvalueBuckling_Mode3Factor:
+                            case FeResultTypeEnum.Element_StrainEnergy:
+                            {
+                                using (StreamReader reader = new StreamReader(inFullFileName))
                                 {
-                                    Regex dataRegex = new Regex(@"^\s*(?<mode>\d+)\s*(?<mult>[\-\+\.\deE]+)");
-
-                                    using (StreamReader reader = new StreamReader(inFullFileName))
+                                    using (CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture))
                                     {
-                                        try
-                                        {
-                                            string line = null;
+                                        csv.Configuration.TrimOptions = TrimOptions.Trim;
 
-                                            FeResultValue_EigenvalueBucklingSummary eigenvalue = new FeResultValue_EigenvalueBucklingSummary();
-
-                                            while ((line = reader.ReadLine()) != null)
+                                        var anonymousTypeDef = new
                                             {
-                                                Match dataMatch = dataRegex.Match(line);
-                                                if (dataMatch.Success)
-                                                {
-                                                    int mode = int.Parse(dataMatch.Groups["mode"].Value);
-                                                    double mult = double.Parse(dataMatch.Groups["mult"].Value);
+                                            ELEMENT = default(string),
+                                            e_StrEn = default(double),
+                                            };
+                                        var records = csv.GetRecords(anonymousTypeDef);
 
-                                                    eigenvalue.EigenvalueBucklingMultipliers.Add(mode,mult);
-                                                        
-                                                }
-                                            }
-
-                                            if (eigenvalue.EigenvalueBucklingMultipliers.Count == 0) throw new AnsysSolverException($"The eigenvalue summary came out empty.");
-      
-                                            // adds to the result list
+                                        foreach (var r in records)
+                                        {
                                             _model.Results.Add(new FeResultItem(
                                                 inResultClass: feResult,
-                                                inFeLocation: FeResultLocation.CreateModelLocation(_model),
-                                                inResultValue: eigenvalue));
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            throw new AnsysSolverException($"Could not parse file {inFullFileName} to read the Nodal Stress Results by OptimizationSection Point.", e);
+                                                inFeLocation: FeResultLocation.CreateElementLocation(_model, _model.MeshBeamElements[r.ELEMENT]), 
+                                                inResultValue: new FeResultValue_ElementStrainEnergy(r.e_StrEn)));
                                         }
                                     }
                                 }
-                                    break;
-
-                                default:
-                                    throw new ArgumentOutOfRangeException();
                             }
+                                break;
+
+                            case FeResultTypeEnum.Model_EigenvalueBuckling_Mode1Factor:
+                            case FeResultTypeEnum.Model_EigenvalueBuckling_Mode2Factor:
+                            case FeResultTypeEnum.Model_EigenvalueBuckling_Mode3Factor:
+                            {
+                                Regex dataRegex = new Regex(@"^\s*(?<mode>\d+)\s*(?<mult>[\-\+\.\deE]+)");
+
+                                using (StreamReader reader = new StreamReader(inFullFileName))
+                                {
+                                    try
+                                    {
+                                        string line = null;
+
+                                        FeResultValue_EigenvalueBucklingSummary eigenvalue = new FeResultValue_EigenvalueBucklingSummary();
+
+                                        while ((line = reader.ReadLine()) != null)
+                                        {
+                                            Match dataMatch = dataRegex.Match(line);
+                                            if (dataMatch.Success)
+                                            {
+                                                int mode = int.Parse(dataMatch.Groups["mode"].Value);
+                                                double mult = double.Parse(dataMatch.Groups["mult"].Value);
+
+                                                eigenvalue.EigenvalueBucklingMultipliers.Add(mode,mult);
+                                                    
+                                            }
+                                        }
+
+                                        if (eigenvalue.EigenvalueBucklingMultipliers.Count == 0) throw new FeSolverException($"The eigenvalue summary came out empty.");
+  
+                                        // adds to the result list
+                                        _model.Results.Add(new FeResultItem(
+                                            inResultClass: feResult,
+                                            inFeLocation: FeResultLocation.CreateModelLocation(_model),
+                                            inResultValue: eigenvalue));
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        throw new FeSolverException($"Could not parse file {inFullFileName} to read the Eigenvalue Buckling Table.", e);
+                                    }
+                                }
+                            }
+                                break;
+
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
 
                     }
                         break;
@@ -3173,24 +3521,5 @@ PNGR,TMOD,1
             Sb.AppendLine(inComment);
         }
         #endregion
-    }
-
-    public class AnsysSolverException : Exception
-    {
-        public AnsysSolverException()
-        {
-        }
-
-        public AnsysSolverException(string message) : base(message)
-        {
-        }
-
-        public AnsysSolverException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
-
-        protected AnsysSolverException([NotNull] SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
     }
 }

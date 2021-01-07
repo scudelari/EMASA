@@ -25,9 +25,13 @@ using Emasa_Optimizer.Opt;
 using Emasa_Optimizer.Opt.ParamDefinitions;
 using Emasa_Optimizer.Opt.ProbQuantity;
 using Emasa_Optimizer.WpfResources;
+using LiveCharts;
+using LiveCharts.Definitions.Series;
+using LiveCharts.Wpf;
 using NLoptNet;
 using Prism.Events;
 using RhinoInterfaceLibrary;
+using Sap2000Library;
 
 namespace Emasa_Optimizer
 {
@@ -38,14 +42,31 @@ namespace Emasa_Optimizer
     {
         public MainWindow()
         {
-            InitializeComponent();
-        }
-        private async void Window_Initialized(object sender, EventArgs e)
-        {            
             try
             {
-                BusyOverlay.ShowOverlay();
-                
+                InitializeComponent();
+
+                // Forces the DataContext AFTER the initialization. Necessary because some elements in the AppSS reference FrameworkElements within the window.
+                this.DataContext = AppSS.I;
+                // Sets the Context of the Additional Content
+                Window_CustomOverlay.SetAdditionalContent_DataContext(AppSS.I);
+            }
+            catch (Exception e)
+            {
+                ExceptionViewer ev = ExceptionViewer.Show(e);
+                Application.Current.Shutdown(1);
+            }
+        }
+
+        private void Window_Initialized(object sender, EventArgs e)
+        {            
+        }
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                BusyOverlayBindings.I.ShowOverlay();
+
                 void lf_Work()
                 {
                     // Starts the Optimize Manager, initializing the connection with GrassHopper and other variables
@@ -58,34 +79,31 @@ namespace Emasa_Optimizer
                 task.Start();
                 await task;
 
-                AppSS.Start(this);
-                //BusyOptimizingOverlay.DataContext = AppSS.I;
-                BusyOptimizingOverlay.SetAdditionalContentDataContext(AppSS.I);
+
             }
             catch (Exception ex)
             {
-                ExceptionViewer.Show(ex);
+                ExceptionViewer ev = ExceptionViewer.Show(ex);
                 Application.Current.Shutdown(1);
             }
             finally
             {
-                BusyOverlay.HideOverlayAndReset();
+                BusyOverlayBindings.I.HideOverlayAndReset();
             }
-            
+
             EventAggregatorSingleton.I.GetEvent<BindBeginCommandEvent>().Subscribe(BindBeginCommandEventHandler, ThreadOption.UIThread);
             EventAggregatorSingleton.I.GetEvent<BindEndCommandEvent>().Subscribe(BindEndCommandEventHandler, ThreadOption.UIThread);
             EventAggregatorSingleton.I.GetEvent<BindMessageEvent>().Subscribe(BindMessageEventHandler, ThreadOption.UIThread);
             EventAggregatorSingleton.I.GetEvent<BindGenericCommandEvent>().Subscribe(BindGenericCommandEventHandler);
+
         }
 
         #region Binder Event Handlers
         private void BindBeginCommandEventHandler(BindCommandEventArgs inObj)
         {
-            BusyOptimizingOverlay.ShowOverlay();
         }
         private void BindEndCommandEventHandler(BindCommandEventArgs inObj)
         {
-            BusyOptimizingOverlay.HideOverlayAndReset();
         }
         private void BindMessageEventHandler(BindMessageEventArgs inObj)
         {
@@ -111,47 +129,6 @@ namespace Emasa_Optimizer
         }
         #endregion
 
-        private async void Solve_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                #region Resetting the overlay's variables.
-                // Resets the progress bar
-                AppSS.I.Overlay_ProgressBarMaximum = 1;
-                AppSS.I.Overlay_ProgressBarCurrent = 0;
-
-                // Resets the messages
-                AppSS.I.Overlay_TopMessage = "";
-
-                // Hides the currently solve details
-                AppSS.I.Overlay_ProblemConfigDetailsVisible = Visibility.Collapsed;
-                #endregion
-
-                BusyOptimizingOverlay.ShowOverlay();
-
-                void lf_Work()
-                {
-                    // Starts the Optimize Manager, initializing the connection with GrassHopper and other variables
-                    CustomOverlayBindings.I.Title = "Working";
-
-                    AppSS.I.SolveMgr.OptimizeMissingProblemConfigurations();
-                }
-
-                // Runs the job async
-                Task task = new Task(lf_Work);
-                task.Start();
-                await task;
-            }
-            catch (Exception ex)
-            {
-                ExceptionViewer.Show(ex);
-            }
-            finally
-            {
-                BusyOptimizingOverlay.HideOverlayAndReset();
-            }
-        }
-
         private void CancelSolveButton_Click(object sender, RoutedEventArgs e)
         {
             // Sends the cancel signal
@@ -175,8 +152,20 @@ namespace Emasa_Optimizer
 
         private async void Debug_Click(object sender, RoutedEventArgs e)
         {
-            int a = 0;
-            a++;
+            try
+            {
+                S2KModel.SM.OpenFile(@"C:\Users\EngRafaelSMacedo\Desktop\RhinoTester\Elliptical Arch.gh_data\NlOpt\FeWork\perfect.s2k");
+            }
+            finally
+            {
+                // Terminates the Finite Element Solver
+                AppSS.I.FeSolver?.Dispose();
+                AppSS.I.FeSolver = null;
+            }
+
+
         }
+
+
     }
 }

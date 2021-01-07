@@ -93,7 +93,8 @@ namespace EmasaSapTools.Bindings
             {
                 try
                 {
-                    return (TextBlock) BoundTo.FindName("StagedSelectExcelTextBlock");
+                    //return (TextBlock) BoundTo.FindName("StagedSelectExcelTextBlock");
+                    return null;
                 }
                 catch (Exception)
                 {
@@ -553,21 +554,6 @@ namespace EmasaSapTools.Bindings
 
         private CollectionViewSource SCStepsDataGrid_CVS = new CollectionViewSource();
 
-        private DataGrid SCStepsDataGrid
-        {
-            get
-            {
-                try
-                {
-                    return (DataGrid) BoundTo.FindName("SCStepsDataGrid");
-                }
-                catch (Exception)
-                {
-                    return null;
-                }
-            }
-        }
-
         private ObservableCollection<SCStepsDataGridType> SCStepsDataGrid_OC;
         public ObservableCollection<SCStepsDataGridType> SCStepsDataGridItems
         {
@@ -588,21 +574,6 @@ namespace EmasaSapTools.Bindings
         }
 
         private CollectionViewSource SCCasesDataGrid_CVS = new CollectionViewSource();
-
-        private DataGrid SCCasesDataGrid
-        {
-            get
-            {
-                try
-                {
-                    return (DataGrid) BoundTo.FindName("SCCasesDataGrid");
-                }
-                catch (Exception)
-                {
-                    return null;
-                }
-            }
-        }
 
         private ObservableCollection<ScLoadCaseDataGridType> SCCasesDataGrid_OC;
 

@@ -17,8 +17,11 @@ namespace BaseWPFLibrary.Bindings
         }
         public override void SetOrReset()
         {
-            HideOverlayAndReset();
+            Title = "Working ...";
         }
+
+        // Special link to the FrameworkElement
+        public CustomOverlay OverlayElement => (CustomOverlay)GetReferencedFrameworkElement("UserControlInternalName_CustomOverlay");
 
         private Visibility _overlayVisibility;
         public Visibility OverlayVisibility
@@ -60,13 +63,15 @@ namespace BaseWPFLibrary.Bindings
 
         public void HideOverlayAndReset()
         {
-            OverlayVisibility = Visibility.Collapsed;
+            // Changes the visibility directly to the element itself
+            OverlayElement.Visibility = Visibility.Collapsed;
 
             Title = "Working ...";
         }
         public void ShowOverlay()
         {
-            OverlayVisibility = Visibility.Visible;
+            // Changes the visibility directly to the element itself
+            OverlayElement.Visibility = Visibility.Visible;
         }
 
     }

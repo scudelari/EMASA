@@ -134,11 +134,12 @@
             Attaches or launches the given process.
             </summary>
         </member>
-        <member name="M:FlaUI.Core.Application.Launch(System.String)">
+        <member name="M:FlaUI.Core.Application.Launch(System.String,System.String)">
             <summary>
             Launches the given executable.
             </summary>
             <param name="executable">The executable to launch.</param>
+            <param name="arguments">Arguments to executable</param>
         </member>
         <member name="M:FlaUI.Core.Application.Launch(System.Diagnostics.ProcessStartInfo)">
             <summary>

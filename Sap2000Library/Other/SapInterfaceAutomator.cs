@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Windows;
+using System.Threading.Tasks;
 using BaseWPFLibrary;
 using BaseWPFLibrary.Bindings;
 using BaseWPFLibrary.Forms;
@@ -32,7 +33,10 @@ using TS = TestStack.White;
 using TS_WAPI = TestStack.White.WindowsAPI;
 using TS_UITEM_WI = TestStack.White.UIItems.WindowItems;
 using Window = FlaUI.Core.AutomationElements.Window;
-
+using BaseWPFLibrary.Annotations;
+using FlaUI.Core.Patterns;
+using Point = System.Windows.Point;
+using FlaUI.Core.Input;
 
 namespace Sap2000Library.Other
 {
@@ -408,7 +412,7 @@ namespace Sap2000Library.Other
             TestStack.White.InputDevices.Mouse.Instance.Click();
             tableSelectWindow.WaitWhileBusy();
 
-            int[] tablesToSelect = new int[] {42, 75, 92, 107, 125, 138, 157, 171, 203, 493, 539};
+            int[] tablesToSelect = new int[] { 42, 75, 92, 107, 125, 138, 157, 171, 203, 493, 539 };
             foreach (int num in tablesToSelect)
             {
                 newPos = new Point(tree.Location.X + 75, tree.Location.Y + num);
@@ -630,7 +634,7 @@ namespace Sap2000Library.Other
 
                 foreach (FrameAssignmentTable table in tablesInFrameAssignment)
                 {
-                    newPos = new Point(tree.Location.X + 75, tree.Location.Y + (int) table);
+                    newPos = new Point(tree.Location.X + 75, tree.Location.Y + (int)table);
                     TestStack.White.InputDevices.Mouse.Instance.Location = newPos;
                     TestStack.White.InputDevices.Mouse.Instance.Click();
                     tableSelectWindow.WaitWhileBusy();
@@ -1124,7 +1128,6 @@ namespace Sap2000Library.Other
                 }
             }
         }
-
         private Window FlaUI_SapMainWindow
         {
             get
@@ -1266,6 +1269,8 @@ namespace Sap2000Library.Other
                 FlaUI_CloseAllSecondaryWindows_RecursiveChildren(FlaUI_SapMainWindow);
 
                 // Opens the Export to S2K Window
+                FlaUI_SapMainWindow.Focus();
+                FlaUI.Core.Input.Keyboard.Press(VirtualKeyShort.ESC);
                 using (FlaUI.Core.Input.Keyboard.Pressing(VirtualKeyShort.ALT))
                 {
                     FlaUI.Core.Input.Keyboard.Press(VirtualKeyShort.KEY_F);
@@ -1796,6 +1801,8 @@ namespace Sap2000Library.Other
                 FlaUI_CloseAllSecondaryWindows_RecursiveChildren(FlaUI_SapMainWindow);
 
                 // Opens the Import from S2K Window
+                FlaUI_SapMainWindow.Focus();
+                FlaUI.Core.Input.Keyboard.Press(VirtualKeyShort.ESC);
                 using (FlaUI.Core.Input.Keyboard.Pressing(VirtualKeyShort.ALT))
                 {
                     FlaUI.Core.Input.Keyboard.Press(VirtualKeyShort.KEY_F);
@@ -1948,16 +1955,16 @@ namespace Sap2000Library.Other
 
                 // Manipulates the textbox
                 RetryResult<AutomationElement> fileWindowFileNameTextBoxRetry = Retry.WhileNull(() => fileWindow.FindFirstDescendant(cf => cf.ByAutomationId("1148").And(cf.ByControlType(ControlType.Edit))),
-                    timeout: TimeSpan.FromSeconds(5), interval: TimeSpan.FromMilliseconds(200), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the filename TextBox from the file form.");
+                    timeout: TimeSpan.FromSeconds(10), interval: TimeSpan.FromMilliseconds(200), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the filename TextBox from the file form.");
                 AutomationElement fileWindowFileNameTextBox = fileWindowFileNameTextBoxRetry.Result;
                 if (!fileWindowFileNameTextBox.Patterns.Value.IsSupported) throw new FlaUIException("FlaUI: The filename TextBox from the file form does not implement the Value pattern");
                 fileWindowFileNameTextBox.Patterns.Value.Pattern.SetValue(fileName);
 
                 // File Open button
-                RetryResult<AutomationElement> openButtonRetry = Retry.WhileNull(() => fileWindow.FindFirstChild(cf => cf.ByAutomationId("1").And(cf.ByControlType(ControlType.Button))),
-                    timeout: TimeSpan.FromSeconds(5), interval: TimeSpan.FromMilliseconds(200), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the open button from the file form.");
+                RetryResult<AutomationElement> openButtonRetry = Retry.WhileNull(() => fileWindow.FindFirstChild(cf => cf.ByAutomationId("1")),
+                    timeout: TimeSpan.FromSeconds(10), interval: TimeSpan.FromMilliseconds(200), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the open button from the file form.");
                 Button openButton = openButtonRetry.Result.AsButton();
-                openButton.Click();
+                openButton.Invoke(); // Invoke because it is a SplitButton - not a button.
 
                 #endregion
 
@@ -1976,7 +1983,7 @@ namespace Sap2000Library.Other
 
                 // Closes the log dialog
                 RetryResult<AutomationElement> logDoneButtonRetry = Retry.WhileNull(() => logFormOut.FindFirstChild(cf => cf.ByAutomationId("cmdDone").And(cf.ByControlType(ControlType.Button))),
-                    timeout: TimeSpan.FromSeconds(5), interval: TimeSpan.FromMilliseconds(200), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the done button from the import log form.");
+                    timeout: TimeSpan.FromSeconds(10), interval: TimeSpan.FromMilliseconds(200), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the done button from the import log form.");
                 Button logDoneButton = logDoneButtonRetry.Result.AsButton();
                 logDoneButton.Click();
 
@@ -2004,7 +2011,7 @@ namespace Sap2000Library.Other
         {
             try
             {
-                if (inUpdateInterface) BusyOverlayBindings.I.SetIndeterminate("SAP2000: Opening and Setting Export Forms.");
+                if (inUpdateInterface) BusyOverlayBindings.I.SetIndeterminate("SAP2000: Closing all SAP2000 windows.");
 
                 FlaUI_Automation = new UIA3Automation();
                 FlaUI_SapMainWindow.Focus();
@@ -2020,78 +2027,19 @@ namespace Sap2000Library.Other
 
         public void FlaUI_Action_Test()
         {
-            //if (string.IsNullOrEmpty(inFullFileName)) throw new S2KHelperException("The export to S2K filename must be given.");
-
-            //if (inTables == null || inTables.Count == 0) throw new S2KHelperException("You must select at least one table to export.");
-
-            //if (inExportOptions == null) inExportOptions = new Sap2000ExportOptions();
-
-            const int selectShiftX = -10;
-            const int selectShiftY = 7;
-
             try
             {
                 FlaUI_Automation = new UIA3Automation();
-                FlaUI_SapMainWindow.Focus();
+                //FlaUI_SapMainWindow.Focus();
 
                 FlaUI_CloseAllSecondaryWindows_RecursiveChildren(FlaUI_SapMainWindow);
 
-                // Opens the Export to S2K Window
-                using (FlaUI.Core.Input.Keyboard.Pressing(VirtualKeyShort.ALT))
-                {
-                    FlaUI.Core.Input.Keyboard.Press(VirtualKeyShort.KEY_F);
-                    FlaUI.Core.Input.Keyboard.Press(VirtualKeyShort.KEY_E);
-                    FlaUI.Core.Input.Keyboard.Press(VirtualKeyShort.KEY_T);
-                }
+                // Finds the main menu
+                RetryResult<AutomationElement> mainMenuRetry = Retry.WhileNull(() => FlaUI_SapMainWindow.FindFirstChild(cf => cf.ByControlType(ControlType.MenuBar)),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Main Menu.");
+                Menu mainMenu = mainMenuRetry.Result.AsMenu();
+                mainMenu.Items.Find(a => a.Name == "File").Items.Find(b => b.Name == "Export").Items.Find(c => c.Name == "SAP2000 .s2k Text File...").Invoke();
 
-                // Gets the export window
-                RetryResult<AutomationElement> exportWindowRetry = Retry.WhileNull(() => FlaUI_SapMainWindow.FindFirstChild(cf => cf.ByAutomationId("DBTableForm").And(cf.ByControlType(ControlType.Window))),
-                    timeout: TimeSpan.FromSeconds(5), interval: TimeSpan.FromMilliseconds(200), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Export Form.");
-                Window exportWindow = exportWindowRetry.Result.AsWindow();
-
-                // First, marks the Expose all Tables
-                RetryResult<AutomationElement> exposeAllRetry = Retry.WhileNull(() => exportWindow.FindFirstDescendant(cf => cf.ByAutomationId("chkEnable").And(cf.ByControlType(ControlType.CheckBox))),
-                    timeout: TimeSpan.FromSeconds(5), interval: TimeSpan.FromMilliseconds(200), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Expose All Tables CheckBox.");
-                CheckBox exposeAllCheckBox = exposeAllRetry.Result.AsCheckBox();
-
-                if (exposeAllCheckBox.IsChecked.HasValue && exposeAllCheckBox.IsChecked.Value == false)
-                {
-                    exposeAllCheckBox.Click();
-                }
-
-                // Getting the Table Tree
-                RetryResult<AutomationElement> tableTreeRetry = Retry.WhileNull(() => exportWindow.FindFirstChild(cf => cf.ByAutomationId("TreeView1").And(cf.ByControlType(ControlType.Tree))),
-                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(200), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Table Tree.");
-                Tree tableTree = tableTreeRetry.Result.AsTree();
-
-                #region Model Definition
-
-                // Gets the first element - Model Definition
-                RetryResult<AutomationElement> modelDefTreeItemRetry = Retry.WhileNull(() => tableTree.FindFirstChild(cf => cf.ByControlType(ControlType.TreeItem)),
-                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(200), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Model Definition Tree Item.");
-                Tree modelDefTreeItem = modelDefTreeItemRetry.Result.AsTree();
-
-                // Checks the name to see if the selections are clear
-                Regex modelDefRegex = new Regex(@"MODEL\s*DEFINITION\s*\((?<sel>\d*)\s*of\s*(?<total>\d*)");
-
-                while (true)
-                {
-                    Match modelDefMatch1 = modelDefRegex.Match(modelDefTreeItem.Name);
-                    if (!modelDefMatch1.Success) throw new S2KHelperException("Could not match the Model Definition Tree Item Name to the Regex.");
-                    if (!int.TryParse(modelDefMatch1.Groups["sel"].Value, out int modelDefMatch1_SelCount)) throw new S2KHelperException("Could not match the Model Definition Tree Item Name to the Regex.");
-
-                    if (modelDefMatch1_SelCount == 0) break;
-
-                    // Clicks on the selection
-                    FlaUI.Core.Input.Mouse.Click(new System.Drawing.Point(modelDefTreeItem.BoundingRectangle.X + selectShiftX, modelDefTreeItem.BoundingRectangle.Y + selectShiftY));
-                }
-
-                // Gets the all elements - Model Definition
-                RetryResult<AutomationElement[]> modelDefTreeAllItemsRetry = Retry.WhileNull(() => tableTree.FindAllDescendants(),
-                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(200), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the all tree descendants.");
-                AutomationElement[] descendants = modelDefTreeAllItemsRetry.Result;
-
-                #endregion
 
             }
             finally
@@ -2289,7 +2237,1036 @@ namespace Sap2000Library.Other
             }
 
         }
+
+        public bool FlaUI_Action_OpenFileAndCloseDialog(string inSapFileName)
+        {
+            try
+            {
+                FlaUI_Automation = new UIA3Automation();
+                FlaUI_SapMainWindow.Focus();
+                FlaUI_CloseAllSecondaryWindows_RecursiveChildren(FlaUI_SapMainWindow);
+
+                if (Path.GetExtension(inSapFileName) != ".sdb" && Path.GetExtension(inSapFileName) != ".s2k") return false;
+
+                // Flag that tells to abandon the search for the dialog.
+                bool release = false;
+                Task windowAutoCloserTask = new Task(() =>
+                {
+                    Thread.Sleep(200); // Waits to ensure that the file is loading in SAP2000
+
+                    // Waits until the dialog is shown
+                    RetryResult<bool> waitLogFormRetry = Retry.WhileFalse(() =>
+                    {
+                        if (release) return true;
+
+                        // Tries to the get the log form
+                        AutomationElement logForm = FlaUI_SapMainWindow.FindFirstChild(cf => cf.ByAutomationId("DBLogForm").And(cf.ByControlType(ControlType.Window)));
+                        
+                        // Could not get the form - returns false
+                        if (logForm == null) return false;
+
+                        if (logForm.Patterns.Window.IsSupported && logForm.Patterns.Window.Pattern.WindowInteractionState.Value == WindowInteractionState.ReadyForUserInteraction)
+                        {
+                            // Closes the forms
+                            RetryResult<AutomationElement> logDoneButtonRetry = Retry.WhileNull(() => logForm.FindFirstChild(cf => cf.ByAutomationId("cmdDone").And(cf.ByControlType(ControlType.Button))),
+                                timeout: TimeSpan.FromSeconds(1), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the done button from the import log form.");
+                            Button logDoneButton = logDoneButtonRetry.Result.AsButton();
+                            logDoneButton.Invoke();
+
+                            return true;
+                        }
+                        
+                        return false;
+                    }, timeout: TimeSpan.FromMinutes(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, ignoreException: false, timeoutMessage: "FlaUI: Sap2000 took too long to finish the import operation.");
+
+                });
+                windowAutoCloserTask.Start();
+
+                // Tells SAP2000 to open the file - this has the potential of locking if the model summary dialog appears
+                S2KModel.SM.OpenFile(inSapFileName);
+                release = true;
+
+                // Waits for the closure of the form
+                windowAutoCloserTask.Wait();
+
+                return true;
+            }
+            finally
+            {
+                FlaUI_Automation.Dispose();
+                FlaUI_Automation = null;
+            }
+        }
+        public void FlaUI_Action_AsyncCloseImportSummaryDialog()
+        {
+            try
+            {
+                FlaUI_Automation = new UIA3Automation();
+
+                // Waits until the dialog is shown
+                RetryResult<AutomationElement> waitLogFormRetry = Retry.WhileNull(() =>
+                {
+                    AutomationElement logForm = FlaUI_SapMainWindow.FindFirstChild(cf => cf.ByAutomationId("DBLogForm").And(cf.ByControlType(ControlType.Window)));
+                    if (logForm != null && logForm.Patterns.Window.IsSupported && logForm.Patterns.Window.Pattern.WindowInteractionState.Value == WindowInteractionState.ReadyForUserInteraction) return logForm;
+                    return null;
+                }, timeout: TimeSpan.FromMinutes(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, ignoreException: true, timeoutMessage: "FlaUI: Sap2000 took too long to finish the import operation.");
+
+                if (!waitLogFormRetry.Success) throw new S2KHelperException("Could not import the tables from the s2k format text file.");
+                Window logFormOut = waitLogFormRetry.Result.AsWindow();
+
+
+            }
+            finally
+            {
+                FlaUI_Automation.Dispose();
+                FlaUI_Automation = null;
+            }
+        }
+
+
+
+        public void FlaUI_Action_OutputTableNamedSetToS2K([NotNull] string inNamedTableSet, [NotNull] string inFullFileName, int inFinishTimeoutMins = 300)
+        {
+            if (string.IsNullOrEmpty(inNamedTableSet)) throw new ArgumentNullException(nameof(inNamedTableSet));
+            if (string.IsNullOrEmpty(inFullFileName)) throw new ArgumentNullException(nameof(inFullFileName));
+
+            // Handling the output filename
+            FileInfo fInfo = new FileInfo(inFullFileName);
+            if (fInfo.Exists)
+            {
+                try
+                {
+                    fInfo.Delete();
+                }
+                catch (Exception)
+                {
+                    throw new S2KHelperException("The target filename already exists and it could not be deleted."); ;
+                }
+            }
+
+            try
+            {
+                FlaUI_Automation = new UIA3Automation();
+                FlaUI_SapMainWindow.Focus();
+                FlaUI_CloseAllSecondaryWindows_RecursiveChildren(FlaUI_SapMainWindow);
+
+                // Opens the Export to S2K Window
+                FlaUI_SapMainWindow.Focus();
+
+                // Sets the desired output to no results
+                FlaUI_SapMainWindow.Focus();
+
+                // Roundtrip is necessary because SAP2000 was ignoring my the first key.
+                FlaUI.Core.Input.Keyboard.Type(VirtualKeyShort.ESC);
+                using (FlaUI.Core.Input.Keyboard.Pressing(VirtualKeyShort.ALT))
+                {
+                    FlaUI.Core.Input.Keyboard.Type(VirtualKeyShort.KEY_F);
+                }
+                FlaUI.Core.Input.Keyboard.Type(VirtualKeyShort.ESC);
+                using (FlaUI.Core.Input.Keyboard.Pressing(VirtualKeyShort.ALT))
+                {
+                    FlaUI.Core.Input.Keyboard.Type(VirtualKeyShort.KEY_F);
+                    FlaUI.Core.Input.Keyboard.Type(VirtualKeyShort.KEY_E);
+                    FlaUI.Core.Input.Keyboard.Type(VirtualKeyShort.KEY_T);
+                }
+
+                //FlaUI_ClickOnSap2000MainMenuItem(new[] {"File", "Export", "SAP2000 .s2k Text File..." });
+
+                // Gets the export window
+                RetryResult<AutomationElement> exportWindowRetry = Retry.WhileNull(() => FlaUI_SapMainWindow.FindFirstChild(cf => cf.ByAutomationId("DBTableForm").And(cf.ByControlType(ControlType.Window))),
+                    timeout: TimeSpan.FromSeconds(10), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Export Form.");
+                Window exportWindow = exportWindowRetry.Result.AsWindow();
+
+                // Finds the Show Named Sets Button _cmdNamedSet_1
+                RetryResult<AutomationElement> showNamedSetsButtonRetry = Retry.WhileNull(() => exportWindow.FindFirstDescendant(cf => cf.ByControlType(ControlType.Button).And(cf.ByAutomationId("_cmdNamedSet_1"))),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Show Named Sets Button.");
+                Button showNamedSetsButton = showNamedSetsButtonRetry.Result.AsButton();
+                showNamedSetsButton.Click();
+
+                // Gets the Select Named Sets Window
+                RetryResult<AutomationElement> selectNamedSetWindowRetry = Retry.WhileNull(() => exportWindow.FindFirstChild(cf => cf.ByAutomationId("SelectForm").And(cf.ByControlType(ControlType.Window))),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Select Named Set Window.");
+                Window selectNamedSetWindow = selectNamedSetWindowRetry.Result.AsWindow();
+
+                // Gets the List of Named Sets from the selection window _lstName_1
+                RetryResult<AutomationElement> selectNamedSetListRetry = Retry.WhileNull(() => selectNamedSetWindow.FindFirstDescendant(cf => cf.ByAutomationId("_lstName_1")),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Select Named Set List.");
+                ListBox selectNamedSetList = selectNamedSetListRetry.Result.AsListBox();
+
+                // Gets the list item that was requested
+                RetryResult<AutomationElement[]> namedTablesListItemRetry = Retry.WhileNull(() => selectNamedSetList.FindAllChildren(cf => cf.ByControlType(ControlType.ListItem)),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Select Named Set List Items.");
+                List<ListBoxItem> namedTablesListItems = (from a in namedTablesListItemRetry.Result select a.AsListBoxItem()).ToList();
+
+                // Selects the requested item
+                foreach (ListBoxItem namedTablesListItem in namedTablesListItems)
+                {
+                    if (namedTablesListItem.Name == inNamedTableSet.ToUpper())
+                    {
+                        namedTablesListItem.Select();
+                        break;
+                    }
+                }
+
+                // Gets the ok button and clicks
+                RetryResult<AutomationElement> selectNamedSetWindowOKButtonRetry = Retry.WhileNull(() => selectNamedSetWindow.FindFirstDescendant(cf => cf.ByAutomationId("cmdOK").And(cf.ByControlType(ControlType.Button))),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Select Named Set Window OK Button.");
+                Button selectNamedSetWindowOKButton = selectNamedSetWindowOKButtonRetry.Result.AsButton();
+                selectNamedSetWindowOKButton.Click();
+
+                #region Export
+                // Gets the OK button of the export window
+                RetryResult<AutomationElement> exportOkButtonRetry = Retry.WhileNull(() => exportWindow.FindFirstChild(cf => cf.ByAutomationId("cmdOK").And(cf.ByControlType(ControlType.Button))),
+                    timeout: TimeSpan.FromSeconds(5), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the OK Button of the Export Form.");
+                Button exportOkButton = exportOkButtonRetry.Result.AsButton();
+                exportOkButton.Click();
+
+                Debug.WriteLine($"{DateTime.Now}: Export window closed.");
+
+                // Gets the save window
+                RetryResult<AutomationElement> saveWindowRetry = Retry.WhileNull(() => FlaUI_SapMainWindow.FindFirstChild(cf => cf.ByClassName("#32770")),
+                    timeout: TimeSpan.FromSeconds(10), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Save Text File As Form.");
+                Window saveWindow = saveWindowRetry.Result.AsWindow();
+
+                // Manipulates the textbox
+                RetryResult<AutomationElement> saveWindowFileNameTextBoxRetry = Retry.WhileNull(() => saveWindow.FindFirstDescendant(cf => cf.ByAutomationId("1001")),
+                    timeout: TimeSpan.FromSeconds(5), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the filename TextBox from the save form.");
+                AutomationElement saveWindowFileNameTextBox = saveWindowFileNameTextBoxRetry.Result;
+                if (!saveWindowFileNameTextBox.Patterns.Value.IsSupported) throw new FlaUIException("FlaUI: The filename TextBox from the save for does not implement the Value pattern");
+                saveWindowFileNameTextBox.Patterns.Value.Pattern.SetValue(inFullFileName);
+
+                // Save OK button
+                RetryResult<AutomationElement> saveButtonRetry = Retry.WhileNull(() => saveWindow.FindFirstChild(cf => cf.ByAutomationId("1").And(cf.ByControlType(ControlType.Button))),
+                    timeout: TimeSpan.FromSeconds(5), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the save button from the save form.");
+                Button saveButton = saveButtonRetry.Result.AsButton();
+                saveButton.Click();
+
+                Debug.WriteLine($"{DateTime.Now}: Save window closed.");
+                #endregion
+
+                // Waits until finished
+                RetryResult<bool> waitRetry = Retry.WhileFalse(() =>
+                {
+                    AutomationElement statusPane = FlaUI_SapMainWindow.FindFirstChild(cf => cf.ByAutomationId("panStatus"));
+                    AutomationElement statusText = statusPane.FindFirstChild();
+                    return statusText.Name.Trim() == "Ready";
+                }, timeout: TimeSpan.FromMinutes(3), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, ignoreException: true, timeoutMessage: "FlaUI: Sap2000 took too long to finish the export operation.");
+
+                if (!waitRetry.Success) throw new S2KHelperException("Could not export the tables to s2k format text file.");
+            }
+            finally
+            {
+                FlaUI_Automation.Dispose();
+                FlaUI_Automation = null;
+            }
+        }
+        public void FlaUI_Action_ModifyUndeformedGeometry(double inScaleFactor, string inCase, int inMode)
+        {
+            try
+            {
+                FlaUI_Automation = new UIA3Automation();
+                FlaUI_SapMainWindow.Focus();
+
+                FlaUI_CloseAllSecondaryWindows_RecursiveChildren(FlaUI_SapMainWindow);
+
+                // Sets the desired output to no results
+                FlaUI_SapMainWindow.Focus();
+                FlaUI.Core.Input.Keyboard.Type(VirtualKeyShort.ESC);
+                using (FlaUI.Core.Input.Keyboard.Pressing(VirtualKeyShort.ALT))
+                {
+                    FlaUI.Core.Input.Keyboard.Type(VirtualKeyShort.KEY_N);
+                    FlaUI.Core.Input.Keyboard.Type(VirtualKeyShort.KEY_G);
+                }
+
+                // Gets the form
+                RetryResult<AutomationElement> modifyFormRetry = Retry.WhileNull(() => FlaUI_SapMainWindow.FindFirstChild(cf => cf.ByAutomationId("fModifyUndeformedGeometry").And(cf.ByControlType(ControlType.Window))),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Modify Undeformed Geometry Form.");
+                Window modifyWindow = modifyFormRetry.Result.AsWindow();
+
+                RetryResult<AutomationElement> scaleModeShapeRadioButtonRetry = Retry.WhileNull(() => modifyWindow.FindFirstDescendant(cf => cf.ByControlType(ControlType.RadioButton).And(cf.ByAutomationId("optGeom2"))),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Scale Mode Shape RadioButton.");
+                RadioButton scaleModeShapeRadioButton = scaleModeShapeRadioButtonRetry.Result.AsRadioButton();
+                scaleModeShapeRadioButton.IsChecked = true;
+
+                RetryResult<AutomationElement> loadCaseComboBoxRetry = Retry.WhileNull(() => modifyWindow.FindFirstDescendant(cf => cf.ByControlType(ControlType.ComboBox).And(cf.ByAutomationId("cboCase2"))),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Load Case ComboBox.");
+                ComboBox loadCaseComboBox = loadCaseComboBoxRetry.Result.AsComboBox();
+                loadCaseComboBox.Select(inCase);
+
+                RetryResult<AutomationElement> modeComboBoxRetry = Retry.WhileNull(() => modifyWindow.FindFirstDescendant(cf => cf.ByControlType(ControlType.ComboBox).And(cf.ByAutomationId("cboMode"))),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Mode ComboBox.");
+                ComboBox modeComboBox = modeComboBoxRetry.Result.AsComboBox();
+                modeComboBox.Select($"{inMode}");
+
+                RetryResult<AutomationElement> maximumDisplacementTextBoxRetry = Retry.WhileNull(() => modifyWindow.FindFirstDescendant(cf => cf.ByControlType(ControlType.Edit).And(cf.ByAutomationId("TextBox2"))),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Maximum Displacement TextBox.");
+                TextBox maximumDisplacementTextBox = maximumDisplacementTextBoxRetry.Result.AsTextBox();
+                maximumDisplacementTextBox.Text = $"{inScaleFactor}";
+
+                // Clicks the OK Button
+                RetryResult<AutomationElement> okButtonRetry = Retry.WhileNull(() => modifyWindow.FindFirstDescendant(cf => cf.ByControlType(ControlType.Button).And(cf.ByAutomationId("cmdOK"))),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the OK Button of the Modify Undeformed Geometry Form.");
+                Button okButton = okButtonRetry.Result.AsButton();
+                okButton.Click();
+            }
+            finally
+            {
+                FlaUI_Automation.Dispose();
+                FlaUI_Automation = null;
+            }
+        }
+
         #endregion
+
+
+        #region FlaUI - Screenshots
+        public void FlaUI_Prepare_For_Screenshots(double inScreenshotWidth, double inScreenshotHeight)
+        {
+            try
+            {
+                FlaUI_Automation = new UIA3Automation();
+                FlaUI_SapMainWindow.Focus();
+
+                FlaUI_CloseAllSecondaryWindows_RecursiveChildren(FlaUI_SapMainWindow);
+
+                // Ensures correct menu display
+                FlaUI_SapMainWindow.Focus();
+                FlaUI.Core.Input.Keyboard.Press(VirtualKeyShort.ESC);
+                using (FlaUI.Core.Input.Keyboard.Pressing(VirtualKeyShort.ALT))
+                {
+                    FlaUI.Core.Input.Keyboard.Press(VirtualKeyShort.KEY_O);
+                    FlaUI.Core.Input.Keyboard.Press(VirtualKeyShort.KEY_R);
+                }
+
+                // Closing all other views
+                Rectangle r = FlaUI_SapMainWindow.BoundingRectangle;
+                System.Drawing.Point viewCloseLocation = new System.Drawing.Point(r.Right - 20, r.Top + 95);
+                FlaUI_SapMainWindow.Focus();
+                Retry.WhileFalse(() =>
+                {
+                    IWindowPattern mwPat = FlaUI_SapMainWindow.Patterns.Window.PatternOrDefault;
+                    return mwPat?.WindowInteractionState.ValueOrDefault == WindowInteractionState.ReadyForUserInteraction;
+                }, TimeSpan.FromSeconds(20), TimeSpan.FromMilliseconds(20), true, true, "The Main Window of SAP2000 did not get back to the ReadyForUserInteraction state");
+                Mouse.Click(viewCloseLocation, MouseButton.Left);
+                FlaUI_SapMainWindow.Click();
+
+
+                IWindowPattern mainWindowPattern = FlaUI_SapMainWindow.Patterns.Window.PatternOrDefault;
+                mainWindowPattern?.SetWindowVisualState(WindowVisualState.Normal);
+                
+                ITransformPattern mainWindowTransformPattern = FlaUI_SapMainWindow.Patterns.Transform.PatternOrDefault;
+                mainWindowTransformPattern?.Resize(inScreenshotWidth + 45, inScreenshotHeight + 137);
+
+                FlaUI_SapMainWindow.Focus();
+                Retry.WhileFalse(() =>
+                {
+                    IWindowPattern mwPat = FlaUI_SapMainWindow.Patterns.Window.PatternOrDefault;
+                    return mwPat?.WindowInteractionState.ValueOrDefault == WindowInteractionState.ReadyForUserInteraction;
+                }, TimeSpan.FromSeconds(20), TimeSpan.FromMilliseconds(20), true, true, "The Main Window of SAP2000 did not get back to the ReadyForUserInteraction state");
+            }
+            finally
+            {
+                FlaUI_Automation.Dispose();
+                FlaUI_Automation = null;
+            }
+        }
+
+        // The crop rectangle to get only the viewport in SAP2000 (removing the interface).
+        private readonly Rectangle _screenShotRectangle = new Rectangle(36, 107, 810, 610);
+
+        public Dictionary<Sap2000ViewDirection, Image> FlaUI_GetSapScreenShot_JointNames(IEnumerable<Sap2000ViewDirection> inDirections)
+        {
+            try
+            {
+                FlaUI_Automation = new UIA3Automation();
+                FlaUI_SapMainWindow.Focus();
+
+                FlaUI_CloseAllSecondaryWindows_RecursiveChildren(FlaUI_SapMainWindow);
+
+                // Sets the desired output to no results
+                FlaUI_SapMainWindow.Focus();
+                FlaUI.Core.Input.Keyboard.Press(VirtualKeyShort.ESC);
+                FlaUI.Core.Input.Keyboard.Press(VirtualKeyShort.F4);
+
+                // Configures the view
+                FlaUI_SetViewBasic(inJointLabels: true, inViewType: "Extrude", inShowAnalysisModelIfAvailable: true, inJointRestraints: true);
+
+                // Gets the screenshots and return
+                return FlaUI_GetScreenshots(inDirections);
+            }
+            finally
+            {
+                FlaUI_Automation.Dispose();
+                FlaUI_Automation = null;
+            }
+        }
+        public Dictionary<Sap2000ViewDirection, Image> FlaUI_GetSapScreenShot_FrameNames(IEnumerable<Sap2000ViewDirection> inDirections)
+        {
+            try
+            {
+                FlaUI_Automation = new UIA3Automation();
+                FlaUI_SapMainWindow.Focus();
+
+                FlaUI_CloseAllSecondaryWindows_RecursiveChildren(FlaUI_SapMainWindow);
+
+                // Sets the desired output to no results
+                FlaUI_SapMainWindow.Focus();
+                FlaUI.Core.Input.Keyboard.Press(VirtualKeyShort.ESC);
+                FlaUI.Core.Input.Keyboard.Press(VirtualKeyShort.F4);
+
+                // Configures the view
+                FlaUI_SetViewBasic(inFramesLabels: true, inViewType: "Extrude", inShowAnalysisModelIfAvailable: true, inJointRestraints: true);
+
+                // Gets the screenshots and return
+                return FlaUI_GetScreenshots(inDirections);
+
+            }
+            finally
+            {
+                FlaUI_Automation.Dispose();
+                FlaUI_Automation = null;
+            }
+        }
+        public Dictionary<Sap2000ViewDirection, Image> FlaUI_GetSapScreenShot_JointReaction(IEnumerable<Sap2000ViewDirection> inDirections, string inCase)
+        {
+            try
+            {
+                FlaUI_Automation = new UIA3Automation();
+                FlaUI_SapMainWindow.Focus();
+
+                FlaUI_CloseAllSecondaryWindows_RecursiveChildren(FlaUI_SapMainWindow);
+
+                // Sets the desired output to no results
+                FlaUI_SapMainWindow.Focus();
+
+                // Configures the basic view
+                FlaUI_SetViewBasic(inJointLabels: true, inViewType: "Extrude", inShowAnalysisModelIfAvailable: true, inJointRestraints: true);
+
+                FlaUI_SapMainWindow.Focus();
+                FlaUI.Core.Input.Keyboard.Press(VirtualKeyShort.ESC);
+                FlaUI.Core.Input.Keyboard.Press(VirtualKeyShort.F7);
+
+                // Gets the display form view
+                RetryResult<AutomationElement> jointReactionsOptionsRetry = Retry.WhileNull(() => FlaUI_SapMainWindow.FindFirstChild(cf => cf.ByName("Display Joint Reactions").And(cf.ByControlType(ControlType.Window))),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the joint reactions Form.");
+                Window jointReactionsWindow = jointReactionsOptionsRetry.Result.AsWindow();
+
+                RetryResult<AutomationElement> caseComboGroupRetry = Retry.WhileNull(() => jointReactionsWindow.FindFirstChild(cf => cf.ByName("Case/Combo").And(cf.ByControlType(ControlType.Group))),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Case/Combo Group.");
+                AutomationElement caseComboGroup = caseComboGroupRetry.Result;
+
+                RetryResult<AutomationElement> caseComboComboBoxRetry = Retry.WhileNull(() => caseComboGroup.FindFirstChild(cf => cf.ByControlType(ControlType.ComboBox)),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Case/Combo ComboBox.");
+                ComboBox caseComboComboBox = caseComboComboBoxRetry.Result.AsComboBox();
+                caseComboComboBox.Select(inCase);
+
+                RetryResult<AutomationElement> arrowsDisplayTypeRadioButtonRetry = Retry.WhileNull(() => jointReactionsWindow.FindFirstDescendant(cf => cf.ByControlType(ControlType.RadioButton).And(cf.ByName("Arrows"))),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Arrows Display Type RadioButton.");
+                RadioButton arrowsDisplayTypeRadioButton = arrowsDisplayTypeRadioButtonRetry.Result.AsRadioButton();
+                arrowsDisplayTypeRadioButton.IsChecked = true;
+
+                // Clicks the OK Button
+                RetryResult<AutomationElement> okButtonRetry = Retry.WhileNull(() => jointReactionsWindow.FindFirstChild(cf => cf.ByName("OK").And(cf.ByControlType(ControlType.Button))),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the OK Button of the joint reactions Form.");
+                Button okButton = okButtonRetry.Result.AsButton();
+                okButton.Invoke();
+
+                // Gets the screenshots and return
+                return FlaUI_GetScreenshots(inDirections);
+            }
+            finally
+            {
+                FlaUI_Automation.Dispose();
+                FlaUI_Automation = null;
+            }
+
+        }
+        public Dictionary<Sap2000ViewDirection, Image> FlaUI_GetSapScreenShot_DeformedShape(IEnumerable<Sap2000ViewDirection> inDirections, string inCase, double? inScale = null, string inContour = null, bool inShowUndeformedShadow = false, int? inStepOrMode = null)
+        {
+            try
+            {
+                FlaUI_Automation = new UIA3Automation();
+                FlaUI_SapMainWindow.Focus();
+
+                FlaUI_CloseAllSecondaryWindows_RecursiveChildren(FlaUI_SapMainWindow);
+
+                // Sets the desired output to no results
+                FlaUI_SapMainWindow.Focus();
+
+                // Configures the basic view
+                FlaUI_SetViewBasic(inJointLabels: true, inViewType: "Extrude", inShowAnalysisModelIfAvailable: true, inJointRestraints: true);
+
+                FlaUI_SapMainWindow.Focus();
+                FlaUI.Core.Input.Keyboard.Press(VirtualKeyShort.ESC);
+                FlaUI.Core.Input.Keyboard.Press(VirtualKeyShort.F6);
+
+                // Gets the display form view
+                RetryResult<AutomationElement> deformedShapeOptionsRetry = Retry.WhileNull(() => FlaUI_SapMainWindow.FindFirstChild(cf => cf.ByName("Display Deformed Shape").And(cf.ByControlType(ControlType.Window))),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Display Deformed Shape Form.");
+                Window deformedShapeOptionsWindow = deformedShapeOptionsRetry.Result.AsWindow();
+
+                // Case
+                RetryResult<AutomationElement> caseComboGroupRetry = Retry.WhileNull(() => deformedShapeOptionsWindow.FindFirstChild(cf => cf.ByName("Case/Combo").And(cf.ByControlType(ControlType.Group))),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Case/Combo Group.");
+                AutomationElement caseComboGroup = caseComboGroupRetry.Result;
+
+                RetryResult<AutomationElement> caseComboComboBoxRetry = Retry.WhileNull(() => caseComboGroup.FindFirstChild(cf => cf.ByControlType(ControlType.ComboBox)),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Case/Combo ComboBox.");
+                ComboBox caseComboComboBox = caseComboComboBoxRetry.Result.AsComboBox();
+                caseComboComboBox.Select(inCase);
+
+                // Scaling
+                RetryResult<AutomationElement> scalingGroupRetry = Retry.WhileNull(() => deformedShapeOptionsWindow.FindFirstChild(cf => cf.ByName("Scaling").And(cf.ByControlType(ControlType.Group))),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Scaling Group.");
+                AutomationElement scalingGroup = scalingGroupRetry.Result;
+                if (inScale.HasValue)
+                {
+                    RetryResult<AutomationElement> userDefinedRadioButtonRetry = Retry.WhileNull(() => scalingGroup.FindFirstChild(cf => cf.ByControlType(ControlType.RadioButton).And(cf.ByName("User Defined"))),
+                        timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the User Defined RadioButton.");
+                    RadioButton userDefinedRadioButton = userDefinedRadioButtonRetry.Result.AsRadioButton();
+                    userDefinedRadioButton.IsChecked = true;
+
+                    RetryResult<AutomationElement> scaleTextBoxRetry = Retry.WhileNull(() => scalingGroup.FindFirstChild(cf => cf.ByControlType(ControlType.Edit)),
+                        timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the scale TextBox.");
+                    TextBox scaleTextBox = scaleTextBoxRetry.Result.AsTextBox();
+                    scaleTextBox.Text = $"{inScale.Value}";
+                }
+                else
+                {
+                    RetryResult<AutomationElement> automaticRadioButtonRetry = Retry.WhileNull(() => scalingGroup.FindFirstChild(cf => cf.ByControlType(ControlType.RadioButton).And(cf.ByName("Automatic"))),
+                        timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Automatic RadioButton.");
+                    RadioButton automaticRadioButton = automaticRadioButtonRetry.Result.AsRadioButton();
+                    automaticRadioButton.IsChecked = true;
+                }
+
+                // step or mode?
+                if (inStepOrMode.HasValue)
+                {
+                    RetryResult<AutomationElement> multiValuedOptionsRetry = Retry.WhileNull(() => deformedShapeOptionsWindow.FindFirstChild(cf => cf.ByName("Multivalued Options").And(cf.ByControlType(ControlType.Group))),
+                        timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Multivalued Options Group.");
+                    AutomationElement multiValuedOptions = multiValuedOptionsRetry.Result;
+
+                    RetryResult<AutomationElement[]> multiValueTextBoxesRetry = Retry.WhileNull(() => multiValuedOptions.FindAllChildren(cf => cf.ByControlType(ControlType.Edit)),
+                        timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Multivalued Options' TextBoxes.");
+                    TextBox[] multiValueTextBoxes = multiValueTextBoxesRetry.Result.Select(a => a.AsTextBox()).ToArray();
+
+                    foreach (TextBox tb in multiValueTextBoxes)
+                    {
+                        if (tb.IsEnabled && !tb.IsOffscreen) tb.Text = $"{inStepOrMode.Value}";
+                    }
+                }
+
+                RetryResult<AutomationElement> contourGroupRetry = Retry.WhileNull(() => deformedShapeOptionsWindow.FindFirstChild(cf => cf.ByName("Contour Options").And(cf.ByControlType(ControlType.Group))),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Contour Options Group.");
+                AutomationElement contourGroup = contourGroupRetry.Result;
+
+                RetryResult<AutomationElement> drawContourRetry = Retry.WhileNull(() => contourGroup.FindFirstChild(cf => cf.ByName("Draw Contours on Objects").And(cf.ByControlType(ControlType.CheckBox))),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Draw Contours on Objects CheckBox.");
+                CheckBox drawContourCheckBox = drawContourRetry.Result.AsCheckBox();
+
+                if (string.IsNullOrWhiteSpace(inContour))
+                {
+                    drawContourCheckBox.IsChecked = false;
+                }
+                else
+                {
+                    drawContourCheckBox.IsChecked = true;
+                    RetryResult<AutomationElement> contourRetry = Retry.WhileNull(() => contourGroup.FindFirstChild(cf => cf.ByControlType(ControlType.ComboBox)),
+                        timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the contour ComboBox.");
+                    ComboBox contourComboBox = contourRetry.Result.AsComboBox();
+                    contourComboBox.Select(inContour);
+                }
+
+
+                RetryResult<AutomationElement> wireShadowRetry = Retry.WhileNull(() => deformedShapeOptionsWindow.FindFirstDescendant(cf => cf.ByControlType(ControlType.CheckBox).And(cf.ByName("Wire Shadow"))),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Wire Shadow CheckBox.");
+                CheckBox wireShadowCheckBox = wireShadowRetry.Result.AsCheckBox();
+                wireShadowCheckBox.IsChecked = inShowUndeformedShadow;
+
+                // Clicks the OK Button
+                RetryResult<AutomationElement> okButtonRetry = Retry.WhileNull(() => deformedShapeOptionsWindow.FindFirstChild(cf => cf.ByName("OK").And(cf.ByControlType(ControlType.Button))),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the OK Button of the Display Deformed Shape Form.");
+                Button okButton = okButtonRetry.Result.AsButton();
+                okButton.Invoke();
+
+                // Gets the screenshots and return
+                return FlaUI_GetScreenshots(inDirections);
+            }
+            finally
+            {
+                FlaUI_Automation.Dispose();
+                FlaUI_Automation = null;
+            }
+
+        }
+        public Dictionary<Sap2000ViewDirection, Image> FlaUI_GetSapScreenShot_ForceStress(IEnumerable<Sap2000ViewDirection> inDirections, string inCase, string inForceStressName)
+        {
+            try
+            {
+                FlaUI_Automation = new UIA3Automation();
+                FlaUI_SapMainWindow.Focus();
+
+                FlaUI_CloseAllSecondaryWindows_RecursiveChildren(FlaUI_SapMainWindow);
+
+                // Sets the desired output to no results
+                FlaUI_SapMainWindow.Focus();
+
+                // Configures the basic view
+                FlaUI_SetViewBasic(inJointLabels: true, inViewType: "Extrude", inShowAnalysisModelIfAvailable: true, inJointRestraints: true);
+
+                FlaUI_SapMainWindow.Focus();
+                FlaUI.Core.Input.Keyboard.Press(VirtualKeyShort.ESC);
+                FlaUI.Core.Input.Keyboard.Press(VirtualKeyShort.F8);
+
+                // Gets the display form view
+                RetryResult<AutomationElement> forcesStressesRetry = Retry.WhileNull(() => FlaUI_SapMainWindow.FindFirstChild(cf => cf.ByName("Display Frame Forces/Stresses").And(cf.ByControlType(ControlType.Window))),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Display Frame Forces/Stresses Form.");
+                Window forcesStressesWindow = forcesStressesRetry.Result.AsWindow();
+
+                // Case
+                RetryResult<AutomationElement> caseComboGroupRetry = Retry.WhileNull(() => forcesStressesWindow.FindFirstChild(cf => cf.ByName("Case/Combo").And(cf.ByControlType(ControlType.Group))),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Case/Combo Group.");
+                AutomationElement caseComboGroup = caseComboGroupRetry.Result;
+
+                RetryResult<AutomationElement> caseComboComboBoxRetry = Retry.WhileNull(() => caseComboGroup.FindFirstChild(cf => cf.ByControlType(ControlType.ComboBox)),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Case/Combo ComboBox.");
+                ComboBox caseComboComboBox = caseComboComboBoxRetry.Result.AsComboBox();
+                caseComboComboBox.Select(inCase);
+
+                // Display Type Group
+                RetryResult<AutomationElement> displayTypeGroupRetry = Retry.WhileNull(() => forcesStressesWindow.FindFirstChild(cf => cf.ByName("Display Type").And(cf.ByControlType(ControlType.Group))),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Display Type Group.");
+                AutomationElement displayTypeGroup = displayTypeGroupRetry.Result;
+
+                // Components groups
+                RetryResult<AutomationElement[]> componentsGroupRetry = Retry.WhileNull(() => forcesStressesWindow.FindAllChildren(cf => cf.ByName("Component").And(cf.ByControlType(ControlType.Group))),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Component Groups.");
+                AutomationElement[] componentsGroups = componentsGroupRetry.Result;
+
+                // Forces
+                if (inForceStressName == "Axial Force" ||
+                    inForceStressName == "Torsion" ||
+                    inForceStressName == "Shear 2-2" ||
+                    inForceStressName == "Moment 2-2" ||
+                    inForceStressName == "Shear 3-3" ||
+                    inForceStressName == "Moment 3-3")
+                {
+                    // Selects the force
+                    RetryResult<AutomationElement> forceRadioButtonRetry = Retry.WhileNull(() => displayTypeGroup.FindFirstChild(cf => cf.ByControlType(ControlType.RadioButton).And(cf.ByName("Force"))),
+                        timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Force RadioButton.");
+                    RadioButton forceRadioButton = forceRadioButtonRetry.Result.AsRadioButton();
+                    forceRadioButton.IsChecked = true;
+
+                    // Selects the force component
+                    RetryResult<AutomationElement> desiredComponentRadioButtonRetry = Retry.WhileNull(() => componentsGroups[0].FindFirstChild(cf => cf.ByControlType(ControlType.RadioButton).And(cf.ByName(inForceStressName))),
+                        timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: $"FlaUI: Could not get the component {inForceStressName} RadioButton.");
+                    RadioButton desiredComponentRadioButton = desiredComponentRadioButtonRetry.Result.AsRadioButton();
+                    desiredComponentRadioButton.IsChecked = true;
+                }
+                else if (inForceStressName == "S11" ||
+                         inForceStressName == "S12" ||
+                         inForceStressName == "S13" ||
+                         inForceStressName == "SVM")
+                {
+                    // Selects the force
+                    RetryResult<AutomationElement> stressRadioButtonRetry = Retry.WhileNull(() => displayTypeGroup.FindFirstChild(cf => cf.ByControlType(ControlType.RadioButton).And(cf.ByName("Stress"))),
+                        timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Stress RadioButton.");
+                    RadioButton stressRadioButton = stressRadioButtonRetry.Result.AsRadioButton();
+                    stressRadioButton.IsChecked = true;
+
+                    // Selects the force component
+                    RetryResult<AutomationElement> desiredComponentRadioButtonRetry = Retry.WhileNull(() => componentsGroups[1].FindFirstChild(cf => cf.ByControlType(ControlType.RadioButton).And(cf.ByName(inForceStressName))),
+                        timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: $"FlaUI: Could not get the component {inForceStressName} RadioButton.");
+                    RadioButton desiredComponentRadioButton = desiredComponentRadioButtonRetry.Result.AsRadioButton();
+                    desiredComponentRadioButton.IsChecked = true;
+
+                    // Selects the correct option for output
+                    RetryResult<AutomationElement> stressPointComboBoxRetry = Retry.WhileNull(() => componentsGroups[1].FindFirstChild(cf => cf.ByControlType(ControlType.ComboBox)),
+                        timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: $"FlaUI: Could not get the component Stress Point combobox.");
+                    ComboBox stressPointComboBox = stressPointComboBoxRetry.Result.AsComboBox();
+                    stressPointComboBox.Select("Stress Max/Min");
+                }
+                else throw new S2KHelperException($"{inForceStressName} is not a valid component for the Force / Stress plots");
+
+
+                // Clicks the OK Button
+                RetryResult<AutomationElement> okButtonRetry = Retry.WhileNull(() => forcesStressesWindow.FindFirstChild(cf => cf.ByName("OK").And(cf.ByControlType(ControlType.Button))),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the OK Button of the Display Frame Forces/Stresses Form.");
+                Button okButton = okButtonRetry.Result.AsButton();
+                okButton.Invoke();
+
+                // Gets the screenshots and return
+                return FlaUI_GetScreenshots(inDirections);
+            }
+            finally
+            {
+                FlaUI_Automation.Dispose();
+                FlaUI_Automation = null;
+            }
+
+        }
+        public Dictionary<Sap2000ViewDirection, Image> FlaUI_GetSapScreenShot_CodeCheck(IEnumerable<Sap2000ViewDirection> inDirections)
+        {
+            try
+            {
+                FlaUI_Automation = new UIA3Automation();
+                FlaUI_SapMainWindow.Focus();
+
+                FlaUI_CloseAllSecondaryWindows_RecursiveChildren(FlaUI_SapMainWindow);
+
+                // Sets the desired output to no results
+                FlaUI_SapMainWindow.Focus();
+
+                // Configures the basic view
+                FlaUI_SetViewBasic(inJointLabels: true, inViewType: "Extrude", inShowAnalysisModelIfAvailable: true, inJointRestraints: true);
+
+                FlaUI_SapMainWindow.Focus();
+                FlaUI.Core.Input.Keyboard.Press(VirtualKeyShort.ESC);
+                using (FlaUI.Core.Input.Keyboard.Pressing(VirtualKeyShort.CONTROL, VirtualKeyShort.SHIFT))
+                {
+                    FlaUI.Core.Input.Keyboard.Press(VirtualKeyShort.F5);
+                }
+
+                // Gets the display form view
+                RetryResult<AutomationElement> displaySteelFormRetry = Retry.WhileNull(() => FlaUI_SapMainWindow.FindFirstChild(cf => cf.ByAutomationId("DisplaySteelForm").And(cf.ByControlType(ControlType.Window))),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Display Steel Form.");
+                Window displaySteelForm = displaySteelFormRetry.Result.AsWindow();
+
+                RetryResult<AutomationElement> designOutputRadioButtonRetry = Retry.WhileNull(() => displaySteelForm.FindFirstDescendant(cf => cf.ByControlType(ControlType.RadioButton).And(cf.ByAutomationId("_optItem_0"))),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Design Output RadioButton.");
+                RadioButton designOutputRadioButton = designOutputRadioButtonRetry.Result.AsRadioButton();
+                designOutputRadioButton.IsChecked = true;
+
+                RetryResult<AutomationElement> stressComboBoxRetry = Retry.WhileNull(() => displaySteelForm.FindFirstDescendant(cf => cf.ByControlType(ControlType.ComboBox)),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the stress ComboBox.");
+                ComboBox stressComboBox = stressComboBoxRetry.Result.AsComboBox();
+                stressComboBox.Value = "P-M Ratio Colors & Values";
+
+                // Clicks the OK Button
+                RetryResult<AutomationElement> okButtonRetry = Retry.WhileNull(() => displaySteelForm.FindFirstDescendant(cf => cf.ByControlType(ControlType.Button).And(cf.ByAutomationId("cmdOK"))),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the OK Button of the Display Steel Form.");
+                Button okButton = okButtonRetry.Result.AsButton();
+                okButton.Invoke();
+
+                // Gets the screenshots and return
+                return FlaUI_GetScreenshots(inDirections);
+            }
+            finally
+            {
+                FlaUI_Automation.Dispose();
+                FlaUI_Automation = null;
+            }
+
+        }
+
+        // Private because it doesn't have a try to handle the FlaUI - needs to be called from within a function that has it.
+        private void FlaUI_SetViewDirection(Sap2000ViewDirection inDirection)
+        {
+            // Opens the view form
+            FlaUI_SapMainWindow.Focus();
+            FlaUI.Core.Input.Keyboard.Press(VirtualKeyShort.ESC);
+            using (FlaUI.Core.Input.Keyboard.Pressing(VirtualKeyShort.SHIFT, VirtualKeyShort.CONTROL))
+            {
+                FlaUI.Core.Input.Keyboard.Press(VirtualKeyShort.F3);
+            }
+
+            // Gets the view form
+            RetryResult<AutomationElement> viewWindowRetry = Retry.WhileNull(() => FlaUI_SapMainWindow.FindFirstChild(cf => cf.ByName("Set 3D View").And(cf.ByControlType(ControlType.Window))),
+                timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Set 3D View Form.");
+            Window viewWindow = viewWindowRetry.Result.AsWindow();
+
+            // Gets the groupbox
+            RetryResult<AutomationElement> viewDirectionAngleRetry = Retry.WhileNull(() => viewWindow.FindFirstChild(cf => cf.ByName("View Direction Angle").And(cf.ByControlType(ControlType.Group))),
+                timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the View Direction Angle group of the Set 3D View Form.");
+            AutomationElement viewDirectionAngle = viewDirectionAngleRetry.Result;
+
+            // Gets the Textboxes inside this groupbox
+            RetryResult<AutomationElement[]> textBoxesRetry = Retry.WhileNull(() => viewDirectionAngle.FindAllChildren(cf => cf.ByControlType(ControlType.Edit)),
+                timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the TextBoxes of the Set 3D View Form.");
+            TextBox[] textBoxes = textBoxesRetry.Result.Select(a => a.AsTextBox()).ToArray();
+
+            // The first is the Plan
+            // The second is the Elevation
+            // The third is the Aperture
+
+            switch (inDirection)
+            {
+                case Sap2000ViewDirection.Top_Towards_ZNeg:
+                    textBoxes[0].Text = "270";
+                    textBoxes[1].Text = "90";
+                    textBoxes[2].Text = "0";
+                    break;
+
+                case Sap2000ViewDirection.Front_Towards_YPos:
+                    textBoxes[0].Text = "270";
+                    textBoxes[1].Text = "0";
+                    textBoxes[2].Text = "0";
+                    break;
+
+                case Sap2000ViewDirection.Back_Towards_YNeg:
+                    textBoxes[0].Text = "90";
+                    textBoxes[1].Text = "0";
+                    textBoxes[2].Text = "0";
+                    break;
+
+                case Sap2000ViewDirection.Right_Towards_XNeg:
+                    textBoxes[0].Text = "0";
+                    textBoxes[1].Text = "0";
+                    textBoxes[2].Text = "0";
+                    break;
+
+                case Sap2000ViewDirection.Left_Towards_XPos:
+                    textBoxes[0].Text = "180";
+                    textBoxes[1].Text = "0";
+                    textBoxes[2].Text = "0";
+                    break;
+
+                case Sap2000ViewDirection.Perspective_Top_Front_Edge:
+                    textBoxes[0].Text = "270";
+                    textBoxes[1].Text = "45";
+                    textBoxes[2].Text = "0";
+                    break;
+
+                case Sap2000ViewDirection.Perspective_Top_Back_Edge:
+                    textBoxes[0].Text = "90";
+                    textBoxes[1].Text = "45";
+                    textBoxes[2].Text = "0";
+                    break;
+
+                case Sap2000ViewDirection.Perspective_Top_Right_Edge:
+                    textBoxes[0].Text = "0";
+                    textBoxes[1].Text = "45";
+                    textBoxes[2].Text = "0";
+                    break;
+
+                case Sap2000ViewDirection.Perspective_Top_Left_Edge:
+                    textBoxes[0].Text = "180";
+                    textBoxes[1].Text = "45";
+                    textBoxes[2].Text = "0";
+                    break;
+
+                case Sap2000ViewDirection.Perspective_TFR_Corner:
+                    textBoxes[0].Text = "315";
+                    textBoxes[1].Text = "45";
+                    textBoxes[2].Text = "0";
+                    break;
+
+                case Sap2000ViewDirection.Perspective_TFL_Corner:
+                    textBoxes[0].Text = "225";
+                    textBoxes[1].Text = "45";
+                    textBoxes[2].Text = "0";
+                    break;
+
+                case Sap2000ViewDirection.Perspective_TBR_Corner:
+                    textBoxes[0].Text = "45";
+                    textBoxes[1].Text = "45";
+                    textBoxes[2].Text = "0";
+                    break;
+
+                case Sap2000ViewDirection.Perspective_TBL_Corner:
+                    textBoxes[0].Text = "135";
+                    textBoxes[1].Text = "45";
+                    textBoxes[2].Text = "0";
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(inDirection), inDirection, null);
+            }
+
+            // Gets the OK button
+            RetryResult<AutomationElement> okButtonRetry = Retry.WhileNull(() => viewWindow.FindFirstChild(cf => cf.ByName("OK").And(cf.ByControlType(ControlType.Button))),
+                timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the OK Button of the Set 3D View Form.");
+            Button okButton = okButtonRetry.Result.AsButton();
+            okButton.Invoke();
+
+            // Locks until the form can't be found anymore
+            Retry.WhileNotNull(() => FlaUI_SapMainWindow.FindFirstChild(cf => cf.ByName("Set 3D View").And(cf.ByControlType(ControlType.Window))),
+                timeout: TimeSpan.FromSeconds(5), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Took too long to close the view direction form.");
+
+            // Locks until the SAP2000's window is ready
+            Retry.WhileFalse(() => FlaUI_SapMainWindow.Patterns.Window.Pattern.WindowInteractionState.Value == WindowInteractionState.ReadyForUserInteraction,
+                timeout: TimeSpan.FromSeconds(5), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Took too long to close the view direction form.");
+
+            Thread.Sleep(150);
+        }
+        private Dictionary<Sap2000ViewDirection, Image> FlaUI_GetScreenshots(IEnumerable<Sap2000ViewDirection> inDirections)
+        {
+            Dictionary<Sap2000ViewDirection, Image> toRet = new Dictionary<Sap2000ViewDirection, Image>();
+
+            foreach (Sap2000ViewDirection sap2000ViewDirection in inDirections)
+            {
+                // Sets the view direction
+                FlaUI_SetViewDirection(sap2000ViewDirection);
+
+                Bitmap src = FlaUI_SapMainWindow.Capture();
+                Bitmap target = new Bitmap(_screenShotRectangle.Width, _screenShotRectangle.Height);
+
+                using (Graphics g = Graphics.FromImage(target))
+                {
+                    g.DrawImage(src, new Rectangle(0, 0, target.Width, target.Height), _screenShotRectangle, GraphicsUnit.Pixel);
+                }
+
+                toRet.Add(sap2000ViewDirection, target);
+            }
+
+            return toRet;
+        }
+
+        // Private because it doesn't have a try to handle the FlaUI - needs to be called from within a function that has it.
+        private void FlaUI_SetViewBasic(
+            string inViewType = "Standard",
+            string inColorBy = "Sections",
+            bool inShowAnalysisModelIfAvailable = false,
+            bool inJointLabels = false,
+            bool inJointRestraints = false,
+            bool inJointSprings = false,
+            bool inJointLocalAxes = false,
+            bool inJointInvisible = false,
+            bool inJointNotInView = false,
+            bool inFramesLabels = false,
+            bool inFramesSections = false,
+            bool inFramesReleases = false,
+            bool inFramesLocalAxes = false,
+            bool inFramesNotInView = false)
+        {
+            // Configs the output window
+            FlaUI_SapMainWindow.Focus();
+            FlaUI.Core.Input.Keyboard.Press(VirtualKeyShort.ESC);
+            using (FlaUI.Core.Input.Keyboard.Pressing(VirtualKeyShort.CONTROL))
+            {
+                FlaUI.Core.Input.Keyboard.Press(VirtualKeyShort.KEY_W);
+            }
+            // Gets the setup view
+            RetryResult<AutomationElement> displayOptionsRetry = Retry.WhileNull(() => FlaUI_SapMainWindow.FindFirstChild(cf => cf.ByName("Display Options").And(cf.ByControlType(ControlType.Window))),
+                timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Display Options Form.");
+            Window displayOptionsWindow = displayOptionsRetry.Result.AsWindow();
+
+            #region Handling the Object Options Tab
+
+            RetryResult<AutomationElement> objectOptionsTabRetry = Retry.WhileNull(() => FlaUI_SapMainWindow.FindFirstDescendant(cf => cf.ByName("Object Options").And(cf.ByControlType(ControlType.TabItem))),
+                timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Object Options TabItem.");
+            TabItem objectOptionsTab = objectOptionsTabRetry.Result.AsTabItem();
+            objectOptionsTab.Select();
+
+            // Gets the Joints group
+            RetryResult<AutomationElement> jointsGroupRetry = Retry.WhileNull(() => objectOptionsTab.FindFirstChild(cf => cf.ByName("Joints").And(cf.ByControlType(ControlType.Group))),
+                timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Joints Group.");
+            AutomationElement jointsGroup = jointsGroupRetry.Result;
+
+            // Gets the joint options
+            RetryResult<AutomationElement[]> allJointOptionsRetry = Retry.WhileNull(() => jointsGroup.FindAllChildren(cf => cf.ByControlType(ControlType.CheckBox)),
+                timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Joints' options.");
+            CheckBox[] allJointOptions = allJointOptionsRetry.Result.Select(a => a.AsCheckBox()).ToArray();
+
+            allJointOptions[0].IsChecked = inJointLabels;
+            allJointOptions[1].IsChecked = inJointRestraints;
+            allJointOptions[2].IsChecked = inJointSprings;
+            allJointOptions[3].IsChecked = inJointLocalAxes;
+            allJointOptions[4].IsChecked = inJointInvisible;
+            allJointOptions[5].IsChecked = inJointNotInView;
+            
+            // Gets the Frames group
+            RetryResult<AutomationElement> framesGroupRetry = Retry.WhileNull(() => objectOptionsTab.FindFirstChild(cf => cf.ByName("Frames").And(cf.ByControlType(ControlType.Group))),
+                timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Frames Group.");
+            AutomationElement framesGroup = framesGroupRetry.Result;
+
+            // Gets the frames options
+            RetryResult<AutomationElement[]> allFrameOptionsRetry = Retry.WhileNull(() => framesGroup.FindAllChildren(cf => cf.ByControlType(ControlType.CheckBox)),
+                timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Frames' options.");
+            CheckBox[] allFrameOptions = allFrameOptionsRetry.Result.Select(a => a.AsCheckBox()).ToArray();
+
+            allFrameOptions[0].IsChecked = inFramesLabels;
+            allFrameOptions[1].IsChecked = inFramesSections;
+            allFrameOptions[2].IsChecked = inFramesReleases;
+            allFrameOptions[3].IsChecked = inFramesLocalAxes;
+            allFrameOptions[4].IsChecked = inFramesNotInView;
+            #endregion
+
+
+            #region Handles the General Options Tab
+            RetryResult<AutomationElement> generalOptionsTabRetry = Retry.WhileNull(() => FlaUI_SapMainWindow.FindFirstDescendant(cf => cf.ByName("General Options").And(cf.ByControlType(ControlType.TabItem))),
+                timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the General Options TabItem.");
+            TabItem generalOptionsTab = generalOptionsTabRetry.Result.AsTabItem();
+            generalOptionsTab.Select();
+            
+            // Selects colouring
+            RetryResult<AutomationElement> colorByRetry = Retry.WhileNull(() => generalOptionsTab.FindFirstDescendant(cf => cf.ByName(inColorBy).And(cf.ByControlType(ControlType.RadioButton))),
+                timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: $"FlaUI: Could not get the Color by RadioButton given by {inColorBy}.");
+            RadioButton colorBy = colorByRetry.Result.AsRadioButton();
+            colorBy.IsChecked = true;
+
+            // Selects View Type
+            RetryResult<AutomationElement> viewTypeRetry = Retry.WhileNull(() => generalOptionsTab.FindFirstDescendant(cf => cf.ByName(inViewType).And(cf.ByControlType(ControlType.RadioButton))),
+                timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: $"FlaUI: Could not get the view type RadioButton given by {inColorBy}.");
+            RadioButton viewType = viewTypeRetry.Result.AsRadioButton();
+            viewType.IsChecked = true;
+
+            // Marks the show available model
+            RetryResult<AutomationElement> showAnalysisModelRetry = Retry.WhileNull(() => generalOptionsTab.FindFirstDescendant(cf => cf.ByName("Show Analysis Model (If Available)").And(cf.ByControlType(ControlType.CheckBox))),
+                timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Show Analysis Model (If Available) CheckBox.");
+            CheckBox showAnalysisModel = showAnalysisModelRetry.Result.AsCheckBox();
+            showAnalysisModel.IsChecked = inShowAnalysisModelIfAvailable;
+
+            #endregion
+
+            // Clicks the OK Button
+            RetryResult<AutomationElement> okButtonRetry = Retry.WhileNull(() => displayOptionsWindow.FindFirstChild(cf => cf.ByName("OK").And(cf.ByControlType(ControlType.Button))),
+                timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the OK Button of the Display Options Form.");
+            Button okButton = okButtonRetry.Result.AsButton();
+            okButton.Invoke();
+        }
+
+        private void FlaUI_ClickOnSap2000MainMenuItem(string[] inMenuNames)
+        {
+            // Gets the toolstrip menu
+            RetryResult<AutomationElement> mainMenuRetry = Retry.WhileNull(() => FlaUI_SapMainWindow.FindFirstChild(cf => cf.ByControlType(ControlType.MenuBar)),
+                timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get Sap2000's Main Menu.");
+            AutomationElement currentBase = mainMenuRetry.Result;
+
+            for (int index = 0; index < inMenuNames.Length; index++)
+            {
+                string menuName = inMenuNames[index];
+
+                RetryResult<AutomationElement> itemRetry = Retry.WhileNull(() => currentBase.FindFirstChild(cf => cf.ByControlType(ControlType.MenuItem).And(cf.ByName(menuName))),
+                    timeout: TimeSpan.FromSeconds(2), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: $"FlaUI: Could not get Sap2000's Main Menu {menuName} item.");
+
+                currentBase = itemRetry.Result;
+
+                // Goes cascading-clicking to open
+                MenuItem item = currentBase.AsMenuItem();
+
+                if (index == inMenuNames.Length - 1) // Last item
+                {
+                    item.Focus();
+                    Keyboard.Type(VirtualKeyShort.ENTER);
+                }
+                else
+                {
+                    item.Invoke();
+                }
+            }
+   
+        }
+        #endregion
+    }
+
+    public enum Sap2000ViewDirection
+    {
+        Top_Towards_ZNeg = 1,
+        Front_Towards_YPos = 2,
+        Back_Towards_YNeg = 4,
+        Right_Towards_XNeg = 8,
+        Left_Towards_XPos = 16,
+
+        Perspective_Top_Front_Edge = 32,
+        Perspective_Top_Back_Edge = 64,
+        Perspective_Top_Right_Edge = 128,
+        Perspective_Top_Left_Edge = 256,
+
+        Perspective_TFR_Corner = 512,
+        Perspective_TFL_Corner = 1024,
+        Perspective_TBR_Corner = 2048,
+        Perspective_TBL_Corner = 4096,
     }
 
     public class Sap2000ExportOptions

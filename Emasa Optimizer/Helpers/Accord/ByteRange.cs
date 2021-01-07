@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using BaseWPFLibrary.Annotations;
 
 namespace Emasa_Optimizer.Helpers.Accord
 {
@@ -49,7 +52,7 @@ namespace Emasa_Optimizer.Helpers.Accord
     /// <seealso cref="Range"/>
     /// 
     [Serializable]
-    public struct ByteRange : IRange<byte>, IEquatable<ByteRange>, IEnumerable<byte>
+    public class ByteRange : IRange<byte>, IEquatable<ByteRange>, IEnumerable<byte>, INotifyPropertyChanged
     {
         private byte min, max;
 
@@ -63,8 +66,13 @@ namespace Emasa_Optimizer.Helpers.Accord
         /// 
         public byte Min
         {
-            get { return min; }
-            set { min = value; }
+            get => min;
+            set
+            {
+                min = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(Length));
+            }
         }
 
         /// <summary>
@@ -77,8 +85,13 @@ namespace Emasa_Optimizer.Helpers.Accord
         /// 
         public byte Max
         {
-            get { return max; }
-            set { max = value; }
+            get => max;
+            set
+            {
+                max = value; 
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(Length));
+            }
         }
 
         /// <summary>
@@ -334,6 +347,14 @@ namespace Emasa_Optimizer.Helpers.Accord
         {
             for (byte i = min; i < max; i++)
                 yield return i;
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        private void OnPropertyChanged([CallerMemberName] string inPropertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(inPropertyName));
         }
     }
 }

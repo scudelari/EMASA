@@ -83,6 +83,56 @@ namespace GHComponents.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap GH_Icon_Filter_CullLines {
+            get {
+                object obj = ResourceManager.GetObject("GH_Icon_Filter_CullLines", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap GH_Icon_Filter_LinesOnLine {
+            get {
+                object obj = ResourceManager.GetObject("GH_Icon_Filter_LinesOnLine", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap GH_Icon_Filter_LinesOnPlane {
+            get {
+                object obj = ResourceManager.GetObject("GH_Icon_Filter_LinesOnPlane", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap GH_Icon_Filter_LinesParallelToLine {
+            get {
+                object obj = ResourceManager.GetObject("GH_Icon_Filter_LinesParallelToLine", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap GH_Icon_Filter_LinesParallelToPlane {
+            get {
+                object obj = ResourceManager.GetObject("GH_Icon_Filter_LinesParallelToPlane", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap GH_Icon_InputDouble {
             get {
                 object obj = ResourceManager.GetObject("GH_Icon_InputDouble", resourceCulture);

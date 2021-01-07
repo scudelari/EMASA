@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using FlaUI.Core.Tools;
 using Sap2000Library.DataClasses;
 
 namespace Sap2000Library.Managers
@@ -11,9 +13,16 @@ namespace Sap2000Library.Managers
         {
             if (0 != SapApi.DesignSteel.DeleteResults()) throw new S2KHelperException("Could not delete the steel design results.");
         }
-        public void StartDesign()
+        public void StartDesign(TimeSpan? inRetryTimeout = null)
         {
-            if (0 != SapApi.DesignSteel.StartDesign()) throw new S2KHelperException("Could not start the steel design.");
+            if (inRetryTimeout.HasValue)
+            {
+                Retry.WhileFalse(() => SapApi.DesignSteel.StartDesign() == 0, inRetryTimeout, TimeSpan.FromMilliseconds(100), true, true, "Could not perform the steel design.");
+            }
+            else
+            {
+                if (0 != SapApi.DesignSteel.StartDesign()) throw new S2KHelperException("Could not perform the steel design.");
+            }
         }
 
         public bool ResultsAvailable

@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using BaseWPFLibrary.Annotations;
 
 namespace Emasa_Optimizer.Helpers.Accord
 {
@@ -50,7 +53,7 @@ namespace Emasa_Optimizer.Helpers.Accord
     /// <seealso cref="ByteRange"/>
     /// 
     [Serializable]
-    public struct Range : IRange<float>, IEquatable<Range>
+    public class Range : IRange<float>, IEquatable<Range>, INotifyPropertyChanged
     {
         private float min, max;
 
@@ -65,7 +68,12 @@ namespace Emasa_Optimizer.Helpers.Accord
         public float Min
         {
             get { return min; }
-            set { min = value; }
+            set
+            {
+                min = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(Length));
+            }
         }
 
         /// <summary>
@@ -79,7 +87,12 @@ namespace Emasa_Optimizer.Helpers.Accord
         public float Max
         {
             get { return max; }
-            set { max = value; }
+            set
+            {
+                max = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(Length));
+            }
         }
 
         /// <summary>
@@ -310,6 +323,13 @@ namespace Emasa_Optimizer.Helpers.Accord
             }
 
             return new IntRange(iMin, iMax);
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        [NotifyPropertyChangedInvocator]
+        private void OnPropertyChanged([CallerMemberName] string inPropertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(inPropertyName));
         }
     }
 }

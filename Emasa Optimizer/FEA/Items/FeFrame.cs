@@ -5,7 +5,7 @@ namespace Emasa_Optimizer.FEA.Items
 {
     public class FeFrame : IEquatable<FeFrame>, IFeEntity
     {
-        public FeFrame(int inId, FeSection inSection, FeJoint inIJoint, FeJoint inJJoint)
+        public FeFrame(string inId, FeSection inSection, FeJoint inIJoint, FeJoint inJJoint)
         {
             _id = inId;
             _section = inSection;
@@ -13,8 +13,8 @@ namespace Emasa_Optimizer.FEA.Items
             _jJoint = inJJoint;
         }
 
-        private int _id;
-        public int Id
+        private string _id;
+        public string Id
         {
             get => _id;
             set => _id = value;

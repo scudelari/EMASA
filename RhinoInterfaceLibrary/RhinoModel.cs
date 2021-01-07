@@ -1,4 +1,6 @@
-﻿using System;
+﻿extern alias r3dm;
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,10 +14,14 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Serialization;
 using Grasshopper;
+
+using R3dmGeom = r3dm::Rhino.Geometry;
 
 namespace RhinoInterfaceLibrary
 {
@@ -94,10 +100,10 @@ namespace RhinoInterfaceLibrary
 
         private dynamic _rhinoApp = null;
 
-        private const string _crhinoInterfaceIdString = "Rhino.Interface";
+        private const string _crhinoInterfaceIdString = "Rhino.Interface.6";
         private static Type RhinoInstanceType => Type.GetTypeFromProgID(_crhinoInterfaceIdString);
 
-        private const string _crhinoApplicationIdString = "Rhino.Application";
+        private const string _crhinoApplicationIdString = "Rhino.Application.6";
         private static Type RhinoApplicationType => Type.GetTypeFromProgID(_crhinoApplicationIdString);
 
         private const string _cgrassHopperPluginId = "b45a29b1-4343-4035-989e-044e8580d9cf";
@@ -314,6 +320,18 @@ namespace RhinoInterfaceLibrary
 
             return Guid.Parse(pointGuid);
         }
+        public Guid AddPoint(string inPointName, Point3d inPoint)
+        {
+            string pointGuid = (string)_emsPluginReference.AddPoint(inPointName, new double[] { inPoint.X, inPoint.Y, inPoint.Z });
+
+            return Guid.Parse(pointGuid);
+        }
+        public Guid AddPoint3DWithName(string inPointName, MN.Point3D inPoint)
+        {
+            string pointGuid = (string)_emsPluginReference.AddPointWithName(inPointName, new double[] { inPoint.X, inPoint.Y, inPoint.Z });
+
+            return Guid.Parse(pointGuid);
+        }
 
         public MN.Vector3D GetNormalAtSurface(MN.Point3D inPoint, string RhinoGroupName)
         {
@@ -414,6 +432,104 @@ namespace RhinoInterfaceLibrary
 
         #endregion
 
+        #region Managing Communication With EMASA Components
+        public GrasshopperAllEmasaOutputWrapper_AsRhino3dm Grasshopper_GetAllEmasaOutputs()
+        {
+            // Requests the Json from COM
+            byte[] json = _emsPluginReference.Grasshopper_GetAllEmasaOutputs_JSON();
+            if (json == null) return null;
+            if (json.Length == 0) return new GrasshopperAllEmasaOutputWrapper_AsRhino3dm();
+
+            // JSON Serializer
+            DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(GrasshopperAllEmasaOutputWrapper_AsRhino3dm), new DataContractJsonSerializerSettings()
+                {
+                UseSimpleDictionaryFormat = true
+                });
+
+            GrasshopperAllEmasaOutputWrapper_AsRhino3dm toret = null;
+            try
+            {
+                using (MemoryStream stream = new MemoryStream(json))
+                {
+                    toret = (GrasshopperAllEmasaOutputWrapper_AsRhino3dm)ser.ReadObject(stream);
+                }
+            }
+            catch {}
+
+            return toret;
+        }
+        public GrasshopperAllEmasaInputDefsWrapper_AsRhino3dm Grasshopper_GetAllEmasaInputDefs()
+        {
+            // Requests the Json from COM
+            byte[] json = _emsPluginReference.Grasshopper_GetAllEmasaInputDefs_JSON();
+            if (json == null) return null;
+            if (json.Length == 0) return new GrasshopperAllEmasaInputDefsWrapper_AsRhino3dm();
+
+            // JSON Serializer
+            DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(GrasshopperAllEmasaInputDefsWrapper_AsRhino3dm), new DataContractJsonSerializerSettings()
+                {
+                UseSimpleDictionaryFormat = true
+                });
+
+            GrasshopperAllEmasaInputDefsWrapper_AsRhino3dm toret = null;
+            try
+            {
+                using (MemoryStream stream = new MemoryStream(json))
+                {
+                    toret = (GrasshopperAllEmasaInputDefsWrapper_AsRhino3dm)ser.ReadObject(stream);
+                }
+            }
+            catch { }
+
+            return toret;
+        }
+
+        public bool Grasshopper_UpdateEmasaInputs(Dictionary<string, object> inValuePairs, bool inRecompute = false)
+        {
+            // Builds the expected format
+            string[] names = new string[inValuePairs.Count];
+            double[,] values = new double[inValuePairs.Count, 3];
+
+            int i = 0;
+            foreach (KeyValuePair<string, object> pair in inValuePairs)
+            {
+                names[i] = pair.Key;
+
+                switch (pair.Value)
+                {
+                    case double d:
+                        values[i, 0] = d;
+                        break;
+                    case int integer:
+                        values[i, 0] = (double)integer;
+                        break;
+                    case R3dmGeom.Point3d r3dmPoint:
+                        values[i, 0] = r3dmPoint.X;
+                        values[i, 1] = r3dmPoint.Y;
+                        values[i, 2] = r3dmPoint.Z;
+                        break;
+                    default:
+                        throw new InvalidOperationException($"The type {pair.Key.GetType()} of the value {pair.Value} in key {pair.Value} is not supported.");
+                }
+                i++;
+            }
+
+            return _emsPluginReference.Grasshopper_UpdateEmasaInputs(names, values, inRecompute);
+        }
+
+        public bool Grasshopper_UpdateEmasaInput_Integer(string inParamName, int inValue, bool inRecompute = false)
+        {
+            return _emsPluginReference.Grasshopper_UpdateEmasaInput_Integer(inParamName, inValue, inRecompute);
+        }
+        public bool Grasshopper_UpdateEmasaInput_Double(string inParamName, double inValue, bool inRecompute = false)
+        {
+            return _emsPluginReference.Grasshopper_UpdateEmasaInput_Double(inParamName, inValue, inRecompute);
+        }
+        public bool Grasshopper_UpdateEmasaInput_Point(string inParamName, R3dmGeom.Point3d inValue, bool inRecompute = false)
+        {
+            return _emsPluginReference.Grasshopper_UpdateEmasaInput_Point(inParamName, new double[] { inValue.X, inValue.Y, inValue.Z}, inRecompute);
+        }
+        #endregion
 
         #region ScreenShot Related COM Wrappers
         public void PrepareRhinoViewForImageAcquire()
@@ -431,9 +547,9 @@ namespace RhinoInterfaceLibrary
             List<(string, byte[])> toRetTempBytes;
             
             // Deserializes
-            XmlSerializer serializer = new XmlSerializer(typeof(List<(string, byte[])>));
             using (MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(xmlData)))
             {
+                XmlSerializer serializer = new XmlSerializer(typeof(List<(string, byte[])>));
                 toRetTempBytes = serializer.Deserialize(ms) as List<(string, byte[])>;
             }
 
@@ -452,5 +568,28 @@ namespace RhinoInterfaceLibrary
             if (!_emsPluginReference.RestoreRhinoViewFromImageAcquire()) throw new Exception($"Failed while restoring default Rhino from image acquisition.");
         }
         #endregion
+    }
+
+    [DataContract]
+    public class GrasshopperAllEmasaOutputWrapper_AsRhino3dm
+    {
+        [DataMember]
+        public Dictionary<string, List<double>> DoubleLists { get; set; } = new Dictionary<string, List<double>>();
+        [DataMember]
+        public Dictionary<string, List<R3dmGeom.Point3d>> PointLists { get; set; } = new Dictionary<string, List<R3dmGeom.Point3d>>();
+        [DataMember]
+        public Dictionary<string, List<R3dmGeom.Line>> LineLists { get; set; } = new Dictionary<string, List<R3dmGeom.Line>>();
+    }
+    [DataContract]
+    public class GrasshopperAllEmasaInputDefsWrapper_AsRhino3dm
+    {
+        [DataMember]
+        public List<string> IntegerInputs { get; set; } = new List<string>();
+
+        [DataMember]
+        public Dictionary<string, Tuple<double, double, double>> DoubleInputs { get; set; } = new Dictionary<string, Tuple<double, double, double>>();
+
+        [DataMember]
+        public Dictionary<string, Tuple<R3dmGeom.Point3d, R3dmGeom.Point3d, R3dmGeom.Point3d>> PointInputs { get; set; } = new Dictionary<string, Tuple<R3dmGeom.Point3d, R3dmGeom.Point3d, R3dmGeom.Point3d>>();
     }
 }

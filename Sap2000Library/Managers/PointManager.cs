@@ -92,49 +92,6 @@ namespace Sap2000Library.Managers
             return closest;
         }
 
-        [Obsolete]
-        public List<SapPoint> GetSelected(BusyOverlay BusyOverlay)
-        {
-            if (BusyOverlay != null) BusyOverlay.SetDeterminate($"Getting selected joints from SAP2000.", "Joint");
-
-            int count = 0;
-            int[] objectType = null;
-            string[] selectedNames = null;
-
-            if (SapApi.SelectObj.GetSelected(ref count, ref objectType, ref selectedNames) != 0)
-                throw new S2KHelperException("Could not get the selected joints from SAP2000.");
-            
-            if (count == 0)
-            {
-                if (BusyOverlay != null) BusyOverlay.Stop();
-                return new List<SapPoint>();
-            }
-
-            // Declares the return
-            List<SapPoint> toReturn = new List<SapPoint>();
-
-            int currType = 0;
-            int typeCount = objectType.Count(a => a == (int)SelectObjectType.PointObject);
-            for (int i = 0; i < count; i++)
-            {
-                if (objectType[i] == (int)SelectObjectType.PointObject) // Point Object
-                {
-                    // Gets the coordinates of the point
-                    double X = 0;
-                    double Y = 0;
-                    double Z = 0;
-
-                    SapApi.PointObj.GetCoordCartesian(selectedNames[i], ref X, ref Y, ref Z);
-                    toReturn.Add(new SapPoint(selectedNames[i], X, Y, Z, this));
-
-                    if (BusyOverlay != null) BusyOverlay.UpdateProgress(currType, typeCount, selectedNames[i]);
-                    currType++;
-                }
-            }
-
-            BusyOverlay.Stop();
-            return toReturn;
-        }
         public List<SapPoint> GetSelected(bool inUpdateInterface = false)
         {
             if (inUpdateInterface) BusyOverlayBindings.I.SetDeterminate($"SAP2000: Getting selected joints.", "Joint");

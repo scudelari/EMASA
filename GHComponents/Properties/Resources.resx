@@ -124,6 +124,21 @@
   <data name="GH_Icon_Base" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GH-Icon-Base.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="GH_Icon_Filter_CullLines" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GH-Icon-Filter_CullLines.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GH_Icon_Filter_LinesOnLine" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GH-Icon-Filter_LinesOnLine.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GH_Icon_Filter_LinesOnPlane" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GH-Icon-Filter_LinesOnPlane.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GH_Icon_Filter_LinesParallelToLine" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GH-Icon-Filter_LinesParallelToLine.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GH_Icon_Filter_LinesParallelToPlane" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GH-Icon-Filter_LinesParallelToPlane.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="GH_Icon_InputDouble" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GH-Icon-InputDouble.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>

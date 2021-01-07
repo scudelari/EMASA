@@ -29,13 +29,11 @@ namespace EmasaSapTools.Bindings
             SelectMisc_FromClipboard_LinkIsChecked = false;
 
             // Sets the CollectionViewSource on the gridview
-            SelMonitor_GroupsDataGrid.DataContext = SelMonitor_GroupsDataGrid_CVS;
+            //SelMonitor_GroupsDataGrid.DataContext = SelMonitor_GroupsDataGrid_CVS;
 
             SelectMisc_FramesBasedOnLength_FilterFromSelection = true;
             SelectMisc_FramesBasedOnLength_MaxLength = 1000d;
             SelectMisc_FramesBasedOnLength_MinLength = 0d;
-
-            
         }
 
         private bool _SelectionMonitorEnabled;public bool SelectionMonitorEnabled { get => _SelectionMonitorEnabled; set => SetProperty(ref _SelectionMonitorEnabled, value); }
@@ -66,7 +64,8 @@ namespace EmasaSapTools.Bindings
             {
                 try
                 {
-                    return (DataGrid) BoundTo.FindName("SelMonitor_GroupsDataGrid");
+                    //return (DataGrid) BoundTo.FindName("SelMonitor_GroupsDataGrid");
+                    return null;
                 }
                 catch (Exception)
                 {
@@ -200,6 +199,9 @@ namespace EmasaSapTools.Bindings
         private bool _SelectMisc_FromClipboard_CableIsChecked;public bool SelectMisc_FromClipboard_CableIsChecked { get => _SelectMisc_FromClipboard_CableIsChecked; set => SetProperty(ref _SelectMisc_FromClipboard_CableIsChecked, value); }
 
         private bool _SelectMisc_FromClipboard_LinkIsChecked;public bool SelectMisc_FromClipboard_LinkIsChecked { get => _SelectMisc_FromClipboard_LinkIsChecked; set => SetProperty(ref _SelectMisc_FromClipboard_LinkIsChecked, value); }
+
+        private bool _SelectMisc_FromClipboard_SelectNotInListIsChecked; public bool SelectMisc_FromClipboard_SelectNotInListIsChecked { get => _SelectMisc_FromClipboard_SelectNotInListIsChecked; set => SetProperty(ref _SelectMisc_FromClipboard_SelectNotInListIsChecked, value); }
+
 
         private double _SelectMisc_FramesBasedOnLength_MaxLength;public double SelectMisc_FramesBasedOnLength_MaxLength { get => _SelectMisc_FramesBasedOnLength_MaxLength; set => SetProperty(ref _SelectMisc_FramesBasedOnLength_MaxLength, value); }
 

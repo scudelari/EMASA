@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using BaseWPFLibrary;
 using Emasa_Optimizer.FEA;
 using Emasa_Optimizer.FEA.Results;
 using Emasa_Optimizer.Helpers.Accord;
@@ -136,6 +137,7 @@ namespace Emasa_Optimizer.WpfResources
             {
                 // Decides which list this is targeting
                 FieldInfo[] fieldsThatTargetGivenEnum = typeof(ListDescSH).GetFields().Where(a =>
+                    a.FieldType.IsGenericType &&
                     a.FieldType.GetGenericTypeDefinition() == typeof(Dictionary<,>) &&
                     a.FieldType.GenericTypeArguments.First() == value.GetType()).ToArray();
 
@@ -202,18 +204,28 @@ namespace Emasa_Optimizer.WpfResources
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is double d)
-            {
-                return $"{d:+0.000e+000;-0.000e+000;0.0}";
-            }
-            
-            return value.ToString();
+            return GetString(value);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }
-    }
 
+        public static string GetString(object value)
+        {
+            if (value == null) return "-";
+
+            try
+            {
+                double d = (double)value;
+                return $"{d:g3}";
+                //return BaseWPFStaticMembers.DoubleToEngineering(d, "3");
+            }
+            catch
+            {
+                return value.ToString();
+            }
+        }
+    }
 }

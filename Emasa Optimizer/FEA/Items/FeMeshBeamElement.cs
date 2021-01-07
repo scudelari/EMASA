@@ -9,7 +9,7 @@ namespace Emasa_Optimizer.FEA.Items
 {
     public class FeMeshBeamElement : IFeEntity, IEquatable<FeMeshBeamElement>
     {
-        public FeMeshBeamElement(int inId, FeMeshNode inINode, FeMeshNode inJNode, FeMeshNode inKNode)
+        public FeMeshBeamElement(string inId, FeMeshNode inINode, FeMeshNode inJNode, FeMeshNode inKNode)
         {
             _id = inId;
             _iNode = inINode;
@@ -17,8 +17,8 @@ namespace Emasa_Optimizer.FEA.Items
             _kNode = inKNode;
         }
 
-        private int _id;
-        public int Id
+        private string _id;
+        public string Id
         {
             get => _id;
             set => _id = value;
@@ -49,8 +49,9 @@ namespace Emasa_Optimizer.FEA.Items
         }
 
         public List<FeMeshNode> MeshNodes => new List<FeMeshNode>() {INode, KNode, JNode};
+        public List<FeMeshNode> MeshNodes_NoK => new List<FeMeshNode>() { INode, JNode };
 
-        public FeMeshNode GetNodeById(int inNodeId)
+        public FeMeshNode GetNodeById(string inNodeId)
         {
             if (INode.Id == inNodeId) return INode;
             if (JNode.Id == inNodeId) return JNode;

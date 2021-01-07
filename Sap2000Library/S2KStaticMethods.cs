@@ -303,5 +303,12 @@ namespace Sap2000Library
                     return System.Drawing.Color.FromArgb(255, red, green, blue);
             }
         }
+
+        /// Return Type: BOOL->int
+        ///fBlockIt: BOOL->int
+        [System.Runtime.InteropServices.DllImportAttribute("user32.dll", EntryPoint = "BlockInput")]
+        [return: System.Runtime.InteropServices.MarshalAsAttribute(System.Runtime.InteropServices.UnmanagedType.Bool)]
+        public static extern bool BlockInput([System.Runtime.InteropServices.MarshalAsAttribute(System.Runtime.InteropServices.UnmanagedType.Bool)] bool fBlockIt);
+
     }
 }

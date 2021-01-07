@@ -24,7 +24,6 @@ namespace BaseWPFLibrary
         public MessageOverlay()
         {
             InitializeComponent();
-            MessageOverlayBindings.Start(this);
         }
 
         public Visibility OverlayVisibility

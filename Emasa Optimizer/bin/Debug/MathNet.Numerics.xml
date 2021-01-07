@@ -4,6 +4,17 @@
         <name>MathNet.Numerics</name>
     </assembly>
     <members>
+        <member name="T:MathNet.Numerics.AppSwitches">
+            <summary>
+            AppContext based switches to disable functionality, controllable through also in the
+            host application through AppContext or by configuration with AppContextSwitchOverride.
+            https://docs.microsoft.com/en-us/dotnet/framework/configure-apps/file-schema/runtime/appcontextswitchoverrides-element
+            </summary>
+            <remarks>
+            Since AppContext is not supported on .NET Framework 4.0, a local implementation is used there instead,
+            which cannot be controlled though configuration or through AppContext.
+            </remarks>
+        </member>
         <member name="T:MathNet.Numerics.ArrayExtensions">
             <summary>
             Useful extension methods for Arrays.
@@ -32900,6 +32911,27 @@
             corner of their cell with the remaining fields left zero.
             </summary>
         </member>
+        <member name="M:MathNet.Numerics.LinearAlgebra.MatrixBuilder`1.SparseFromCoordinateFormat(System.Int32,System.Int32,System.Int32,System.Int32[],System.Int32[],`0[])">
+            <summary>
+            Create a new sparse matrix from a coordinate format.
+            This new matrix will be independent from the given arrays.
+            A new memory block will be allocated for storing the matrix.
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.LinearAlgebra.MatrixBuilder`1.SparseFromCompressedSparseRowFormat(System.Int32,System.Int32,System.Int32,System.Int32[],System.Int32[],`0[])">
+            <summary>
+            Create a new sparse matrix from a compressed sparse row format.
+            This new matrix will be independent from the given arrays.
+            A new memory block will be allocated for storing the matrix.
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.LinearAlgebra.MatrixBuilder`1.SparseFromCompressedSparseColumnFormat(System.Int32,System.Int32,System.Int32,System.Int32[],System.Int32[],`0[])">
+            <summary>
+            Create a new sparse matrix from a compressed sparse column format.
+            This new matrix will be independent from the given arrays.
+            A new memory block will be allocated for storing the matrix.
+            </summary>
+        </member>
         <member name="M:MathNet.Numerics.LinearAlgebra.MatrixBuilder`1.Diagonal(MathNet.Numerics.LinearAlgebra.Storage.DiagonalMatrixStorage{`0})">
             <summary>
             Create a new diagonal matrix straight from an initialized matrix storage instance.
@@ -38104,6 +38136,11 @@
             </summary>
             <returns>The amount grown.</returns>
         </member>
+        <member name="M:MathNet.Numerics.LinearAlgebra.Storage.SparseCompressedRowMatrixStorage`1.PopulateExplicitZerosOnDiagonal">
+            <summary>
+            Fill zeros explicitly on the diagonal entries as required by the Intel MKL direct sparse solver.
+            </summary>
+        </member>
         <member name="M:MathNet.Numerics.LinearAlgebra.Storage.SparseCompressedRowMatrixStorage`1.GetHashCode">
             <summary>
             Returns a hash code for this instance.
@@ -40984,6 +41021,9 @@
             </summary>
             <param name="z">The location where to evaluate the polynomial at.</param>
             <param name="coefficients">The coefficients of the polynomial, coefficient for power k at index k.</param>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="coefficients"/> is a null reference.
+            </exception>
         </member>
         <member name="M:MathNet.Numerics.Polynomial.Evaluate(System.Numerics.Complex,System.Double[])">
             <summary>
@@ -40993,6 +41033,9 @@
             </summary>
             <param name="z">The location where to evaluate the polynomial at.</param>
             <param name="coefficients">The coefficients of the polynomial, coefficient for power k at index k.</param>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="coefficients"/> is a null reference.
+            </exception>
         </member>
         <member name="M:MathNet.Numerics.Polynomial.Evaluate(System.Numerics.Complex,System.Numerics.Complex[])">
             <summary>
@@ -41002,6 +41045,9 @@
             </summary>
             <param name="z">The location where to evaluate the polynomial at.</param>
             <param name="coefficients">The coefficients of the polynomial, coefficient for power k at index k.</param>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="coefficients"/> is a null reference.
+            </exception>
         </member>
         <member name="M:MathNet.Numerics.Polynomial.Evaluate(System.Double)">
             <summary>
@@ -41083,6 +41129,9 @@
             <param name="a">Left polynomial</param>
             <param name="b">Right polynomial</param>
             <returns>Resulting Polynomial</returns>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="a"/> or <paramref name="b"/> is a null reference.
+            </exception>
         </member>
         <member name="M:MathNet.Numerics.Polynomial.Multiply(MathNet.Numerics.Polynomial,System.Double)">
             <summary>
@@ -49737,6 +49786,225 @@
         <member name="F:MathNet.Numerics.Providers.LinearAlgebra.OpenBlas.NativeError.MemoryAllocation">
             <summary>
             Unable to allocate memory.
+            </summary>
+        </member>
+        <member name="T:MathNet.Numerics.Providers.SparseSolver.DssMatrixStructure">
+            <summary>
+            Structure option.
+            </summary>
+        </member>
+        <member name="T:MathNet.Numerics.Providers.SparseSolver.DssMatrixType">
+            <summary>
+            Factorization option.
+            </summary>
+        </member>
+        <member name="T:MathNet.Numerics.Providers.SparseSolver.DssSystemType">
+            <summary>
+            Solver step's substitution.
+            </summary>
+        </member>
+        <member name="F:MathNet.Numerics.Providers.SparseSolver.DssSystemType.DontTranspose">
+            <summary>
+            Solve a system, Ax = b.
+            </summary>
+        </member>
+        <member name="F:MathNet.Numerics.Providers.SparseSolver.DssSystemType.Transpose">
+            <summary>
+            Solve a transposed system, A'x = b
+            </summary>
+        </member>
+        <member name="F:MathNet.Numerics.Providers.SparseSolver.DssSystemType.ConjugateTranspose">
+            <summary>
+            Solve a conjugate transposed system, A†x = b
+            </summary>
+        </member>
+        <member name="T:MathNet.Numerics.Providers.SparseSolver.DssStatus">
+            <summary>
+            Status values
+            </summary>
+        </member>
+        <member name="F:MathNet.Numerics.Providers.SparseSolver.DssStatus.MKL_DSS_SUCCESS">
+            <summary>
+            The operation was successful.
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.SparseSolver.ISparseSolverProvider.IsAvailable">
+            <summary>
+            Try to find out whether the provider is available, at least in principle.
+            Verification may still fail if available, but it will certainly fail if unavailable.
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.SparseSolver.ISparseSolverProvider.InitializeVerify">
+            <summary>
+            Initialize and verify that the provided is indeed available. If not, fall back to alternatives like the managed provider
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.SparseSolver.ISparseSolverProvider.FreeResources">
+            <summary>
+            Frees memory buffers, caches and handles allocated in or to the provider.
+            Does not unload the provider itself, it is still usable afterwards.
+            </summary>
+        </member>
+        <member name="T:MathNet.Numerics.Providers.SparseSolver.Managed.ManagedSparseSolverProvider">
+            <summary>
+            The managed sparse solver provider
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.SparseSolver.Managed.ManagedSparseSolverProvider.IsAvailable">
+            <summary>
+            Try to find out whether the provider is available, at least in principle.
+            Verification may still fail if available, but it will certainly fail if unavailable.
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.SparseSolver.Managed.ManagedSparseSolverProvider.InitializeVerify">
+            <summary>
+            Initialize and verify that the provided is indeed available. If not, fall back to alternatives like the managed provider
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.SparseSolver.Managed.ManagedSparseSolverProvider.FreeResources">
+            <summary>
+            Frees memory buffers, caches and handles allocated in or to the provider.
+            Does not unload the provider itself, it is still usable afterwards.
+            </summary>
+        </member>
+        <member name="T:MathNet.Numerics.Providers.SparseSolver.Mkl.MklSparseSolverProvider">
+            <summary>
+            Intel's Math Kernel Library (MKL) direct sparse solver provider.
+            </summary>
+            <summary>
+            Intel's Math Kernel Library (MKL) direct sparse solver provider.
+            </summary>
+            <summary>
+            Intel's Math Kernel Library (MKL) sparse solver provider.
+            </summary>
+            <summary>
+            Intel's Math Kernel Library (MKL) direct sparse solver provider.
+            </summary>
+            <summary>
+            Intel's Math Kernel Library (MKL) direct sparse solver provider.
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.SparseSolver.Mkl.MklSparseSolverProvider.Solve(MathNet.Numerics.Providers.SparseSolver.DssMatrixStructure,MathNet.Numerics.Providers.SparseSolver.DssMatrixType,MathNet.Numerics.Providers.SparseSolver.DssSystemType,System.Int32,System.Int32,System.Int32,System.Int32[],System.Int32[],System.Numerics.Complex[],System.Int32,System.Numerics.Complex[],System.Numerics.Complex[])">
+            <summary>
+            Solves sparse linear systems of equations, <b>AX = B</b>.
+            </summary>
+            <param name="matrixStructure">The symmetricity of the matrix. For a symmetric matrix, only upper ot lower triangular matrix is used.</param>
+            <param name="matrixType">The definiteness of the matrix.</param>
+            <param name="systemType">The type of the systems.</param>
+            <param name="rowCount">The number of rows of matrix.</param>
+            <param name="columnCount">The number of columns of matrix.</param>
+            <param name="nonZerosCount">The number of non zero elements of matrix.</param>
+            <param name="rowPointers">The array containing the row indices of the existing rows.</param>
+            <param name="columnIndices">The array containing the column indices of the non-zero values</param>
+            <param name="values">The array that contains the non-zero elements of matrix. No diagonal element can be ommitted. </param>
+            <param name="nRhs">The number of columns of the right hand side matrix.</param>
+            <param name="rhs">The right hand side matrix</param>
+            <param name="solution">The left hand side matrix</param>
+            <returns>The status of the solver.</returns>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.SparseSolver.Mkl.MklSparseSolverProvider.Solve(MathNet.Numerics.Providers.SparseSolver.DssMatrixStructure,MathNet.Numerics.Providers.SparseSolver.DssMatrixType,MathNet.Numerics.Providers.SparseSolver.DssSystemType,System.Int32,System.Int32,System.Int32,System.Int32[],System.Int32[],MathNet.Numerics.Complex32[],System.Int32,MathNet.Numerics.Complex32[],MathNet.Numerics.Complex32[])">
+            <summary>
+            Solves sparse linear systems of equations, <b>AX = B</b>.
+            </summary>
+            <param name="matrixStructure">The symmetricity of the matrix. For a symmetric matrix, only upper ot lower triangular matrix is used.</param>
+            <param name="matrixType">The definiteness of the matrix.</param>
+            <param name="systemType">The type of the systems.</param>
+            <param name="rowCount">The number of rows of matrix.</param>
+            <param name="columnCount">The number of columns of matrix.</param>
+            <param name="nonZerosCount">The number of non zero elements of matrix.</param>
+            <param name="rowPointers">The array containing the row indices of the existing rows.</param>
+            <param name="columnIndices">The array containing the column indices of the non-zero values</param>
+            <param name="values">The array that contains the non-zero elements of matrix. No diagonal element can be ommitted. </param>
+            <param name="nRhs">The number of columns of the right hand side matrix.</param>
+            <param name="rhs">The right hand side matrix</param>
+            <param name="solution">The left hand side matrix</param>
+            <returns>The status of the solver.</returns>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.SparseSolver.Mkl.MklSparseSolverProvider.#ctor(System.String)">
+            <param name="hintPath">Hint path where to look for the native binaries</param>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.SparseSolver.Mkl.MklSparseSolverProvider.IsAvailable">
+            <summary>
+            Try to find out whether the provider is available, at least in principle.
+            Verification may still fail if available, but it will certainly fail if unavailable.
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.SparseSolver.Mkl.MklSparseSolverProvider.InitializeVerify">
+            <summary>
+            Initialize and verify that the provided is indeed available.
+            If calling this method fails, consider to fall back to alternatives like the managed provider.
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.SparseSolver.Mkl.MklSparseSolverProvider.FreeResources">
+            <summary>
+            Frees memory buffers, caches and handles allocated in or to the provider.
+            Does not unload the provider itself, it is still usable afterwards.
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.SparseSolver.Mkl.MklSparseSolverProvider.Solve(MathNet.Numerics.Providers.SparseSolver.DssMatrixStructure,MathNet.Numerics.Providers.SparseSolver.DssMatrixType,MathNet.Numerics.Providers.SparseSolver.DssSystemType,System.Int32,System.Int32,System.Int32,System.Int32[],System.Int32[],System.Double[],System.Int32,System.Double[],System.Double[])">
+            <summary>
+            Solves sparse linear systems of equations, <b>AX = B</b>.
+            </summary>
+            <param name="matrixStructure">The symmetricity of the matrix. For a symmetric matrix, only upper ot lower triangular matrix is used.</param>
+            <param name="matrixType">The definiteness of the matrix.</param>
+            <param name="systemType">The type of the systems.</param>
+            <param name="rowCount">The number of rows of matrix.</param>
+            <param name="columnCount">The number of columns of matrix.</param>
+            <param name="nonZerosCount">The number of non zero elements of matrix.</param>
+            <param name="rowPointers">The array containing the row indices of the existing rows.</param>
+            <param name="columnIndices">The array containing the column indices of the non-zero values</param>
+            <param name="values">The array that contains the non-zero elements of matrix. No diagonal element can be ommitted. </param>
+            <param name="nRhs">The number of columns of the right hand side matrix.</param>
+            <param name="rhs">The right hand side matrix</param>
+            <param name="solution">The left hand side matrix</param>
+            <returns>The status of the solver.</returns>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.SparseSolver.Mkl.MklSparseSolverProvider.Solve(MathNet.Numerics.Providers.SparseSolver.DssMatrixStructure,MathNet.Numerics.Providers.SparseSolver.DssMatrixType,MathNet.Numerics.Providers.SparseSolver.DssSystemType,System.Int32,System.Int32,System.Int32,System.Int32[],System.Int32[],System.Single[],System.Int32,System.Single[],System.Single[])">
+            <summary>
+            Solves sparse linear systems of equations, <b>AX = B</b>.
+            </summary>
+            <param name="matrixStructure">The symmetricity of the matrix. For a symmetric matrix, only upper ot lower triangular matrix is used.</param>
+            <param name="matrixType">The definiteness of the matrix.</param>
+            <param name="systemType">The type of the systems.</param>
+            <param name="rowCount">The number of rows of matrix.</param>
+            <param name="columnCount">The number of columns of matrix.</param>
+            <param name="nonZerosCount">The number of non zero elements of matrix.</param>
+            <param name="rowPointers">The array containing the row indices of the existing rows.</param>
+            <param name="columnIndices">The array containing the column indices of the non-zero values</param>
+            <param name="values">The array that contains the non-zero elements of matrix. No diagonal element can be ommitted. </param>
+            <param name="nRhs">The number of columns of the right hand side matrix.</param>
+            <param name="rhs">The right hand side matrix</param>
+            <param name="solution">The left hand side matrix</param>
+            <returns>The status of the solver.</returns>
+        </member>
+        <member name="P:MathNet.Numerics.Providers.SparseSolver.SparseSolverControl.Provider">
+            <summary>
+            Gets or sets the sparse solver provider. Consider to use UseNativeMKL or UseManaged instead.
+            </summary>
+            <value>The linear algebra provider.</value>
+        </member>
+        <member name="P:MathNet.Numerics.Providers.SparseSolver.SparseSolverControl.HintPath">
+            <summary>
+            Optional path to try to load native provider binaries from.
+            If not set, Numerics will fall back to the environment variable
+            `MathNetNumericsSSProviderPath` or the default probing paths.
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.SparseSolver.SparseSolverControl.TryUseNative">
+            <summary>
+            Try to use a native provider, if available.
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.SparseSolver.SparseSolverControl.UseBest">
+            <summary>
+            Use the best provider available.
+            </summary>
+        </member>
+        <member name="M:MathNet.Numerics.Providers.SparseSolver.SparseSolverControl.UseDefault">
+            <summary>
+            Use a specific provider if configured, e.g. using the
+            "MathNetNumericsDSSProvider" environment variable,
+            or fall back to the best provider.
             </summary>
         </member>
         <member name="T:MathNet.Numerics.Random.CryptoRandomSource">

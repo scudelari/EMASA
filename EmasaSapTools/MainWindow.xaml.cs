@@ -52,33 +52,33 @@ namespace EmasaSapTools
         [Obsolete]
         private void CreateAndBind()
         {
-            FormBasicRefreshingBindings.Start(MainTabControl, false);
+            //FormBasicRefreshingBindings.Start(MainTabControl, false);
 
-            // Fixed bindigns and Actions - Good to go!
-            LoadCasesSolverOptionsBindings.Start(NonLinearCases_GroupBox);
+            //// Fixed bindigns and Actions - Good to go!
+            //LoadCasesSolverOptionsBindings.Start(NonLinearCases_GroupBox);
             
             
-            ExtendOrShrinkLineBindings.Start(ExtendOrShrinkLineGroupBox);
-            AlignAreaBindings.Start(AlignAreaGroupBox);
-            AlignFrameBindings.Start(AlignFrameGroupBox);
-            AlignJointBindings.Start(AlignJointsGroupBox);
+            //ExtendOrShrinkLineBindings.Start(ExtendOrShrinkLineGroupBox);
+            //AlignAreaBindings.Start(AlignAreaGroupBox);
+            //AlignFrameBindings.Start(AlignFrameGroupBox);
+            //AlignJointBindings.Start(AlignJointsGroupBox);
             
-            RenameItemsBindings.Start(Rename_TabItem_Panel);
-            CreateSpliceBindings.Start(CreateSpliceGroupBox);
-            SelectionInfoBindings.Start(Selection_TabItem_Panel);
-            //BreakFrameBindings.Start(BreakFrames_GroupBox);
-            SQLiteBindings.Start(SQLiteOperations_TabItem_Panel);
+            //RenameItemsBindings.Start(Rename_TabItem_Panel);
+            //CreateSpliceBindings.Start(CreateSpliceGroupBox);
+            //SelectionInfoBindings.Start(Selection_TabItem_Panel);
+            ////BreakFrameBindings.Start(BreakFrames_GroupBox);
+            //SQLiteBindings.Start(SQLiteOperations_TabItem_Panel);
 
 
-            ManipulateItemsBindings.Start(ManipulateItems_TabItem);
-            TrussSolverBindings.Start(TrussSolverTabItem);
+            //ManipulateItemsBindings.Start(ManipulateItems_TabItem);
+            //TrussSolverBindings.Start(TrussSolverTabItem);
             
             // These are the bindings of the controls that must be refreshed, such as group lists
             //ResultsDisplacements_OutputCases_ListBox.DataContext = FormBasicRefreshingBindings.I;
             //ResultsDisplacements_Groups_ListBox.DataContext = FormBasicRefreshingBindings.I;
             //ParallelGhostStifferGroupComboBox.DataContext = FormBasicRefreshingBindings.I;
             ManipulateItems_Substitute_LinksToFrames_FrameSection.DataContext = FormBasicRefreshingBindings.I;
-            TrusSolver_LoadCase_ComboBox.DataContext = FormBasicRefreshingBindings.I;
+            //TrusSolver_LoadCase_ComboBox.DataContext = FormBasicRefreshingBindings.I;
         }
 
 
@@ -157,42 +157,76 @@ namespace EmasaSapTools
         public MainWindow()
         {
             Thread.CurrentThread.Name = "MainFormThread";
+            
             InitializeComponent();
+
+            // Saves references to the bounded FrameworkElements so that we can rescue them at a later stage
+            FormSharedDataBindings.SaveReferenceToElement(this, "MainWindow");
+
+            // Will get the x:Name automatically
+            LoadCasesSolverOptionsBindings.SaveReferenceToElement(NonLinearCases_GroupBox);
+            LoadCasesGeneralActionBindings.SaveReferenceToElement(LoadCasesGeneralAction_GroupBox);
+            ConstraintCleanupBindings.SaveReferenceToElement(ConstraintCleanup_GroupBox);
+
+
+            StagedConstructionBindings.SaveReferenceToElement(StagedConstruction_TabItem_Panel);
+            StagedConstructionBindings.I.StifferComboBox_ViewItems = (new CollectionViewSource() { Source = FormSharedDataBindings.I.Sap2000GroupList }).View;
+
+            SelectionInfoBindings.SaveReferenceToElement(Selection_TabItem);
+
+            DisneyCanopySurveyBindings.SaveReferenceToElement(CanopySurveyTabItem);
+            DisneyCanopySurveyBindings.I.ResultsDisplacements_Cases_ViewItems = (new CollectionViewSource() { Source = FormSharedDataBindings.I.Sap2000CaseList }).View;
+            DisneyCanopySurveyBindings.I.ResultsDisplacements_Groups_ViewItems = (new CollectionViewSource() { Source = FormSharedDataBindings.I.Sap2000GroupList }).View;
+            DisneyCanopySurveyBindings.I.StepwiseReport_OutputGroups_ViewItems = (new CollectionViewSource() { Source = FormSharedDataBindings.I.Sap2000GroupList }).View;
+            
+            RhinoOperationsBindings.SaveReferenceToElement(RhinoOperations_TabItem);
+
+            RenameItemsBindings.SaveReferenceToElement(Rename_TabItem_Panel);
+
+            ManipulateItemsBindings.SaveReferenceToElement(ManipulateItems_TabItem);
+
+            TestBindings.SaveReferenceToElement(Test_StackPanel);
+
+            MonitorConstraintsManipulationBindings.SaveReferenceToElement(ConstraintsAddGroupBox);
+
+            StatusBarBindings.SaveReferenceToElement(WindowStatusBar);
         }
 
         private void Window_Initialized(object sender, EventArgs e)
         {
             // Shared items
-            FormSharedDataBindings.Start();
+            //FormSharedDataBindings.Start();
 
             // Initializes the binding objects
-            LoadCasesSolverOptionsBindings.Start(NonLinearCases_GroupBox);
-            LoadCasesGeneralActionBindings.Start(LoadCasesGeneralAction_GroupBox);
-            ConstraintCleanupBindings.Start(ConstraintCleanup_GroupBox);
+            //LoadCasesSolverOptionsBindings.Start(NonLinearCases_GroupBox);
+            //LoadCasesGeneralActionBindings.Start(LoadCasesGeneralAction_GroupBox);
+            //ConstraintCleanupBindings.Start(ConstraintCleanup_GroupBox);
 
-            StagedConstructionBindings.Start(StagedConstruction_TabItem_Panel);
-            StagedConstructionBindings.I.StifferComboBox_ViewItems = (new CollectionViewSource() { Source = FormSharedDataBindings.I.Sap2000GroupList }).View;
+            //StagedConstructionBindings.Start(StagedConstruction_TabItem_Panel);
+            //StagedConstructionBindings.I.StifferComboBox_ViewItems = (new CollectionViewSource() { Source = FormSharedDataBindings.I.Sap2000GroupList }).View;
 
-            DisneyCanopySurveyBindings.Start(CanopySurveyTabItem);
-            DisneyCanopySurveyBindings.I.ResultsDisplacements_Cases_ViewItems = (new CollectionViewSource() { Source = FormSharedDataBindings.I.Sap2000CaseList }).View;
-            DisneyCanopySurveyBindings.I.ResultsDisplacements_Groups_ViewItems = (new CollectionViewSource() { Source = FormSharedDataBindings.I.Sap2000GroupList }).View;
-            DisneyCanopySurveyBindings.I.StepwiseReport_OutputGroups_ViewItems = (new CollectionViewSource() { Source = FormSharedDataBindings.I.Sap2000GroupList }).View;
+            //DisneyCanopySurveyBindings.Start(CanopySurveyTabItem);
+            //DisneyCanopySurveyBindings.I.ResultsDisplacements_Cases_ViewItems = (new CollectionViewSource() { Source = FormSharedDataBindings.I.Sap2000CaseList }).View;
+            //DisneyCanopySurveyBindings.I.ResultsDisplacements_Groups_ViewItems = (new CollectionViewSource() { Source = FormSharedDataBindings.I.Sap2000GroupList }).View;
+            //DisneyCanopySurveyBindings.I.StepwiseReport_OutputGroups_ViewItems = (new CollectionViewSource() { Source = FormSharedDataBindings.I.Sap2000GroupList }).View;
 
-            RhinoOperationsBindings.Start(RhinoOperations_TabItem);
+            //RhinoOperationsBindings.Start(RhinoOperations_TabItem);
 
-            ManipulateItemsBindings.Start(ManipulateItems_TabItem);
+            //RenameItemsBindings.Start(Rename_TabItem_Panel);
 
-            TestBindings.Start(Test_StackPanel);
+            //ManipulateItemsBindings.Start(ManipulateItems_TabItem);
 
-            MonitorConstraintsManipulationBindings.Start(ConstraintsAddGroupBox);
+            //TestBindings.Start(Test_StackPanel);
 
-            StatusBarBindings.Start(WindowStatusBar);
+            //MonitorConstraintsManipulationBindings.Start(ConstraintsAddGroupBox);
+
+            //StatusBarBindings.Start(WindowStatusBar);
+            //StatusBarBindings.I.MonitorList.Add(MonitorConstraintsManipulationBindings.I);
+
             StatusBarBindings.I.MonitorList.Add(MonitorConstraintsManipulationBindings.I);
 
-
-            
             // Sets the views of the items
-            
+
 
 
             //CreateAndBind();
@@ -222,11 +256,11 @@ namespace EmasaSapTools
             // Reads the event argument
             bool andHideSap = inObj.EventData is bool inParam && inParam;
 
-            BusyOverlay.ShowOverlay();
+            BusyOverlayBindings.I.ShowOverlay();
 
             if (andHideSap)
             {
-                BusyOverlay.SetBasic("Hiding SAP2000's Window to Speed-up Works.");
+                BusyOverlayBindings.I.SetBasic(inTitle: "Hiding SAP2000's Window to Speed-up Works.");
                 S2KModel.SM.HideSapAsync();
             }
 
@@ -238,7 +272,7 @@ namespace EmasaSapTools
         }
         private void BindEndCommandEventHandler(BindCommandEventArgs inObj)
         {
-            BusyOverlay.HideOverlayAndReset();
+            BusyOverlayBindings.I.HideOverlayAndReset();
 
             try
             {
@@ -305,7 +339,7 @@ namespace EmasaSapTools
             }
 
             // Are we already busy?
-            if (BusyOverlayBindings.I.OverlayVisibility != Visibility.Collapsed) return;
+            if (BusyOverlayBindings.I.OverlayElement.Visibility != Visibility.Collapsed) return;
 
             DisableWindow();
             BusyOverlayBindings.I.Title = "Updating Interface Items";
@@ -356,7 +390,7 @@ namespace EmasaSapTools
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            BusyOverlay.CancelOperation();
+            BusyOverlayBindings.I.CancelOperation();
         }
 
         private void MessageOverlayGrid_CloseButton_Click(object sender, RoutedEventArgs e)
@@ -550,175 +584,175 @@ namespace EmasaSapTools
             }
         }
 
-        private async void ExtendFrameProceedToOthersButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                DisableWindow();
+        //private async void ExtendFrameProceedToOthersButton_Click(object sender, RoutedEventArgs e)
+        //{
+        //    try
+        //    {
+        //        DisableWindow();
 
-                // Created in the UI thread
-                CancelOpForm cancelOpForm = new CancelOpForm(this);
+        //        // Created in the UI thread
+        //        CancelOpForm cancelOpForm = new CancelOpForm(this);
 
-                // The async body
-                void work()
-                {
-                    //progReporter.Report(ProgressData.SetMessage("Getting the list of selected frames."));
-                    var selFrames = S2KModel.SM.FrameMan.GetSelected();
-                    //progReporter.Report(ProgressData.SetMessage("Getting the list of selected cables."));
-                    var selCables = S2KModel.SM.CableMan.GetSelected();
-                    //progReporter.Report(ProgressData.SetMessage("Getting the list of selected links."));
-                    var selLinks = S2KModel.SM.LinkMan.GetSelected();
-                    //progReporter.Report(ProgressData.SetMessage("Getting the list of selected points."));
-                    var selPoints = S2KModel.SM.PointMan.GetSelected();
+        //        // The async body
+        //        void work()
+        //        {
+        //            //progReporter.Report(ProgressData.SetMessage("Getting the list of selected frames."));
+        //            var selFrames = S2KModel.SM.FrameMan.GetSelected();
+        //            //progReporter.Report(ProgressData.SetMessage("Getting the list of selected cables."));
+        //            var selCables = S2KModel.SM.CableMan.GetSelected();
+        //            //progReporter.Report(ProgressData.SetMessage("Getting the list of selected links."));
+        //            var selLinks = S2KModel.SM.LinkMan.GetSelected();
+        //            //progReporter.Report(ProgressData.SetMessage("Getting the list of selected points."));
+        //            var selPoints = S2KModel.SM.PointMan.GetSelected();
 
-                    if (selCables.Count != 0) throw new S2KHelperException($"Cables are not supported.");
-                    if (selLinks.Count != 0) throw new S2KHelperException($"Links are not supported.");
+        //            if (selCables.Count != 0) throw new S2KHelperException($"Cables are not supported.");
+        //            if (selLinks.Count != 0) throw new S2KHelperException($"Links are not supported.");
 
-                    // Groups the linear elements
-                    var selLines = new List<SapLine>();
-                    selLines.AddRange(selFrames);
-                    //selLines.AddRange(selLinks);
+        //            // Groups the linear elements
+        //            var selLines = new List<SapLine>();
+        //            selLines.AddRange(selFrames);
+        //            //selLines.AddRange(selLinks);
 
-                    // Validates: The each line must have one selected point
-                    if (selPoints.Count == 0 || selLines.Count == 0)
-                        throw new S2KHelperException($"You must select at least one point and one linear element.");
-                    foreach (SapLine item in selLines)
-                        if (selPoints.Count(a => item.IsPointIJ(a)) != 1)
-                            throw new S2KHelperException(
-                                $"Please select one, and only one, point on each linear element.");
+        //            // Validates: The each line must have one selected point
+        //            if (selPoints.Count == 0 || selLines.Count == 0)
+        //                throw new S2KHelperException($"You must select at least one point and one linear element.");
+        //            foreach (SapLine item in selLines)
+        //                if (selPoints.Count(a => item.IsPointIJ(a)) != 1)
+        //                    throw new S2KHelperException(
+        //                        $"Please select one, and only one, point on each linear element.");
 
-                    // Now, the target line must be selected
-                    S2KModel.SM.ClearSelection();
+        //            // Now, the target line must be selected
+        //            S2KModel.SM.ClearSelection();
 
-                    //progReporter.Report(ProgressData.SetMessage("Searching for Alignment Direction."));
+        //            //progReporter.Report(ProgressData.SetMessage("Searching for Alignment Direction."));
 
-                    // Opens the cancel operation form
-                    cancelOpForm.MessageText =
-                        $"Please select *only* one option to use as alignment direction: {Environment.NewLine}*) Two, and only two, points.{Environment.NewLine}*) One, and only one, frame.";
-                    cancelOpForm.Show_FromOtherThread();
+        //            // Opens the cancel operation form
+        //            cancelOpForm.MessageText =
+        //                $"Please select *only* one option to use as alignment direction: {Environment.NewLine}*) Two, and only two, points.{Environment.NewLine}*) One, and only one, frame.";
+        //            cancelOpForm.Show_FromOtherThread();
 
-                    // Pools for the new selection to get the line alignment
-                    Line3D alignLine = new Line3D();
-                    do
-                    {
-                        if (cancelOpForm.Token.IsCancellationRequested) return;
+        //            // Pools for the new selection to get the line alignment
+        //            Line3D alignLine = new Line3D();
+        //            do
+        //            {
+        //                if (cancelOpForm.Token.IsCancellationRequested) return;
 
-                        Thread.Sleep(Properties.Settings.Default.SapPoolSleep);
+        //                Thread.Sleep(Properties.Settings.Default.SapPoolSleep);
 
-                        // Gets the selected points
-                        var selPointsAlign = S2KModel.SM.PointMan.GetSelected();
-                        // Gets the selected frames
-                        var selFramesAlign = S2KModel.SM.FrameMan.GetSelected();
+        //                // Gets the selected points
+        //                var selPointsAlign = S2KModel.SM.PointMan.GetSelected();
+        //                // Gets the selected frames
+        //                var selFramesAlign = S2KModel.SM.FrameMan.GetSelected();
 
-                        if (selPointsAlign.Count > 2 ||
-                            selFramesAlign.Count > 1 ||
-                            selFramesAlign.Count == 1 && selPointsAlign.Count != 0)
-                        {
-                            S2KStaticMethods.ShowWarningMessageBox(
-                                $"Please select *only* one option to use as alignment direction: {Environment.NewLine}- Two, and only two, points.{Environment.NewLine}- One, and only one, frame.");
-                            S2KModel.SM.ClearSelection();
-                            continue;
-                        }
+        //                if (selPointsAlign.Count > 2 ||
+        //                    selFramesAlign.Count > 1 ||
+        //                    selFramesAlign.Count == 1 && selPointsAlign.Count != 0)
+        //                {
+        //                    S2KStaticMethods.ShowWarningMessageBox(
+        //                        $"Please select *only* one option to use as alignment direction: {Environment.NewLine}- Two, and only two, points.{Environment.NewLine}- One, and only one, frame.");
+        //                    S2KModel.SM.ClearSelection();
+        //                    continue;
+        //                }
 
-                        if (selPointsAlign.Count == 2)
-                        {
-                            alignLine = new Line3D(selPointsAlign[0].Point, selPointsAlign[1].Point);
-                            break;
-                        }
+        //                if (selPointsAlign.Count == 2)
+        //                {
+        //                    alignLine = new Line3D(selPointsAlign[0].Point, selPointsAlign[1].Point);
+        //                    break;
+        //                }
 
-                        if (selFramesAlign.Count == 1)
-                        {
-                            alignLine = selFramesAlign[0].Line;
-                            break;
-                        }
-                    } while (true);
+        //                if (selFramesAlign.Count == 1)
+        //                {
+        //                    alignLine = selFramesAlign[0].Line;
+        //                    break;
+        //                }
+        //            } while (true);
 
-                    // Sets the basic message before the iterations
-                    //progReporter.Report(ProgressData.SetMessage("Working on line ***."));
+        //            // Sets the basic message before the iterations
+        //            //progReporter.Report(ProgressData.SetMessage("Working on line ***."));
 
-                    for (int i = 0; i < selLines.Count; i++)
-                    {
-                        SapLine line = selLines[i];
-                        //progReporter.Report(ProgressData.UpdateProgress(i, selLines.Count, line.Name));
+        //            for (int i = 0; i < selLines.Count; i++)
+        //            {
+        //                SapLine line = selLines[i];
+        //                //progReporter.Report(ProgressData.UpdateProgress(i, selLines.Count, line.Name));
 
-                        // The new target point
-                        SapPoint newPoint;
+        //                // The new target point
+        //                SapPoint newPoint;
 
-                        if (ExtendOrShrinkLineBindings.I.Closest_IsChecked)
-                        {
-                            newPoint = S2KModel.SM.PointMan.AddByPoint3D_ReturnSapEntity(alignLine
-                                .ClosestPointsBetween(line.Line).Item1);
-                        }
-                        else
-                        {
-                            // Vertical plane that contains the current line
-                            Plane lineVertPlane = Plane.FromPoints(line.Line.StartPoint, line.Line.EndPoint,
-                                new Point3D(line.Line.StartPoint.X, line.Line.StartPoint.Y,
-                                    line.Line.StartPoint.Z - 100));
+        //                if (ExtendOrShrinkLineBindings.I.Closest_IsChecked)
+        //                {
+        //                    newPoint = S2KModel.SM.PointMan.AddByPoint3D_ReturnSapEntity(alignLine
+        //                        .ClosestPointsBetween(line.Line).Item1);
+        //                }
+        //                else
+        //                {
+        //                    // Vertical plane that contains the current line
+        //                    Plane lineVertPlane = Plane.FromPoints(line.Line.StartPoint, line.Line.EndPoint,
+        //                        new Point3D(line.Line.StartPoint.X, line.Line.StartPoint.Y,
+        //                            line.Line.StartPoint.Z - 100));
 
-                            var intersect = lineVertPlane.IntersectionWith(alignLine);
-                            if (!intersect.HasValue)
-                                throw new S2KHelperException(
-                                    $"Could not find the Z projection of element {line.Name} onto selected alignment line.");
+        //                    var intersect = lineVertPlane.IntersectionWith(alignLine);
+        //                    if (!intersect.HasValue)
+        //                        throw new S2KHelperException(
+        //                            $"Could not find the Z projection of element {line.Name} onto selected alignment line.");
 
-                            newPoint = S2KModel.SM.PointMan.AddByPoint3D_ReturnSapEntity(intersect.Value);
-                        }
+        //                    newPoint = S2KModel.SM.PointMan.AddByPoint3D_ReturnSapEntity(intersect.Value);
+        //                }
 
-                        // Finds the point linked to this line
-                        SapPoint point = (from a in selPoints where line.IsPointIJ(a) select a).First();
+        //                // Finds the point linked to this line
+        //                SapPoint point = (from a in selPoints where line.IsPointIJ(a) select a).First();
 
-                        if (line.iEndPoint != point && line.jEndPoint != point)
-                            throw new S2KHelperException(
-                                "The selected joint must be either the I or the J joint of the linear elements.");
+        //                if (line.iEndPoint != point && line.jEndPoint != point)
+        //                    throw new S2KHelperException(
+        //                        "The selected joint must be either the I or the J joint of the linear elements.");
 
-                        // Changes the connectivity of the elements connected to the point
-                        if (ExtendOrShrinkLineBindings.I.AllElements_IsChecked)
-                            foreach (SapObject item in point.ConnectedElements)
-                                item.ChangeConnectivity(point, newPoint);
-                        else if (ExtendOrShrinkLineBindings.I.OnlyTheLine_IsChecked)
-                            line.ChangeConnectivity(point, newPoint);
+        //                // Changes the connectivity of the elements connected to the point
+        //                if (ExtendOrShrinkLineBindings.I.AllElements_IsChecked)
+        //                    foreach (SapObject item in point.ConnectedElements)
+        //                        item.ChangeConnectivity(point, newPoint);
+        //                else if (ExtendOrShrinkLineBindings.I.OnlyTheLine_IsChecked)
+        //                    line.ChangeConnectivity(point, newPoint);
 
-                        // Checks if old point shall be deleted
-                        if (!point.HasConnections) S2KModel.SM.PointMan.DeletePoint(point);
-                    }
+        //                // Checks if old point shall be deleted
+        //                if (!point.HasConnections) S2KModel.SM.PointMan.DeletePoint(point);
+        //            }
 
-                    cancelOpForm.Close_FromOtherThread();
-                    return;
-                }
+        //            cancelOpForm.Close_FromOtherThread();
+        //            return;
+        //        }
 
-                // Runs the job async
-                Task task = new Task(() => work());
-                task.Start();
-                await task;
+        //        // Runs the job async
+        //        Task task = new Task(() => work());
+        //        task.Start();
+        //        await task;
 
-                // There was an error in the async method
-                if (task.Exception != null) throw task.Exception;
-            }
-            catch (Exception ex)
-            {
-                S2KStaticMethods.ShowWarningMessageBox(
-                    $"Could not move the point(s).{Environment.NewLine}{ex.Message}");
-            }
-            finally
-            {
-                S2KModel.SM.RefreshView();
-                ////StatusBarBindings.I.IProgressReporter.Report(ProgressData.Reset());
-                EnableWindow();
-            }
-        }
+        //        // There was an error in the async method
+        //        if (task.Exception != null) throw task.Exception;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        S2KStaticMethods.ShowWarningMessageBox(
+        //            $"Could not move the point(s).{Environment.NewLine}{ex.Message}");
+        //    }
+        //    finally
+        //    {
+        //        S2KModel.SM.RefreshView();
+        //        ////StatusBarBindings.I.IProgressReporter.Report(ProgressData.Reset());
+        //        EnableWindow();
+        //    }
+        //}
 
         private async void CreateSplicesButton_Click(object sender, RoutedEventArgs e)
         {
             DisableWindow(true);
-            BusyOverlay.Title = "Adding splice elements";
+            BusyOverlayBindings.I.Title = "Adding splice elements";
 
             try
             {
                 void work()
                 {
                     // Gets selections
-                    var selPoints = S2KModel.SM.PointMan.GetSelected(BusyOverlay);
-                    var selFrames = S2KModel.SM.FrameMan.GetSelected(BusyOverlay);
+                    var selPoints = S2KModel.SM.PointMan.GetSelected(true);
+                    var selFrames = S2KModel.SM.FrameMan.GetSelected(true);
 
                     // Checks if there are selected points
                     if (selPoints.Count == 0) throw new S2KHelperException("Please select joints.");
@@ -726,7 +760,7 @@ namespace EmasaSapTools
 
                     // Adds a group name
                     string groupName = "AutoSplice";
-                    BusyOverlay.SetIndeterminate($"Making sure the group called {groupName} exists.");
+                    BusyOverlayBindings.I.SetIndeterminate($"Making sure the group called {groupName} exists.");
                     S2KModel.SM.GroupMan.AddGroup(groupName);
 
                     // Checks if each point has two frames and if they are colinear
@@ -768,14 +802,14 @@ namespace EmasaSapTools
                     S2KModel.SM.ClearSelection();
 
                     // Now, we make the changes
-                    BusyOverlay.SetDeterminate("Working with splice at joints.", "Joint");
+                    BusyOverlayBindings.I.SetDeterminate("Working with splice at joints.", "Joint");
                     var spliceFrames = new List<SapFrame>();
                     for (int i = 0; i < pairs.Count; i++)
                     {
                         SapPoint point = pairs[i].point;
                         var linkedFrames = pairs[i].frames;
 
-                        BusyOverlay.UpdateProgress(i, pairs.Count, point.Name);
+                        BusyOverlayBindings.I.UpdateProgress(i, pairs.Count, point.Name);
 
                         // The selected point shall become special
                         point.Special = true;
@@ -820,7 +854,7 @@ namespace EmasaSapTools
                         if (joinedSpliceFrame != null) spliceFrames.Add(joinedSpliceFrame);
                     }
 
-                    BusyOverlay.SetIndeterminate($"Selecting and adding the group {groupName} to the splices.");
+                    BusyOverlayBindings.I.SetIndeterminate($"Selecting and adding the group {groupName} to the splices.");
                     S2KModel.SM.ClearSelection();
                     foreach (SapFrame item in spliceFrames)
                     {
@@ -1251,102 +1285,102 @@ namespace EmasaSapTools
 
         #endregion
 
-        private Vector3D PoolForAlignmentDirection_GetVector(CancelOpForm inCancelForm)
-        {
-            // Opens the cancel operation form
-            inCancelForm.MessageText =
-                $"Please select *only* one option to use as alignment direction: {Environment.NewLine}*) Two, and only two, points.{Environment.NewLine}*) One, and only one, frame.";
-            inCancelForm.Show_FromOtherThread();
+        //private Vector3D PoolForAlignmentDirection_GetVector(CancelOpForm inCancelForm)
+        //{
+        //    // Opens the cancel operation form
+        //    inCancelForm.MessageText =
+        //        $"Please select *only* one option to use as alignment direction: {Environment.NewLine}*) Two, and only two, points.{Environment.NewLine}*) One, and only one, frame.";
+        //    inCancelForm.Show_FromOtherThread();
 
-            do
-            {
-                if (inCancelForm.Token.IsCancellationRequested) return Vector3D.NaN;
+        //    do
+        //    {
+        //        if (inCancelForm.Token.IsCancellationRequested) return Vector3D.NaN;
 
-                Thread.Sleep(Properties.Settings.Default.MonitorSleep);
+        //        Thread.Sleep(Properties.Settings.Default.MonitorSleep);
 
-                // Gets the selected points
-                var selPoints = S2KModel.SM.PointMan.GetSelected();
-                // Gets the selected frames
-                var selFrames = S2KModel.SM.FrameMan.GetSelected();
+        //        // Gets the selected points
+        //        var selPoints = S2KModel.SM.PointMan.GetSelected();
+        //        // Gets the selected frames
+        //        var selFrames = S2KModel.SM.FrameMan.GetSelected();
 
-                if (selPoints.Count > 2 ||
-                    selFrames.Count > 1 ||
-                    selFrames.Count == 1 && selPoints.Count != 0)
-                {
-                    S2KModel.SM.ClearSelection();
-                    S2KStaticMethods.ShowWarningMessageBox($"Please select *only* one option to use as alignment direction: {Environment.NewLine}- Two, and only two, points.{Environment.NewLine}- One, and only one, frame.");
-                    continue;
-                }
+        //        if (selPoints.Count > 2 ||
+        //            selFrames.Count > 1 ||
+        //            selFrames.Count == 1 && selPoints.Count != 0)
+        //        {
+        //            S2KModel.SM.ClearSelection();
+        //            S2KStaticMethods.ShowWarningMessageBox($"Please select *only* one option to use as alignment direction: {Environment.NewLine}- Two, and only two, points.{Environment.NewLine}- One, and only one, frame.");
+        //            continue;
+        //        }
 
-                if (selPoints.Count == 2)
-                {
-                    S2KModel.SM.ClearSelection();
-                    return selPoints[0].Point.VectorTo(selPoints[1].Point);
-                }
+        //        if (selPoints.Count == 2)
+        //        {
+        //            S2KModel.SM.ClearSelection();
+        //            return selPoints[0].Point.VectorTo(selPoints[1].Point);
+        //        }
 
-                if (selFrames.Count == 1)
-                {
-                    S2KModel.SM.ClearSelection();
-                    return selFrames[0].Vector;
-                }
-            } while (true);
-        }
+        //        if (selFrames.Count == 1)
+        //        {
+        //            S2KModel.SM.ClearSelection();
+        //            return selFrames[0].Vector;
+        //        }
+        //    } while (true);
+        //}
 
-        private CoordinateSystem PoolForAlignmentDirection_GetCoordinateSystem(CancelOpForm inCancelForm)
-        {
-            // Opens the cancel operation form
-            inCancelForm.MessageText =
-                $"Please select *only* one option to use as alignment direction: {Environment.NewLine}*) Two, and only two, points.{Environment.NewLine}*) One, and only one, frame.";
-            inCancelForm.Show_FromOtherThread();
+        //private CoordinateSystem PoolForAlignmentDirection_GetCoordinateSystem(CancelOpForm inCancelForm)
+        //{
+        //    // Opens the cancel operation form
+        //    inCancelForm.MessageText =
+        //        $"Please select *only* one option to use as alignment direction: {Environment.NewLine}*) Two, and only two, points.{Environment.NewLine}*) One, and only one, frame.";
+        //    inCancelForm.Show_FromOtherThread();
 
-            do
-            {
-                if (inCancelForm.Token.IsCancellationRequested) return null;
+        //    do
+        //    {
+        //        if (inCancelForm.Token.IsCancellationRequested) return null;
 
-                Thread.Sleep(Properties.Settings.Default.MonitorSleep);
+        //        Thread.Sleep(Properties.Settings.Default.MonitorSleep);
 
-                // Gets the selected points
-                var selPoints = S2KModel.SM.PointMan.GetSelected();
-                // Gets the selected frames
-                var selFrames = S2KModel.SM.FrameMan.GetSelected();
+        //        // Gets the selected points
+        //        var selPoints = S2KModel.SM.PointMan.GetSelected();
+        //        // Gets the selected frames
+        //        var selFrames = S2KModel.SM.FrameMan.GetSelected();
 
-                if (selPoints.Count > 2 ||
-                    selFrames.Count > 1 ||
-                    selFrames.Count == 1 && selPoints.Count != 0)
-                {
-                    S2KModel.SM.ClearSelection();
-                    S2KStaticMethods.ShowWarningMessageBox(
-                        $"Please select *only* one option to use as alignment direction: {Environment.NewLine}- Two, and only two, points.{Environment.NewLine}- One, and only one, frame.");
-                    continue;
-                }
+        //        if (selPoints.Count > 2 ||
+        //            selFrames.Count > 1 ||
+        //            selFrames.Count == 1 && selPoints.Count != 0)
+        //        {
+        //            S2KModel.SM.ClearSelection();
+        //            S2KStaticMethods.ShowWarningMessageBox(
+        //                $"Please select *only* one option to use as alignment direction: {Environment.NewLine}- Two, and only two, points.{Environment.NewLine}- One, and only one, frame.");
+        //            continue;
+        //        }
 
-                if (selPoints.Count == 2)
-                {
-                    S2KModel.SM.ClearSelection();
+        //        if (selPoints.Count == 2)
+        //        {
+        //            S2KModel.SM.ClearSelection();
 
-                    UnitVector3D vec1 = selPoints[0].Point.VectorTo(selPoints[1].Point).Normalize();
+        //            UnitVector3D vec1 = selPoints[0].Point.VectorTo(selPoints[1].Point).Normalize();
 
-                    // Local 1-2 is vertical, towards +Z. If the frame is vertical, then the local axis is towards +X
-                    UnitVector3D vecP = vec1.IsVectorVertical()
-                        ? UnitVector3D.Create(1, 0, 0)
-                        : UnitVector3D.Create(0, 0, 1);
+        //            // Local 1-2 is vertical, towards +Z. If the frame is vertical, then the local axis is towards +X
+        //            UnitVector3D vecP = vec1.IsVectorVertical()
+        //                ? UnitVector3D.Create(1, 0, 0)
+        //                : UnitVector3D.Create(0, 0, 1);
 
-                    // V3 is perpendicular to both the axial vector and the reference vector
-                    UnitVector3D vec3 = vec1.CrossProduct(vecP);
+        //            // V3 is perpendicular to both the axial vector and the reference vector
+        //            UnitVector3D vec3 = vec1.CrossProduct(vecP);
 
-                    // V2 is then perpendicular to both
-                    UnitVector3D vec2 = vec3.CrossProduct(vec1);
+        //            // V2 is then perpendicular to both
+        //            UnitVector3D vec2 = vec3.CrossProduct(vec1);
 
-                    return new CoordinateSystem(Point3D.Origin, vec1, vec2, vec3);
-                }
+        //            return new CoordinateSystem(Point3D.Origin, vec1, vec2, vec3);
+        //        }
 
-                if (selFrames.Count == 1)
-                {
-                    S2KModel.SM.ClearSelection();
-                    return selFrames[0].GetCSysFromAxesDefinitions();
-                }
-            } while (true);
-        }
+        //        if (selFrames.Count == 1)
+        //        {
+        //            S2KModel.SM.ClearSelection();
+        //            return selFrames[0].GetCSysFromAxesDefinitions();
+        //        }
+        //    } while (true);
+        //}
 
         #region Align: Frame
 
@@ -1355,62 +1389,62 @@ namespace EmasaSapTools
         private FrameAdvancedAxes_Plane2? FrameAlign_CurrentPlane = null;
         private int FrameAlign_CurrentFlipStatus = 0;
 
-        private async void BeginAlignFrameButton_Click(object sender, RoutedEventArgs e)
-        {
-            DisableWindow();
+        //private async void BeginAlignFrameButton_Click(object sender, RoutedEventArgs e)
+        //{
+        //    DisableWindow();
 
-            // Created in the UI thread
-            CancelOpForm cancelOpForm = new CancelOpForm(this);
+        //    // Created in the UI thread
+        //    CancelOpForm cancelOpForm = new CancelOpForm(this);
 
-            bool work()
-            {
-                FrameAlign_SelectedFrames = null;
-                FrameAlign_CurrentVector = Vector3D.NaN;
-                FrameAlign_CurrentPlane = AlignFrameBindings.I.FrameAlignPlaneOption;
-                FrameAlign_CurrentFlipStatus = 0;
+        //    bool work()
+        //    {
+        //        FrameAlign_SelectedFrames = null;
+        //        FrameAlign_CurrentVector = Vector3D.NaN;
+        //        FrameAlign_CurrentPlane = AlignFrameBindings.I.FrameAlignPlaneOption;
+        //        FrameAlign_CurrentFlipStatus = 0;
 
-                //progReporter.Report(ProgressData.SetMessage("Getting Selected Frames."));
-                FrameAlign_SelectedFrames = S2KModel.SM.FrameMan.GetSelected();
+        //        //progReporter.Report(ProgressData.SetMessage("Getting Selected Frames."));
+        //        FrameAlign_SelectedFrames = S2KModel.SM.FrameMan.GetSelected();
 
-                if (FrameAlign_SelectedFrames.Count == 0)
-                {
-                    S2KStaticMethods.ShowWarningMessageBox("Please select the Frames you wish to align.");
+        //        if (FrameAlign_SelectedFrames.Count == 0)
+        //        {
+        //            S2KStaticMethods.ShowWarningMessageBox("Please select the Frames you wish to align.");
 
-                    S2KModel.SM.ClearSelection();
-                    return false;
-                }
+        //            S2KModel.SM.ClearSelection();
+        //            return false;
+        //        }
 
-                S2KModel.SM.ClearSelection();
+        //        S2KModel.SM.ClearSelection();
 
-                //progReporter.Report(ProgressData.SetMessage("Searching for Alignment Direction."));
+        //        //progReporter.Report(ProgressData.SetMessage("Searching for Alignment Direction."));
 
-                // Pools for the Frame vector alignment
-                FrameAlign_CurrentVector = PoolForAlignmentDirection_GetVector(cancelOpForm);
-                if (cancelOpForm.Token.IsCancellationRequested) return false;
+        //        // Pools for the Frame vector alignment
+        //        FrameAlign_CurrentVector = PoolForAlignmentDirection_GetVector(cancelOpForm);
+        //        if (cancelOpForm.Token.IsCancellationRequested) return false;
 
-                foreach (SapFrame Frame in FrameAlign_SelectedFrames)
-                {
-                    if (!Frame.SetAdvancedAxis(FrameAlign_CurrentPlane.Value, FrameAlign_CurrentVector))
-                        S2KStaticMethods.ShowWarningMessageBox($"Could not align Frame: {Frame.Name}");
-                    // reselects to be nice to the used
-                    S2KModel.SM.FrameMan.SelectElements(Frame);
-                }
+        //        foreach (SapFrame Frame in FrameAlign_SelectedFrames)
+        //        {
+        //            if (!Frame.SetAdvancedAxis(FrameAlign_CurrentPlane.Value, FrameAlign_CurrentVector))
+        //                S2KStaticMethods.ShowWarningMessageBox($"Could not align Frame: {Frame.Name}");
+        //            // reselects to be nice to the used
+        //            S2KModel.SM.FrameMan.SelectElements(Frame);
+        //        }
 
-                cancelOpForm.Close_FromOtherThread();
-                return true;
-            }
+        //        cancelOpForm.Close_FromOtherThread();
+        //        return true;
+        //    }
 
-            // Runs the job async
-            var task = new Task<bool>(() => work(), cancelOpForm.Token);
-            task.Start();
-            await task;
+        //    // Runs the job async
+        //    var task = new Task<bool>(() => work(), cancelOpForm.Token);
+        //    task.Start();
+        //    await task;
 
-            AlignFrameBindings.I.FlipLastButton_IsEnabled = task.Result;
-            ////StatusBarBindings.I.IProgressReporter.Report(ProgressData.Reset());
+        //    AlignFrameBindings.I.FlipLastButton_IsEnabled = task.Result;
+        //    ////StatusBarBindings.I.IProgressReporter.Report(ProgressData.Reset());
 
-            S2KModel.SM.RefreshView();
-            EnableWindow();
-        }
+        //    S2KModel.SM.RefreshView();
+        //    EnableWindow();
+        //}
 
         private void AlignFrameSwapButton_Click(object sender, RoutedEventArgs e)
         {
@@ -1452,63 +1486,63 @@ namespace EmasaSapTools
         private AreaAdvancedAxes_Plane? AreaAlign_CurrentPlane = null;
         private int AreaAlign_CurrentFlipStatus = 0;
 
-        private async void BeginAlignAreaButton_Click(object sender, RoutedEventArgs e)
-        {
-            DisableWindow();
+        //private async void BeginAlignAreaButton_Click(object sender, RoutedEventArgs e)
+        //{
+        //    DisableWindow();
 
-            // Created in the UI thread
-            CancelOpForm cancelOpForm = new CancelOpForm(this);
+        //    // Created in the UI thread
+        //    CancelOpForm cancelOpForm = new CancelOpForm(this);
 
-            bool work()
-            {
-                AreaAlign_SelectedAreas = null;
-                AreaAlign_CurrentVector = Vector3D.NaN;
-                AreaAlign_CurrentPlane = AlignAreaBindings.I.AreaAlignPlaneOption;
-                AreaAlign_CurrentFlipStatus = 0;
+        //    bool work()
+        //    {
+        //        AreaAlign_SelectedAreas = null;
+        //        AreaAlign_CurrentVector = Vector3D.NaN;
+        //        AreaAlign_CurrentPlane = AlignAreaBindings.I.AreaAlignPlaneOption;
+        //        AreaAlign_CurrentFlipStatus = 0;
 
-                //progReporter.Report(ProgressData.SetMessage("Getting Selected Areas."));
-                AreaAlign_SelectedAreas = S2KModel.SM.AreaMan.GetSelected();
+        //        //progReporter.Report(ProgressData.SetMessage("Getting Selected Areas."));
+        //        AreaAlign_SelectedAreas = S2KModel.SM.AreaMan.GetSelected();
 
-                if (AreaAlign_SelectedAreas.Count == 0)
-                {
-                    S2KStaticMethods.ShowWarningMessageBox("Please select the areas you wish to align.");
+        //        if (AreaAlign_SelectedAreas.Count == 0)
+        //        {
+        //            S2KStaticMethods.ShowWarningMessageBox("Please select the areas you wish to align.");
 
-                    S2KModel.SM.ClearSelection();
-                    return false;
-                }
+        //            S2KModel.SM.ClearSelection();
+        //            return false;
+        //        }
 
-                S2KModel.SM.ClearSelection();
+        //        S2KModel.SM.ClearSelection();
 
-                //progReporter.Report(ProgressData.SetMessage("Searching for Alignment Direction."));
+        //        //progReporter.Report(ProgressData.SetMessage("Searching for Alignment Direction."));
 
-                // Pools for the area vector alignment
-                AreaAlign_CurrentVector = PoolForAlignmentDirection_GetVector(cancelOpForm);
-                if (cancelOpForm.Token.IsCancellationRequested) return false;
+        //        // Pools for the area vector alignment
+        //        AreaAlign_CurrentVector = PoolForAlignmentDirection_GetVector(cancelOpForm);
+        //        if (cancelOpForm.Token.IsCancellationRequested) return false;
 
-                foreach (SapArea area in AreaAlign_SelectedAreas)
-                {
-                    if (!area.SetAdvancedAxis(AreaAlign_CurrentPlane.Value, AreaAlign_CurrentVector))
-                        S2KStaticMethods.ShowWarningMessageBox($"Could not align area: {area.Name}");
-                    // reselects to be nice to the used
-                    S2KModel.SM.AreaMan.SelectElements(area);
-                }
+        //        foreach (SapArea area in AreaAlign_SelectedAreas)
+        //        {
+        //            if (!area.SetAdvancedAxis(AreaAlign_CurrentPlane.Value, AreaAlign_CurrentVector))
+        //                S2KStaticMethods.ShowWarningMessageBox($"Could not align area: {area.Name}");
+        //            // reselects to be nice to the used
+        //            S2KModel.SM.AreaMan.SelectElements(area);
+        //        }
 
-                cancelOpForm.Close_FromOtherThread();
-                return true;
-            }
+        //        cancelOpForm.Close_FromOtherThread();
+        //        return true;
+        //    }
 
-            // Runs the job async
-            var task = new Task<bool>(() => work(), cancelOpForm.Token);
-            task.Start();
-            await task;
+        //    // Runs the job async
+        //    var task = new Task<bool>(() => work(), cancelOpForm.Token);
+        //    task.Start();
+        //    await task;
 
-            AlignAreaBindings.I.FlipLastButton_IsEnabled = task.Result;
+        //    AlignAreaBindings.I.FlipLastButton_IsEnabled = task.Result;
 
-            ////StatusBarBindings.I.IProgressReporter.Report(ProgressData.Reset());
+        //    ////StatusBarBindings.I.IProgressReporter.Report(ProgressData.Reset());
 
-            S2KModel.SM.RefreshView();
-            EnableWindow();
-        }
+        //    S2KModel.SM.RefreshView();
+        //    EnableWindow();
+        //}
 
         private void AlignAreaSwapButton_Click(object sender, RoutedEventArgs e)
         {
@@ -1550,63 +1584,63 @@ namespace EmasaSapTools
         private PointAdvancedAxes_Plane2? PointAlign_CurrentPlane = null;
         private int PointAlign_CurrentFlipStatus = 0;
 
-        private async void BeginAlignJointToSelectedFramesButton_Click(object sender, RoutedEventArgs e)
-        {
-            DisableWindow();
+        //private async void BeginAlignJointToSelectedFramesButton_Click(object sender, RoutedEventArgs e)
+        //{
+        //    DisableWindow();
 
-            // Created in the UI thread
-            CancelOpForm cancelOpForm = new CancelOpForm(this);
+        //    // Created in the UI thread
+        //    CancelOpForm cancelOpForm = new CancelOpForm(this);
 
-            bool work()
-            {
-                PointAlign_SelectedPoints = null;
-                PointAlign_CurrentCSys = null;
-                PointAlign_CurrentPlane = PointAdvancedAxes_Plane2.Plane12;
-                PointAlign_CurrentFlipStatus = 0;
+        //    bool work()
+        //    {
+        //        PointAlign_SelectedPoints = null;
+        //        PointAlign_CurrentCSys = null;
+        //        PointAlign_CurrentPlane = PointAdvancedAxes_Plane2.Plane12;
+        //        PointAlign_CurrentFlipStatus = 0;
 
-                //progReporter.Report(ProgressData.SetMessage("Getting Selected Points."));
-                PointAlign_SelectedPoints = S2KModel.SM.PointMan.GetSelected();
+        //        //progReporter.Report(ProgressData.SetMessage("Getting Selected Points."));
+        //        PointAlign_SelectedPoints = S2KModel.SM.PointMan.GetSelected();
 
-                if (PointAlign_SelectedPoints.Count == 0)
-                {
-                    S2KStaticMethods.ShowWarningMessageBox("Please select the points you wish to align.");
+        //        if (PointAlign_SelectedPoints.Count == 0)
+        //        {
+        //            S2KStaticMethods.ShowWarningMessageBox("Please select the points you wish to align.");
 
-                    S2KModel.SM.ClearSelection();
-                    return false;
-                }
+        //            S2KModel.SM.ClearSelection();
+        //            return false;
+        //        }
 
-                S2KModel.SM.ClearSelection();
+        //        S2KModel.SM.ClearSelection();
 
-                //progReporter.Report(ProgressData.SetMessage("Searching for Alignment Direction."));
+        //        //progReporter.Report(ProgressData.SetMessage("Searching for Alignment Direction."));
 
-                // Pools for the vector alignment
-                PointAlign_CurrentCSys = PoolForAlignmentDirection_GetCoordinateSystem(cancelOpForm);
-                if (cancelOpForm.Token.IsCancellationRequested) return false;
+        //        // Pools for the vector alignment
+        //        PointAlign_CurrentCSys = PoolForAlignmentDirection_GetCoordinateSystem(cancelOpForm);
+        //        if (cancelOpForm.Token.IsCancellationRequested) return false;
 
-                foreach (SapPoint point in PointAlign_SelectedPoints)
-                {
-                    point.SetAdvancedLocalAxesFromCoordinateSystem(PointAlign_CurrentCSys);
+        //        foreach (SapPoint point in PointAlign_SelectedPoints)
+        //        {
+        //            point.SetAdvancedLocalAxesFromCoordinateSystem(PointAlign_CurrentCSys);
 
-                    // reselects to be nice to the user
-                    S2KModel.SM.PointMan.SelectElements(point);
-                }
+        //            // reselects to be nice to the user
+        //            S2KModel.SM.PointMan.SelectElements(point);
+        //        }
 
-                cancelOpForm.Close_FromOtherThread();
-                return true;
-            }
+        //        cancelOpForm.Close_FromOtherThread();
+        //        return true;
+        //    }
 
-            // Runs the job async
-            var task = new Task<bool>(() => work(), cancelOpForm.Token);
-            task.Start();
-            await task;
+        //    // Runs the job async
+        //    var task = new Task<bool>(() => work(), cancelOpForm.Token);
+        //    task.Start();
+        //    await task;
 
-            AlignJointBindings.I.AlignPointFlipLast_IsEnabled = task.Result;
+        //    AlignJointBindings.I.AlignPointFlipLast_IsEnabled = task.Result;
 
-            ////StatusBarBindings.I.IProgressReporter.Report(ProgressData.Reset());
+        //    ////StatusBarBindings.I.IProgressReporter.Report(ProgressData.Reset());
 
-            S2KModel.SM.RefreshView();
-            EnableWindow();
-        }
+        //    S2KModel.SM.RefreshView();
+        //    EnableWindow();
+        //}
 
         private void AlignPointSwapButton_Click(object sender, RoutedEventArgs e)
         {
@@ -1657,7 +1691,7 @@ namespace EmasaSapTools
         private async void BeginAlignJointToFramesButton_Click(object sender, RoutedEventArgs e)
         {
             DisableWindow();
-            BusyOverlay.Title = "Aligning the joints of the selected frames to the direction of the frame.";
+            BusyOverlayBindings.I.Title = "Aligning the joints of the selected frames to the direction of the frame.";
 
             try
             {
@@ -1668,16 +1702,16 @@ namespace EmasaSapTools
                     var ChangeAngle = new List<(string jointName, double angle)>();
 
                     // Gets the list of Frames
-                    var selFrames = S2KModel.SM.FrameMan.GetSelected(BusyOverlay);
+                    var selFrames = S2KModel.SM.FrameMan.GetSelected(true);
 
                     if (selFrames == null || selFrames.Count == 0)
                         throw new S2KHelperException("You must select at least one frame!");
 
-                    var selPoints = S2KModel.SM.PointMan.GetSelected(BusyOverlay);
+                    var selPoints = S2KModel.SM.PointMan.GetSelected(true);
 
                     if (selPoints.Count == 0)
                     {
-                        BusyOverlay.SetDeterminate("Aligning the I and J joints of the frames.", "Frame");
+                        BusyOverlayBindings.I.SetDeterminate("Aligning the I and J joints of the frames.", "Frame");
                         for (int i = 0; i < selFrames.Count; i++)
                         {
                             SapFrame frame = selFrames[i];
@@ -1686,7 +1720,7 @@ namespace EmasaSapTools
                             Vector3D currentJXAxis = frame.jEndPoint.LocalCoordinateSystem.XAxis;
 
                             // Sets the progress
-                            BusyOverlay.UpdateProgress(i, selFrames.Count, frame.Name);
+                            BusyOverlayBindings.I.UpdateProgress(i, selFrames.Count, frame.Name);
 
                             // Gets the vector for the alignment
                             CoordinateSystem frameCsys = frame.GetCSysFromAxesDefinitions();
@@ -1707,12 +1741,12 @@ namespace EmasaSapTools
                     }
                     else
                     {
-                        BusyOverlay.SetDeterminate("Selected joints to their frames.", "Joint");
+                        BusyOverlayBindings.I.SetDeterminate("Selected joints to their frames.", "Joint");
                         for (int i = 0; i < selPoints.Count; i++)
                         {
                             SapPoint point = selPoints[i];
                             // Sets the progress
-                            BusyOverlay.UpdateProgress(i, selPoints.Count, point.Name);
+                            BusyOverlayBindings.I.UpdateProgress(i, selPoints.Count, point.Name);
 
                             // Is this point of a selected frame?
                             if ((from a in selFrames where a.IsPointIJ(point) select a).Count() > 1)
@@ -2193,59 +2227,102 @@ namespace EmasaSapTools
                 // The async body
                 List<string> work()
                 {
-                    var notSelected = new List<string>();
-
-                    for (int i = 0; i < clipVals.Count; i++)
+                    if (!SelectionInfoBindings.I.SelectMisc_FromClipboard_SelectNotInListIsChecked)
                     {
-                        string currItem = clipVals[i];
+                        var notSelected = new List<string>();
+
+                        for (int i = 0; i < clipVals.Count; i++)
+                        {
+                            string currItem = clipVals[i];
+
+                            if (SelectionInfoBindings.I.SelectMisc_FromClipboard_FrameIsChecked)
+                            {
+                                //progReporter.Report(ProgressData.UpdateProgress(i, clipVals.Count, null,$"Selecting Frame: {currItem}"));
+                                if (!S2KModel.SM.Select(currItem, SapObjectType.Frame))
+                                {
+                                    notSelected.Add($"Frame: {currItem}");
+                                }
+                                else
+                                {
+                                    // Gets the frame and selects its joints
+                                    SapFrame frame = S2KModel.SM.FrameMan.GetByName(currItem);
+                                    if (frame != null)
+                                    {
+                                        frame.iEndPoint.Select();
+                                        frame.jEndPoint.Select();
+                                    }
+                                }
+                            }
+
+                            if (SelectionInfoBindings.I.SelectMisc_FromClipboard_AreaIsChecked)
+                            {
+                                //progReporter.Report(ProgressData.UpdateProgress(i, clipVals.Count, null,$"Selecting Area: {currItem}"));
+                                if (!S2KModel.SM.Select(currItem, SapObjectType.Area)) notSelected.Add($"Area: {currItem}");
+                            }
+
+                            if (SelectionInfoBindings.I.SelectMisc_FromClipboard_CableIsChecked)
+                            {
+                                //progReporter.Report(ProgressData.UpdateProgress(i, clipVals.Count, null,$"Selecting Cable: {currItem}"));
+                                if (!S2KModel.SM.Select(currItem, SapObjectType.Cable))
+                                    notSelected.Add($"Cable: {currItem}");
+                            }
+
+                            if (SelectionInfoBindings.I.SelectMisc_FromClipboard_JointIsChecked)
+                            {
+                                //progReporter.Report(ProgressData.UpdateProgress(i, clipVals.Count, null,$"Selecting Joint: {currItem}"));
+                                if (!S2KModel.SM.Select(currItem, SapObjectType.Point))
+                                    notSelected.Add($"Joint: {currItem}");
+                            }
+
+                            if (SelectionInfoBindings.I.SelectMisc_FromClipboard_LinkIsChecked)
+                            {
+                                //progReporter.Report(ProgressData.UpdateProgress(i, clipVals.Count, null,$"Selecting Link: {currItem}"));
+                                if (!S2KModel.SM.Select(currItem, SapObjectType.Link)) notSelected.Add($"Link: {currItem}");
+                            }
+                        }
+
+                        return notSelected;
+                    }
+                    else
+                    {
+                        // Gets all model entities
+                        List<SapObject> relatedObjects = new List<SapObject>();
 
                         if (SelectionInfoBindings.I.SelectMisc_FromClipboard_FrameIsChecked)
                         {
-                            //progReporter.Report(ProgressData.UpdateProgress(i, clipVals.Count, null,$"Selecting Frame: {currItem}"));
-                            if (!S2KModel.SM.Select(currItem, SapObjectType.Frame))
-                            {
-                                notSelected.Add($"Frame: {currItem}");
-                            }
-                            else
-                            {
-                                // Gets the frame and selects its joints
-                                SapFrame frame = S2KModel.SM.FrameMan.GetByName(currItem);
-                                if (frame != null)
-                                {
-                                    frame.iEndPoint.Select();
-                                    frame.jEndPoint.Select();
-                                }
-                            }
+                            relatedObjects.AddRange(S2KModel.SM.FrameMan.GetAll());
                         }
 
                         if (SelectionInfoBindings.I.SelectMisc_FromClipboard_AreaIsChecked)
                         {
-                            //progReporter.Report(ProgressData.UpdateProgress(i, clipVals.Count, null,$"Selecting Area: {currItem}"));
-                            if (!S2KModel.SM.Select(currItem, SapObjectType.Area)) notSelected.Add($"Area: {currItem}");
+                            relatedObjects.AddRange(S2KModel.SM.AreaMan.GetAll());
                         }
 
                         if (SelectionInfoBindings.I.SelectMisc_FromClipboard_CableIsChecked)
                         {
-                            //progReporter.Report(ProgressData.UpdateProgress(i, clipVals.Count, null,$"Selecting Cable: {currItem}"));
-                            if (!S2KModel.SM.Select(currItem, SapObjectType.Cable))
-                                notSelected.Add($"Cable: {currItem}");
+                            relatedObjects.AddRange(S2KModel.SM.CableMan.GetAll());
                         }
 
                         if (SelectionInfoBindings.I.SelectMisc_FromClipboard_JointIsChecked)
                         {
-                            //progReporter.Report(ProgressData.UpdateProgress(i, clipVals.Count, null,$"Selecting Joint: {currItem}"));
-                            if (!S2KModel.SM.Select(currItem, SapObjectType.Point))
-                                notSelected.Add($"Joint: {currItem}");
+                            relatedObjects.AddRange(S2KModel.SM.PointMan.GetAll());
                         }
 
                         if (SelectionInfoBindings.I.SelectMisc_FromClipboard_LinkIsChecked)
                         {
-                            //progReporter.Report(ProgressData.UpdateProgress(i, clipVals.Count, null,$"Selecting Link: {currItem}"));
-                            if (!S2KModel.SM.Select(currItem, SapObjectType.Link)) notSelected.Add($"Link: {currItem}");
+                            relatedObjects.AddRange(S2KModel.SM.LinkMan.GetAll());
                         }
-                    }
 
-                    return notSelected;
+                        foreach (SapObject relatedObject in relatedObjects)
+                        {
+                            if (!clipVals.Contains(relatedObject.Name))
+                            {
+                                relatedObject.Select();
+                            }
+                        }
+
+                        return new List<string>();
+                    }
                 }
 
                 // Runs the job async
@@ -3518,7 +3595,7 @@ namespace EmasaSapTools
             try
             {
                 DisableWindow(true);
-                BusyOverlay.Title = "Copying Information of the Erection Aids";
+                BusyOverlayBindings.I.Title = "Copying Information of the Erection Aids";
 
                 // The async body
                 string work()
@@ -4135,16 +4212,13 @@ namespace EmasaSapTools
         private async void Debug_Click(object sender, RoutedEventArgs e)
         {
             DisableWindow();
-            BusyOverlay.SetBasic("Debugging...");
+            BusyOverlayBindings.I.SetBasic(inTitle: "Debugging...");
 
             try
             {
                 void work()
                 {
-                    {
-                        RhinoModel.Initialize();
-                        RhinoModel.RM.OpenRhinoDocument(@"C:\Users\EngRafaelSMacedo\Desktop\00 CANOPY\30 - Site Temperature\Playtime\Base.3dm");
-                    }
+                    S2KModel.SM.InterAuto.FlaUI_Action_Test();
                 }
 
                 // Runs the job async
@@ -4272,17 +4346,90 @@ namespace EmasaSapTools
             }
         }
 
-        private async void MarkNamesInClipboardRhinoButton_Click(object sender, RoutedEventArgs e)
+        private async void AddPointsToRhinoButton_Click(object sender, RoutedEventArgs e)
         {
             DisableWindow();
-            BusyOverlay.Title = "Marking Points in Rhino.";
+            BusyOverlayBindings.I.Title = "Adding Points in Rhino.";
+            BusyOverlayBindings.I.ShowOverlay();
+
+            StringBuilder sb = new StringBuilder();
 
             try
             {
                 void work()
                 {
                     // first, reads the clipboard
-                    BusyOverlay.SetIndeterminate("Reading Clipboard Text.");
+                    BusyOverlayBindings.I.SetIndeterminate("Reading Clipboard Text.");
+
+                    string clipText = Dispatcher.Invoke(() => Clipboard.GetText());
+
+                    if (string.IsNullOrWhiteSpace(clipText))
+                        S2KStaticMethods.ShowWarningMessageBox("The clipboard does not contain text.");
+
+                    List<string> clipPoints = clipText.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                    
+                    List<(string name, double x, double y, double z)> points = new List<(string, double, double, double)>();
+
+                    foreach (string clipPoint in clipPoints)
+                    {
+                        string[] vals = clipPoint.Split(new string[] { "\t" }, StringSplitOptions.RemoveEmptyEntries).ToArray();
+                        points.Add((vals[0], double.Parse(vals[1]), double.Parse(vals[2]), double.Parse(vals[3])));
+                    }
+
+                    string rhinoGroupName = RhinoOperationsBindings.I.TargetRhinoGroupForSelectedJoints;
+
+                    using (RhinoModel rhinoHelper = new RhinoModel())
+                    {
+                        BusyOverlayBindings.I.MessageText = "Working with Clipboard Elements";
+                        BusyOverlayBindings.I.ElementType = "Element";
+                        for (int i = 0; i < points.Count; i++)
+                        {
+                            (string name, double x, double y, double z) item = points[i];
+                            BusyOverlayBindings.I.UpdateProgress(i, points.Count, item.name);
+
+                            Guid rhinoGuids = rhinoHelper.AddPoint3DWithName(item.name, new Point3D(item.x, item.y, item.z));
+                        }
+                    }
+                }
+
+                // Runs the job async
+                Task task = new Task(() => work());
+                task.Start();
+                await task;
+            }
+            catch (Exception ex)
+            {
+                ExceptionViewer.Show(ex);
+            }
+            finally
+            {
+                EnableWindow();
+
+                BusyOverlayBindings.I.HideOverlayAndReset();
+
+                if (sb.Length > 0)
+                {
+                    MessageOverlay.ShowOverlay("Joints not found in Rhino.", sb);
+                }
+
+
+            }
+        }
+
+        private async void MarkNamesInClipboardRhinoButton_Click(object sender, RoutedEventArgs e)
+        {
+            DisableWindow();
+            BusyOverlayBindings.I.Title = "Marking Points in Rhino.";
+            BusyOverlayBindings.I.ShowOverlay();
+
+            StringBuilder sb = new StringBuilder();
+
+            try
+            {
+                void work()
+                {
+                    // first, reads the clipboard
+                    BusyOverlayBindings.I.SetIndeterminate("Reading Clipboard Text.");
 
                     string clipText = Dispatcher.Invoke(() => Clipboard.GetText());
 
@@ -4296,16 +4443,20 @@ namespace EmasaSapTools
 
                     using (RhinoModel rhinoHelper = new RhinoModel())
                     {
-                        BusyOverlay.MessageText = "Working with Clipboard Elements";
-                        BusyOverlay.ElementType = "Element";
+                        BusyOverlayBindings.I.MessageText = "Working with Clipboard Elements";
+                        BusyOverlayBindings.I.ElementType = "Element";
                         for (int i = 0; i < clipVals.Count; i++)
                         {
                             string item = (string)clipVals[i];
-                            BusyOverlay.UpdateProgress(i, clipVals.Count, item);
+                            BusyOverlayBindings.I.UpdateProgress(i, clipVals.Count, item);
 
                             var rhinoGuids = rhinoHelper.GetGuidsByName(item, RhinoObjectType.Point);
                             if (rhinoGuids.Length == 0)
-                                throw new S2KHelperException($"Could not find the Guid of the element {item} in Rhino");
+                            {
+                                sb.AppendLine($"{item}");
+                                continue;
+                            }
+                                //throw new S2KHelperException($"Could not find the Guid of the element {item} in Rhino");
 
                             foreach (string guid in rhinoGuids)
                                 rhinoHelper.AddIdToGroup(guid, rhinoGroupName, System.Drawing.Color.Black);
@@ -4325,6 +4476,15 @@ namespace EmasaSapTools
             finally
             {
                 EnableWindow();
+
+                BusyOverlayBindings.I.HideOverlayAndReset();
+
+                if (sb.Length > 0)
+                {
+                    MessageOverlay.ShowOverlay("Joints not found in Rhino.", sb);
+                }
+
+                
             }
         }
 
@@ -4336,8 +4496,8 @@ namespace EmasaSapTools
 
             void work()
             {
-                BusyOverlay.MessageText = "Oi!";
-                BusyOverlay.Title = "ALOW";
+                BusyOverlayBindings.I.MessageText = "Oi!";
+                BusyOverlayBindings.I.Title = "ALOW";
 
                 Thread.Sleep(10000);
             }
@@ -4352,7 +4512,7 @@ namespace EmasaSapTools
         private async void ManipulateItems_Substitute_LinksToFrames_Button_Click(object sender, RoutedEventArgs e)
         {
             DisableWindow(true);
-            BusyOverlay.Title = "Substituting Selected Links to Frames";
+            BusyOverlayBindings.I.Title = "Substituting Selected Links to Frames";
 
             try
             {
@@ -4367,11 +4527,11 @@ namespace EmasaSapTools
                     string targetFrameSection = FormBasicRefreshingBindings.I
                         .ManipulateItemsSubstitute_LinksToFrames_SelectedFrameSection;
 
-                    BusyOverlay.SetDeterminate("Working on link.", "Link");
+                    BusyOverlayBindings.I.SetDeterminate("Working on link.", "Link");
                     for (int i = 0; i < selLinks.Count; i++)
                     {
                         SapLink lnk = selLinks[i];
-                        BusyOverlay.UpdateProgress(i, selLinks.Count, lnk.Name);
+                        BusyOverlayBindings.I.UpdateProgress(i, selLinks.Count, lnk.Name);
 
                         SapFrame newFrame =
                             S2KModel.SM.FrameMan.AddByPoint_ReturnSapEntity(lnk.iEndPoint, lnk.jEndPoint,
@@ -4402,7 +4562,7 @@ namespace EmasaSapTools
             try
             {
                 DisableWindow();
-                BusyOverlay.Title = "Selecting frames from the model based on their lengths.";
+                BusyOverlayBindings.I.Title = "Selecting frames from the model based on their lengths.";
 
                 // The async body
                 void work()
@@ -4416,16 +4576,16 @@ namespace EmasaSapTools
                     List<SapFrame> frames;
 
                     if (SelectionInfoBindings.I.SelectMisc_FramesBasedOnLength_FilterFromSelection)
-                        frames = S2KModel.SM.FrameMan.GetSelected(BusyOverlay);
-                    else frames = S2KModel.SM.FrameMan.GetAll(BusyOverlay);
+                        frames = S2KModel.SM.FrameMan.GetSelected(true);
+                    else frames = S2KModel.SM.FrameMan.GetAll(true);
 
                     S2KModel.SM.ClearSelection();
 
-                    BusyOverlay.SetDeterminate("Selecting the frames.", "Frame");
+                    BusyOverlayBindings.I.SetDeterminate("Selecting the frames.", "Frame");
                     for (int i = 0; i < frames.Count; i++)
                     {
                         SapFrame item = (SapFrame) frames[i];
-                        BusyOverlay.UpdateProgress(i, frames.Count, item.Name);
+                        BusyOverlayBindings.I.UpdateProgress(i, frames.Count, item.Name);
 
                         if (item.Length >= min && item.Length <= max) item.Select();
                     }
@@ -4447,87 +4607,14 @@ namespace EmasaSapTools
             }
         }
 
-        private async void TrussSolver_SolveButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                DisableWindow();
-                BusyOverlay.Title = "Solving the Direct Analysis of the Truss";
-
-                // The async body
-                void work()
-                {
-                    BusyOverlay.SetIndeterminate("Clearing current results.");
-                    // Makes sure the model is unlocked
-                    S2KModel.SM.Locked = false;
-                    S2KModel.SM.AnalysisMan.DeleteAllResults();
-                    S2KModel.SM.SteelDesignMan.DeleteResults();
-
-                    BusyOverlay.SetIndeterminate("Getting load case data.");
-                    string loadCaseName = FormBasicRefreshingBindings.I.TrussSolverLoadCase_Selected;
-                    LCNonLinear LoadCase = S2KModel.SM.LCMan.GetNonLinearStaticLoadCaseByName(loadCaseName);
-
-                    // Makes sure the combinations to analyse are correct
-                    BusyOverlay.SetIndeterminate("Configuring load combination to use for strength design.");
-                    S2KModel.SM.SteelDesignMan.SetCombAutoGenerate(false);
-                    S2KModel.SM.SteelDesignMan.DeselectAllCombinations();
-                    S2KModel.SM.SteelDesignMan.SetCombForStrengthDesign($"C_{LoadCase.Name}", true);
-
-                    BusyOverlay.SetIndeterminate("Configuring the load cases to run.");
-                    S2KModel.SM.AnalysisMan.SetAllNotToRun();
-                    S2KModel.SM.AnalysisMan.SetCaseRunFlag(LoadCase.Name, true);
-
-                    double currDispl = TrussSolverBindings.I.StartDisplacement;
-                    double currStep = TrussSolverBindings.I.StartStep;
-                    double targetRatio = TrussSolverBindings.I.TargetUtilizationRatio;
-                    double ratioTol = TrussSolverBindings.I.UtilizationRatioTolerance;
-
-                    DisplacementWithUnitRatioFunction targetFunction =
-                        new DisplacementWithUnitRatioFunction(S2KModel.SM, LoadCase, targetRatio, BusyOverlay);
-                    clsOpdSimpleSearch optimizer = new clsOpdSimpleSearch(targetFunction);
-                    optimizer.InitialPosition = new double[] {currDispl};
-                    optimizer.InitialValueRangeLower = currDispl - 10;
-                    optimizer.InitialValueRangeUpper = currDispl + 10;
-                    optimizer.StepSize = currStep;
-
-                    BusyOverlay.SetIndeterminate("Running the iterations. Iteration: ");
-                    optimizer.Init();
-                    //clsUtil.DebugValue(optimizer);
-
-                    // Does the loop
-                    BusyOverlay.SetIndeterminate("Finding the displacement that will yield the unitary ratio.");
-                    BusyOverlay.LongReport_Visibility = Visibility.Visible;
-                    BusyOverlay.LongReport_AddLine($"{"Displacement",-20}{"Max. Ratio",-20}{"Unbalance",-20}");
-                    while (optimizer.DoIteration() == false)
-                    {
-                        // The current result function
-                        double value = optimizer.Result.Eval;
-                        clsUtil.DebugValue(optimizer);
-                    }
-
-                    clsUtil.DebugValue(optimizer);
-                }
-
-                // Runs the job async
-                Task task = new Task(() => work());
-                task.Start();
-                await task;
-            }
-            catch (Exception ex)
-            {
-                ExceptionViewer.Show(ex);
-            }
-            finally
-            {
-                EnableWindow();
-                S2KModel.SM.RefreshView();
-            } 
-        }
-
         private void Button_Click(object sender, RoutedEventArgs e)
         {
 
         }
 
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

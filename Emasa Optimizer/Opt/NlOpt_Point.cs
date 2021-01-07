@@ -17,6 +17,7 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using BaseWPFLibrary;
 using BaseWPFLibrary.Annotations;
 using BaseWPFLibrary.Others;
 using Emasa_Optimizer.Bindings;
@@ -57,8 +58,7 @@ namespace Emasa_Optimizer.Opt
                 GhGeom_Values.Add(ghAlgGeometryDef, null);
             }
             #endregion
-
-
+            
             InputValuesAsDoubleArray = (double[])inInput.Clone();
             NlOptPointCalcType = inNlOptPointCalcType;
 
@@ -178,6 +178,81 @@ namespace Emasa_Optimizer.Opt
 
                 // Returns the table as a DataView
                 return new DataView(OutputDataSet.Tables[InputTableName]);
+            }
+        }
+        
+        private List<PointNlParameterInputData> _inputDataAsList;
+        public List<PointNlParameterInputData> InputDataAsList
+        {
+            get
+            {
+                if (_inputDataAsList == null)
+                {
+                    List<PointNlParameterInputData> tmpList = new List<PointNlParameterInputData>();
+
+                    int position = 0;
+                    foreach (KeyValuePair<Input_ParamDefBase, object> inputParam in GhInput_Values)
+                    {
+                        DataRow newRow = null;
+
+                        switch (inputParam.Key)
+                        {
+                            case Double_Input_ParamDef doubleInputParamDef:
+                                tmpList.Add(new PointNlParameterInputData()
+                                    {
+                                    Index = position,
+                                    ParameterName = doubleInputParamDef.Name,
+                                    Value = (double)inputParam.Value,
+                                    MinLimit = _owner.LowerBounds[position],
+                                    MaxLimit = _owner.UpperBounds[position]
+                                });
+                                position++;
+                                break;
+
+                            case Point_Input_ParamDef pointInputParamDef:
+                                Point3d p = (Point3d)inputParam.Value;
+
+                                tmpList.Add(new PointNlParameterInputData()
+                                    {
+                                    Index = position,
+                                    ParameterName = $"{pointInputParamDef.Name} - X",
+                                    Value = p.X,
+                                    MinLimit = _owner.LowerBounds[position],
+                                    MaxLimit = _owner.UpperBounds[position]
+                                    });
+                                position++;
+                                
+                                tmpList.Add(new PointNlParameterInputData()
+                                    {
+                                    Index = position,
+                                    ParameterName = $"{pointInputParamDef.Name} - Y",
+                                    Value = p.Y,
+                                    MinLimit = _owner.LowerBounds[position],
+                                    MaxLimit = _owner.UpperBounds[position]
+                                    });
+                                position++;
+
+                                tmpList.Add(new PointNlParameterInputData()
+                                    {
+                                    Index = position,
+                                    ParameterName = $"{pointInputParamDef.Name} - Z",
+                                    Value = p.Z,
+                                    MinLimit = _owner.LowerBounds[position],
+                                    MaxLimit = _owner.UpperBounds[position]
+                                    });
+                                position++;
+
+                                break;
+
+                            default:
+                                throw new ArgumentOutOfRangeException(nameof(inputParam.Key));
+                        }
+                    }
+
+                    _inputDataAsList = tmpList;
+                }
+
+                return _inputDataAsList;
             }
         }
 
@@ -391,9 +466,7 @@ namespace Emasa_Optimizer.Opt
             }
         }
         #endregion
-
-
-
+        
         #region Previous Point And Stop Checks
         private NlOpt_Point _previousPoint;
         public NlOpt_Point PreviousPoint
@@ -442,7 +515,7 @@ namespace Emasa_Optimizer.Opt
                         PreviousValue = PreviousPoint != null ? PreviousPoint.ObjectiveFunctionEval : double.NaN,
                         CurrentValue = ObjectiveFunctionEval,
                         CriteriaValue = ObjectiveFunctionEval,
-                        IsActive = AppSS.I.NlOptOpt.IsOn_StopValueOnObjectiveFunction,
+                        IsActive = AppSS.I.NlOptOpt.IsOn_StopValueOnObjectiveFunction && PointIndex > 1,
                         Limit = AppSS.I.NlOptOpt.StopValueOnObjectiveFunction,
                         Name = ListDescSH.I.StopCriteriaTypeEnumDescriptions[StopCriteriaTypeEnum.FunctionValue],
                         StopCriteriaType = StopCriteriaTypeEnum.FunctionValue
@@ -454,7 +527,7 @@ namespace Emasa_Optimizer.Opt
                         PreviousValue = PreviousPoint != null ? PreviousPoint.ObjectiveFunctionEval : double.NaN,
                         CurrentValue = ObjectiveFunctionEval,
                         CriteriaValue = PreviousPoint != null ? Math.Abs(ObjectiveFunctionEval - PreviousPoint.ObjectiveFunctionEval) : Math.Abs(ObjectiveFunctionEval),
-                        IsActive = AppSS.I.NlOptOpt.IsOn_AbsoluteToleranceOnFunctionValue,
+                        IsActive = AppSS.I.NlOptOpt.IsOn_AbsoluteToleranceOnFunctionValue && PointIndex > 1,
                         Limit = AppSS.I.NlOptOpt.AbsoluteToleranceOnFunctionValue,
                         Name = ListDescSH.I.StopCriteriaTypeEnumDescriptions[StopCriteriaTypeEnum.FunctionAbsoluteChange],
                         StopCriteriaType = StopCriteriaTypeEnum.FunctionAbsoluteChange
@@ -466,7 +539,7 @@ namespace Emasa_Optimizer.Opt
                         PreviousValue = PreviousPoint != null ? PreviousPoint.ObjectiveFunctionEval : double.NaN,
                         CurrentValue = ObjectiveFunctionEval,
                         CriteriaValue = PreviousPoint != null ? Math.Abs((ObjectiveFunctionEval - PreviousPoint.ObjectiveFunctionEval) / PreviousPoint.ObjectiveFunctionEval) : 1d,
-                        IsActive = AppSS.I.NlOptOpt.IsOn_RelativeToleranceOnFunctionValue,
+                        IsActive = AppSS.I.NlOptOpt.IsOn_RelativeToleranceOnFunctionValue && PointIndex > 1,
                         Limit = AppSS.I.NlOptOpt.RelativeToleranceOnFunctionValue,
                         Name = ListDescSH.I.StopCriteriaTypeEnumDescriptions[StopCriteriaTypeEnum.FunctionRelativeChange],
                         StopCriteriaType = StopCriteriaTypeEnum.FunctionRelativeChange
@@ -480,7 +553,7 @@ namespace Emasa_Optimizer.Opt
                             PreviousValue = PreviousPoint != null ? PreviousPoint.InputValuesAsDoubleArray[i] : double.NaN,
                             CurrentValue = InputValuesAsDoubleArray[i],
                             CriteriaValue = PreviousPoint != null ? Math.Abs(InputValuesAsDoubleArray[i] - PreviousPoint.InputValuesAsDoubleArray[i]) : Math.Abs(InputValuesAsDoubleArray[i]),
-                            IsActive = AppSS.I.NlOptOpt.IsOn_AbsoluteToleranceOnParameterValue,
+                            IsActive = AppSS.I.NlOptOpt.IsOn_AbsoluteToleranceOnParameterValue && PointIndex > 1,
                             Limit = AppSS.I.NlOptOpt.AbsoluteToleranceOnParameterValue[i].ParameterTolerance,
                             Name = AppSS.I.Gh_Alg.GetInputParameterNameByIndex(i),
                             StopCriteriaType = StopCriteriaTypeEnum.ParameterAbsoluteChange
@@ -495,7 +568,7 @@ namespace Emasa_Optimizer.Opt
                             PreviousValue = PreviousPoint != null ? PreviousPoint.InputValuesAsDoubleArray[i] : double.NaN,
                             CurrentValue = InputValuesAsDoubleArray[i],
                             CriteriaValue = PreviousPoint != null ? Math.Abs((InputValuesAsDoubleArray[i] - PreviousPoint.InputValuesAsDoubleArray[i]) / PreviousPoint.InputValuesAsDoubleArray[i]) : Math.Abs(1d),
-                            IsActive = AppSS.I.NlOptOpt.IsOn_RelativeToleranceOnParameterValue,
+                            IsActive = AppSS.I.NlOptOpt.IsOn_RelativeToleranceOnParameterValue && PointIndex > 1,
                             Limit = AppSS.I.NlOptOpt.RelativeToleranceOnParameterValue,
                             Name = AppSS.I.Gh_Alg.GetInputParameterNameByIndex(i),
                             StopCriteriaType = StopCriteriaTypeEnum.ParameterRelativeChange
@@ -592,8 +665,7 @@ namespace Emasa_Optimizer.Opt
             ConstraintData[inQuantity] = new NlOpt_Point_ConstraintData(inQuantity, quantity_aggregate_value);
         }
         #endregion
-
-
+        
 
         #region Equality - Based on SequenceEquals of the _inputValuesAsDoubleArray
         public bool Equals(NlOpt_Point other)
@@ -660,12 +732,12 @@ namespace Emasa_Optimizer.Opt
                         {
                             case FeResultFamilyEnum.Nodal_Reaction:
                                 // Creates the relevant columns
-                                dt.Columns.Add("Mesh Node Id", typeof(int));
+                                dt.Columns.Add("Mesh Node Id", typeof(string));
                                 dt.Columns.Add("X (m)", typeof(double));
                                 dt.Columns.Add("Y (m)", typeof(double));
                                 dt.Columns.Add("Z (m)", typeof(double));
-                                dt.Columns.Add(new DataColumn("Joint Id", typeof(int)) { AllowDBNull = true });
-                                dt.Columns.Add("Linked Beam Elements", typeof(string));
+                                dt.Columns.Add(new DataColumn("Joint Id", typeof(string)) { AllowDBNull = true });
+                                dt.Columns.Add("Linked Beam Elements", typeof(string)) ;
 
                                 dt.Columns.Add("FX (N)", typeof(double));
                                 dt.Columns.Add("FY (N)", typeof(double));
@@ -685,7 +757,7 @@ namespace Emasa_Optimizer.Opt
                                     row[i++] = resultItem.FeLocation.MeshNode.Point.Y;
                                     row[i++] = resultItem.FeLocation.MeshNode.Point.Z;
                                     row[i++] = resultItem.FeLocation.MeshNode.MatchingJoint == null ? DBNull.Value : (object)resultItem.FeLocation.MeshNode.MatchingJoint.Id;
-                                    row[i++] = resultItem.FeLocation.MeshNode.LinkedElementsString;
+                                    row[i++] = resultItem.FeLocation.MeshNode.LinkedElementsString ?? "";
 
                                     row[i++] = r.FX.HasValue ? (object)r.FX : 0d;
                                     row[i++] = r.FY.HasValue ? (object)r.FY : 0d;
@@ -700,11 +772,11 @@ namespace Emasa_Optimizer.Opt
 
                             case FeResultFamilyEnum.Nodal_Displacement:
                                 // Creates the relevant columns
-                                dt.Columns.Add("Mesh Node Id", typeof(int));
+                                dt.Columns.Add("Mesh Node Id", typeof(string));
                                 dt.Columns.Add("X (m)", typeof(double));
                                 dt.Columns.Add("Y (m)", typeof(double));
                                 dt.Columns.Add("Z (m)", typeof(double));
-                                dt.Columns.Add(new DataColumn("Joint Id", typeof(int)) { AllowDBNull = true });
+                                dt.Columns.Add(new DataColumn("Joint Id", typeof(string)) { AllowDBNull = true });
                                 dt.Columns.Add("Linked Beam Elements", typeof(string));
 
                                 dt.Columns.Add("Ux (m)", typeof(double));
@@ -726,8 +798,7 @@ namespace Emasa_Optimizer.Opt
                                     row[i++] = resultItem.FeLocation.MeshNode.Point.Y;
                                     row[i++] = resultItem.FeLocation.MeshNode.Point.Z;
                                     row[i++] = resultItem.FeLocation.MeshNode.MatchingJoint == null ? DBNull.Value : (object)resultItem.FeLocation.MeshNode.MatchingJoint.Id;
-                                    row[i++] = resultItem.FeLocation.MeshNode.LinkedElementsString;
-
+                                    row[i++] = resultItem.FeLocation.MeshNode.LinkedElementsString ?? "";
                                     row[i++] = r.UX;
                                     row[i++] = r.UY;
                                     row[i++] = r.UZ;
@@ -743,13 +814,14 @@ namespace Emasa_Optimizer.Opt
 
                             case FeResultFamilyEnum.ElementNodal_BendingStrain:
                                 // Creates the relevant columns
-                                dt.Columns.Add("Element Id", typeof(int));
+                                dt.Columns.Add("Frame Id", typeof(string));
+                                dt.Columns.Add("Element Id", typeof(string));
                                 dt.Columns.Add("Node", typeof(string));
-                                dt.Columns.Add("Mesh Node Id", typeof(int));
+                                dt.Columns.Add("Mesh Node Id", typeof(string));
                                 dt.Columns.Add("X (m)", typeof(double));
                                 dt.Columns.Add("Y (m)", typeof(double));
                                 dt.Columns.Add("Z (m)", typeof(double));
-                                dt.Columns.Add(new DataColumn("Joint Id", typeof(int)) { AllowDBNull = true });
+                                dt.Columns.Add(new DataColumn("Joint Id", typeof(string)) { AllowDBNull = true });
 
                                 dt.Columns.Add("Axial Strain at End", typeof(double));
                                 dt.Columns.Add("Bending Strain +Y", typeof(double));
@@ -764,6 +836,7 @@ namespace Emasa_Optimizer.Opt
 
                                     DataRow row = dt.NewRow();
                                     int i = 0;
+                                    row[i++] = resultItem.FeLocation.MeshBeam.OwnerFrame.Id;
                                     row[i++] = resultItem.FeLocation.MeshBeam.Id;
                                     row[i++] = resultItem.FeLocation.BeamNodeString;
                                     row[i++] = resultItem.FeLocation.MeshNode.Id;
@@ -787,13 +860,14 @@ namespace Emasa_Optimizer.Opt
 
                             case FeResultFamilyEnum.ElementNodal_Force:
                                 // Creates the relevant columns
-                                dt.Columns.Add("Element Id", typeof(int));
+                                dt.Columns.Add("Frame Id", typeof(string));
+                                dt.Columns.Add("Element Id", typeof(string));
                                 dt.Columns.Add("Node", typeof(string));
-                                dt.Columns.Add("Mesh Node Id", typeof(int));
+                                dt.Columns.Add("Mesh Node Id", typeof(string));
                                 dt.Columns.Add("X (m)", typeof(double));
                                 dt.Columns.Add("Y (m)", typeof(double));
                                 dt.Columns.Add("Z (m)", typeof(double));
-                                dt.Columns.Add(new DataColumn("Joint Id", typeof(int)) { AllowDBNull = true });
+                                dt.Columns.Add(new DataColumn("Joint Id", typeof(string)) { AllowDBNull = true });
 
                                 dt.Columns.Add("Axial - Fx (N)", typeof(double));
                                 dt.Columns.Add("Shear - SFy (N)", typeof(double));
@@ -810,6 +884,7 @@ namespace Emasa_Optimizer.Opt
 
                                     DataRow row = dt.NewRow();
                                     int i = 0;
+                                    row[i++] = resultItem.FeLocation.MeshBeam.OwnerFrame.Id;
                                     row[i++] = resultItem.FeLocation.MeshBeam.Id;
                                     row[i++] = resultItem.FeLocation.BeamNodeString;
                                     row[i++] = resultItem.FeLocation.MeshNode.Id;
@@ -834,13 +909,14 @@ namespace Emasa_Optimizer.Opt
 
                             case FeResultFamilyEnum.ElementNodal_Strain:
                                 // Creates the relevant columns
-                                dt.Columns.Add("Element Id", typeof(int));
+                                dt.Columns.Add("Frame Id", typeof(string));
+                                dt.Columns.Add("Element Id", typeof(string));
                                 dt.Columns.Add("Node", typeof(string));
-                                dt.Columns.Add("Mesh Node Id", typeof(int));
+                                dt.Columns.Add("Mesh Node Id", typeof(string));
                                 dt.Columns.Add("X (m)", typeof(double));
                                 dt.Columns.Add("Y (m)", typeof(double));
                                 dt.Columns.Add("Z (m)", typeof(double));
-                                dt.Columns.Add(new DataColumn("Joint Id", typeof(int)) { AllowDBNull = true });
+                                dt.Columns.Add(new DataColumn("Joint Id", typeof(string)) { AllowDBNull = true });
 
                                 dt.Columns.Add("Axial - Ex", typeof(double));
                                 dt.Columns.Add("Shear - SEy", typeof(double));
@@ -856,6 +932,7 @@ namespace Emasa_Optimizer.Opt
 
                                     DataRow row = dt.NewRow();
                                     int i = 0;
+                                    row[i++] = resultItem.FeLocation.MeshBeam.OwnerFrame.Id;
                                     row[i++] = resultItem.FeLocation.MeshBeam.Id;
                                     row[i++] = resultItem.FeLocation.BeamNodeString;
                                     row[i++] = resultItem.FeLocation.MeshNode.Id;
@@ -880,13 +957,14 @@ namespace Emasa_Optimizer.Opt
 
                             case FeResultFamilyEnum.ElementNodal_Stress:
                                 // Creates the relevant columns
-                                dt.Columns.Add("Element Id", typeof(int));
+                                dt.Columns.Add("Frame Id", typeof(string));
+                                dt.Columns.Add("Element Id", typeof(string));
                                 dt.Columns.Add("Node", typeof(string));
-                                dt.Columns.Add("Mesh Node Id", typeof(int));
+                                dt.Columns.Add("Mesh Node Id", typeof(string));
                                 dt.Columns.Add("X (m)", typeof(double));
                                 dt.Columns.Add("Y (m)", typeof(double));
                                 dt.Columns.Add("Z (m)", typeof(double));
-                                dt.Columns.Add(new DataColumn("Joint Id", typeof(int)) { AllowDBNull = true });
+                                dt.Columns.Add(new DataColumn("Joint Id", typeof(string)) { AllowDBNull = true });
 
                                 dt.Columns.Add("Axial Direct Stress (Pa)", typeof(double));
                                 dt.Columns.Add("Bending Stress +Y", typeof(double));
@@ -901,6 +979,7 @@ namespace Emasa_Optimizer.Opt
 
                                     DataRow row = dt.NewRow();
                                     int i = 0;
+                                    row[i++] = resultItem.FeLocation.MeshBeam.OwnerFrame.Id;
                                     row[i++] = resultItem.FeLocation.MeshBeam.Id;
                                     row[i++] = resultItem.FeLocation.BeamNodeString;
                                     row[i++] = resultItem.FeLocation.MeshNode.Id;
@@ -923,14 +1002,15 @@ namespace Emasa_Optimizer.Opt
 
                             case FeResultFamilyEnum.SectionNode_Stress:
                                 // Creates the relevant columns
-                                dt.Columns.Add("Element Id", typeof(int));
+                                dt.Columns.Add("Frame Id", typeof(string));
+                                dt.Columns.Add("Element Id", typeof(string));
                                 dt.Columns.Add("Node", typeof(string));
-                                dt.Columns.Add("Owner Mesh Node Id", typeof(int));
+                                dt.Columns.Add("Owner Mesh Node Id", typeof(string));
                                 dt.Columns.Add("Section Node Id", typeof(int));
                                 dt.Columns.Add("Owner Mesh Node X (m)", typeof(double));
                                 dt.Columns.Add("Owner Mesh Node Y (m)", typeof(double));
                                 dt.Columns.Add("Owner Mesh Node Z (m)", typeof(double));
-                                dt.Columns.Add(new DataColumn("Joint Id", typeof(int)) { AllowDBNull = true });
+                                dt.Columns.Add(new DataColumn("Joint Id", typeof(string)) { AllowDBNull = true });
 
                                 dt.Columns.Add("Stress - Principal 1 (Pa)", typeof(double));
                                 dt.Columns.Add("Stress - Principal 2 (Pa)", typeof(double));
@@ -946,6 +1026,7 @@ namespace Emasa_Optimizer.Opt
 
                                     DataRow row = dt.NewRow();
                                     int i = 0;
+                                    row[i++] = resultItem.FeLocation.MeshBeam.OwnerFrame.Id;
                                     row[i++] = resultItem.FeLocation.MeshBeam.Id;
                                     row[i++] = resultItem.FeLocation.BeamNodeString;
                                     row[i++] = resultItem.FeLocation.MeshNode.Id;
@@ -969,14 +1050,15 @@ namespace Emasa_Optimizer.Opt
 
                             case FeResultFamilyEnum.SectionNode_Strain:
                                 // Creates the relevant columns
-                                dt.Columns.Add("Element Id", typeof(int));
+                                dt.Columns.Add("Frame Id", typeof(string));
+                                dt.Columns.Add("Element Id", typeof(string));
                                 dt.Columns.Add("Node", typeof(string));
-                                dt.Columns.Add("Owner Mesh Node Id", typeof(int));
+                                dt.Columns.Add("Owner Mesh Node Id", typeof(string));
                                 dt.Columns.Add("Section Node Id", typeof(int));
                                 dt.Columns.Add("Owner Mesh Node X (m)", typeof(double));
                                 dt.Columns.Add("Owner Mesh Node Y (m)", typeof(double));
                                 dt.Columns.Add("Owner Mesh Node Z (m)", typeof(double));
-                                dt.Columns.Add(new DataColumn("Joint Id", typeof(int)) { AllowDBNull = true });
+                                dt.Columns.Add(new DataColumn("Joint Id", typeof(string)) { AllowDBNull = true });
 
                                 dt.Columns.Add("Strain - Principal 1", typeof(double));
                                 dt.Columns.Add("Strain - Principal 2", typeof(double));
@@ -992,6 +1074,7 @@ namespace Emasa_Optimizer.Opt
 
                                     DataRow row = dt.NewRow();
                                     int i = 0;
+                                    row[i++] = resultItem.FeLocation.MeshBeam.OwnerFrame.Id;
                                     row[i++] = resultItem.FeLocation.MeshBeam.Id;
                                     row[i++] = resultItem.FeLocation.BeamNodeString;
                                     row[i++] = resultItem.FeLocation.MeshNode.Id;
@@ -1024,21 +1107,38 @@ namespace Emasa_Optimizer.Opt
                                                             select a;
 
                                         // Creates the relevant columns
-                                        dt.Columns.Add("Element Id", typeof(int));
+                                        dt.Columns.Add("Frame Id", typeof(string));
+                                        dt.Columns.Add("Element Id", typeof(string));
                                         dt.Columns.Add("Node", typeof(string));
-                                        dt.Columns.Add("Mesh Node Id", typeof(int));
+                                        dt.Columns.Add("Mesh Node Id", typeof(string));
                                         dt.Columns.Add("X (m)", typeof(double));
                                         dt.Columns.Add("Y (m)", typeof(double));
                                         dt.Columns.Add("Z (m)", typeof(double));
-                                        dt.Columns.Add(new DataColumn("Joint Id", typeof(int)) { AllowDBNull = true });
+                                        dt.Columns.Add(new DataColumn("Joint Id", typeof(string)) { AllowDBNull = true });
 
-                                        dt.Columns.Add("Axial Stress Fx DivBy Area (Pa)", typeof(double));
-                                        dt.Columns.Add("Bending Stress DivBy M2 DivBy Z2 (Pa)", typeof(double));
-                                        dt.Columns.Add("Bending Stress DivBy M3 DivBy Z3 (Pa)", typeof(double));
+                                        dt.Columns.Add(new DataColumn("Pr", typeof(double)) {DefaultValue = 0d});
+                                        dt.Columns.Add(new DataColumn("MrMajor", typeof(double)) { DefaultValue = 0d });
+                                        dt.Columns.Add(new DataColumn("MrMinor", typeof(double)) { DefaultValue = 0d });
 
-                                        dt.Columns.Add("SUM (Pa)", typeof(double));
-                                        dt.Columns.Add("Yield * Gamma_Mat (Pa)", typeof(double));
-                                        dt.Columns.Add("Ratio", typeof(double));
+                                        dt.Columns.Add(new DataColumn("VrMajor", typeof(double)) { DefaultValue = 0d });
+                                        dt.Columns.Add(new DataColumn("VrMinor", typeof(double)) { DefaultValue = 0d });
+                                        dt.Columns.Add(new DataColumn("Tr", typeof(double)) { DefaultValue = 0d });
+
+                                        dt.Columns.Add(new DataColumn("PRatio", typeof(double)) { DefaultValue = 0d });
+                                        dt.Columns.Add(new DataColumn("MMajRatio", typeof(double)) { DefaultValue = 0d });
+                                        dt.Columns.Add(new DataColumn("MMinRatio", typeof(double)) { DefaultValue = 0d });
+                                        dt.Columns.Add(new DataColumn("VMajRatio", typeof(double)) { DefaultValue = 0d });
+                                        dt.Columns.Add(new DataColumn("VMinRatio", typeof(double)) { DefaultValue = 0d });
+                                        dt.Columns.Add(new DataColumn("TorRatio", typeof(double)) { DefaultValue = 0d });
+
+                                        dt.Columns.Add(new DataColumn("PcComp", typeof(double)) { DefaultValue = 0d });
+                                        dt.Columns.Add(new DataColumn("PcTension", typeof(double)) { DefaultValue = 0d });
+                                        dt.Columns.Add(new DataColumn("MrMajorDsgn", typeof(double)) { DefaultValue = 0d });
+                                        dt.Columns.Add(new DataColumn("McMajor", typeof(double)) { DefaultValue = 0d });
+                                        dt.Columns.Add(new DataColumn("MrMinorDsgn", typeof(double)) { DefaultValue = 0d });
+                                        dt.Columns.Add(new DataColumn("McMinor", typeof(double)) { DefaultValue = 0d });
+
+                                        dt.Columns.Add("Total Ratio", typeof(double));
 
                                         foreach (FeResultItem resultItem in relevantResults)
                                         {
@@ -1046,6 +1146,7 @@ namespace Emasa_Optimizer.Opt
 
                                             DataRow row = dt.NewRow();
                                             int i = 0;
+                                            row[i++] = resultItem.FeLocation.MeshBeam.OwnerFrame.Id;
                                             row[i++] = resultItem.FeLocation.MeshBeam.Id;
                                             row[i++] = resultItem.FeLocation.BeamNodeString;
                                             row[i++] = resultItem.FeLocation.MeshNode.Id;
@@ -1054,14 +1155,28 @@ namespace Emasa_Optimizer.Opt
                                             row[i++] = resultItem.FeLocation.MeshNode.Point.Z;
                                             row[i++] = resultItem.FeLocation.MeshNode.MatchingJoint == null ? DBNull.Value : (object)resultItem.FeLocation.MeshNode.MatchingJoint.Id;
 
+                                            row[i++] = r.Pr;
+                                            row[i++] = r.MrMajor;
+                                            row[i++] = r.MrMinor;
+                                            row[i++] = r.VrMajor;
+                                            row[i++] = r.VrMinor;
+                                            row[i++] = r.Tr;
 
-                                            row[i++] = r.P_A;
-                                            row[i++] = r.M2_Z2;
-                                            row[i++] = r.M3_Z3;
+                                            row[i++] = r.PRatio;
+                                            row[i++] = r.MMajRatio;
+                                            row[i++] = r.MMinRatio;
+                                            row[i++] = r.VMajRatio;
+                                            row[i++] = r.VMinRatio;
+                                            row[i++] = r.TorRatio;
 
-                                            row[i++] = r.SUM;
-                                            row[i++] = r.G_MAT_FY;
-                                            row[i++] = r.RATIO;
+                                            row[i++] = r.PcComp;
+                                            row[i++] = r.PcTension;
+                                            row[i++] = r.MrMajorDsgn;
+                                            row[i++] = r.McMajor;
+                                            row[i++] = r.MrMinorDsgn;
+                                            row[i++] = r.McMinor;
+
+                                            row[i++] = r.TotalRatio;
 
                                             dt.Rows.Add(row);
                                         }
@@ -1076,7 +1191,8 @@ namespace Emasa_Optimizer.Opt
                                             select a;
 
                                         // Creates the relevant columns
-                                        dt.Columns.Add("Element Id", typeof(int));
+                                        dt.Columns.Add("Frame Id", typeof(string));
+                                        dt.Columns.Add("Element Id", typeof(string));
                                         dt.Columns.Add("Strain Energy", typeof(double));
 
                                         foreach (FeResultItem resultItem in relevantResults)
@@ -1085,6 +1201,7 @@ namespace Emasa_Optimizer.Opt
 
                                             DataRow row = dt.NewRow();
                                             int i = 0;
+                                            row[i++] = resultItem.FeLocation.MeshBeam.OwnerFrame.Id;
                                             row[i++] = resultItem.FeLocation.MeshBeam.Id;
 
                                             row[i++] = r.StrainEnergy;
@@ -1113,7 +1230,7 @@ namespace Emasa_Optimizer.Opt
                                         if (relevantResults.Count() != 1) throw new Exception($"Result family {ListDescSH.I.FeResultFamilyEnumDescriptions[feResultClassification.ResultFamily].Item2} expects only one FeResultValue but found a {relevantResults.Count()}.");
                                         if (!(relevantResults.First().ResultValue is FeResultValue_EigenvalueBucklingSummary evRes)) throw new Exception($"Result family {ListDescSH.I.FeResultFamilyEnumDescriptions[feResultClassification.ResultFamily].Item2} expects a FeResultValue_EigenvalueBucklingSummary but found a {relevantResults.First().ResultValue.GetType()}.");
 
-                                        foreach (KeyValuePair<int, double> pair in evRes.EigenvalueBucklingMultipliers)
+                                        foreach (KeyValuePair<int, double> pair in evRes.EigenvalueBucklingMultipliers_NonNegative)
                                         {
                                             DataRow row = dt.NewRow();
                                             int i = 0;
@@ -1174,6 +1291,7 @@ namespace Emasa_Optimizer.Opt
         public Dictionary<ProblemQuantity, NlOpt_Point_ProblemQuantity_Output> ProblemQuantityOutputs { get; } = new Dictionary<ProblemQuantity, NlOpt_Point_ProblemQuantity_Output>();
         public ICollectionView Wpf_ProblemQuantityOutputs_OutputOnly { get; private set; } // of NlOpt_Point_ProblemQuantity_Output
         public ICollectionView Wpf_ProblemQuantityOutputs_ObjectiveFunction { get; private set; } // of NlOpt_Point_ProblemQuantity_Output
+        public ICollectionView Wpf_ProblemQuantityOutputs_Constraints { get; private set; } // of NlOpt_Point_ProblemQuantity_Output
         public ICollectionView Wpf_ProblemQuantityOutputs { get; private set; } // of NlOpt_Point_ProblemQuantity_Output
 
         public void InitializeProblemQuantityOutputs()
@@ -1211,12 +1329,28 @@ namespace Emasa_Optimizer.Opt
 
                 return false;
             };
+
+            Wpf_ProblemQuantityOutputs_Constraints = (new CollectionViewSource() { Source = ProblemQuantityOutputs.Values }).View;
+            Wpf_ProblemQuantityOutputs_Constraints.Filter += inO =>
+            {
+                if (inO is NlOpt_Point_ProblemQuantity_Output pqo)
+                {
+                    if (pqo.Quantity.IsConstraint) return true;
+                }
+
+                return false;
+            };
         }
         #endregion
 
         private void OtherElements_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (sender is ScreenShotOptions && e.PropertyName == "SelectedDisplayDirection")
+            {
+                // Updates the image accordingly
+                RaisePropertyChanged("SelectedDisplayScreenShot");
+            }
+            if (sender is ScreenShotOptions && e.PropertyName == "SelectedDisplayImageResultClassification")
             {
                 // Updates the image accordingly
                 RaisePropertyChanged("SelectedDisplayScreenShot");
@@ -1234,30 +1368,30 @@ namespace Emasa_Optimizer.Opt
         }
 
 
-        #region Wpf
-
-        public string WpfName => $"{PointIndex} - {ObjectiveFunctionEval}";
-
         public ImageSource SelectedDisplayScreenShot
         {
             get
             {
                 // Gets the Screen shot
                 NlOpt_Point_ScreenShot screenShot = ScreenShots.FirstOrDefault(a => a.Direction == AppSS.I.ScreenShotOpt.SelectedDisplayDirection &&
-                                                                                      a.Result == AppSS.I.ScreenShotOpt.SelectedDisplayImageResultClassification);
+                                                                                    a.Result == AppSS.I.ScreenShotOpt.SelectedDisplayImageResultClassification);
                 if (screenShot == null) return null;
 
-                    MemoryStream ms = new MemoryStream();
-                    screenShot.Image.Save(ms, ImageFormat.Png);
-                    BitmapImage bitmap = new BitmapImage();
-                    bitmap.BeginInit();
-                    bitmap.StreamSource = ms;
-                    bitmap.EndInit();
-                    bitmap.Freeze();
-                    return bitmap;
+                MemoryStream ms = new MemoryStream();
+                screenShot.Image.Save(ms, ImageFormat.Png);
+                BitmapImage bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.StreamSource = ms;
+                bitmap.EndInit();
+                bitmap.Freeze();
+                return bitmap;
             }
         }
 
+
+        #region Wpf
+        public string WpfName => $"{PointIndex} - {ObjectiveFunctionEval}";
+        
         public int? SelectedDisplayData_FirstDataColumnIndex = null;
         public DataView SelectedDisplayData
         {
@@ -1411,7 +1545,8 @@ namespace Emasa_Optimizer.Opt
         #region Phase and Messages
         public FastObservableCollection<NlOpt_Point_Message> RuntimeWarningMessages { get; private set; } = new FastObservableCollection<NlOpt_Point_Message>();
 
-        private NlOpt_Point_PhaseEnum _phase = NlOpt_Point_PhaseEnum.Outputs_Initializing;
+
+        private NlOpt_Point_PhaseEnum _phase = NlOpt_Point_PhaseEnum.Initializing;
         public NlOpt_Point_PhaseEnum Phase
         {
             get => _phase;
@@ -1423,11 +1558,20 @@ namespace Emasa_Optimizer.Opt
                 SinceNlOptStartTimeSpan = DateTime.Now - Owner.NlOptSolverWrapper.NlOpt_OptimizationStartTime;
             }
         }
+        public string PhaseAsString => ListDescSH.I.NlOpt_Point_PhaseEnumDescriptions[Phase];
         #endregion
 
         public override string ToString()
         {
             return $"{PointIndex} {Phase} {ObjectiveFunctionEval}";
+        }
+
+        public void ReleaseManagedResources()
+        {
+            _previousPoint = null;
+            // Unsubscribe from events
+            AppSS.I.ScreenShotOpt.PropertyChanged -= OtherElements_PropertyChanged;
+            AppSS.I.FeOpt.PropertyChanged -= OtherElements_PropertyChanged;
         }
     }
 
@@ -1497,8 +1641,7 @@ namespace Emasa_Optimizer.Opt
                 return _isRespectedReport;
             }
         }
-
-
+        
         #region Equality based on Problem Quantity
         public bool Equals(NlOpt_Point_ConstraintData other)
         {
@@ -1643,7 +1786,7 @@ namespace Emasa_Optimizer.Opt
                     case StopCriteriaTypeEnum.FunctionRelativeChange:
                     case StopCriteriaTypeEnum.ParameterAbsoluteChange:
                     case StopCriteriaTypeEnum.ParameterRelativeChange:
-                        return CriteriaValue <= Limit;
+                        return CriteriaValue <= Limit; 
 
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -1664,6 +1807,22 @@ namespace Emasa_Optimizer.Opt
         FunctionRelativeChange,
         ParameterAbsoluteChange,
         ParameterRelativeChange,
+    }
+
+    public class PointNlParameterInputData
+    {
+        public int Index { get; set; }
+        public double Value { get; set; }
+        public double MinLimit { get; set; }
+        public double MaxLimit { get; set; }
+        public string ParameterName { get; set; }
+        public string ToolTipValue
+        {
+            get
+            {
+                return $"{DefaultNumberConverter.GetString(Value)} [{DefaultNumberConverter.GetString(MinLimit)} -- {DefaultNumberConverter.GetString(MaxLimit)}]";
+            }
+        }
     }
 }
 

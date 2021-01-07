@@ -702,7 +702,7 @@ namespace EmasaSapTools.Bindings
                         // Creates a view to expedite the reading of the data
                         string ViewCommand = @"CREATE VIEW JointNewCoordinates AS
 SELECT 
-       [main].[JointCoordinates].[ShortName], 
+       [main].[JointCoordinates].[Name], 
        [main].[JointCoordinates].[X], 
        [main].[JointCoordinates].[Y], 
        [main].[JointCoordinates].[Z], 
@@ -713,7 +713,7 @@ SELECT
        [main].[JointCoordinates].[Y] + [main].[JointDisplacement].[GlobalU2] AS NEWY,
        [main].[JointCoordinates].[Z] + [main].[JointDisplacement].[GlobalU3] AS NEWZ
 FROM   [main].[JointCoordinates]
-       INNER JOIN [main].[JointDisplacement] ON [main].[JointCoordinates].[ShortName] = [main].[JointDisplacement].[Obj];";
+       INNER JOIN [main].[JointDisplacement] ON [main].[JointCoordinates].[Name] = [main].[JointDisplacement].[Obj];";
                         // Creates the View
                         using (SQLiteCommand createView = new SQLiteCommand(ViewCommand, sqliteConn))
                         {
@@ -722,7 +722,7 @@ FROM   [main].[JointCoordinates]
 
                         ViewCommand = @"CREATE VIEW ExcelImport AS 
 SELECT 
-ShortName,
+Name,
 'GLOBAL' as CoordSys,
 'Cartesian' as CoordType,
 NEWX as XorR,
@@ -813,6 +813,17 @@ FROM JointNewCoordinates;";
             }
         }
 
+
+
+
+
+        private string _solverMatchCasePosition_SelectedCase;
+        public string SolverMatchCasePosition_SelectedCase
+        {
+            get => _solverMatchCasePosition_SelectedCase;
+            set => SetProperty(ref _solverMatchCasePosition_SelectedCase, value);
+        }
+
         private DelegateCommand _solverMatchDEADCasePositionCommand;
         public DelegateCommand SolverMatchDEADCasePositionCommand =>
             _solverMatchDEADCasePositionCommand ?? (_solverMatchDEADCasePositionCommand = new DelegateCommand(ExecuteSolverMatchDEADCasePositionCommand));
@@ -825,43 +836,54 @@ FROM JointNewCoordinates;";
 
                 void lf_Work()
                 {
-                    BusyOverlayBindings.I.Title = $"Finding geometry that will reach given positions when loaded with DEAD case";
+                    BusyOverlayBindings.I.Title = $"Finding geometry that will reach given positions when loaded with {SolverMatchCasePosition_SelectedCase} case";
                     BusyOverlayBindings.I.AutomationWarning_Visibility = Visibility.Visible;
                     BusyOverlayBindings.I.LongReport_Visibility = Visibility.Visible;
 
                     // Selects the files in the view thread
                     OpenFileDialog ofd = new OpenFileDialog
                     {
-                        Filter = "SQLite Database (*.db;*.sqlite)|*.db;*.sqlite",
-                        DefaultExt = "*.db;*.sqlite",
-                        Title = "Select SQLite Database!",
+                        Filter = "SQLite Database (*.db;*.sqlite)|*.db;*.sqlite|Excel File (*.xlsx)|*.xlsx",
+                        DefaultExt = "*.db;*.sqlite;*.xlsx",
+                        Title = "Select SQLite Database or Excel Sheet!",
                         Multiselect = false,
                         CheckFileExists = true,
                         CheckPathExists = true
                     };
                     var ofdret = ofd.ShowDialog();
 
-                    if (ofdret.HasValue && ofdret.Value && string.IsNullOrWhiteSpace(ofd.FileName)) throw new S2KHelperException("Please select a proper SQLite file!");
+                    if (ofdret.HasValue && ofdret.Value && string.IsNullOrWhiteSpace(ofd.FileName)) throw new S2KHelperException("Please select a proper SQLite file or Excel Sheet!");
 
                     DataTable targetCoordTable = new DataTable();
 
-                    // Opens the file
-                    BusyOverlayBindings.I.SetIndeterminate("Reading the data from the SQLite file.");
-                    SQLiteConnectionStringBuilder connectionStringBuilder = new SQLiteConnectionStringBuilder();
-                    connectionStringBuilder.DataSource = ofd.FileName;
-                    using (SQLiteConnection sqliteConn = new SQLiteConnection(connectionStringBuilder.ConnectionString))
+                    if (Path.GetExtension(ofd.FileName) == ".db" || Path.GetExtension(ofd.FileName) == ".sqlite")
                     {
-                        sqliteConn.Open();
-
-                        // Creates the tables
-                        using (SQLiteCommand dbCommand =
-                            new SQLiteCommand("SELECT * FROM JointNewCoordinates;", sqliteConn))
+                        // Opens the file
+                        BusyOverlayBindings.I.SetIndeterminate("Reading the data from the SQLite file.");
+                        SQLiteConnectionStringBuilder connectionStringBuilder = new SQLiteConnectionStringBuilder();
+                        connectionStringBuilder.DataSource = ofd.FileName;
+                        using (SQLiteConnection sqliteConn = new SQLiteConnection(connectionStringBuilder.ConnectionString))
                         {
-                            SQLiteDataReader executeReader = dbCommand.ExecuteReader(CommandBehavior.SingleResult);
-                            targetCoordTable.Load(executeReader);
+                            sqliteConn.Open();
+
+                            // Creates the tables
+                            using (SQLiteCommand dbCommand =
+                                new SQLiteCommand("SELECT * FROM JointNewCoordinates;", sqliteConn))
+                            {
+                                SQLiteDataReader executeReader = dbCommand.ExecuteReader(CommandBehavior.SingleResult);
+                                targetCoordTable.Load(executeReader);
+                            }
                         }
                     }
+                    else if (Path.GetExtension(ofd.FileName) == ".xlsx")
+                    {
+                        // Reads the excel file
+                        BusyOverlayBindings.I.SetIndeterminate("Reading the Excel Input.");
 
+                        DataSet fromExcel = ExcelHelper.GetDataSetFromExcel(ofd.FileName, new int[] { 0 });
+                        targetCoordTable = fromExcel.Tables[0];
+                    }
+                    else throw new S2KHelperException($"The file is not a sqlite database nor an excel file.");
 
                     int iterationCount = 0;
                     DateTime startAll = DateTime.Now;
@@ -869,18 +891,25 @@ FROM JointNewCoordinates;";
                     {
                         DateTime startIteration = DateTime.Now;
 
-                        BusyOverlayBindings.I.SetIndeterminate("Running SAP2000 DEAD case.");
-                        // Runs the DAED case in SAP2000
+                        BusyOverlayBindings.I.SetIndeterminate($"Running SAP2000 {SolverMatchCasePosition_SelectedCase} case.");
+                        // Runs the selected case in SAP2000
                         S2KModel.SM.AnalysisMan.DeleteAllResults();
                         S2KModel.SM.AnalysisMan.ModelLocked = false;
                         S2KModel.SM.AnalysisMan.SetAllNotToRun();
-                        S2KModel.SM.AnalysisMan.SetCaseRunFlag("DEAD", true);
+                        S2KModel.SM.AnalysisMan.SetCaseRunFlag(SolverMatchCasePosition_SelectedCase, true);
                         S2KModel.SM.AnalysisMan.RunAnalysis();
 
-                        BusyOverlayBindings.I.SetIndeterminate("Results Acquire = Select Group.");
+                        // Selects the joints listed in the target coordinate table
+                        BusyOverlayBindings.I.SetIndeterminate("Selecting the joints that are listed in the SQLite file.");
                         S2KModel.SM.ClearSelection();
-                        string jointGroup = "0-CANOPY_POINTS";
-                        S2KModel.SM.GroupMan.SelectGroup(jointGroup);
+
+                        // Tries to hide for faster selection
+                        S2KModel.SM.WindowVisible = false;
+                        foreach (DataRow dataRow in targetCoordTable.Rows)
+                        {
+                            S2KModel.SM.PointMan.SelectElements(dataRow["Name"].ToString());
+                        }
+                        S2KModel.SM.WindowVisible = true;
 
                         // Gets the selected joints
                         List<SapPoint> selPoints = S2KModel.SM.PointMan.GetSelected(true);
@@ -890,7 +919,7 @@ FROM JointNewCoordinates;";
                         S2KModel.SM.ResultMan.SetOptionMultiValuedCombo(OptionMultiValuedCombo.Correspondence);
                         S2KModel.SM.ResultMan.SetOptionNLStatic(OptionNLStatic.LastStep);
 
-                        S2KModel.SM.ResultMan.SetCaseSelectedForOutput("DEAD");
+                        S2KModel.SM.ResultMan.SetCaseSelectedForOutput(SolverMatchCasePosition_SelectedCase);
 
                         BusyOverlayBindings.I.SetIndeterminate($"Results Acquire = Acquire Joint Displacement Data.");
                         List<JointDisplacementData> jointDisplacementDatas =  S2KModel.SM.ResultMan.GetJointDisplacement("", ItemTypeElmEnum.SelectionElm);
@@ -926,10 +955,20 @@ FROM JointNewCoordinates;";
                             JointDisplacementData currDispData = jointDisplacementDatas[i];
                             BusyOverlayBindings.I.UpdateProgress(i, jointDisplacementDatas.Count, currDispData.Obj);
 
-                            DataRow targetRow = targetCoordTable.AsEnumerable().First(a => a.Field<string>("Name") == currDispData.Obj);
+                            DataRow targetRow = targetCoordTable.AsEnumerable().First(a => a["Name"].ToString() == currDispData.Obj);
                             if (targetRow == null) throw new S2KHelperException($"Could not find the target row for joint displacement Obj={currDispData.Obj}.");
 
-                            Point3D targetCoord = new Point3D(targetRow.Field<double>("NEWX"), targetRow.Field<double>("NEWY"), targetRow.Field<double>("NEWZ"));
+                            Point3D targetCoord;
+                            if (Path.GetExtension(ofd.FileName) == ".db" || Path.GetExtension(ofd.FileName) == ".sqlite")
+                            {
+                                targetCoord = new Point3D(targetRow.Field<double>("NEWX"), targetRow.Field<double>("NEWY"), targetRow.Field<double>("NEWZ"));
+                            }
+                            else if (Path.GetExtension(ofd.FileName) == ".xlsx")
+                            {
+                                targetCoord = new Point3D(targetRow.Field<double>("TargetX"), targetRow.Field<double>("TargetY"), targetRow.Field<double>("TargetZ"));
+                            }
+                            else throw new S2KHelperException($"The file is not a sqlite database nor an excel file.");
+                                
 
                             // It is too far
                             double distance = targetCoord.DistanceTo(currDispData.FinalCoordinates);
@@ -1017,6 +1056,11 @@ FROM JointNewCoordinates;";
                 if (endMessages.Length != 0) OnMessage("Could not match the deflections at the end of the DEAD case with the deflections specified in the SQLite file.", endMessages.ToString());
             }
         }
+
+
+
+
+
 
         private DelegateCommand _getResultDisplacementSupportFall;
         public DelegateCommand GetResultDisplacementSupportFall =>
@@ -1920,6 +1964,154 @@ FROM JointNewCoordinates;";
                 if (endMessages.Length != 0) OnMessage("Could not export the displacement data of the points to the SQLite database and the infinite excel files.", endMessages.ToString());
             }
         }
+        #endregion
+
+
+        #region Add Prescribed Displacements
+
+        private bool _addPrescribedDisplacements_ContainsDeltas = false;
+        public bool AddPrescribedDisplacements_ContainsDeltas
+        {
+            get => _addPrescribedDisplacements_ContainsDeltas;
+            set => SetProperty(ref _addPrescribedDisplacements_ContainsDeltas, value);
+        }
+        private bool _addPrescribedDisplacements_ContainsFinalPositions = true;
+        public bool AddPrescribedDisplacements_ContainsFinalPositions
+        {
+            get => _addPrescribedDisplacements_ContainsFinalPositions;
+            set => SetProperty(ref _addPrescribedDisplacements_ContainsFinalPositions, value);
+        }
+
+        private DelegateCommand _addPrescribedDisplacementsCommand;
+        public DelegateCommand AddPrescribedDisplacementsCommand => _addPrescribedDisplacementsCommand ?? (_addPrescribedDisplacementsCommand = new DelegateCommand(ExecuteAddPrescribedDisplacementsCommand));
+        async void ExecuteAddPrescribedDisplacementsCommand()
+        {
+            StringBuilder endMessages = new StringBuilder();
+            try
+            {
+                OnBeginCommand();
+
+                void lf_Work()
+                {
+                    string flag = AddPrescribedDisplacements_ContainsDeltas ? "Work" : "Survey";
+                    BusyOverlayBindings.I.Title = $"Adding Fixed Support and Displacement Information to the joints. ";
+
+                    // Selects the Excel file in the view thread
+                    OpenFileDialog ofd = new OpenFileDialog
+                    {
+                        Filter = "Excel file (*.xls;*.xlsx)|*.xls;*.xlsx",
+                        DefaultExt = "*.xls;*.xlsx",
+                        Title = $"Select the Excel File. First sheet name is the load pattern. Columns must contain joint name, x, y, z in this order.",
+                        Multiselect = false,
+                        CheckFileExists = true,
+                        CheckPathExists = true
+                    };
+                    var ofdret = ofd.ShowDialog();
+
+                    if (ofdret.HasValue && ofdret.Value && string.IsNullOrWhiteSpace(ofd.FileName))
+                    {
+                        throw new S2KHelperException($"Please select a proper Excel file!{Environment.NewLine}");
+                    }
+
+                    BusyOverlayBindings.I.SetIndeterminate("Reading the Excel Input.");
+
+                    DataSet fromExcel = ExcelHelper.GetDataSetFromExcel(ofd.FileName);
+
+                    string sheetName = fromExcel.Tables[0].TableName;
+                    DataTable surveyData = fromExcel.Tables[0];
+
+                    // Makes sure that the load pattern exists
+                    if (!S2KModel.SM.LPMan.GetAllNames().Contains(sheetName))
+                    {
+                        S2KModel.SM.LPMan.Add(new LoadPatternData()
+                            {
+                            Name = sheetName,
+                            PatternType = LoadPatternType.LTYPE_DEAD,
+                            SelfWeightMultiplier = 0d,
+                        }, false);
+                    }
+
+                    // Gets all SAP points
+                    List<SapPoint> allPoints = S2KModel.SM.PointMan.GetAll(true);
+
+                    BusyOverlayBindings.I.SetDeterminate("Adding the prescribed displacements.", "Excel Line");
+
+                    for (int index = 0; index < surveyData.Rows.Count; index++)
+                    {
+                        DataRow excelRow = surveyData.Rows[index];
+
+                        BusyOverlayBindings.I.UpdateProgress(index, surveyData.Rows.Count, $"{index + 2}");
+
+                        string jointName;
+                        double excelX, excelY, excelZ;
+
+                        try
+                        {
+                            jointName = excelRow[0].ToString();
+                            excelX = excelRow.Field<double>(1);
+                            excelY = excelRow.Field<double>(2);
+                            excelZ = excelRow.Field<double>(3);
+                        }
+                        catch
+                        {
+                            endMessages.AppendLine($"Could not parse excel data - excel row number {index + 2}");
+                            continue;
+                        }
+
+                        SapPoint p = allPoints.FirstOrDefault(a => a.Name == jointName);
+                        if (p == null)
+                        {
+                            endMessages.AppendLine($"Could not find joint named {jointName} in the model - excel row number {index + 2}");
+                            continue;
+                        }
+
+                        // Adds the prescribed displacement
+                        double dx, dy, dz;
+                        if (AddPrescribedDisplacements_ContainsDeltas)
+                        {
+                            dx = excelX;
+                            dy = excelY;
+                            dz = excelZ;
+                        }
+                        else
+                        {
+                            dx = excelX - p.X;
+                            dy = excelY - p.Y;
+                            dz = excelZ - p.Z;
+                        }
+
+                        // Adds the restraints to the joints
+                        p.Restraints = new PointRestraintDef(PointRestraintType.FullyFixed);
+
+                        // Adds the load
+                        p.AddDisplacementLoad(new JointDisplacementLoad()
+                            {
+                            LoadPatternName = sheetName,
+                            U1 = dx,
+                            U2 = dy,
+                            U3 = dz
+                            });
+                    }
+
+                }
+
+                // Runs the job async
+                Task task = new Task(lf_Work);
+                task.Start();
+                await task;
+            }
+            catch (Exception ex)
+            {
+                ExceptionViewer.Show(ex);
+            }
+            finally
+            {
+                OnEndCommand();
+                // Messages to send?
+                if (endMessages.Length != 0) OnMessage("Some issues occured in the following items.", endMessages.ToString());
+            }
+        }
+
         #endregion
     }
 }

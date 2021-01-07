@@ -111,6 +111,12 @@ namespace Emasa_Optimizer.FEA
                     }
                     Loads.Add(gravity);
                 }
+
+                // Adds the point loads
+                if (AppSS.I.FeOpt.PointLoads.Count > 0)
+                {
+                    Loads.AddRange(AppSS.I.FeOpt.PointLoads);
+                }
             }
             catch (Exception e)
             {
@@ -132,11 +138,11 @@ namespace Emasa_Optimizer.FEA
                 Math.Round(inPoint.Z, JointRoundingDecimals, MidpointRounding.ToEven));
         }
 
-        public Dictionary<int, FeFrame> Frames { get; } = new Dictionary<int, FeFrame>();
-        public Dictionary<int, FeJoint> Joints { get; } = new Dictionary<int, FeJoint>();
+        public Dictionary<string, FeFrame> Frames { get; } = new Dictionary<string, FeFrame>();
+        public Dictionary<string, FeJoint> Joints { get; } = new Dictionary<string, FeJoint>();
         public Dictionary<string, FeGroup> Groups { get; } = new Dictionary<string, FeGroup>();
-        public Dictionary<int, FeMeshNode> MeshNodes { get; } = new Dictionary<int, FeMeshNode>();
-        public Dictionary<int, FeMeshBeamElement> MeshBeamElements { get; } = new Dictionary<int, FeMeshBeamElement>();
+        public Dictionary<string, FeMeshNode> MeshNodes { get; } = new Dictionary<string, FeMeshNode>();
+        public Dictionary<string, FeMeshBeamElement> MeshBeamElements { get; } = new Dictionary<string, FeMeshBeamElement>();
 
         public List<FeLoad> Loads { get; } = new List<FeLoad>();
         public HashSet<FeSection> Sections => Frames.Select(a => a.Value.Section).Distinct().ToHashSet();
@@ -159,7 +165,7 @@ namespace Emasa_Optimizer.FEA
             // Already exists in the list?
             if (Joints.Any(a => a.Value.Point == inPoint)) return Joints.First(a => a.Value.Point == inPoint).Value;
 
-            FeJoint newJoint = new FeJoint(_pointCount, inPoint);
+            FeJoint newJoint = new FeJoint(_pointCount.ToString(), inPoint);
             Joints.Add(newJoint.Id, newJoint);
             _pointCount++;
             return newJoint;
@@ -187,7 +193,7 @@ namespace Emasa_Optimizer.FEA
             if (alreadyExisting != null) return alreadyExisting;
             //if () throw new InvalidOperationException("Finite Element Models are Limited to Having One Frame Per Location.");
 
-            FeFrame newFrame = new FeFrame(_frameCount, inSection, inFrom, inTo);
+            FeFrame newFrame = new FeFrame(_frameCount.ToString(), inSection, inFrom, inTo);
             Frames.Add(newFrame.Id, newFrame);
             _frameCount++;
             return newFrame;

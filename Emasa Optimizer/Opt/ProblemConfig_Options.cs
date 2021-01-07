@@ -19,10 +19,7 @@ namespace Emasa_Optimizer.Opt
         {
             #region Section Assignment for the Configuration Combinations
 
-            AvailableSectionList_View = (new CollectionViewSource()
-                {
-                Source = FeSection.GetAllSections()
-                }).View;
+            AvailableSectionList_View = (new CollectionViewSource() { Source = FeSection.GetAllSections() }).View;
             //AvailableSectionList_View.SortDescriptions.Add(new SortDescription("FirstSortDimension", ListSortDirection.Ascending));
             #endregion
 
@@ -99,7 +96,7 @@ namespace Emasa_Optimizer.Opt
             get => _rangeMax;
             set
             {
-                if (value > RangeMin) throw new InvalidOperationException($"Maximum value must be higher than or equal to the minimum value.");
+                if (value < RangeMin) throw new InvalidOperationException($"Maximum value must be higher than or equal to the minimum value.");
                 SetProperty(ref _rangeMax, value);
                 UpdateAvailableIntegers();
             }

@@ -8,35 +8,27 @@ namespace Emasa_Optimizer.FEA.Results
 {
     public class FeResultValue_ElementNodalCodeCheck : FeResultValue
     {
-        /// <summary>
-        /// P_A = Fx / c_secArea
-        /// </summary>
-        public double P_A { get; set; }
+        public double Pr { get; set; } = 0;
+        public double MrMajor { get; set; } = 0;
+        public double MrMinor { get; set; } = 0;
+        public double VrMajor { get; set; } = 0;
+        public double VrMinor { get; set; } = 0;
+        public double Tr { get; set; } = 0;
 
-        /// <summary>
-        /// M2_Z2 = My / c_secPlMod2
-        /// </summary>
-        public double M2_Z2 { get; set; }
+        public double PRatio { get; set; } = 0;
+        public double MMajRatio { get; set; } = 0;
+        public double MMinRatio { get; set; } = 0;
+        public double VMajRatio { get; set; } = 0;
+        public double VMinRatio { get; set; } = 0;
+        public double TorRatio { get; set; } = 0;
 
+        public double PcComp { get; set; } = 0;
+        public double PcTension { get; set; } = 0;
+        public double MrMajorDsgn { get; set; } = 0;
+        public double McMajor { get; set; } = 0;
+        public double MrMinorDsgn { get; set; } = 0;
+        public double McMinor { get; set; } = 0;
 
-        /// <summary>
-        /// M3_Z3 = Mz / c_secPlMod3
-        /// </summary>
-        public double M3_Z3 { get; set; }
-
-        /// <summary>
-        /// SUM = P_A + M2_Z2 + M3_Z3
-        /// </summary>
-        public double SUM { get; set; }
-
-        /// <summary>
-        /// G_MAT_FY = Fy * gamma_mat
-        /// </summary>
-        public double G_MAT_FY { get; set; }
-
-        /// <summary>
-        /// RATIO = SUM / G_MAT_FY
-        /// </summary>
-        public double RATIO { get; set; }
+        public double TotalRatio { get; set; } = 0;
     }
 }

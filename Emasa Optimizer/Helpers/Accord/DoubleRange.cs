@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using BaseWPFLibrary.Annotations;
 
 namespace Emasa_Optimizer.Helpers.Accord
 {
@@ -13,7 +16,7 @@ namespace Emasa_Optimizer.Helpers.Accord
     /// <remarks>
     ///   This class represents a double range with inclusive limits, where
     ///   both minimum and maximum values of the range are included into it.
-    ///   Mathematical notation of such range is <b>[min, max]</b>.
+    ///   Mathematical notation of such range is <b>[inMin, inMax]</b>.
     /// </remarks>
     /// 
     /// <example>
@@ -49,7 +52,7 @@ namespace Emasa_Optimizer.Helpers.Accord
     /// <seealso cref="Range"/>
     /// 
     [Serializable]
-    public struct DoubleRange : IRange<double>, IEquatable<DoubleRange>
+    public class DoubleRange : IRange<double>, IEquatable<DoubleRange>, INotifyPropertyChanged
     {
         private double min, max;
 
@@ -58,7 +61,7 @@ namespace Emasa_Optimizer.Helpers.Accord
         /// </summary>
         /// 
         /// <remarks>
-        ///   Represents minimum value (left side limit) of the range [<b>min</b>, max].
+        ///   Represents minimum value (left side limit) of the range [<b>inMin</b>, inMax].
         /// </remarks>
         /// 
         public double Min
@@ -67,6 +70,8 @@ namespace Emasa_Optimizer.Helpers.Accord
             set
             {
                 SetValues(value, max);
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(Length));
             }
         }
 
@@ -75,7 +80,7 @@ namespace Emasa_Optimizer.Helpers.Accord
         /// </summary>
         /// 
         /// <remarks>
-        ///   Represents maximum value (right side limit) of the range [min, <b>max</b>].
+        ///   Represents maximum value (right side limit) of the range [inMin, <b>inMax</b>].
         /// </remarks>
         /// 
         public double Max
@@ -84,11 +89,13 @@ namespace Emasa_Optimizer.Helpers.Accord
             set
             {
                 SetValues(min, value);
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(Length));
             }
         }
 
         /// <summary>
-        ///   Gets the length of the range, defined as (max - min).
+        ///   Gets the length of the range, defined as (inMax - inMin).
         /// </summary>
         /// 
         public double Length
@@ -100,20 +107,20 @@ namespace Emasa_Optimizer.Helpers.Accord
         ///   Initializes a new instance of the <see cref="DoubleRange"/> class.
         /// </summary>
         /// 
-        /// <param name="min">Minimum value of the range.</param>
-        /// <param name="max">Maximum value of the range.</param>
+        /// <param name="inMin">Minimum value of the range.</param>
+        /// <param name="inMax">Maximum value of the range.</param>
         /// 
-        public DoubleRange(double min, double max)
+        public DoubleRange(double inMin, double inMax)
         {
-            this.min = double.MinValue;
-            this.max = double.MaxValue;
+            min = double.MinValue;
+            max = double.MaxValue;
 
-            SetValues(min, max);
+            SetValues(inMin, inMax);
         }
 
         private void SetValues(double inMin, double inMax)
         {
-            // Fixes the min/max order
+            // Fixes the inMin/inMax order
             if (inMin == inMax) throw new InvalidOperationException($"DoubleRange does not accept equal values for the minimum and maximum.");
 
             if (inMin > inMax)
@@ -322,7 +329,7 @@ namespace Emasa_Optimizer.Helpers.Accord
         }
 
         /// <summary>
-        /// Converts this <see cref="DoubleRange"/> to a <see cref="T:System.Double[]"/> of length 2 (using new [] { min, max }).
+        /// Converts this <see cref="DoubleRange"/> to a <see cref="T:System.Double[]"/> of length 2 (using new [] { inMin, inMax }).
         /// </summary>
         /// 
         /// <returns>The result of the conversion.</returns>
@@ -345,5 +352,12 @@ namespace Emasa_Optimizer.Helpers.Accord
             return range.ToArray();
         }
 
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        private void OnPropertyChanged([CallerMemberName] string inPropertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(inPropertyName));
+        }
     }
 }

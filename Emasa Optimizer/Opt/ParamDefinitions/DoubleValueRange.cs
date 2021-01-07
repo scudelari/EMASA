@@ -11,8 +11,6 @@ namespace Emasa_Optimizer.Opt.ParamDefinitions
     [Serializable]
     public class DoubleValueRange : ValueRangeBase, IEquatable<DoubleValueRange>
     {
-
-
         public DoubleValueRange(double inMin, double inMax) : this(new DoubleRange(inMin, inMax))
         {
         }
@@ -26,7 +24,7 @@ namespace Emasa_Optimizer.Opt.ParamDefinitions
         public DoubleRange Range
         {
             get => _range;
-            private set
+            set
             {
                 SetProperty(ref _range, value);
                 DisplayVariablesChanged();

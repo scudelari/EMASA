@@ -9,6 +9,7 @@
     <System:Boolean x:Key="False">False</System:Boolean>
 
     <cv:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+    <cv:VisibilityToBool_FalseHidden_Converter x:Key="VisibilityToBool_FalseHidden_Converter" />
 
     <Color x:Key="EmsDarkBlueColor">#FF414163</Color>
     <SolidColorBrush x:Key="EmsDarkBlueSolidBrush" Color="{DynamicResource EmsDarkBlueColor}" />

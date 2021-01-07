@@ -14,6 +14,7 @@ namespace Emasa_Optimizer.Opt.ParamDefinitions
         {
         }
         public override string TypeName => "DoubleList";
+        public override string Wpf_TypeNameString => "Doubles";
 
         #region IProblemQuantitySource
         public bool IsGhGeometryDoubleListData => true;
@@ -29,6 +30,7 @@ namespace Emasa_Optimizer.Opt.ParamDefinitions
 
         public string ScreenShotFileName => "DoubleList_RhinoScreenshot";
         public string DataTableName => $"{Wpf_ProblemQuantityGroup} - {Wpf_ProblemQuantityName}";
+        public string ConcernedResultColumnName => "Double Value";
 
         public void AddProblemQuantity_FunctionObjective()
         {
@@ -42,6 +44,12 @@ namespace Emasa_Optimizer.Opt.ParamDefinitions
         {
             AppSS.I.ProbQuantMgn.AddProblemQuantity(new ProblemQuantity(this, Quantity_TreatmentTypeEnum.OutputOnly));
         }
+
+        public bool IsSupportedByCurrentSolver => true;
+        public bool OutputData_IsSelected => true;
+
         #endregion
+
+
     }
 }

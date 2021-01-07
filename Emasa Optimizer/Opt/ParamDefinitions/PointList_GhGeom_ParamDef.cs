@@ -10,6 +10,7 @@ namespace Emasa_Optimizer.Opt.ParamDefinitions
     public class PointList_GhGeom_ParamDef : GhGeom_ParamDefBase, IGhElement_HasFeRestraint
     {
         public override string TypeName => "PointList";
+        public override string Wpf_TypeNameString => "Points";
 
         public PointList_GhGeom_ParamDef(string inName, FeRestraint inDefaultRestraint = null) : base(inName)
         {
