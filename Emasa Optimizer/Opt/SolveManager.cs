@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
+using System.Windows.Media.Media3D;
 using BaseWPFLibrary.Annotations;
 using BaseWPFLibrary.Bindings;
 using BaseWPFLibrary.Forms;
@@ -581,6 +582,178 @@ namespace Emasa_Optimizer.Opt
             }
             finally
             {
+                // Closes the overlay
+                BusyOverlayBindings.I.HideOverlayAndReset();
+            }
+        }
+
+        public async void WpfCommand_CopySummaryToClipboard()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            try
+            {
+                BusyOverlayBindings.I.Title = $"Copy summary table to clipboard.";
+                BusyOverlayBindings.I.SetIndeterminate("Generating Summary Table.");
+                BusyOverlayBindings.I.ShowOverlay();
+                
+                void lf_Work()
+                {
+                    char separator = '\t';
+
+                    // Writes the header!
+                    sb.Append("Config #");
+                    sb.Append(separator);
+
+                    foreach (Integer_GhConfig_ParamDef param in AppSS.I.Gh_Alg.ConfigDefs_Integer_View.OfType<Integer_GhConfig_ParamDef>())
+                    {
+                        sb.Append(param.Name);
+                        sb.Append(separator);
+                    }
+                    foreach (LineList_GhGeom_ParamDef param in AppSS.I.Gh_Alg.GeometryDefs_LineList_View.OfType<LineList_GhGeom_ParamDef>())
+                    {
+                        sb.Append($"{param.Name} Section");
+                        sb.Append(separator);
+
+                        sb.Append($"{param.Name} Area (m2)");
+                        sb.Append(separator);
+                    }
+
+                    sb.Append("Point #");
+                    sb.Append(separator);
+
+                    sb.Append("Iteration Time (s)");
+                    sb.Append(separator);
+
+                    foreach (Input_ParamDefBase inputParam in AppSS.I.Gh_Alg.InputDefs)
+                    {
+                        switch (inputParam)
+                        {
+                            case Double_Input_ParamDef double_Input_ParamDef:
+                                sb.Append(double_Input_ParamDef.Name);
+                                sb.Append(separator);
+                                break;
+
+                            case Point_Input_ParamDef point_Input_ParamDef:
+                                sb.Append(point_Input_ParamDef.Name + " - X");
+                                sb.Append(separator);
+                                sb.Append(point_Input_ParamDef.Name + " - Y");
+                                sb.Append(separator);
+                                sb.Append(point_Input_ParamDef.Name + " - Z");
+                                sb.Append(separator);
+                                break;
+
+                            default:
+                                throw new ArgumentOutOfRangeException(nameof(inputParam));
+                        }
+                    }
+                    foreach (ProblemQuantity quantity in AppSS.I.ProbQuantMgn.WpfProblemQuantities_ObjectiveFunction.OfType<ProblemQuantity>())
+                    {
+                        sb.Append(quantity.ToString());
+                        sb.Append(separator);
+                    }
+                    foreach (ProblemQuantity quantity in AppSS.I.ProbQuantMgn.WpfProblemQuantities_Constraint.OfType<ProblemQuantity>())
+                    {
+                        sb.Append(quantity.ToString());
+                        sb.Append(separator);
+                    }
+                    foreach (ProblemQuantity quantity in AppSS.I.ProbQuantMgn.WpfProblemQuantities_OutputOnly.OfType<ProblemQuantity>())
+                    {
+                        sb.Append(quantity.ToString());
+                        sb.Append(separator);
+                    }
+
+                    sb.AppendLine();
+
+
+                    // Rows - 1 Per Point
+                    foreach (NlOpt_Point point in Wpf_CurrentlySelected_ProblemConfig.Wpf_FunctionPoints.OfType<NlOpt_Point>())
+                    {
+                        sb.Append(Wpf_CurrentlySelected_ProblemConfig.Index);
+                        sb.Append(separator);
+
+                        foreach (Integer_GhConfig_ParamDef param in AppSS.I.Gh_Alg.ConfigDefs_Integer_View.OfType<Integer_GhConfig_ParamDef>())
+                        {
+                            sb.Append(Wpf_CurrentlySelected_ProblemConfig.GetGhIntegerConfig(param));
+                            sb.Append(separator);
+                        }
+                        foreach (LineList_GhGeom_ParamDef param in AppSS.I.Gh_Alg.GeometryDefs_LineList_View.OfType<LineList_GhGeom_ParamDef>())
+                        {
+                            FeSection s = Wpf_CurrentlySelected_ProblemConfig.GetGhLineListSection(param);
+
+                            sb.Append(s.Name);
+                            sb.Append(separator);
+
+                            sb.Append(s.Area);
+                            sb.Append(separator);
+                        }
+
+                        sb.Append(point.PointIndex);
+                        sb.Append(separator);
+
+                        sb.Append(point.TotalIterationTimeSpan.TotalSeconds);
+                        sb.Append(separator);
+
+                        foreach (Input_ParamDefBase inputParam in AppSS.I.Gh_Alg.InputDefs)
+                        {
+                            switch (inputParam)
+                            {
+                                case Double_Input_ParamDef double_Input_ParamDef:
+                                    sb.Append(point.GhInput_Values[double_Input_ParamDef]);
+                                    sb.Append(separator);
+                                    break;
+
+                                case Point_Input_ParamDef point_Input_ParamDef:
+                                    Point3D p3d = (Point3D)point.GhInput_Values[point_Input_ParamDef];
+                                    sb.Append(p3d.X);
+                                    sb.Append(separator);
+                                    sb.Append(p3d.Y);
+                                    sb.Append(separator);
+                                    sb.Append(p3d.Z);
+                                    sb.Append(separator);
+                                    break;
+
+                                default:
+                                    throw new ArgumentOutOfRangeException(nameof(inputParam));
+                            }
+                        }
+
+                        foreach (ProblemQuantity quantity in AppSS.I.ProbQuantMgn.WpfProblemQuantities_ObjectiveFunction.OfType<ProblemQuantity>())
+                        {
+                            sb.Append(point.ProblemQuantityOutputs[quantity].AggregatedValue);
+                            sb.Append(separator);
+                        }
+                        foreach (ProblemQuantity quantity in AppSS.I.ProbQuantMgn.WpfProblemQuantities_Constraint.OfType<ProblemQuantity>())
+                        {
+                            sb.Append(point.ProblemQuantityOutputs[quantity].AggregatedValue);
+                            sb.Append(separator);
+                        }
+                        foreach (ProblemQuantity quantity in AppSS.I.ProbQuantMgn.WpfProblemQuantities_OutputOnly.OfType<ProblemQuantity>())
+                        {
+                            sb.Append(point.ProblemQuantityOutputs[quantity].AggregatedValue);
+                            sb.Append(separator);
+                        }
+                        sb.AppendLine();
+                    }
+                    
+
+
+                }
+
+                // Runs the job async
+                Task task = new Task(lf_Work);
+                task.Start();
+                await task;
+            }
+            catch (Exception ex)
+            {
+                ExceptionViewer.Show(ex);
+            }
+            finally
+            {
+                // The string builder has the output!
+                if (sb != null) Clipboard.SetText(sb.ToString());
+
                 // Closes the overlay
                 BusyOverlayBindings.I.HideOverlayAndReset();
             }

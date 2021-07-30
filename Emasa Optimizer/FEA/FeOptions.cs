@@ -96,7 +96,7 @@ namespace Emasa_Optimizer.FEA
                 new FeResultClassification(FeResultTypeEnum.Model_EigenvalueBuckling_Mode1Factor, false, FeAnalysisShapeEnum.PerfectShape),
                 new FeResultClassification(FeResultTypeEnum.Model_EigenvalueBuckling_Mode2Factor, false, FeAnalysisShapeEnum.PerfectShape),
                 new FeResultClassification(FeResultTypeEnum.Model_EigenvalueBuckling_Mode3Factor, false, FeAnalysisShapeEnum.PerfectShape),
-
+                new FeResultClassification(FeResultTypeEnum.Element_Weight, false, FeAnalysisShapeEnum.PerfectShape),
 
 
 

@@ -15,15 +15,18 @@ using Emasa_Optimizer.WpfResources;
 
 namespace Emasa_Optimizer.Opt.ParamDefinitions
 {
-    public class LineList_GhGeom_ParamDef : GhGeom_ParamDefBase, IProblemConfig_CombinableVariable, IGhElement_HasFeRestraint
+    public class LineList_GhGeom_ParamDef : GhGeom_ParamDefBase, IProblemConfig_CombinableVariable, IGhElement_HasFeRestraint, IGhElement_HasFeRelease
     {
         public override string TypeName => "LineList";
         public override string Wpf_TypeNameString => "Lines";
 
-        public LineList_GhGeom_ParamDef(string inName, FeRestraint inDefaultRestraint = null) : base(inName)
+        public LineList_GhGeom_ParamDef(string inName, FeRestraint inDefaultRestraint = null, FeRelease inDefaultRelease = null) : base(inName)
         {
             if (inDefaultRestraint == null) Restraint = new FeRestraint(); // All False
             else Restraint = inDefaultRestraint;
+
+            if (inDefaultRelease == null) Release = new FeRelease(false); // No Release
+            else Release = inDefaultRelease;
 
             WpfFeSections_ToCombine = CollectionViewSource.GetDefaultView(_feSections_ToCombine);
             WpfFeSections_ToCombine.SortDescriptions.Add(new SortDescription("FirstSortDimension", ListSortDirection.Ascending));
@@ -33,6 +36,7 @@ namespace Emasa_Optimizer.Opt.ParamDefinitions
 
         #region Finite Element Assignments
         public FeRestraint Restraint { get; set; }
+        public FeRelease Release { get; set; }
         #endregion
         
 

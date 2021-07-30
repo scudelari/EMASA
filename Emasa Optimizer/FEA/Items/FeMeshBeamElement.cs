@@ -1,9 +1,11 @@
-﻿using System;
+﻿extern alias r3dm;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Emasa_Optimizer.FEA.Results;
+using r3dm::Rhino.Geometry;
 
 namespace Emasa_Optimizer.FEA.Items
 {
@@ -47,6 +49,9 @@ namespace Emasa_Optimizer.FEA.Items
             get => _kNode;
             set => _kNode = value;
         }
+
+        public double Length => (new Line(INode.Point, JNode.Point)).Length;
+        public double Mass => (Length * OwnerFrame.Section.Area * OwnerFrame.Section.Material.Density);
 
         public List<FeMeshNode> MeshNodes => new List<FeMeshNode>() {INode, KNode, JNode};
         public List<FeMeshNode> MeshNodes_NoK => new List<FeMeshNode>() { INode, JNode };

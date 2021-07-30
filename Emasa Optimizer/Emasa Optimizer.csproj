@@ -52,8 +52,8 @@
     <Reference Include="LiveCharts.Wpf, Version=0.9.7.0, Culture=neutral, PublicKeyToken=0bc1f845d1ebb8df, processorArchitecture=MSIL">
       <HintPath>..\packages\LiveCharts.Wpf.0.9.7\lib\net45\LiveCharts.Wpf.dll</HintPath>
     </Reference>
-    <Reference Include="MathNet.Numerics, Version=4.13.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MathNet.Numerics.4.13.0\lib\net461\MathNet.Numerics.dll</HintPath>
+    <Reference Include="MathNet.Numerics, Version=4.15.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MathNet.Numerics.4.15.0\lib\net461\MathNet.Numerics.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.5.0.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
@@ -119,8 +119,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="FEA\FeSolverBase_Sap2000.cs" />
+    <Compile Include="FEA\Items\FeRelease.cs" />
     <Compile Include="FEA\Loads\FeLoad_Point.cs" />
     <Compile Include="Opt\ChartDisplayManager.cs" />
+    <Compile Include="Opt\ParamDefinitions\IGhElement_HasFeRelease.cs" />
     <Compile Include="Opt\ParamDefinitions\IGhElement_HasFeRestraint.cs" />
     <Compile Include="Opt\ProblemConfig_Options.cs" />
     <Compile Include="WpfResources\WpfTemplateSelectors.cs" />
@@ -229,7 +231,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <None Include="FEA\FeModel_ClassDiagram.cd" />
+    <None Include="ClassDiagram1.cd" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

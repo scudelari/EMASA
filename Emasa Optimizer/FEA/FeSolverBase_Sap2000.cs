@@ -1014,6 +1014,9 @@ namespace Emasa_Optimizer.FEA
                 // Treating the *requested* outputs
                 foreach (FeResultClassification feResultClassification in inRequestedResults)
                 {
+                    // Jumps if requested weight
+                    if (feResultClassification.ResultType == FeResultTypeEnum.Element_Weight) continue;
+
                     // Jumps if the result output has already been requested
                     if (writeResultTouchedTypes.Contains((inShape, feResultClassification.ResultType))) continue;
 
@@ -1388,6 +1391,9 @@ namespace Emasa_Optimizer.FEA
 
             foreach (FeResultClassification feResult in inResults)
             {
+                // Ignores because it is weight
+                if (feResult.ResultType == FeResultTypeEnum.Element_Weight) continue;
+
                 // Ignore as it has already been treated
                 if (readResultTouchedTypes.Contains(feResult.ResultType)) continue;
 
@@ -1639,6 +1645,8 @@ namespace Emasa_Optimizer.FEA
             // For each requested result
             foreach (FeResultClassification feResult in inResults)
             {
+                if (feResult.ResultType == FeResultTypeEnum.Element_Weight) continue;
+
                 Dictionary<Sap2000ViewDirection, Image> resultScreenshots;
 
                 switch (feResult.ResultType)

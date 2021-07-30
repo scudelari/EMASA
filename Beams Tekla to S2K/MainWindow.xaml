@@ -57,13 +57,14 @@
             Content="Generate Sap2000"
             IsEnabled="False" />
 
-        <TextBox
-            x:Name="LogTextBox"
+        <ScrollViewer
             Grid.Row="2"
             Grid.ColumnSpan="4"
             Margin="10"
             HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch" />
+            VerticalAlignment="Stretch">
+            <TextBox x:Name="LogTextBox" />
+        </ScrollViewer>
 
         <ProgressBar
             x:Name="StatusProgressBar"

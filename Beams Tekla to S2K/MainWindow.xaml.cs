@@ -104,95 +104,153 @@ namespace Beams_Tekla_to_S2K
         private void BwGenerateSap2000_DoWork(object sender, DoWorkEventArgs e)
         {
             // The first thing is to remove from the table the rows that have PL as the frame section
-            
+
+
             // First of all, manipulates the data so that we can work with it in a better way
             HashSet<string> uniqueMaterials = new HashSet<string>();
             HashSet<(string Section, string Material)> uniqueFrameSections = new HashSet<(string Section, string Material)>();
 
             bwGenerateSap2000.ReportProgress(0, "Getting unique Materials, Profiles and Points from the Tekla Table.");
             int counter = 0;
-            foreach (DataRow row in beamTable.Rows)
+            try
             {
-                uniqueMaterials.Add(row.Field<string>("Material"));
-                uniqueFrameSections.Add((row.Field<string>("Profile"), row.Field<string>("Material")));
+                foreach (DataRow row in beamTable.Rows)
+                {
+                    uniqueMaterials.Add(row.Field<string>("Material"));
+                    uniqueFrameSections.Add((row.Field<string>("Profile"), row.Field<string>("Material")));
+                }
+            }
+            catch (Exception ex1)
+            {
+                int a = 0;
+                a++;
+                throw;
             }
             bwGenerateSap2000.ReportProgress(100, "Got unique Materials and Profiles.");
 
-            bwGenerateSap2000.ReportProgress(0, "Opening SAP2000 Software.");
+            bwGenerateSap2000.ReportProgress(0, "Linking to SAP2000 software.");
             // Opens a new Sap2000 empty model
-            S2KModel.InitSingleton_NewInstance(UnitsEnum.kip_in_F, false );
+            // S2KModel.InitSingleton_NewInstance(UnitsEnum.kip_in_F, false );
             S2KModel.SM.NewModelBlank(false, UnitsEnum.kip_in_F);
-            bwGenerateSap2000.ReportProgress(0, "SAP2000 Software Open.");
+            bwGenerateSap2000.ReportProgress(0, "SAP2000 Software Ready.");
+            S2KModel.SM.WindowVisible = true;
 
             // Adds the Materials to Sap2000
             bwGenerateSap2000.ReportProgress(counter = 0, "Sending the Material Definitions to SAP2000.");
             Dictionary<string, string> TeklaToSapMatTranslate = new Dictionary<string, string>();
-            foreach (string TeklaMatName in uniqueMaterials)
+            try
             {
-                string SapMatName = null;
-                switch (TeklaMatName)
+                foreach (string TeklaMatName in uniqueMaterials)
                 {
-                    case "A500-GR.B-42":
-                        SapMatName = S2KModel.SM.MaterialMan.AddNewMaterial(MatTypeEnum.Steel, "United States", "ASTM A500", "Grade B, Fy 42 (HSS Round)");
-                        break;
-                    case "A500-GR.B-46":
-                        SapMatName = S2KModel.SM.MaterialMan.AddNewMaterial(MatTypeEnum.Steel, "United States", "ASTM A500", "Grade B, Fy 46 (HSS Rect.)");
-                        break;
-                    case "A36":
-                        SapMatName = S2KModel.SM.MaterialMan.AddNewMaterial(MatTypeEnum.Steel, "United States", "ASTM A36", "Grade 36");
-                        break;
-                    case "A992":
-                        SapMatName = S2KModel.SM.MaterialMan.AddNewMaterial(MatTypeEnum.Steel, "United States", "ASTM A992", "Grade 50");
-                        break;
-                    case "NOT_DEFINED":
-                        SapMatName = S2KModel.SM.MaterialMan.SetMaterial(MatTypeEnum.Steel, TeklaMatName);
-                        break;
-                    case "5000":
-                        SapMatName = S2KModel.SM.MaterialMan.SetMaterial(MatTypeEnum.Steel, TeklaMatName);
-                        break;
-                    case "A53-B":
-                        SapMatName = S2KModel.SM.MaterialMan.AddNewMaterial(MatTypeEnum.Steel, "United States", "ASTM A53", "Grade B");
-                        break;
-                    case "F1554-GR.55":
-                        SapMatName = S2KModel.SM.MaterialMan.SetMaterial(MatTypeEnum.Steel, TeklaMatName);
-                        break;
-                    case "A563":
-                        SapMatName = S2KModel.SM.MaterialMan.SetMaterial(MatTypeEnum.Steel, TeklaMatName);
-                        break;
+                    string SapMatName = null;
+                    switch (TeklaMatName)
+                    {
+                        case "A500-GR.B-42":
+                            SapMatName = S2KModel.SM.MaterialMan.AddNewMaterial(MatTypeEnum.Steel, "United States", "ASTM A500", "Grade B, Fy 42 (HSS Round)");
+                            break;
+                        case "A500-GR.B-46":
+                            SapMatName = S2KModel.SM.MaterialMan.AddNewMaterial(MatTypeEnum.Steel, "United States", "ASTM A500", "Grade B, Fy 46 (HSS Rect.)");
+                            break;
+                        case "A500-GR.C":
+                        case "A500C":
+                            if (!TeklaToSapMatTranslate.Values.Contains("A500GrC"))
+                            {
+                                SapMatName = S2KModel.SM.MaterialMan.AddNewMaterial(MatTypeEnum.Steel, "United States", "ASTM A500", "Grade C");
+                            }
+                            else
+                            {
+                                SapMatName = "A500GrC";
+                            }
+                            break;
+                        case "A36":
+                            SapMatName = S2KModel.SM.MaterialMan.AddNewMaterial(MatTypeEnum.Steel, "United States", "ASTM A36", "Grade 36");
+                            break;
+                        case "A992":
+                            // This one already exists in all new S2K Blank models.
+                            SapMatName = "A992Fy50";
+                            //SapMatName = S2KModel.SM.MaterialMan.AddNewMaterial(MatTypeEnum.Steel, "United States", "ASTM A992", "Grade 50");
+                            break;
+                        case "NOT_DEFINED":
+                            SapMatName = S2KModel.SM.MaterialMan.SetMaterial(MatTypeEnum.Steel, TeklaMatName);
+                            break;
+                        case "5000":
+                            SapMatName = S2KModel.SM.MaterialMan.SetMaterial(MatTypeEnum.Steel, TeklaMatName);
+                            break;
+                        case "A53-B":
+                            SapMatName = S2KModel.SM.MaterialMan.AddNewMaterial(MatTypeEnum.Steel, "United States", "ASTM A53", "Grade B");
+                            break;
+                        case "F1554-GR.55":
+                            SapMatName = S2KModel.SM.MaterialMan.SetMaterial(MatTypeEnum.Steel, TeklaMatName);
+                            break;
+                        case "A563":
+                            SapMatName = S2KModel.SM.MaterialMan.SetMaterial(MatTypeEnum.Steel, TeklaMatName);
+                            break;
 
-                    case "A572-Gr 42":
-                        SapMatName = S2KModel.SM.MaterialMan.SetMaterial(MatTypeEnum.Steel, TeklaMatName);
-                        break;
+                        case "A572-Gr 42":
+                            SapMatName = S2KModel.SM.MaterialMan.SetMaterial(MatTypeEnum.Steel, TeklaMatName);
+                            break;
 
-                    case "57250_CVNB":
-                    case "A572-50":
-                    case "A572-Gr 50":
-                        if (!TeklaToSapMatTranslate.Values.Contains("A572Gr50"))
-                        {
-                            SapMatName = S2KModel.SM.MaterialMan.AddNewMaterial(MatTypeEnum.Steel, "United States", "ASTM A572", "Grade 50");
-                        }
-                        else
-                        {
-                            SapMatName = "A572Gr50";
-                        }
-                        break;
-                    default:
-                        SapMatName = S2KModel.SM.MaterialMan.SetMaterial(MatTypeEnum.Steel, TeklaMatName);
-                        break;
+                        case "57250_CVNB":
+                        case "A572-50":
+                        case "A572-Gr 50":
+                        case "A572-GR.50":
+                            if (!TeklaToSapMatTranslate.Values.Contains("A572Gr50"))
+                            {
+                                SapMatName = S2KModel.SM.MaterialMan.AddNewMaterial(MatTypeEnum.Steel, "United States", "ASTM A572", "Grade 50");
+                            }
+                            else
+                            {
+                                SapMatName = "A572Gr50";
+                            }
+                            break;
+                        default:
+                            SapMatName = S2KModel.SM.MaterialMan.SetMaterial(MatTypeEnum.Steel, TeklaMatName);
+                            break;
+                    }
+                    TeklaToSapMatTranslate.Add(TeklaMatName, SapMatName);
+
+                    bwGenerateSap2000.ReportProgress(S2KStaticMethods.ProgressPercent(counter++, uniqueMaterials.Count));
                 }
-                TeklaToSapMatTranslate.Add(TeklaMatName, SapMatName);
-
-                bwGenerateSap2000.ReportProgress(S2KStaticMethods.ProgressPercent(counter++, uniqueMaterials.Count));
+            }
+            catch (Exception ex)
+            {
+                int a = 0;
+                a++;
+                throw;
             }
             bwGenerateSap2000.ReportProgress(counter = 100, "Sent the Material Definitions to SAP2000.");
 
             // Adds the Profiles to Sap2000
             bwGenerateSap2000.ReportProgress(counter = 0, "Sending the Section Definitions to SAP2000.");
+            Regex HSSPipeTeklaRegex = new Regex(@"^HSS\d*X\d*\.\d*");
+            Regex PlateTeklaRegex = new Regex(@"PL(?<tck>.*)\*(?<w>.*)");
+            Regex ImperialConverter = new Regex(@"(?<main>.*)""((?<up>.*)/(?<down>.*))?");
+
+            double lf_ToImperial(string s)
+            {
+                Match m = ImperialConverter.Match(s);
+
+                // First, the full value
+                double ret = double.Parse(m.Groups["main"].Value);
+
+                if (!string.IsNullOrWhiteSpace(m.Groups["up"].Value) && !string.IsNullOrWhiteSpace(m.Groups["down"].Value))
+                {
+                    double up = double.Parse(m.Groups["up"].Value);
+                    double down = double.Parse(m.Groups["down"].Value);
+                    ret += up / down;
+                }
+
+                return ret;
+            }
+
             foreach ((string Section, string Material) in uniqueFrameSections)
             {
                 bool ret = false;
 
-                Regex HSSPipeTeklaRegex = new Regex(@"^HSS\d*X\d*\.\d*");
+                Match HSSPipeTeklaMatch = HSSPipeTeklaRegex.Match(Section);
+                Match PlateTeklaMatch = PlateTeklaRegex.Match(Section);
+                
+
                 // Is it a custom I section from Tekla?
                 if (Section.StartsWith("HI"))
                 {
@@ -204,18 +262,31 @@ namespace Beams_Tekla_to_S2K
                     ret = S2KModel.SM.FrameSecMan.SetOrAddISection(Section + "_" + TeklaToSapMatTranslate[Material], TeklaToSapMatTranslate[Material],
                         double.Parse(chunks[0]) / 25.4, double.Parse(chunks[3]) / 25.4, double.Parse(chunks[2]) / 25.4, double.Parse(chunks[1]) / 25.4, double.Parse(chunks[3]) / 25.4, double.Parse(chunks[2]) / 25.4);
                 }
-                else if (HSSPipeTeklaRegex.IsMatch(Section))
+                else if (PlateTeklaMatch.Success)
+                {
+                    string s_tck = PlateTeklaMatch.Groups["tck"].Value;
+                    string s_w = PlateTeklaMatch.Groups["w"].Value;
+
+                    // The values come in mm.
+                    double tck = double.Parse(s_tck) / 25.4;
+                    double w = double.Parse(s_w) / 25.4;
+
+                    // Adds the rectangular section
+                    ret = S2KModel.SM.FrameSecMan.SetOrAddRectangle(Section + "_" + TeklaToSapMatTranslate[Material],
+                        TeklaToSapMatTranslate[Material], tck, w);
+                }
+                else if (HSSPipeTeklaMatch.Success)
                 {
                     ret = S2KModel.SM.FrameSecMan.ImportFrameSection(Section + "_" + TeklaToSapMatTranslate[Material],
                             TeklaToSapMatTranslate[Material],
-                            "AISC15.pro",
+                            @"AISC15.pro",
                             Section.Replace("X0.", "X."));
                 }
                 else
                 {
                     ret = S2KModel.SM.FrameSecMan.ImportFrameSection(Section + "_" + TeklaToSapMatTranslate[Material],
                             TeklaToSapMatTranslate[Material],
-                            "AISC15.pro",
+                            @"AISC15.pro",
                             Section);
                 }
 
@@ -228,7 +299,7 @@ namespace Beams_Tekla_to_S2K
             }
             bwGenerateSap2000.ReportProgress(counter = 100, "Sent the Section Definitions to SAP2000.");
 
-            S2KModel.SM.WindowVisible = true;
+            S2KModel.SM.WindowVisible = false;
 
             // Adds the points and the frames
             Dictionary<Point3D, SapPoint> uniquePoints = new Dictionary<Point3D, SapPoint>();

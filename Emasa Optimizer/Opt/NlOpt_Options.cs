@@ -41,7 +41,7 @@ namespace Emasa_Optimizer.Opt
         public string WpfNlOptSolverTypeString => UseLagrangian ? $"Lagrangian [{NlOptAlgorithmEnumDescriptions[NlOptSolverType]}]" : $"{NlOptAlgorithmEnumDescriptions[NlOptSolverType]}";
 
         // Use lagrangian will probably be deprecated as an input option - it will be used whenever the user asks for constraints
-        private bool _useLagrangian = true;
+        private bool _useLagrangian = false;
         public bool UseLagrangian
         {
             get => _useLagrangian;
@@ -219,6 +219,14 @@ namespace Emasa_Optimizer.Opt
             set => SetProperty(ref _isOn_MaximumRunTime, value);
         }
 
+        private bool _isOn_OnlyIfConstraintsRespected = true;
+        public bool IsOn_OnlyIfConstraintsRespected
+        {
+            get => _isOn_OnlyIfConstraintsRespected;
+            set => SetProperty(ref _isOn_OnlyIfConstraintsRespected, value);
+        }
+
+
         public List<AbsoluteToleranceOnParameterValue_NameValuePair> DefaultParameterAbsoluteTolerance
         {
             get
@@ -250,7 +258,7 @@ namespace Emasa_Optimizer.Opt
 
         #region Objective Function Options
         public Dictionary<ObjectiveFunctionSumTypeEnum, Tuple<string, string>> ObjectiveFunctionSumTypeEnumDescriptions => ListDescSH.I.ObjectiveFunctionSumTypeEnumNameAndDescription;
-        private ObjectiveFunctionSumTypeEnum _objectiveFunctionSumType = ObjectiveFunctionSumTypeEnum.Squares;
+        private ObjectiveFunctionSumTypeEnum _objectiveFunctionSumType = ObjectiveFunctionSumTypeEnum.Simple;
         public ObjectiveFunctionSumTypeEnum ObjectiveFunctionSumType
         {
             get => _objectiveFunctionSumType;

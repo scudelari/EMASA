@@ -1,0 +1,31 @@
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\bin\Debug\Las to SqLite.exe.config
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\bin\Debug\Las to SqLite.exe
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\bin\Debug\Las to SqLite.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\bin\Debug\BaseWPFLibrary.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\bin\Debug\EntityFramework.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\bin\Debug\EntityFramework.SqlServer.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\bin\Debug\Prism.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\bin\Debug\System.Data.SQLite.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\bin\Debug\System.Data.SQLite.EF6.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\bin\Debug\System.Data.SQLite.Linq.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\bin\Debug\BaseWPFLibrary.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\bin\Debug\BaseWPFLibrary.dll.config
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\bin\Debug\EntityFramework.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\bin\Debug\EntityFramework.SqlServer.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\bin\Debug\Prism.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\bin\Debug\Prism.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\bin\Debug\System.Data.SQLite.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\obj\Debug\Las to SqLite.csprojAssemblyReference.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\obj\Debug\MainWindow.g.cs
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\obj\Debug\App.g.cs
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\obj\Debug\Las to SqLite_MarkupCompile.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\obj\Debug\Las to SqLite_MarkupCompile.lref
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\obj\Debug\MainWindow.baml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\obj\Debug\Las to SqLite.g.resources
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\obj\Debug\Las_to_SqLite.Properties.Resources.resources
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\obj\Debug\Las to SqLite.csproj.GenerateResource.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\obj\Debug\Las to SqLite.csproj.CoreCompileInputs.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\obj\Debug\Las to SqLite.csproj.CopyComplete
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\obj\Debug\Las to SqLite.exe
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\obj\Debug\Las to SqLite.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Las to SqLite\obj\Debug\App.baml

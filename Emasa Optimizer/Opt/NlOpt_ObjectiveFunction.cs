@@ -224,30 +224,25 @@ namespace Emasa_Optimizer
             {
                 if (stopStatus.IsActive && stopStatus.LimitReached)
                 {
-                    switch (stopStatus.StopCriteriaType)
+                    if (stopStatus.StopCriteriaType == StopCriteriaTypeEnum.Time)
+                        throw new NlOpt_OptimizeTerminationException(NlOpt_OptimizeTerminationCodeEnum.Converged, $"Maximum total time for the optimization has been reached.");
+
+                    if (stopStatus.StopCriteriaType == StopCriteriaTypeEnum.Iterations)
+                        throw new NlOpt_OptimizeTerminationException(NlOpt_OptimizeTerminationCodeEnum.Converged, $"Maximum total number of evaluations for the optimization has been reached.");
+
+                    if (!AppSS.I.NlOptOpt.IsOn_OnlyIfConstraintsRespected || (AppSS.I.NlOptOpt.IsOn_OnlyIfConstraintsRespected && CurrentCalc_NlOptPoint.AllConstraintsRespected))
                     {
-                        case StopCriteriaTypeEnum.Time:
-                            throw new NlOpt_OptimizeTerminationException(NlOpt_OptimizeTerminationCodeEnum.Converged, $"Maximum total time for the optimization has been reached.");
-
-                        case StopCriteriaTypeEnum.Iterations:
-                            throw new NlOpt_OptimizeTerminationException(NlOpt_OptimizeTerminationCodeEnum.Converged, $"Maximum total number of evaluations for the optimization has been reached.");
-
-                        case StopCriteriaTypeEnum.FunctionValue:
+                        if (stopStatus.StopCriteriaType == StopCriteriaTypeEnum.FunctionValue)
                             throw new NlOpt_OptimizeTerminationException(NlOpt_OptimizeTerminationCodeEnum.Converged, $"Stop value of the objective function has been reached.");
-
-                        case StopCriteriaTypeEnum.FunctionAbsoluteChange:
+                        else if (stopStatus.StopCriteriaType == StopCriteriaTypeEnum.FunctionAbsoluteChange)
                             throw new NlOpt_OptimizeTerminationException(NlOpt_OptimizeTerminationCodeEnum.Converged, $"Minimum absolute delta of the objective function value has been reached.");
-
-                        case StopCriteriaTypeEnum.FunctionRelativeChange:
+                        else if (stopStatus.StopCriteriaType == StopCriteriaTypeEnum.FunctionRelativeChange)
                             throw new NlOpt_OptimizeTerminationException(NlOpt_OptimizeTerminationCodeEnum.Converged, $"Minimum relative delta of the objective function value has been reached.");
-
-                        case StopCriteriaTypeEnum.ParameterAbsoluteChange:
+                        else if (stopStatus.StopCriteriaType == StopCriteriaTypeEnum.ParameterAbsoluteChange)
                             throw new NlOpt_OptimizeTerminationException(NlOpt_OptimizeTerminationCodeEnum.Converged, $"Minimum absolute delta of the input parameter value has been reached. Parameter: {stopStatus.Name}");
-
-                        case StopCriteriaTypeEnum.ParameterRelativeChange:
+                        else if (stopStatus.StopCriteriaType == StopCriteriaTypeEnum.ParameterRelativeChange)
                             throw new NlOpt_OptimizeTerminationException(NlOpt_OptimizeTerminationCodeEnum.Converged, $"Minimum relative delta of the input parameter value has been reached. Parameter: {stopStatus.Name}");
-
-                        default:
+                        else
                             throw new ArgumentOutOfRangeException();
                     }
                 }

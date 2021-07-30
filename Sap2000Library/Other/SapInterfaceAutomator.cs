@@ -2423,10 +2423,18 @@ namespace Sap2000Library.Other
 
                 Debug.WriteLine($"{DateTime.Now}: Export window closed.");
 
-                // Gets the save window
-                RetryResult<AutomationElement> saveWindowRetry = Retry.WhileNull(() => FlaUI_SapMainWindow.FindFirstChild(cf => cf.ByClassName("#32770")),
-                    timeout: TimeSpan.FromSeconds(10), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Save Text File As Form.");
-                Window saveWindow = saveWindowRetry.Result.AsWindow();
+                Window saveWindow;
+                try
+                {
+                    // Gets the save window
+                    RetryResult<AutomationElement> saveWindowRetry = Retry.WhileNull(() => FlaUI_SapMainWindow.FindFirstChild(cf => cf.ByClassName("#32770")),
+                        timeout: TimeSpan.FromSeconds(10), interval: TimeSpan.FromMilliseconds(50), throwOnTimeout: true, timeoutMessage: "FlaUI: Could not get the Save Text File As Form.");
+                    saveWindow = saveWindowRetry.Result.AsWindow();
+                }
+                catch (Exception e)
+                {
+                    throw e;
+                }
 
                 // Manipulates the textbox
                 RetryResult<AutomationElement> saveWindowFileNameTextBoxRetry = Retry.WhileNull(() => saveWindow.FindFirstDescendant(cf => cf.ByAutomationId("1001")),

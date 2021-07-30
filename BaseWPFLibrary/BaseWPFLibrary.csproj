@@ -79,6 +79,8 @@
     <Compile Include="Bindings\BindableSingleton.cs" />
     <Compile Include="Bindings\CustomOverlayBindings.cs" />
     <Compile Include="Converters\EnumBooleanConverter.cs" />
+    <Compile Include="Converters\StringDirectoryPathValidAndAccessible_ToBool.cs" />
+    <Compile Include="Converters\StringFilePathValidAndAccessible_ToBool.cs" />
     <Compile Include="Converters\VisibilityToBool_FalseHidden_Converter.cs" />
     <Compile Include="CustomOverlay.xaml.cs">
       <DependentUpon>CustomOverlay.xaml</DependentUpon>

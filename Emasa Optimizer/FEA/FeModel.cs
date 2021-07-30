@@ -54,6 +54,9 @@ namespace Emasa_Optimizer.FEA
                 {
                     FeGroup grp = AddNewOrGet_Group(lineList_Output_ParamDef.FeGroupNameHelper);
 
+                    // Sets the release onto the group
+                    grp.Release = lineList_Output_ParamDef.Release;
+
                     List<Line> pLines = (List<Line>)inSolPoint.GhGeom_Values[lineList_Output_ParamDef];
 
                     foreach (Line l in pLines)

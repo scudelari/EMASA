@@ -58,3 +58,5 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Debug\WpfApp1.csproj.Co
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Debug\WpfApp1.csproj.CopyComplete
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Debug\WpfApp1.exe
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Debug\WpfApp1.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Debug\Window1.g.cs
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Debug\Window1.baml

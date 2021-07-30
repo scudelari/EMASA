@@ -130,6 +130,7 @@ namespace Emasa_Optimizer.WpfResources
                 
                 {FeResultTypeEnum.ElementNodal_CodeCheck, new Tuple<string, string>("Code Check", "Code Check")},
                 {FeResultTypeEnum.Element_StrainEnergy, new Tuple<string, string>("Strain Energy", "Strain Energy")},
+                {FeResultTypeEnum.Element_Weight, new Tuple<string, string>("Weight", "Weight")},
                 {FeResultTypeEnum.Model_EigenvalueBuckling_Mode1Factor, new Tuple<string, string>("EVB M1", "Eigenvalue Buckling Factor - Mode 1")},
                 {FeResultTypeEnum.Model_EigenvalueBuckling_Mode2Factor, new Tuple<string, string>("EVB M2", "Eigenvalue Buckling Factor - Mode 2")},
                 {FeResultTypeEnum.Model_EigenvalueBuckling_Mode3Factor, new Tuple<string, string>("EVB M3", "Eigenvalue Buckling Factor - Mode 3")},
@@ -172,25 +173,25 @@ namespace Emasa_Optimizer.WpfResources
             };
         public Dictionary<NLoptAlgorithm, string> NlOptAlgorithmEnumDescriptions = new Dictionary<NLoptAlgorithm, string>()
             {
-                {NLoptAlgorithm.LN_COBYLA, "Cobyla [LN] - E/NE"},
-                {NLoptAlgorithm.LD_SLSQP, "Sequential Least-Squares Quadratic Programming [GN] - E/NE"},
-                {NLoptAlgorithm.GN_ISRES, "Improved Stochastic Ranking Evolution Strategy [GN] - E/NE"},
+                {NLoptAlgorithm.LN_COBYLA, "COBYLA [LN] - E/NE"},
+                {NLoptAlgorithm.LD_SLSQP, "SLSQP [LD] - E/NE"},
+                {NLoptAlgorithm.GN_ISRES, "ISRES [GN] - E/NE"},
 
                 {NLoptAlgorithm.GN_AGS, "AGS [GN] - NE"},
-                {NLoptAlgorithm.LD_MMA, "Method of Moving Asymptotes [LD] - NE"},
+                {NLoptAlgorithm.LD_MMA, "MMA [LD] - NE"},
 
-                {NLoptAlgorithm.LD_LBFGS ,"Low-storage BFGS [LD]"},
+                {NLoptAlgorithm.LD_LBFGS ,"LS-BFGS [LD]"},
 
                 {NLoptAlgorithm.GN_DIRECT, "Dividing Rectangles [GN]"},
                 {NLoptAlgorithm.GN_DIRECT_L, "Dividing Rectangles - Locally Biased [GN]"},
                 {NLoptAlgorithm.GN_DIRECT_L_RAND, "Dividing Rectangles - Locally Biased With Some Randomization [GN]"},
 
-                {NLoptAlgorithm.GN_CRS2_LM, "Controlled Random Search With Local Mutation [GN]"},
+                {NLoptAlgorithm.GN_CRS2_LM, "CRS LM [GN]"},
 
-                {NLoptAlgorithm.GN_ESCH, "ESCH (evolutionary algorithm) [GN]"},
+                {NLoptAlgorithm.GN_ESCH, "ESCH [GN]"},
                 {NLoptAlgorithm.GD_STOGO, "StoGo [GD]"},
                 {NLoptAlgorithm.GD_STOGO_RAND, "StoGo - Randomized [GD]"},
-                {NLoptAlgorithm.LN_BOBYQA, "Bobyqa [LN]"},
+                {NLoptAlgorithm.LN_BOBYQA, "BOBYQA [LN]"},
             };
 
         public Dictionary<ObjectiveFunctionSumTypeEnum, Tuple<string, string>> ObjectiveFunctionSumTypeEnumNameAndDescription = new Dictionary<ObjectiveFunctionSumTypeEnum, Tuple<string, string>>()

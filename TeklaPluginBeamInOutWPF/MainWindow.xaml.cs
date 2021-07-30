@@ -71,6 +71,7 @@ namespace TeklaPluginInOutWPF
                 beamTable.Columns.Add("FabricationCode", typeof(string));
                 beamTable.Columns.Add("ErectionCode", typeof(string));
                 beamTable.Columns.Add("ErectionComment", typeof(string));
+                beamTable.Columns.Add("Guid", typeof(string));
 
                 // Gets all beams and iterates
                 int beamCounter = 0;
@@ -90,6 +91,7 @@ namespace TeklaPluginInOutWPF
                     bmRow.SetField("Position", bm.Position.ToStringCustom());
                     bmRow.SetField("Profile", bm.Profile.ProfileString);
                     bmRow.SetField("Material", bm.Material.MaterialString);
+                    bmRow.SetField("Guid", bm.Identifier.GUID.ToString());
 
                     // From the user properties...
                     string erectionCode = null;
@@ -145,6 +147,7 @@ namespace TeklaPluginInOutWPF
                 plateTable.Columns.Add("ErectionCode", typeof(string));
                 plateTable.Columns.Add("ErectionComment", typeof(string));
                 plateTable.Columns.Add("ContourPoints", typeof(string));
+                plateTable.Columns.Add("Guid", typeof(string));
 
                 int plateCounter = 0;
                 TSModel.ModelObjectEnumerator allPlates = Model.GetModelObjectSelector().GetAllObjectsWithType(TSModel.ModelObject.ModelObjectEnum.CONTOURPLATE);
@@ -164,6 +167,7 @@ namespace TeklaPluginInOutWPF
                     plateRow.SetField("Material", pl.Material.MaterialString);
                     plateRow.SetField("Position", pl.Position.ToStringCustom());
                     plateRow.SetField("ContourPoints", pl.Contour.ToStringCustom());
+                    plateRow.SetField("Guid", pl.Identifier.GUID.ToString());
 
                     string erectionCode = null;
                     if (pl.GetUserProperty("ERECTION_CODE", ref erectionCode))

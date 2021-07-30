@@ -8,9 +8,13 @@
     <System:Boolean x:Key="True">True</System:Boolean>
     <System:Boolean x:Key="False">False</System:Boolean>
 
+    <!--  CONVERTERS  -->
     <cv:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+    <cv:StringDirectoryPathValidAndAccessible_ToBool x:Key="StringDirectoryPathValidAndAccessible_ToBool" />
+    <cv:StringFilePathValidAndAccessible_ToBool x:Key="StringFilePathValidAndAccessible_ToBool" />
     <cv:VisibilityToBool_FalseHidden_Converter x:Key="VisibilityToBool_FalseHidden_Converter" />
 
+    <!--  BASIC COLORS  -->
     <Color x:Key="EmsDarkBlueColor">#FF414163</Color>
     <SolidColorBrush x:Key="EmsDarkBlueSolidBrush" Color="{DynamicResource EmsDarkBlueColor}" />
 
@@ -26,11 +30,25 @@
     <Color x:Key="EmsFaintGrayColor">#FFf5f5f5</Color>
     <SolidColorBrush x:Key="EmsFaintGraySolidBrush" Color="{DynamicResource EmsFaintGrayColor}" />
 
-
-
     <Color x:Key="EmsExplanationColor">Gray</Color>
     <SolidColorBrush x:Key="EmsExplanationSolidBrush" Color="{DynamicResource EmsExplanationColor}" />
 
+    <SolidColorBrush x:Key="EmsPanelBorder_Green" Color="Green" />
+    <SolidColorBrush x:Key="EmsPanelBackground_Green" Color="#dbf5ce" />
+
+    <SolidColorBrush x:Key="EmsPanelBorder_Red" Color="DarkRed" />
+    <SolidColorBrush x:Key="EmsPanelBackground_Red" Color="LightSalmon" />
+
+    <SolidColorBrush x:Key="EmsPanelBorder_Yellow" Color="DarkOrange" />
+    <SolidColorBrush x:Key="EmsPanelBackground_Yellow" Color="LightGoldenrodYellow" />
+
+    <SolidColorBrush x:Key="EmsPanelBorder_Gray" Color="Gray" />
+    <SolidColorBrush x:Key="EmsPanelBackground_Gray" Color="LightGray" />
+
+    <SolidColorBrush x:Key="EmsPanelBorder_LightGray" Color="#FFbfbfbf" />
+    <SolidColorBrush x:Key="EmsPanelBackground_LightGray" Color="#FFf5f5f5" />
+
+    <!--  Changing the Default height of some components so that they align nicely  -->
     <System:Double x:Key="EmsDefaultButtonHeight">26</System:Double>
     <System:Double x:Key="EmsDefaultTextBoxHeight">24</System:Double>
 
@@ -40,6 +58,7 @@
         <Setter Property="Foreground" Value="{DynamicResource EmsExplanationSolidBrush}" />
         <Setter Property="FontFamily" Value="Candara" />
     </Style>
+
 
     <Style x:Key="Blue_GroupBox" TargetType="GroupBox">
         <Style.Triggers>
@@ -193,8 +212,8 @@
         <Setter Property="Validation.ErrorTemplate" Value="{StaticResource EmptyValTemplate}" />
         <Style.Triggers>
             <Trigger Property="Validation.HasError" Value="true">
-                <Setter Property="BorderBrush" Value="Red" />
-                <Setter Property="Background" Value="LightPink" />
+                <Setter Property="BorderBrush" Value="{StaticResource EmsPanelBorder_Red}" />
+                <Setter Property="Background" Value="{StaticResource EmsPanelBackground_Red}" />
                 <Setter Property="ToolTip" Value="{Binding RelativeSource={x:Static RelativeSource.Self}, Path=(Validation.Errors)/ErrorContent}" />
             </Trigger>
         </Style.Triggers>

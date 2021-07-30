@@ -1,0 +1,34 @@
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\bin\Debug\Tekla Tools.exe.config
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\bin\Debug\Tekla Tools.exe
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\bin\Debug\Tekla Tools.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\bin\Debug\BaseWPFLibrary.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\bin\Debug\Prism.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\bin\Debug\Sap2000Library.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\bin\Debug\Tekla.Structures.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\bin\Debug\Tekla.Structures.Model.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\bin\Debug\Tekla.Structures.Datatype.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\bin\Debug\Newtonsoft.Json.dll
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\bin\Debug\BaseWPFLibrary.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\bin\Debug\BaseWPFLibrary.dll.config
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\bin\Debug\Sap2000Library.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\bin\Debug\Sap2000Library.dll.config
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\bin\Debug\Prism.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\bin\Debug\Prism.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\bin\Debug\Tekla.Structures.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\bin\Debug\Tekla.Structures.Model.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\bin\Debug\Tekla.Structures.Datatype.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\bin\Debug\Newtonsoft.Json.xml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\obj\Debug\Tekla Tools.csprojAssemblyReference.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\obj\Debug\MainWindow.g.cs
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\obj\Debug\App.g.cs
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\obj\Debug\Tekla Tools_MarkupCompile.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\obj\Debug\Tekla Tools_MarkupCompile.lref
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\obj\Debug\MainWindow.baml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\obj\Debug\Tekla Tools.g.resources
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\obj\Debug\Tekla_Tools.Properties.Resources.resources
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\obj\Debug\Tekla Tools.csproj.GenerateResource.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\obj\Debug\Tekla Tools.csproj.CoreCompileInputs.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\obj\Debug\Tekla Tools.csproj.CopyComplete
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\obj\Debug\Tekla Tools.exe
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\obj\Debug\Tekla Tools.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\obj\Debug\App.baml

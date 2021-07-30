@@ -12,7 +12,6 @@ namespace Sap2000Library.Managers
         public bool ImportFrameSection(string Name, string MatProp, string FileName, string PropName, int Color = -1, string Notes = "", string GUID = "")
         {
             int ret = SapApi.PropFrame.ImportProp(Name, MatProp, FileName, PropName, Color, Notes, GUID);
-
             return ret == 0;
         }
         public bool SetOrAddISection(string Name, string MatProp, double Depth, double TopFlangeWidth, double TopFlangeThickness, double WebThickness, double BottomFlangeWidth, double BottomFlangeThickness, int Color = -1, string Notes = "", string GUID = "")
@@ -50,6 +49,13 @@ namespace Sap2000Library.Managers
         public bool SetOrAddCircle(string Name, string MatProp, double Diameter, int Color = -1, string Notes = "", string GUID = "")
         {
             int ret = SapApi.PropFrame.SetCircle(Name, MatProp, Diameter,
+                Color, Notes, GUID);
+
+            return ret == 0;
+        }
+        public bool SetOrAddRectangle(string Name, string MatProp, double Thickness, double Width, int Color = -1, string Notes = "", string GUID = "")
+        {
+            int ret = SapApi.PropFrame.SetRectangle(Name, MatProp, Thickness, Width,
                 Color, Notes, GUID);
 
             return ret == 0;

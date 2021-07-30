@@ -126,6 +126,11 @@ namespace Emasa_Optimizer.FEA.Results
                         ResultLocation = FeResultLocationEnum.Element;
                         break;
 
+                    case FeResultTypeEnum.Element_Weight:
+                        ResultFamily = FeResultFamilyEnum.Others;
+                        ResultLocation = FeResultLocationEnum.Element;
+                        break;
+
                     case FeResultTypeEnum.Model_EigenvalueBuckling_Mode1Factor:
                     case FeResultTypeEnum.Model_EigenvalueBuckling_Mode2Factor:
                     case FeResultTypeEnum.Model_EigenvalueBuckling_Mode3Factor:
@@ -430,6 +435,10 @@ namespace Emasa_Optimizer.FEA.Results
                             _concernedResultColumnName = "Strain Energy";
                             break;
 
+                        case FeResultTypeEnum.Element_Weight:
+                            _concernedResultColumnName = "Weight (kg)";
+                            break;
+
                         case FeResultTypeEnum.Model_EigenvalueBuckling_Mode1Factor:
                         case FeResultTypeEnum.Model_EigenvalueBuckling_Mode2Factor:
                         case FeResultTypeEnum.Model_EigenvalueBuckling_Mode3Factor:
@@ -568,6 +577,7 @@ Location: {ListDescSH.I.FeResultLocationEnumDescriptions[ResultLocation].Item2}"
         Model_EigenvalueBuckling_Mode1Factor,
         Model_EigenvalueBuckling_Mode2Factor,
         Model_EigenvalueBuckling_Mode3Factor,
+        Element_Weight,
     }
 
     public enum FeResultLocationEnum

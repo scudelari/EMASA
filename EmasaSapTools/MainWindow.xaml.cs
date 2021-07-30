@@ -151,8 +151,6 @@ namespace EmasaSapTools
 
         #endregion
 
-
-
         #region INIT
         public MainWindow()
         {
@@ -188,6 +186,8 @@ namespace EmasaSapTools
             TestBindings.SaveReferenceToElement(Test_StackPanel);
 
             MonitorConstraintsManipulationBindings.SaveReferenceToElement(ConstraintsAddGroupBox);
+
+//            AlignAreaBindings.SaveReferenceToElement();
 
             StatusBarBindings.SaveReferenceToElement(WindowStatusBar);
         }

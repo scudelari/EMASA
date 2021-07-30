@@ -776,6 +776,39 @@
         </Grid>
     </DataTemplate>
 
+    <!--  Gh Output Geometry - Lines - Releases Edit  -->
+    <DataTemplate x:Key="GhOutputGeometry_Setup_ListBox_ItemTemplate_IghElement_HasRelease_Edit">
+        <Grid Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <ContentControl
+                Grid.Column="0"
+                Content="{Binding}"
+                ContentTemplate="{StaticResource Gh_GeometryNameAndType}" />
+
+            <CheckBox
+                Grid.Column="1"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Content="Released"
+                IsChecked="{Binding Release.Released}">
+                <CheckBox.ToolTip>
+                    <GroupBox Header="Releases">
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock>
+                                <Run Text="I-Joint: Warp, RotX, RotY, RotZ" />
+                                <LineBreak />
+                                <Run Text="J-Joint: RotY, RotZ" />
+                            </TextBlock>
+                        </StackPanel>
+                    </GroupBox>
+                </CheckBox.ToolTip>
+            </CheckBox>
+        </Grid>
+    </DataTemplate>
+
     <!--  Problem Quantity Source Two Line Designation = Without the Index Number  -->
     <DataTemplate x:Key="IProblemQuantitySource_Designation" DataType="{x:Type probQuantity:IProblemQuantitySource}">
         <Grid ToolTip="{Binding Wpf_Explanation, Mode=OneWay}">
@@ -1784,7 +1817,14 @@
                     Style="{StaticResource NumberTextBlock}"
                     Text="{Binding LastPoint.ObjectiveFunctionEval, Mode=OneWay, FallbackValue='-', Converter={StaticResource DefaultNumberConverter}}">
                     <TextBlock.ToolTip>
-                        <TextBlock Text="{Binding TotalPointCount, Mode=OneWay, FallbackValue='', StringFormat=Points: {0}}" />
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Text="{Binding LastPoint.ObjectiveFunctionEval, Mode=OneWay, StringFormat={}{0:e9}}" />
+                            <TextBlock Grid.Row="1" Text="{Binding TotalPointCount, Mode=OneWay, FallbackValue='', StringFormat=Points: {0}}" />
+                        </Grid>
                     </TextBlock.ToolTip>
                 </TextBlock>
 
@@ -2121,7 +2161,8 @@
                 Grid.Row="0"
                 Grid.Column="2"
                 Style="{StaticResource NumberTextBlock}"
-                Text="{Binding Value, Converter={StaticResource DefaultNumberConverter}}" />
+                Text="{Binding Value, Converter={StaticResource DefaultNumberConverter}}"
+                ToolTip="{Binding Value, Mode=OneWay, StringFormat={}{0:e9}}" />
         </Grid>
     </DataTemplate>
 
@@ -2196,7 +2237,8 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Style="{StaticResource NumberTextBlock}"
-                    Text="{Binding AggregatedValue, Mode=OneWay, Converter={StaticResource DefaultNumberConverter}}" />
+                    Text="{Binding AggregatedValue, Mode=OneWay, Converter={StaticResource DefaultNumberConverter}}"
+                    ToolTip="{Binding AggregatedValue, Mode=OneWay, StringFormat={}{0:e9}}" />
 
             </Grid>
         </Border>
@@ -2310,7 +2352,8 @@
                     VerticalAlignment="Center"
                     IsHitTestVisible="False"
                     Style="{StaticResource NumberTextBlock}"
-                    Text="{Binding AggregatedValue, Mode=OneWay, Converter={StaticResource DefaultNumberConverter}}" />
+                    Text="{Binding AggregatedValue, Mode=OneWay, Converter={StaticResource DefaultNumberConverter}}"
+                    ToolTip="{Binding AggregatedValue, Mode=OneWay, StringFormat={}{0:e9}}" />
 
             </Grid>
         </Border>
@@ -2507,6 +2550,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition />
+                <RowDefinition />
             </Grid.RowDefinitions>
             <ContentControl
                 Grid.Row="0"
@@ -2516,6 +2560,12 @@
                 Grid.Row="1"
                 Content="{Binding Quantity.QuantityAggregatorOptions}"
                 ContentTemplate="{StaticResource ProblemQuantityAggregator_ReadOnly_Template}" />
+            <TextBlock
+                Grid.Row="2"
+                Margin="0,5,0,0"
+                HorizontalAlignment="Center"
+                Style="{StaticResource NumberTextBlock}"
+                Text="{Binding AggregatedValue, StringFormat={}{0:e9}}" />
         </Grid>
     </DataTemplate>
     <DataTemplate x:Key="PointInputWithSlider_List_ItemTemplate" DataType="{x:Type opt:PointNlParameterInputData}">

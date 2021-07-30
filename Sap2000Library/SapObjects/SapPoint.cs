@@ -911,6 +911,8 @@ namespace Sap2000Library.SapObjects
                 return @"CREATE TABLE JointCoordinates ( Name TEXT, X DOUBLE, Y DOUBLE, Z DOUBLE );";
             }
         }
+
+        public string ClipboardLine => $"{Name},{Point.X},{Point.Y},{Point.Z}";
     }
     public class SapPointEqualityComparerByCoordinates : IEqualityComparer<SapPoint>
     {

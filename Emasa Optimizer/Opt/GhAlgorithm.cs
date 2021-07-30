@@ -562,22 +562,39 @@ namespace Emasa_Optimizer.Opt
             */
 
             // Obtains the Rhino Screenshots
-            try
+
+            // Retry
+            int failCounter = 0;
+            List<(string dir, Image image)> rhinoScreenshots = null;
+            while (true)
             {
-                List<(string dir, Image image)> rhinoScreenshots = RhinoModel.RM.GetScreenshots(AppSS.I.ScreenShotOpt.ImageCapture_ViewDirectionsEnumerable.Select(inEnum => inEnum.ToString()).ToArray());
-                foreach ((string dir, Image image) rhinoScreenshot in rhinoScreenshots)
+                try
                 {
-                    if (!Enum.TryParse(rhinoScreenshot.dir, out ImageCaptureViewDirectionEnum dirEnum)) throw new Exception($"Could not get back the direction enumerate value from its string representation. {rhinoScreenshot.dir}.");
-                    
-                    inSolPoint.ScreenShots.Add(new NlOpt_Point_ScreenShot(
-                        AppSS.I.ScreenShotOpt.SpecialRhinoDisplayScreenshotInstance,
-                        dirEnum, 
-                        rhinoScreenshot.image));
+                    rhinoScreenshots = RhinoModel.RM.GetScreenshots(AppSS.I.ScreenShotOpt.ImageCapture_ViewDirectionsEnumerable.Select(inEnum => inEnum.ToString()).ToArray());
+                    break;
+                }
+                catch (Exception e)
+                {
+                    failCounter++;
+                    if (failCounter >= 2) throw new COMException("Could not get the RhinoScreenshots.", e);
+
+                    try
+                    {
+                        // Re-prepares for image acquisition
+                        RhinoModel.RM.PrepareRhinoViewForImageAcquire();
+                    }
+                    catch (Exception) {}
                 }
             }
-            catch (Exception e)
+            
+            foreach ((string dir, Image image) rhinoScreenshot in rhinoScreenshots)
             {
-                throw new COMException("Could not get the RhinoScreenshots.", e);
+                if (!Enum.TryParse(rhinoScreenshot.dir, out ImageCaptureViewDirectionEnum dirEnum)) throw new Exception($"Could not get back the direction enumerate value from its string representation. {rhinoScreenshot.dir}.");
+                
+                inSolPoint.ScreenShots.Add(new NlOpt_Point_ScreenShot(
+                    AppSS.I.ScreenShotOpt.SpecialRhinoDisplayScreenshotInstance,
+                    dirEnum, 
+                    rhinoScreenshot.image));
             }
 
             sw.Stop();

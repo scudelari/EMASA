@@ -204,14 +204,17 @@ namespace EmasaSapTools.Bindings
                             // Adding the survey points
                             if (row["Type"].ToString().Contains("Work")) continue;
 
+                            // Filters unwanted joints
+                            if (row["SAPPointName"].ToString().EndsWith("T")) continue;
+
                             // Means that the surveyed values were not given
-                            if ((double)row["SX"] == -166800d && (double)row["SY"] == -763200d && (double)row["SZ"] == 0) continue;
+                            if ((double)row["NX"] == -166800d && (double)row["NY"] == -763200d && (double)row["NZ"] == 0) continue;
 
                             // The point already exists
                             if (AppendPoints_IsChecked) 
                                 if (existingPoints.Any(a => a.Name == row["SAPPointName"].ToString())) continue;
 
-                            SapPoint newPoint = S2KModel.SM.PointMan.AddByCoord_ReturnSapEntity((double)row["SX"], (double)row["SY"], (double)row["SZ"], row["SAPPointName"].ToString(), 57);
+                            SapPoint newPoint = S2KModel.SM.PointMan.AddByCoord_ReturnSapEntity((double)row["NX"], (double)row["NY"], (double)row["NZ"], row["SAPPointName"].ToString(), 57);
                             newPoint.AddGroup(groupNamePoint);
                             addedPoints.Add(newPoint);
                         }
@@ -465,8 +468,7 @@ namespace EmasaSapTools.Bindings
 
                     BusyOverlayBindings.I.SetIndeterminate("Reading the Excel Input.");
 
-                    DataSet fromExcel = ExcelHelper.GetDataSetFromExcel(ofd.FileName, new int[] { 0 });
-                    DataTable surveyTable = fromExcel.Tables["SURVEY"];
+                    DataTable surveyTable = ExcelHelper.GetDataSetFromExcel(ofd.FileName, "TEMP_FIXED_SURVEY");
 
                     string GroupNamePoint = $"0-SurveyPoints_{Areas}_{flag}";
                     var surveyPoints = S2KModel.SM.PointMan.GetGroup(GroupNamePoint, true);
@@ -478,67 +480,92 @@ namespace EmasaSapTools.Bindings
                         DataRow dispRow = surveyTable.Rows[i];
                         BusyOverlayBindings.I.UpdateProgress(i, surveyTable.Rows.Count);
 
+                        //if (dispRow["Type"].ToString().Contains("Work")) continue;
+
+                        // Finds the point
+                        SapPoint modelPoint = surveyPoints.FirstOrDefault(a => a.Name == dispRow["Joint"].ToString());
+                        if (modelPoint == null) continue;
+
+                        // Adds the restraint
+                        modelPoint.Restraints = new PointRestraintDef(PointRestraintType.FullyFixed);
+
+                        double delta1 = (double)dispRow["ApplyDeltaX"];
+                        double delta2 = (double)dispRow["ApplyDeltaY"];
+                        double delta3 = (double)dispRow["ApplyDeltaZ"];
+
+                        if (delta1 != 0 || delta2 != 0 || delta3 != 0)
+                        {
+                            // Adds the Joint Load
+                            modelPoint.AddDisplacementLoad(new JointDisplacementLoad()
+                            {
+                                LoadPatternName = "SURVEY",
+                                U1 = delta1,
+                                U2 = delta2,
+                                U3 = delta3
+                            });
+                        }
+
                         // Ignores the items that are not part of the selected area
-                        if (!areas.Any(a => a == (int)dispRow.Field<double>("Area"))) continue;
+                        //if (!areas.Any(a => a == (int)dispRow.Field<double>("Area"))) continue;
 
-                        // Adding the work points
-                        if (WorkRadio_IsChecked)
-                        {
-                            if (dispRow["Type"].ToString().Contains("Srv")) continue;
+                        //// Adding the work points
+                        //if (WorkRadio_IsChecked)
+                        //{
+                        //    if (dispRow["Type"].ToString().Contains("Srv")) continue;
 
-                            // Finds the point
-                            SapPoint modelPoint =
-                                surveyPoints.FirstOrDefault(a => a.Name == dispRow["SAPPointName"].ToString());
-                            if (modelPoint == null)
-                                continue; // Not finding the point is not a bug - it just means that the data was incomplete and thus it wasn't created
+                        //    // Finds the point
+                        //    SapPoint modelPoint =
+                        //        surveyPoints.FirstOrDefault(a => a.Name == dispRow["SAPPointName"].ToString());
+                        //    if (modelPoint == null)
+                        //        continue; // Not finding the point is not a bug - it just means that the data was incomplete and thus it wasn't created
 
-                            // Adds the restraint
-                            modelPoint.Restraints = new PointRestraintDef(PointRestraintType.FullyFixed);
+                        //    // Adds the restraint
+                        //    modelPoint.Restraints = new PointRestraintDef(PointRestraintType.FullyFixed);
 
-                            double delta1 = (double)dispRow["SX"] - (double)dispRow["NX"];
-                            double delta2 = (double)dispRow["SY"] - (double)dispRow["NY"];
-                            double delta3 = (double)dispRow["SZ"] - (double)dispRow["NZ"];
+                        //    double delta1 = (double)dispRow["SX"] - (double)dispRow["NX"];
+                        //    double delta2 = (double)dispRow["SY"] - (double)dispRow["NY"];
+                        //    double delta3 = (double)dispRow["SZ"] - (double)dispRow["NZ"];
 
-                            if (delta1 != 0 || delta2 != 0 || delta3 != 0)
-                            {
-                                // Adds the Joint Load
-                                modelPoint.AddDisplacementLoad(new JointDisplacementLoad()
-                                    {
-                                    LoadPatternName = "SURVEY",
-                                    U1 = delta1,
-                                    U2 = delta2,
-                                    U3 = delta3
-                                    });
-                            }
-                        }
-                        else if (SurveyRadio_IsChecked)
-                        {
-                            if (dispRow["Type"].ToString().Contains("Work")) continue;
+                        //    if (delta1 != 0 || delta2 != 0 || delta3 != 0)
+                        //    {
+                        //        // Adds the Joint Load
+                        //        modelPoint.AddDisplacementLoad(new JointDisplacementLoad()
+                        //            {
+                        //            LoadPatternName = "SURVEY",
+                        //            U1 = delta1,
+                        //            U2 = delta2,
+                        //            U3 = delta3
+                        //            });
+                        //    }
+                        //}
+                        //else if (SurveyRadio_IsChecked)
+                        //{
+                        //    if (dispRow["Type"].ToString().Contains("Work")) continue;
 
-                            // Finds the point
-                            SapPoint modelPoint =
-                                surveyPoints.FirstOrDefault(a => a.Name == dispRow["SAPPointName"].ToString());
-                            if (modelPoint == null) continue;
+                        //    // Finds the point
+                        //    SapPoint modelPoint =
+                        //        surveyPoints.FirstOrDefault(a => a.Name == dispRow["SAPPointName"].ToString());
+                        //    if (modelPoint == null) continue;
 
-                            // Adds the restraint
-                            modelPoint.Restraints = new PointRestraintDef(PointRestraintType.FullyFixed);
+                        //    // Adds the restraint
+                        //    modelPoint.Restraints = new PointRestraintDef(PointRestraintType.FullyFixed);
 
-                            double delta1 = (double)dispRow["FieldX"] - (double)dispRow["SX"];
-                            double delta2 = (double)dispRow["FieldY"] - (double)dispRow["SY"];
-                            double delta3 = (double)dispRow["FieldZ"] - (double)dispRow["SZ"];
+                        //    double delta1 = (double)dispRow["FieldX"] - (double)dispRow["SX"];
+                        //    double delta2 = (double)dispRow["FieldY"] - (double)dispRow["SY"];
+                        //    double delta3 = (double)dispRow["FieldZ"] - (double)dispRow["SZ"];
 
-                            if (delta1 != 0 || delta2 != 0 || delta3 != 0)
-                            {
-                                // Adds the Joint Load
-                                modelPoint.AddDisplacementLoad(new JointDisplacementLoad()
-                                    {
-                                    LoadPatternName = "SURVEY",
-                                    U1 = delta1,
-                                    U2 = delta2,
-                                    U3 = delta3
-                                    });
-                            }
-                        }
+                        //    if (delta1 != 0 || delta2 != 0 || delta3 != 0)
+                        //    {
+                        //        // Adds the Joint Load
+                        //        modelPoint.AddDisplacementLoad(new JointDisplacementLoad()
+                        //            {
+                        //            LoadPatternName = "SURVEY",
+                        //            U1 = delta1,
+                        //            U2 = delta2,
+                        //            U3 = delta3
+                        //            });
+                        //    }
+                        //}
                     }
                 }
 

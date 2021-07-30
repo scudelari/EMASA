@@ -67,7 +67,6 @@ namespace GHComponents
             CurrentValue = reader.GetInt32("CurrentValue");
             return base.Read(reader);
         }
-        
 
         private ToolStripTextBox _varName_ToolStripTextBox = null;
         private ToolStripTextBox _currentValue_ToolStripTextBox = null;

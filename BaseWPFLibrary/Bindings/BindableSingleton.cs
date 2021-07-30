@@ -43,12 +43,14 @@ namespace BaseWPFLibrary.Bindings
                 _instance = (K)Activator.CreateInstance(t, true);
 
                 // Saves a reference to ALL FrameworkElements in the main window that have a NAME
-                if (!string.IsNullOrWhiteSpace(Application.Current.MainWindow.Name)) SaveReferenceToElement(Application.Current.MainWindow);
-                else SaveReferenceToElement(Application.Current.MainWindow, "MainWindow");
-                
-                // Adds a function that will be called when the main window is loaded
-                Application.Current.MainWindow.Loaded += (inSender, inArgs) => StaticOnMainWindowLoaded();
 
+                    if (!string.IsNullOrWhiteSpace(Application.Current.MainWindow.Name)) SaveReferenceToElement(Application.Current.MainWindow);
+                    else SaveReferenceToElement(Application.Current.MainWindow, "MainWindow");
+
+                    // Adds a function that will be called when the main window is loaded
+                    Application.Current.MainWindow.Loaded += (inSender, inArgs) => StaticOnMainWindowLoaded();
+
+                
                 // Calls the SetOrReset method that should have been overwritten
                 _instance.SetOrReset();
             }
@@ -127,7 +129,7 @@ namespace BaseWPFLibrary.Bindings
             catch (Exception e)
             {
 
-                throw;
+                throw e;
             }
         }
 

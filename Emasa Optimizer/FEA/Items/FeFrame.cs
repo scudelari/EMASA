@@ -1,5 +1,7 @@
-﻿using System;
+﻿extern alias r3dm;
+using System;
 using System.Collections.Generic;
+using r3dm::Rhino.Geometry;
 
 namespace Emasa_Optimizer.FEA.Items
 {
@@ -40,6 +42,9 @@ namespace Emasa_Optimizer.FEA.Items
             get => _jJoint;
             set => _jJoint = value;
         }
+
+        public double Length => (new Line(IJoint.Point, JJoint.Point)).Length;
+        public double Mass => (Length * Section.Area * Section.Material.Density);
 
         public List<FeJoint> Joints => new List<FeJoint>() {IJoint, JJoint};
 

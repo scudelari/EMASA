@@ -12,4 +12,3 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\RhinoInterfaceLibrary\obj\Release\R
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\RhinoInterfaceLibrary\obj\Release\RhinoInterfaceLibrary.csproj.CopyComplete
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\RhinoInterfaceLibrary\obj\Release\RhinoInterfaceLibrary.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\RhinoInterfaceLibrary\obj\Release\RhinoInterfaceLibrary.pdb
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\RhinoInterfaceLibrary\obj\Release\RhinoInterfaceLibrary.csprojAssemblyReference.cache

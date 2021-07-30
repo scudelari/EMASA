@@ -37,8 +37,7 @@ namespace GHComponents
             CurrentValue = 1d;
             UpperBound = 10d;
         }
-
-
+        
         // Variables
         private string _variableName;
         public string VariableName
@@ -228,7 +227,6 @@ namespace GHComponents
         {
             m_attributes = new GHFileInputDoubleAttributes(this);
         }
-
     }
 
     public class GHFileInputDoubleAttributes : GH_Attributes<GHEmsInput_DoubleParameter>

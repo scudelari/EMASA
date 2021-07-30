@@ -25,12 +25,10 @@ namespace Emasa_Optimizer.FEA
         public string FeWorkFolder => Path.Combine(AppSS.I.Gh_Alg.GhDataDirPath, "NlOpt", "FeWork");
 
         public abstract void CleanUpDirectory();
-
         protected abstract void InitializeSoftware();
         public abstract void ResetSoftwareData();
         protected abstract void CloseApplication();
 
-        //public abstract void RunAnalysisAndGetResults(List<ResultOutput> inDesiredResults, int inEigenvalueBucklingMode = 0, double inEigenvalueBucklingScaleFactor = double.NaN);
         public abstract void RunAnalysisAndCollectResults(FeModel inModel);
         public abstract void GeneratePointModel(FeModel inModel, string inSaveFolder, string inFileName);
 

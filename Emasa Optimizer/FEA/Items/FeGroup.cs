@@ -26,6 +26,8 @@ namespace Emasa_Optimizer.FEA.Items
             Joints.Add(inJoint);
         }
 
+        public FeRelease Release { get; set; } = null;
+
         #region Equality - Based on Group Name
         public bool Equals(FeGroup other)
             {

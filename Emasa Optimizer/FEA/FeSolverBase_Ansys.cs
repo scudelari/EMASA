@@ -802,14 +802,14 @@ end_exists = 0
             File_EndSection();
 
             File_StartSection("ORDERED KeyPoints");
-            foreach (var feJoint in _model.Joints.OrderBy(a => a.Key))
+            foreach (var feJoint in _model.Joints.OrderBy(a => int.Parse(a.Key)))
             {
                 File_AppendCommandWithComment($"K,{feJoint.Value.Id},{feJoint.Value.Point.X},{feJoint.Value.Point.Y},{feJoint.Value.Point.Z}", $"CSharp Joint ID: {feJoint.Key}");
             }
             File_EndSection();
 
             File_StartSection("ORDERED Lines");
-            foreach (var feFrame in _model.Frames.OrderBy(a => a.Key))
+            foreach (var feFrame in _model.Frames.OrderBy(a => int.Parse(a.Key)))
             {
                 File_AppendCommandWithComment($"L,{feFrame.Value.IJoint.Id},{feFrame.Value.JJoint.Id}", $"CSharp Line ID: {feFrame.Value.Id}");
             }
@@ -864,6 +864,10 @@ end_exists = 0
 
                 Sb.AppendLine();
             }
+            File_EndSection();
+
+            File_StartSection("Frame Releases Assignment");
+            if (_model.Groups.Values.Any(a => a.Release != null && a.Release.Released && a.Frames.Count > 0)) throw new FeSolverException("Ansys solver does not support Releases.");
             File_EndSection();
 
             File_StartSection("Loads");
@@ -1042,6 +1046,7 @@ elemindex = 1 ! The element index in the array
             File_AppendCommandWithComment("KBC,0", "Sets the load application to be ramped.");
             File_AppendCommandWithComment("TIME,1", "Sets the time at the end of this load step.");
             File_AppendCommandWithComment("SOLVE", "Solves the problem");
+
             File_AppendCommandWithComment("/POST1", "Post-Processing Environment");
             File_EndSection();
         }
@@ -1865,6 +1870,10 @@ SET,LIST
                             _writeResultTouchedTypes.Add(FeResultTypeEnum.Model_EigenvalueBuckling_Mode3Factor);
                             break;
 
+                        // Ignores - Calculated in C#
+                        case FeResultTypeEnum.Element_Weight:
+                            break;
+
                         default:
                             throw new ArgumentOutOfRangeException(nameof(inRes.ResultType), inRes.ResultType, "The family other does not contain the given Result Type.");
                     }
@@ -2045,6 +2054,8 @@ LPLOT ");
             // It is a NORMAL Result
             else if (inProbQuantSource is FeResultClassification inRes)
             {
+                if (inRes.ResultType == FeResultTypeEnum.Element_Weight) return;
+
                 // For each of the directions
                 foreach (ImageCaptureViewDirectionEnum imageCaptureViewDirectionEnum in AppSS.I.ScreenShotOpt.ImageCapture_ViewDirectionsEnumerable)
                 {
@@ -2124,8 +2135,6 @@ PNGR,TMOD,1
                             File_AppendCommandWithComment($"/GLINE,1,-1", "Hide mesh lines in plots");
                             Sb.AppendLine($"PLNSOL, S,EQV, {undefShape},1.0 ");
                             break;
-
-
 
                         case FeResultTypeEnum.Nodal_Displacement_Ux:
                             File_AppendCommandWithComment($"/GLINE,1,-1", "Hide mesh lines in plots");
@@ -3434,6 +3443,8 @@ PNGR,TMOD,1
             // Checks the Selected Results
             foreach (FeResultClassification feResult in AppSS.I.FeOpt.Wpf_SelectedFiniteElementResultsForOutput.OfType<FeResultClassification>())
             {
+                if (feResult.ResultType == FeResultTypeEnum.Element_Weight) continue;
+
                 // The image file name does match this selected result - skip
                 if (!fileName.Contains(feResult.ScreenShotFileName)) continue;
 

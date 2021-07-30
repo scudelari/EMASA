@@ -67,7 +67,7 @@ namespace Sap2000Library
         {
             lock (_lockThis)
             {
-                if (_mainInstance == null) _mainInstance = StartNewInstance(inUnits, isVisible);
+                if (_mainInstance == null || SM._sapInstance == null) _mainInstance = StartNewInstance(inUnits, isVisible);
             }
         }
 
@@ -130,6 +130,20 @@ namespace Sap2000Library
             {
                 cHelper helper = new Helper();
                 return new S2KModel(helper.GetObject("CSI.SAP2000.API.SapObject"));
+            }
+            catch (Exception ex)
+            {
+                throw new S2KHelperException("Could not get a running instance of SAP2000.", ex);
+            }
+        }
+
+        public static bool IsThereARunningInstance()
+        {
+            try
+            {
+                cHelper helper = new Helper();
+                cOAPI oapi = helper.GetObject("CSI.SAP2000.API.SapObject");
+                return true;
             }
             catch (Exception ex)
             {
@@ -204,10 +218,8 @@ namespace Sap2000Library
             _otherInstances.Add(newInstance);
             return _otherInstances.Count - 1;
         }
-
-
+        
         private cOAPI _sapInstance;
-
         private cOAPI SapInstance
         {
             get => _sapInstance;
@@ -242,8 +254,7 @@ namespace Sap2000Library
             get => SapApi.GetPresentUnits();
             set => SapApi.SetPresentUnits(value);
         }
-
-
+        
         /// <summary>
         /// Basic constructor that initializes the managers
         /// </summary>
@@ -287,9 +298,7 @@ namespace Sap2000Library
         public AnalysisManager AnalysisMan { get; }
         public ResultManager ResultMan { get; }
         public SteelDesignManager SteelDesignMan { get; }
-
-
-
+        
         private bool _isCurrentlyVisible = true;
         private object visibleLocker = new object();
 

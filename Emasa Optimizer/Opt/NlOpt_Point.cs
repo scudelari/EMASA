@@ -387,7 +387,7 @@ namespace Emasa_Optimizer.Opt
                 {
                     case Quantity_FunctionObjectiveEnum.Target:
                         {
-                            double tmp = quantity_aggregate_value - quantity_Output.Key.FunctionObjective_TargetValue;
+                            double tmp = Math.Abs(quantity_aggregate_value - quantity_Output.Key.FunctionObjective_TargetValue);
                             switch (AppSS.I.NlOptOpt.ObjectiveFunctionSumType)
                             {
                                 case ObjectiveFunctionSumTypeEnum.Simple:
@@ -430,15 +430,15 @@ namespace Emasa_Optimizer.Opt
 
                     case Quantity_FunctionObjectiveEnum.Maximize:
                         {
-                            double tmp = quantity_aggregate_value;
+                            double tmp = -quantity_aggregate_value;
                             switch (AppSS.I.NlOptOpt.ObjectiveFunctionSumType)
                             {
                                 case ObjectiveFunctionSumTypeEnum.Simple:
-                                    eval -= tmp;
+                                    eval += tmp;
                                     break;
 
                                 case ObjectiveFunctionSumTypeEnum.Squares:
-                                    eval -= (tmp * tmp);
+                                    eval += (tmp * tmp);
                                     break;
 
                                 // An unexpected value of the enum
@@ -480,99 +480,142 @@ namespace Emasa_Optimizer.Opt
         {
             get
             {
+                int minIndex = 4;
+
                 // Creates the list
                 if (_stopCriteriaStatuses == null)
                 {
                     List<StopCriteriaStatus> list = new List<StopCriteriaStatus>();
 
-                    // Maximum iterations
-                    list.Add(new StopCriteriaStatus()
-                        {
-                        PreviousValue = PreviousPoint != null ? (double)PreviousPoint.PointIndex : double.NaN,
-                        CurrentValue = (double)PointIndex,
-                        CriteriaValue = (double)PointIndex,
-                        IsActive = AppSS.I.NlOptOpt.IsOn_MaximumIterations,
-                        Limit = (double)AppSS.I.NlOptOpt.MaximumIterations,
-                        Name = ListDescSH.I.StopCriteriaTypeEnumDescriptions[StopCriteriaTypeEnum.Iterations],
-                        StopCriteriaType = StopCriteriaTypeEnum.Iterations
-                    });
-
-                    // Maximum time
-                    list.Add(new StopCriteriaStatus()
-                        {
-                        PreviousValue = PreviousPoint != null ? PreviousPoint.SinceNlOptStartTimeSpan.TotalSeconds : double.NaN,
-                        CurrentValue = SinceNlOptStartTimeSpan.TotalSeconds,
-                        CriteriaValue = SinceNlOptStartTimeSpan.TotalSeconds,
-                        IsActive = AppSS.I.NlOptOpt.IsOn_MaximumRunTime,
-                        Limit = AppSS.I.NlOptOpt.MaximumRunTime,
-                        Name = ListDescSH.I.StopCriteriaTypeEnumDescriptions[StopCriteriaTypeEnum.Time],
-                        StopCriteriaType = StopCriteriaTypeEnum.Time
-                        });
-
-                    // Function Stop Value
-                    list.Add(new StopCriteriaStatus()
-                        {
-                        PreviousValue = PreviousPoint != null ? PreviousPoint.ObjectiveFunctionEval : double.NaN,
-                        CurrentValue = ObjectiveFunctionEval,
-                        CriteriaValue = ObjectiveFunctionEval,
-                        IsActive = AppSS.I.NlOptOpt.IsOn_StopValueOnObjectiveFunction && PointIndex > 1,
-                        Limit = AppSS.I.NlOptOpt.StopValueOnObjectiveFunction,
-                        Name = ListDescSH.I.StopCriteriaTypeEnumDescriptions[StopCriteriaTypeEnum.FunctionValue],
-                        StopCriteriaType = StopCriteriaTypeEnum.FunctionValue
-                    });
-
-                    // Function Absolute Change
-                    list.Add(new StopCriteriaStatus()
-                        {
-                        PreviousValue = PreviousPoint != null ? PreviousPoint.ObjectiveFunctionEval : double.NaN,
-                        CurrentValue = ObjectiveFunctionEval,
-                        CriteriaValue = PreviousPoint != null ? Math.Abs(ObjectiveFunctionEval - PreviousPoint.ObjectiveFunctionEval) : Math.Abs(ObjectiveFunctionEval),
-                        IsActive = AppSS.I.NlOptOpt.IsOn_AbsoluteToleranceOnFunctionValue && PointIndex > 1,
-                        Limit = AppSS.I.NlOptOpt.AbsoluteToleranceOnFunctionValue,
-                        Name = ListDescSH.I.StopCriteriaTypeEnumDescriptions[StopCriteriaTypeEnum.FunctionAbsoluteChange],
-                        StopCriteriaType = StopCriteriaTypeEnum.FunctionAbsoluteChange
-                    });
-
-                    // Function Relative Change
-                    list.Add(new StopCriteriaStatus()
-                        {
-                        PreviousValue = PreviousPoint != null ? PreviousPoint.ObjectiveFunctionEval : double.NaN,
-                        CurrentValue = ObjectiveFunctionEval,
-                        CriteriaValue = PreviousPoint != null ? Math.Abs((ObjectiveFunctionEval - PreviousPoint.ObjectiveFunctionEval) / PreviousPoint.ObjectiveFunctionEval) : 1d,
-                        IsActive = AppSS.I.NlOptOpt.IsOn_RelativeToleranceOnFunctionValue && PointIndex > 1,
-                        Limit = AppSS.I.NlOptOpt.RelativeToleranceOnFunctionValue,
-                        Name = ListDescSH.I.StopCriteriaTypeEnumDescriptions[StopCriteriaTypeEnum.FunctionRelativeChange],
-                        StopCriteriaType = StopCriteriaTypeEnum.FunctionRelativeChange
-                    });
-
-                    // Parameter Absolute Change
-                    for (int i = 0; i < InputValuesAsDoubleArray.Length; i++)
+                    if (AppSS.I.NlOptOpt.IsOn_MaximumIterations)
                     {
+                        // Maximum iterations
                         list.Add(new StopCriteriaStatus()
                             {
-                            PreviousValue = PreviousPoint != null ? PreviousPoint.InputValuesAsDoubleArray[i] : double.NaN,
-                            CurrentValue = InputValuesAsDoubleArray[i],
-                            CriteriaValue = PreviousPoint != null ? Math.Abs(InputValuesAsDoubleArray[i] - PreviousPoint.InputValuesAsDoubleArray[i]) : Math.Abs(InputValuesAsDoubleArray[i]),
-                            IsActive = AppSS.I.NlOptOpt.IsOn_AbsoluteToleranceOnParameterValue && PointIndex > 1,
-                            Limit = AppSS.I.NlOptOpt.AbsoluteToleranceOnParameterValue[i].ParameterTolerance,
-                            Name = AppSS.I.Gh_Alg.GetInputParameterNameByIndex(i),
-                            StopCriteriaType = StopCriteriaTypeEnum.ParameterAbsoluteChange
+                            PreviousValue = PreviousPoint != null ? (double)PreviousPoint.PointIndex : double.NaN,
+                            CurrentValue = (double)PointIndex,
+                            CriteriaValue = (double)PointIndex,
+                            IsActive = true,
+                            Limit = (double)AppSS.I.NlOptOpt.MaximumIterations,
+                            Name = ListDescSH.I.StopCriteriaTypeEnumDescriptions[StopCriteriaTypeEnum.Iterations],
+                            StopCriteriaType = StopCriteriaTypeEnum.Iterations
                             });
                     }
 
-                    // Parameter Relative Change
-                    for (int i = 0; i < InputValuesAsDoubleArray.Length; i++)
+                    if (AppSS.I.NlOptOpt.IsOn_MaximumRunTime)
                     {
+                        // Maximum time
                         list.Add(new StopCriteriaStatus()
                             {
-                            PreviousValue = PreviousPoint != null ? PreviousPoint.InputValuesAsDoubleArray[i] : double.NaN,
-                            CurrentValue = InputValuesAsDoubleArray[i],
-                            CriteriaValue = PreviousPoint != null ? Math.Abs((InputValuesAsDoubleArray[i] - PreviousPoint.InputValuesAsDoubleArray[i]) / PreviousPoint.InputValuesAsDoubleArray[i]) : Math.Abs(1d),
-                            IsActive = AppSS.I.NlOptOpt.IsOn_RelativeToleranceOnParameterValue && PointIndex > 1,
-                            Limit = AppSS.I.NlOptOpt.RelativeToleranceOnParameterValue,
-                            Name = AppSS.I.Gh_Alg.GetInputParameterNameByIndex(i),
-                            StopCriteriaType = StopCriteriaTypeEnum.ParameterRelativeChange
-                        });
+                            PreviousValue = PreviousPoint != null ? PreviousPoint.SinceNlOptStartTimeSpan.TotalSeconds : double.NaN,
+                            CurrentValue = SinceNlOptStartTimeSpan.TotalSeconds,
+                            CriteriaValue = SinceNlOptStartTimeSpan.TotalSeconds,
+                            IsActive = true,
+                            Limit = AppSS.I.NlOptOpt.MaximumRunTime,
+                            Name = ListDescSH.I.StopCriteriaTypeEnumDescriptions[StopCriteriaTypeEnum.Time],
+                            StopCriteriaType = StopCriteriaTypeEnum.Time
+                            });
+                    }
+
+                    if (AppSS.I.NlOptOpt.IsOn_StopValueOnObjectiveFunction && PointIndex > minIndex)
+                    {                    
+                        // Function Stop Value
+                        list.Add(new StopCriteriaStatus()
+                            {
+                            PreviousValue = PreviousPoint != null ? PreviousPoint.ObjectiveFunctionEval : double.NaN,
+                            CurrentValue = ObjectiveFunctionEval,
+                            CriteriaValue = ObjectiveFunctionEval,
+                            IsActive = true,
+                            Limit = AppSS.I.NlOptOpt.StopValueOnObjectiveFunction,
+                            Name = ListDescSH.I.StopCriteriaTypeEnumDescriptions[StopCriteriaTypeEnum.FunctionValue],
+                            StopCriteriaType = StopCriteriaTypeEnum.FunctionValue
+                            });
+                    }
+
+
+                    if (AppSS.I.NlOptOpt.IsOn_AbsoluteToleranceOnFunctionValue && PointIndex > minIndex)
+                    {
+                        // Function Absolute Change
+                        list.Add(new StopCriteriaStatus()
+                        {
+                            PreviousValue = PreviousPoint != null ? PreviousPoint.ObjectiveFunctionEval : double.NaN,
+                            CurrentValue = ObjectiveFunctionEval,
+                            CriteriaValue = PreviousPoint != null ? Math.Abs(ObjectiveFunctionEval - PreviousPoint.ObjectiveFunctionEval) : Math.Abs(ObjectiveFunctionEval),
+                            IsActive = true,
+                            Limit = AppSS.I.NlOptOpt.AbsoluteToleranceOnFunctionValue,
+                            Name = ListDescSH.I.StopCriteriaTypeEnumDescriptions[StopCriteriaTypeEnum.FunctionAbsoluteChange],
+                            StopCriteriaType = StopCriteriaTypeEnum.FunctionAbsoluteChange
+                        }); 
+                    }
+
+
+                    if (AppSS.I.NlOptOpt.IsOn_RelativeToleranceOnFunctionValue && PointIndex > minIndex)
+                    {
+                        // Function Relative Change
+                        list.Add(new StopCriteriaStatus()
+                        {
+                            PreviousValue = PreviousPoint != null ? PreviousPoint.ObjectiveFunctionEval : double.NaN,
+                            CurrentValue = ObjectiveFunctionEval,
+                            CriteriaValue = PreviousPoint != null ? Math.Abs((ObjectiveFunctionEval - PreviousPoint.ObjectiveFunctionEval) / PreviousPoint.ObjectiveFunctionEval) : 1d,
+                            IsActive = true,
+                            Limit = AppSS.I.NlOptOpt.RelativeToleranceOnFunctionValue,
+                            Name = ListDescSH.I.StopCriteriaTypeEnumDescriptions[StopCriteriaTypeEnum.FunctionRelativeChange],
+                            StopCriteriaType = StopCriteriaTypeEnum.FunctionRelativeChange
+                        }); 
+                    }
+
+                    if (AppSS.I.NlOptOpt.IsOn_AbsoluteToleranceOnParameterValue && PointIndex > minIndex)
+                    {
+                        // All must explode
+                        List<StopCriteriaStatus> tmpList = new List<StopCriteriaStatus>();
+
+                        // Parameter Absolute Change
+                        for (int i = 0; i < InputValuesAsDoubleArray.Length; i++)
+                        {
+                            list.Add(new StopCriteriaStatus()
+                                {
+                                PreviousValue = PreviousPoint != null ? PreviousPoint.InputValuesAsDoubleArray[i] : double.NaN,
+                                CurrentValue = InputValuesAsDoubleArray[i],
+                                CriteriaValue = PreviousPoint != null ? Math.Abs(InputValuesAsDoubleArray[i] - PreviousPoint.InputValuesAsDoubleArray[i]) : Math.Abs(InputValuesAsDoubleArray[i]),
+                                IsActive = true,
+                                Limit = AppSS.I.NlOptOpt.AbsoluteToleranceOnParameterValue[i].ParameterTolerance,
+                                Name = AppSS.I.Gh_Alg.GetInputParameterNameByIndex(i),
+                                StopCriteriaType = StopCriteriaTypeEnum.ParameterAbsoluteChange
+                                });
+                        }
+
+                        // Did all reach the limit?
+                        if (tmpList.All(sc => sc.LimitReached))
+                        {
+                            list.AddRange(tmpList);
+                        }
+                    }
+
+                    if (AppSS.I.NlOptOpt.IsOn_RelativeToleranceOnParameterValue && PointIndex > minIndex)
+                    {
+                        // All must explode
+                        List<StopCriteriaStatus> tmpList = new List<StopCriteriaStatus>();
+
+                        // Parameter Relative Change
+                        for (int i = 0; i < InputValuesAsDoubleArray.Length; i++)
+                        {
+                            tmpList.Add(new StopCriteriaStatus()
+                            {
+                                PreviousValue = PreviousPoint != null ? PreviousPoint.InputValuesAsDoubleArray[i] : double.NaN,
+                                CurrentValue = InputValuesAsDoubleArray[i],
+                                CriteriaValue = PreviousPoint != null ? Math.Abs((InputValuesAsDoubleArray[i] - PreviousPoint.InputValuesAsDoubleArray[i]) / PreviousPoint.InputValuesAsDoubleArray[i]) : Math.Abs(1d),
+                                IsActive = true,
+                                Limit = AppSS.I.NlOptOpt.RelativeToleranceOnParameterValue,
+                                Name = AppSS.I.Gh_Alg.GetInputParameterNameByIndex(i),
+                                StopCriteriaType = StopCriteriaTypeEnum.ParameterRelativeChange
+                            });
+                        } 
+
+                        // Did all reach the limit?
+                        if (tmpList.All(sc => sc.LimitReached))
+                        {
+                            list.AddRange(tmpList);
+                        }
                     }
 
                     // Saves the list
@@ -1241,6 +1284,29 @@ namespace Emasa_Optimizer.Opt
                                     }
                                         break;
 
+                                    case FeResultTypeEnum.Element_Weight:
+                                    {
+                                        // Creates the relevant columns
+                                        dt.Columns.Add("Frame Id", typeof(string));
+                                        dt.Columns.Add("Element Id", typeof(string));
+                                        dt.Columns.Add("Element Length (m)");
+                                        dt.Columns.Add("Weight (kg)", typeof(double));
+
+                                        foreach (KeyValuePair<string, FeMeshBeamElement> feModelMeshBeamElement in FeModel.MeshBeamElements)
+                                        {
+                                            DataRow row = dt.NewRow();
+                                            int i = 0;
+                                            row[i++] = feModelMeshBeamElement.Value.OwnerFrame.Id;
+                                            row[i++] = feModelMeshBeamElement.Value.Id;
+                                            row[i++] = feModelMeshBeamElement.Value.Length;
+                                            row[i++] = feModelMeshBeamElement.Value.Mass;
+
+                                            dt.Rows.Add(row);
+                                        }
+
+                                    }
+                                        break;
+
                                     default:
                                         throw new ArgumentOutOfRangeException();
                                 }
@@ -1820,7 +1886,7 @@ namespace Emasa_Optimizer.Opt
         {
             get
             {
-                return $"{DefaultNumberConverter.GetString(Value)} [{DefaultNumberConverter.GetString(MinLimit)} -- {DefaultNumberConverter.GetString(MaxLimit)}]";
+                return $"{Value:e9} [{DefaultNumberConverter.GetString(MinLimit)} -- {DefaultNumberConverter.GetString(MaxLimit)}]";
             }
         }
     }

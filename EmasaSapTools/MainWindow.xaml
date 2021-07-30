@@ -718,6 +718,60 @@
                                 </StackPanel>
                             </GroupBox>
                         </StackPanel>
+                        <Grid Grid.Column="1">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <GroupBox
+                                d:DataContext="{d:DesignInstance bindings:AlignAreaBindings}"
+                                DataContext="{x:Static bindings:AlignAreaBindings.I}"
+                                Header="Move Joints to Plane By Changing Z ONLY"
+                                Style="{StaticResource Blue_GroupBox}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Grid.Row="0" Foreground="DimGray">
+                                        <Run Text="1- Select 3 Joints and Hit 'Set Plane'." />
+                                        <LineBreak />
+                                        <Run Text="2- Select the Joints to Align and Hit 'Move'." />
+                                    </TextBlock>
+                                    <Grid Grid.Row="1" Margin="5">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Button
+                                            Grid.Column="0"
+                                            Padding="5,0"
+                                            HorizontalAlignment="Center"
+                                            Click="{eb:MethodBinding {Binding},
+                                                                     PointsAlignZ_GetJointsForPlane}"
+                                            Content="Set Plane" />
+                                        <Button
+                                            Grid.Column="1"
+                                            Padding="5,0"
+                                            HorizontalAlignment="Center"
+                                            Click="{eb:MethodBinding {Binding},
+                                                                     PointsAlignZ_Move}"
+                                            Content="Move"
+                                            IsEnabled="{Binding PointsAlignZ_AlignIsEnabled}" />
+                                        <Button Grid.Column="2"
+                                                Padding="5,0"
+                                                HorizontalAlignment="Center"
+                                                Click="{eb:MethodBinding {Binding},
+                                                                     PointsAlignZ_NewCoordTableToClipboard}"
+                                                Content="To Clipboard"
+                                                ToolTip="Use this one if areas are involved."
+                                                IsEnabled="{Binding PointsAlignZ_AlignIsEnabled}"/>
+                                    </Grid>
+                                </Grid>
+                            </GroupBox>
+                        </Grid>
                     </Grid>
                 </TabItem>
                 <TabItem
@@ -2194,7 +2248,11 @@
                                                     TextWrapping="Wrap">
                                                     <Run Foreground="DarkSlateBlue" Text="Select a list of elements whose names are on the clipboard.The names must be separated by lines, tabs or from Excel." />
                                                 </TextBlock>
-                                                <CheckBox Content="Invert - Select NOT in List" HorizontalAlignment="Center" Margin="0 0 0 5" IsChecked="{Binding SelectMisc_FromClipboard_SelectNotInListIsChecked}" />
+                                                <CheckBox
+                                                    Margin="0,0,0,5"
+                                                    HorizontalAlignment="Center"
+                                                    Content="Invert - Select NOT in List"
+                                                    IsChecked="{Binding SelectMisc_FromClipboard_SelectNotInListIsChecked}" />
                                                 <UniformGrid Margin="5,0,5,5" Columns="3">
                                                     <CheckBox Content="Joints" IsChecked="{Binding SelectMisc_FromClipboard_JointIsChecked}" />
                                                     <CheckBox Content="Frames" IsChecked="{Binding SelectMisc_FromClipboard_FrameIsChecked}" />
@@ -3062,7 +3120,7 @@
                                 <Button
                                     Margin="5"
                                     Command="{Binding SurveyLinkToCanopyCommand}"
-                                    Content="Link Points to Canopy" />
+                                    Content="Link Points to Canopy"/>
                                 <Button
                                     Margin="5"
                                     Command="{Binding SurveyAddFixedSupportWithDisplacementsCommand}"
