@@ -116,7 +116,6 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\System.Ru
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\System.Threading.Tasks.Extensions.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\System.ValueTuple.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Debug\MathNet.Spatial.xml
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Debug\Emasa Optimizer.csprojAssemblyReference.cache
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Debug\MainWindow.g.cs
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Debug\App.g.cs
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Debug\GeneratedInternalTypeHelper.g.cs
@@ -132,3 +131,4 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Debug\Emasa Opt
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Debug\Emasa Optimizer.csproj.CopyComplete
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Debug\Emasa Optimizer.exe
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Debug\Emasa Optimizer.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Debug\Emasa Optimizer.csproj.AssemblyReference.cache

@@ -55,7 +55,6 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\Beams Tekla to S2K\bin\Debug\Sap200
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Beams Tekla to S2K\bin\Debug\Sap2000Library.dll.config
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Beams Tekla to S2K\bin\Debug\MathNet.Numerics.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Beams Tekla to S2K\bin\Debug\MathNet.Spatial.xml
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\Beams Tekla to S2K\obj\Debug\Beams Tekla to S2K.csprojAssemblyReference.cache
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Beams Tekla to S2K\obj\Debug\MainWindow.baml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Beams Tekla to S2K\obj\Debug\MainWindow.g.cs
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Beams Tekla to S2K\obj\Debug\App.g.cs
@@ -67,3 +66,4 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\Beams Tekla to S2K\obj\Debug\Beams 
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Beams Tekla to S2K\obj\Debug\Beams Tekla to S2K.csproj.CopyComplete
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Beams Tekla to S2K\obj\Debug\Beams Tekla to S2K.exe
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Beams Tekla to S2K\obj\Debug\Beams Tekla to S2K.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Beams Tekla to S2K\obj\Debug\Beams Tekla to S2K.csproj.AssemblyReference.cache

@@ -45,7 +45,6 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\bin\Debug\LiveCharts.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\bin\Debug\LiveCharts.Wpf.pdb
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\bin\Debug\LiveCharts.Wpf.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\bin\Debug\MathNet.Spatial.xml
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Debug\WpfApp1.csprojAssemblyReference.cache
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Debug\MainWindow.g.cs
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Debug\App.g.cs
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Debug\WpfApp1_MarkupCompile.cache
@@ -60,3 +59,4 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Debug\WpfApp1.exe
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Debug\WpfApp1.pdb
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Debug\Window1.g.cs
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Debug\Window1.baml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Debug\WpfApp1.csproj.AssemblyReference.cache

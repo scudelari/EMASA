@@ -12,8 +12,8 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\NlOptNewVersion\bin\Debug\NlOptNewV
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\NlOptNewVersion\bin\Debug\NlOptNewVersion.pdb
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\NlOptNewVersion\bin\Debug\NLoptNet.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\NlOptNewVersion\bin\Debug\NLoptNet.pdb
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\NlOptNewVersion\obj\Debug\NlOptNewVersion.csprojAssemblyReference.cache
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\NlOptNewVersion\obj\Debug\NlOptNewVersion.csproj.CoreCompileInputs.cache
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\NlOptNewVersion\obj\Debug\NlOptNewVersion.csproj.CopyComplete
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\NlOptNewVersion\obj\Debug\NlOptNewVersion.exe
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\NlOptNewVersion\obj\Debug\NlOptNewVersion.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\NlOptNewVersion\obj\Debug\NlOptNewVersion.csproj.AssemblyReference.cache

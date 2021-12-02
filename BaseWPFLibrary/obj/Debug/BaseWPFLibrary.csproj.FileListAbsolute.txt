@@ -66,4 +66,4 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Debug\BaseWPFLib
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Debug\BaseWPFLibrary.csproj.CopyComplete
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Debug\BaseWPFLibrary.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Debug\BaseWPFLibrary.pdb
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Debug\BaseWPFLibrary.csprojAssemblyReference.cache
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Debug\BaseWPFLibrary.csproj.AssemblyReference.cache

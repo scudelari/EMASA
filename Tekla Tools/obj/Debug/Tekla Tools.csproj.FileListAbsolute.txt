@@ -18,7 +18,6 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\bin\Debug\Tekla.Structu
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\bin\Debug\Tekla.Structures.Model.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\bin\Debug\Tekla.Structures.Datatype.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\bin\Debug\Newtonsoft.Json.xml
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\obj\Debug\Tekla Tools.csprojAssemblyReference.cache
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\obj\Debug\MainWindow.g.cs
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\obj\Debug\App.g.cs
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\obj\Debug\Tekla Tools_MarkupCompile.cache
@@ -32,3 +31,4 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\obj\Debug\Tekla Tools.c
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\obj\Debug\Tekla Tools.exe
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\obj\Debug\Tekla Tools.pdb
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\obj\Debug\App.baml
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Tekla Tools\obj\Debug\Tekla Tools.csproj.AssemblyReference.cache

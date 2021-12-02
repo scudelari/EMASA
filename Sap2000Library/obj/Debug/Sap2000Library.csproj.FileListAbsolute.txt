@@ -36,7 +36,6 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\Sap2000Library\bin\Debug\MoreLinq.x
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Sap2000Library\bin\Debug\Prism.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Sap2000Library\bin\Debug\System.ValueTuple.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Sap2000Library\bin\Debug\TestStack.White.xml
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\Sap2000Library\obj\Debug\Sap2000Library.csprojAssemblyReference.cache
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Sap2000Library\obj\Debug\Sap2000Library.Properties.Resources.resources
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Sap2000Library\obj\Debug\Sap2000Library.csproj.GenerateResource.cache
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Sap2000Library\obj\Debug\Sap2000Library.csproj.CoreCompileInputs.cache
@@ -44,3 +43,4 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\Sap2000Library\obj\Debug\Sap2000Lib
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Sap2000Library\obj\Debug\Sap2000Library.csproj.CopyComplete
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Sap2000Library\obj\Debug\Sap2000Library.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Sap2000Library\obj\Debug\Sap2000Library.pdb
+C:\Users\EngRafaelSMacedo\source\repos\EMASA\Sap2000Library\obj\Debug\Sap2000Library.csproj.AssemblyReference.cache
