@@ -1,0 +1,6 @@
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\Las to SqLite\obj\Release\Las to SqLite.csproj.AssemblyReference.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\Las to SqLite\obj\Release\Las to SqLite.csproj.SuggestedBindingRedirects.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\Las to SqLite\obj\Release\MainWindow.g.cs
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\Las to SqLite\obj\Release\App.g.cs
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\Las to SqLite\obj\Release\Las to SqLite_MarkupCompile.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\Las to SqLite\obj\Release\Las to SqLite_MarkupCompile.lref

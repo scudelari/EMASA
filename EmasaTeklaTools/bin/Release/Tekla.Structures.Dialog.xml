@@ -2035,12 +2035,6 @@
             </summary>
             <param name="child">child control</param>
         </member>
-        <member name="M:Tekla.Structures.Dialog.UIControls.WpfControlUtil.FindVisualChildren``1(System.Windows.DependencyObject)">
-            <summary>
-            Finds all parent's child controls using VisualTreeHelper.
-            </summary>
-            <param name="obj">parent control</param>
-        </member>
         <member name="M:Tekla.Structures.Dialog.UIControls.WpfControlUtil.ApplyFusionStyle(Tekla.Structures.Dialog.WindowBase@)">
             <summary>
             Applies fusion style to controls if fusion is loaded.

@@ -95,7 +95,6 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\Prism.Wpf
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\Prism.Wpf.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\System.Data.SQLite.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\bin\Release\System.ValueTuple.xml
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Release\EmasaSapTools.csprojAssemblyReference.cache
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Release\EmasaSapTools.csproj.ResolveComReference.cache
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Release\App.baml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Release\MainWindow.g.cs
@@ -110,3 +109,5 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Release\EmasaSapT
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Release\EmasaSapTools.csproj.CopyComplete
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Release\EmasaSapTools.exe
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaSapTools\obj\Release\EmasaSapTools.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\EmasaSapTools\obj\Release\EmasaSapTools.csproj.AssemblyReference.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\EmasaSapTools\obj\Release\EmasaSapTools.csproj.SuggestedBindingRedirects.cache

@@ -15,7 +15,6 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\bin\Release\LiveCharts.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\bin\Release\LiveCharts.Wpf.pdb
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\bin\Release\LiveCharts.Wpf.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\bin\Release\MathNet.Spatial.xml
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Release\WpfApp1.csprojAssemblyReference.cache
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Release\MainWindow.g.cs
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Release\App.g.cs
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Release\WpfApp1_MarkupCompile.cache
@@ -30,3 +29,5 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Release\WpfApp1.exe
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Release\WpfApp1.pdb
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Release\Window1.g.cs
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\WpfApp1\obj\Release\Window1.baml
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\WpfApp1\obj\Release\WpfApp1.csproj.AssemblyReference.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\WpfApp1\obj\Release\WpfApp1.csproj.SuggestedBindingRedirects.cache

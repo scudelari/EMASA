@@ -17,3 +17,4 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\obj\Release\Stepwis
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\obj\Release\StepwiseSpheres.csproj.CopyComplete
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\obj\Release\StepwiseSpheres.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\StepwiseSpheres\obj\Release\StepwiseSpheres.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\StepwiseSpheres\obj\Release\StepwiseSpheres.csproj.AssemblyReference.cache

@@ -127,7 +127,7 @@
       <Project>{D907D606-4B04-474C-82A6-8A8D853968AC}</Project>
       <Name>EmasaSapTools</Name>
     </ProjectReference>
-    <ProjectReference Include="..\S2KHelper\S2KHelper.csproj">
+    <ProjectReference Include="..\Sap2000Library\Sap2000Library.csproj">
       <Project>{BCF8F384-2B33-45E4-8891-B18777152173}</Project>
       <Name>S2KHelper</Name>
       <EmbedInteropTypes>False</EmbedInteropTypes>

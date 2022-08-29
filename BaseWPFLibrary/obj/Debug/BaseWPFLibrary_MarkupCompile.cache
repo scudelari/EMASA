@@ -4,17 +4,17 @@
 library
 C#
 .cs
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Debug\
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\BaseWPFLibrary\obj\Debug\
 BaseWPFLibrary
 none
 false
 DEBUG;TRACE
 
-5103976916
+5-257273781
 
-48194883428
-23673979736
+49-623764502
+23-654936004
 BusyOverlay.xaml;CustomOverlay.xaml;Forms\ExceptionViewer.xaml;MessageOverlay.xaml;ResourceDictionary.xaml;
 
-False
+True
 

@@ -1207,6 +1207,11 @@
         <member name="F:Tekla.Structures.TeklaStructuresInternal.Remoter.ChannelName">
             <summary> Name of the remoting channel to register.</summary>
         </member>
+        <member name="M:Tekla.Structures.TeklaStructuresInternal.Remoter.#cctor">
+            <summary>
+            Constructor for Remoter
+            </summary>
+        </member>
         <member name="M:Tekla.Structures.TeklaStructuresInternal.Remoter.PublishTypes">
             <exclude/>
         </member>
@@ -1240,30 +1245,6 @@
         <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.Default">
             <exclude/>
         </member>
-        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.MarksLearning_ExportData">
-            <exclude/>
-        </member>
-        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.MarksLearning_TrainMemoryTree">
-            <exclude/>
-        </member>
-        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.MarksLearning_Toggle_OnlyPrimaryParts">
-            <exclude/>
-        </member>
-        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.MarksLearning_ExportAllViews">
-            <exclude/>
-        </member>
-        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.MarksLearning_CreateMarks">
-            <exclude/>
-        </member>
-        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.MarksLearning_CreateMarksByMemoryTree">
-            <exclude/>
-        </member>
-        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.MarksLearning_Eval_SetCurrentStateAsTarget">
-            <exclude/>
-        </member>
-        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.MarksLearning_EvaluateCurrentState">
-            <exclude/>
-        </member>
         <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.IdealMatchClone_SetUsageOfTestSource">
             <exclude/>
         </member>
@@ -1271,27 +1252,6 @@
             <exclude/>
         </member>
         <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.IdealMatchClone_CreateDrawingsByBestTemplates">
-            <exclude/>
-        </member>
-        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.ViewClustering_ClusterViewsInDrawings">
-            <exclude/>
-        </member>
-        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.ViewClustering_OnlyCollectData">
-            <exclude/>
-        </member>
-        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.ViewClustering_OnlyClusterViews">
-            <exclude/>
-        </member>
-        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.ViewClustering_GenerateClusteringPictures">
-            <exclude/>
-        </member>
-        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.ViewClustering_ExportViewsByClusters">
-            <exclude/>
-        </member>
-        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.ViewClustering_GetClustersForView">
-            <exclude/>
-        </member>
-        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.ViewClustering_CloneToTarget">
             <exclude/>
         </member>
         <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.MarkCollision_FindCollisions_AllDrawings">
@@ -1330,46 +1290,7 @@
         <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.CloneEvaluation_DisplayIdMapperScore">
             <exclude/>
         </member>
-        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.AssemblySimilarity_AssemblySimilarityComputeTokens">
-            <exclude/>
-        </member>
-        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.CopyObjects_CopyAllObjects">
-            <exclude/>
-        </member>
-        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.CreateView_CreateBasicView">
-            <exclude/>
-        </member>
-        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.CreateView_TakeSnapshot">
-            <exclude/>
-        </member>
-        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.CreateView_PourView">
-            <exclude/>
-        </member>
-        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.CreateView_TakePourSnapshot">
-            <exclude/>
-        </member>
-        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.AssemblySimilarity_CloneDrawing">
-            <exclude/>
-        </member>
-        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.ChangeFabricationDrawing_Threshold">
-            <exclude/>
-        </member>
-        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.CreateFabricationDrawing">
-            <exclude/>
-        </member>
-        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.AssemblySimilarity_PerformNumbering">
-            <exclude/>
-        </member>
-        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.CreateComponentByGuids">
-            <exclude/>
-        </member>
-        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.CreateJointView_TakeSnapshot">
-            <exclude/>
-        </member>
-        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.ConnectionSimilarity_CollectConnectionData">
-            <exclude/>
-        </member>
-        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.CreateBasicConnectionView">
+        <member name="F:Tekla.Structures.TeklaStructuresInternal.dotTestingFeaturesCommandEnum_e.TrackingModelProperties_ReportModelQuantities">
             <exclude/>
         </member>
         <member name="T:Tekla.Structures.TeklaStructuresInternal.TestingFeaturesHandler">
@@ -7969,6 +7890,9 @@
         <member name="M:Tekla.Structures.Internal.FormWrapperFunctionality.Invoke6vvvvvv``7(``0,``1,``2,``3,``4,``5,Tekla.Structures.Internal.WrapperFunctionalityBase.TargetMethod6vvvvvv{``0,``1,``2,``3,``4,``5,``6})">
             <exclude/>
         </member>
+        <member name="M:Tekla.Structures.Internal.FormWrapperFunctionality.Invoke8vvvvvvvv``9(``0,``1,``2,``3,``4,``5,``6,``7,Tekla.Structures.Internal.WrapperFunctionalityBase.TargetMethod8vvvvvvvv{``0,``1,``2,``3,``4,``5,``6,``7,``8})">
+            <exclude/>
+        </member>
         <member name="M:Tekla.Structures.Internal.FormWrapperFunctionality.Invoke7vvrrrrr``8(``0,``1,``2@,``3@,``4@,``5@,``6@,Tekla.Structures.Internal.WrapperFunctionalityBase.TargetMethod7vvrrrrr{``0,``1,``2,``3,``4,``5,``6,``7})">
             <exclude/>
         </member>
@@ -8230,6 +8154,9 @@
         <member name="M:Tekla.Structures.Internal.SynchronizeInvokeFunctionality.Invoke6vvvvvv``7(``0,``1,``2,``3,``4,``5,Tekla.Structures.Internal.WrapperFunctionalityBase.TargetMethod6vvvvvv{``0,``1,``2,``3,``4,``5,``6})">
             <exclude/>
         </member>
+        <member name="M:Tekla.Structures.Internal.SynchronizeInvokeFunctionality.Invoke8vvvvvvvv``9(``0,``1,``2,``3,``4,``5,``6,``7,Tekla.Structures.Internal.WrapperFunctionalityBase.TargetMethod8vvvvvvvv{``0,``1,``2,``3,``4,``5,``6,``7,``8})">
+            <exclude/>
+        </member>
         <member name="M:Tekla.Structures.Internal.SynchronizeInvokeFunctionality.Invoke7vvrrrrr``8(``0,``1,``2@,``3@,``4@,``5@,``6@,Tekla.Structures.Internal.WrapperFunctionalityBase.TargetMethod7vvrrrrr{``0,``1,``2,``3,``4,``5,``6,``7})">
             <exclude/>
         </member>
@@ -8366,6 +8293,9 @@
         <member name="T:Tekla.Structures.Internal.WrapperFunctionalityBase.TargetMethod6vvvvvv`7">
             <exclude/>
         </member>
+        <member name="T:Tekla.Structures.Internal.WrapperFunctionalityBase.TargetMethod8vvvvvvvv`9">
+            <exclude/>
+        </member>
         <member name="T:Tekla.Structures.Internal.WrapperFunctionalityBase.TargetMethod6rrrrrv`7">
              <summary>
             
@@ -8488,6 +8418,9 @@
             <exclude/>
         </member>
         <member name="M:Tekla.Structures.Internal.WrapperFunctionalityBase.Invoke6vvvvvv``7(``0,``1,``2,``3,``4,``5,Tekla.Structures.Internal.WrapperFunctionalityBase.TargetMethod6vvvvvv{``0,``1,``2,``3,``4,``5,``6})">
+            <exclude/>
+        </member>
+        <member name="M:Tekla.Structures.Internal.WrapperFunctionalityBase.Invoke8vvvvvvvv``9(``0,``1,``2,``3,``4,``5,``6,``7,Tekla.Structures.Internal.WrapperFunctionalityBase.TargetMethod8vvvvvvvv{``0,``1,``2,``3,``4,``5,``6,``7,``8})">
             <exclude/>
         </member>
         <member name="M:Tekla.Structures.Internal.WrapperFunctionalityBase.Invoke6rrrrrv``7(``0@,``1@,``2@,``3@,``4@,``5,Tekla.Structures.Internal.WrapperFunctionalityBase.TargetMethod6rrrrrv{``0,``1,``2,``3,``4,``5,``6})">

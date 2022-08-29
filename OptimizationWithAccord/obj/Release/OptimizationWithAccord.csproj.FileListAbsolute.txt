@@ -1,0 +1,3 @@
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\OptimizationWithAccord\obj\Release\OptimizationWithAccord.csproj.AssemblyReference.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\OptimizationWithAccord\obj\Release\OptimizationWithAccord.csproj.SuggestedBindingRedirects.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\OptimizationWithAccord\obj\Release\OptimizationWithAccord.csproj.CoreCompileInputs.cache

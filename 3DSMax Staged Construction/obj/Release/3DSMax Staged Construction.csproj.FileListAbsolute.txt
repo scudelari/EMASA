@@ -1,0 +1,4 @@
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\3DSMax Staged Construction\obj\Release\3DSMax Staged Construction.csproj.AssemblyReference.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\3DSMax Staged Construction\obj\Release\Staged3DSMaxWindow.g.cs
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\3DSMax Staged Construction\obj\Release\3DSMax Staged Construction_MarkupCompile.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\3DSMax Staged Construction\obj\Release\3DSMax Staged Construction_MarkupCompile.lref

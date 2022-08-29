@@ -1,0 +1,2 @@
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\AccordHelper\obj\Release\AccordHelper.csproj.AssemblyReference.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\AccordHelper\obj\Release\AccordHelper.csproj.CoreCompileInputs.cache

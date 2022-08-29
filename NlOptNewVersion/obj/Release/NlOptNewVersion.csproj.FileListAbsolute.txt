@@ -8,3 +8,5 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\NlOptNewVersion\obj\Release\NlOptNe
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\NlOptNewVersion\obj\Release\NlOptNewVersion.csproj.CopyComplete
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\NlOptNewVersion\obj\Release\NlOptNewVersion.exe
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\NlOptNewVersion\obj\Release\NlOptNewVersion.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\NlOptNewVersion\obj\Release\NlOptNewVersion.csproj.AssemblyReference.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\NlOptNewVersion\obj\Release\NlOptNewVersion.csproj.SuggestedBindingRedirects.cache

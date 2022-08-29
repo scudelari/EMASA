@@ -32,4 +32,4 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Release\BaseWPFL
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Release\BaseWPFLibrary.csproj.CopyComplete
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Release\BaseWPFLibrary.dll
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Release\BaseWPFLibrary.pdb
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\BaseWPFLibrary\obj\Release\BaseWPFLibrary.csprojAssemblyReference.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\BaseWPFLibrary\obj\Release\BaseWPFLibrary.csproj.AssemblyReference.cache

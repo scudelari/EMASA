@@ -1,0 +1,5 @@
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\Emasa Geometry Optimizer\obj\Release\Emasa Geometry Optimizer.csproj.AssemblyReference.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\Emasa Geometry Optimizer\obj\Release\Emasa Geometry Optimizer.csproj.SuggestedBindingRedirects.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\Emasa Geometry Optimizer\obj\Release\App.g.cs
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\Emasa Geometry Optimizer\obj\Release\Emasa Geometry Optimizer_MarkupCompile.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\Emasa Geometry Optimizer\obj\Release\Emasa Geometry Optimizer_MarkupCompile.lref

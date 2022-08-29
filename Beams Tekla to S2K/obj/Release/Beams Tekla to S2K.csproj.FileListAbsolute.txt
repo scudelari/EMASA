@@ -33,7 +33,6 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\Beams Tekla to S2K\bin\Release\Sap2
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Beams Tekla to S2K\bin\Release\Sap2000Library.dll.config
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Beams Tekla to S2K\bin\Release\MathNet.Numerics.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Beams Tekla to S2K\bin\Release\MathNet.Spatial.xml
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\Beams Tekla to S2K\obj\Release\Beams Tekla to S2K.csprojAssemblyReference.cache
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Beams Tekla to S2K\obj\Release\MainWindow.baml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Beams Tekla to S2K\obj\Release\MainWindow.g.cs
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Beams Tekla to S2K\obj\Release\App.g.cs
@@ -45,3 +44,5 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\Beams Tekla to S2K\obj\Release\Beam
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Beams Tekla to S2K\obj\Release\Beams Tekla to S2K.csproj.CopyComplete
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Beams Tekla to S2K\obj\Release\Beams Tekla to S2K.exe
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Beams Tekla to S2K\obj\Release\Beams Tekla to S2K.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\Beams Tekla to S2K\obj\Release\Beams Tekla to S2K.csproj.AssemblyReference.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\Beams Tekla to S2K\obj\Release\Beams Tekla to S2K.csproj.SuggestedBindingRedirects.cache

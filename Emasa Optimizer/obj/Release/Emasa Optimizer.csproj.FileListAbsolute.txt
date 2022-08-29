@@ -49,7 +49,6 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\System.
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\System.Threading.Tasks.Extensions.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\System.ValueTuple.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\bin\Release\MathNet.Spatial.xml
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Release\Emasa Optimizer.csprojAssemblyReference.cache
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Release\MainWindow.g.cs
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Release\App.g.cs
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Release\GeneratedInternalTypeHelper.g.cs
@@ -65,3 +64,5 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Release\Emasa O
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Release\Emasa Optimizer.csproj.CopyComplete
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Release\Emasa Optimizer.exe
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\Emasa Optimizer\obj\Release\Emasa Optimizer.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\Emasa Optimizer\obj\Release\Emasa Optimizer.csproj.AssemblyReference.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\Emasa Optimizer\obj\Release\Emasa Optimizer.csproj.SuggestedBindingRedirects.cache

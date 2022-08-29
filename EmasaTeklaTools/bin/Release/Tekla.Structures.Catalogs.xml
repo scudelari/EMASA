@@ -898,42 +898,6 @@
             </summary>
             <returns>True if cleaning and storing to catalog was successful</returns>
         </member>
-        <member name="M:Tekla.Structures.Catalogs.ShapeItem.AppendMetadata(System.Collections.Generic.IList{System.Tuple{System.String,System.String}})">
-             <summary>
-             Appends metadata key-value pairs to the shape information. I
-             </summary>
-             <param name="keyValPairs">A list of the key-value pairs that define the metatadata to be added</param>
-             <example>        
-             <code>
-             public void InsertAndAddMetadataTest()
-             {
-                 // NOTE: replace "[" and "]" with smaller than and larger than characters,
-                 // had to be done like this due to doxygen XML clashing with C# syntax 
-                 
-                 var polymesh = CreateSomeValidBrep();
-                 var shapeItem = new ShapeItem
-                 {
-                     Name = "TestFileName",
-                     ShapeFacetedBrep = polymesh,
-                     UpAxis = ShapeUpAxis.Z_Axis
-                 };
-                 
-                 shapeItem.Insert();
-            
-                 var testPairs = new List [Tuple[string, string]]
-                     {
-                       new Tuple[string, string] ("TestTAG", "testval"),
-                       new Tuple[string, string] ("Volume", "1.01")
-                     };
-            
-                shapeItem.AppendMetadata(testPairs);
-             }
-             </code>
-             </example>
-             <returns>
-             True on success. Will return false and not add any metadata if even one key is empty.
-             </returns>
-        </member>
         <member name="M:Tekla.Structures.Catalogs.ShapeItem.FromStruct(Tekla.Structures.CatalogInternal.dotcatShape_t)">
             <summary>
             Copies from a struct.
@@ -1797,6 +1761,17 @@
             Returns the total amout of items.
             </summary>
             <returns>The total amount of items.</returns>
+        </member>
+        <member name="M:Tekla.Structures.Catalogs.ComponentItemEnumerator.GetComponentIndex``1(``0,System.Int32,System.Collections.ArrayList,System.Collections.IList)">
+            <summary>
+            Get component index given key and type.
+            </summary>
+            <typeparam name="T">The key type.</typeparam>
+            <param name="Key">The component key value.</param>
+            <param name="Type">The component type.</param>
+            <param name="KeyList">An ArrayList of keys to search to determine the index.</param>
+            <param name="TypesList">An ArrayList of types associated with the keys.</param>
+            <returns>The index of the key in KeyList that matches the associated type in TypesList, or -1 if no match is found.</returns>
         </member>
         <member name="T:Tekla.Structures.Catalogs.DrawingItem">
             <summary>
@@ -4828,7 +4803,7 @@
             <summary>
             Gets the value options of an integer property. Option strings are translated when translation is available.
             </summary>
-            <param name="IntOptions">The value options that were gotten.</param>
+            <param name="IntOptions">The value options.</param>
             <returns>
             True on success.
             </returns>
@@ -4837,7 +4812,7 @@
             <summary>
             Gets the value options of an integer property.
             </summary>
-            <param name="IntOptions">The value options that were gotten.</param>
+            <param name="IntOptions">The value options.</param>
             <param name="translatedLabels">if set to <c>true</c> labels translated to current language are returned, otherwise the resource key of label is returned.</param>
             <returns>
             True on success.
@@ -4846,50 +4821,53 @@
         <member name="M:Tekla.Structures.Catalogs.UserPropertyItem.SetOptions(System.Collections.Generic.List{System.Collections.Generic.KeyValuePair{System.Int32,System.String}})">
             <summary>
             Sets the value options of an integer property.
+            The maximum count of options is 400.
             </summary>
-            <param name="IntOptions">The new value options.</param>
+            <param name="IntOptions">The value options.</param>
             <returns>True on success.</returns>
         </member>
         <member name="M:Tekla.Structures.Catalogs.UserPropertyItem.GetOptions(System.Collections.Generic.List{System.Collections.Generic.KeyValuePair{System.Double,System.String}}@)">
             <summary>
             Gets the value options of a double property. Option strings are translated when translation is available.
             </summary>
-            <param name="DoubleOptions">The value options that were gotten.</param>
+            <param name="DoubleOptions">The value options.</param>
             <returns>True on success.</returns>
         </member>
         <member name="M:Tekla.Structures.Catalogs.UserPropertyItem.GetOptions(System.Collections.Generic.List{System.Collections.Generic.KeyValuePair{System.Double,System.String}}@,System.Boolean)">
             <summary>
             Gets the value options of a double property.
             </summary>
-            <param name="DoubleOptions">The value options that were gotten.</param>
+            <param name="DoubleOptions">The value options.</param>
             <param name="translatedLabels">if set to <c>true</c> labels translated to current language are returned, otherwise the resource key of label is returned.</param>
             <returns>True on success.</returns>
         </member>
         <member name="M:Tekla.Structures.Catalogs.UserPropertyItem.SetOptions(System.Collections.Generic.List{System.Collections.Generic.KeyValuePair{System.Double,System.String}})">
             <summary>
             Sets the value options of a double property.
+            The maximum count of options is 400.
             </summary>
-            <param name="DoubleOptions">The new value options.</param>
+            <param name="DoubleOptions">The value options.</param>
             <returns>True on success.</returns>
         </member>
         <member name="M:Tekla.Structures.Catalogs.UserPropertyItem.GetOptions(System.Collections.Generic.List{System.Collections.Generic.KeyValuePair{System.String,System.String}}@)">
             <summary>
             Gets the value options of a string property. Option strings are translated when translation is available.
             </summary>
-            <param name="StringOptions">The value options that were gotten.</param>
+            <param name="StringOptions">The value options.</param>
             <returns>True on success.</returns>
         </member>
         <member name="M:Tekla.Structures.Catalogs.UserPropertyItem.GetOptions(System.Collections.Generic.List{System.Collections.Generic.KeyValuePair{System.String,System.String}}@,System.Boolean)">
             <summary>
             Gets the value options of a string property.
             </summary>
-            <param name="StringOptions">The value options that were gotten.</param>
+            <param name="StringOptions">The value options.</param>
             <param name="translatedLabels">if set to <c>true</c> labels translated to current language are returned, otherwise the resource key of label is returned.</param>
             <returns>True on success.</returns>
         </member>
         <member name="M:Tekla.Structures.Catalogs.UserPropertyItem.SetOptions(System.Collections.Generic.List{System.Collections.Generic.KeyValuePair{System.String,System.String}})">
             <summary>
             Sets the value options of a string property.
+            The maximum count of options is 400.
             </summary>
             <param name="StringOptions">The new value options.</param>
             <returns>True on success.</returns>
@@ -5498,6 +5476,18 @@
             Implements ICDelegate so that every method throws NotImplementedException.
             </summary>
         </member>
+        <member name="T:Tekla.Structures.CatalogInternal.EventHandler">
+            <summary>
+            EventHandler is a class that TS calls when an event is raised.
+            </summary>
+        </member>
+        <member name="M:Tekla.Structures.CatalogInternal.EventHandler.OnEvent(System.String)">
+            <summary>
+            TS calls when event is raised.
+            </summary>
+            <param name="param">Name of the event</param>
+            <returns>1</returns>
+        </member>
         <member name="T:Tekla.Structures.CatalogInternal.MetadataSchema">
             <summary>
               A strongly-typed resource class, for looking up localized strings, etc.
@@ -5847,6 +5837,11 @@
             The ShapeImport interface.
             </summary>
         </member>
+        <member name="E:Tekla.Structures.CatalogInternal.ShapeHandler.CatalogChanged">
+            <summary>
+            Event that triggers when the shape catalog has changed.
+            </summary>
+        </member>
         <member name="M:Tekla.Structures.CatalogInternal.ShapeHandler.Import(Tekla.Structures.CatalogInternal.ImportEntry)">
             <summary>
             Import a shape.
@@ -5900,95 +5895,137 @@
             <returns>True if cleaning and storing to catalog was successful</returns>
         </member>
         <member name="M:Tekla.Structures.CatalogInternal.ShapeHandler.InsertShapeAllowGeometricDuplicates(Tekla.Structures.Catalogs.ShapeItem@)">
-            <summary>
-            Inserts a shape including its geometry into the shape catalog of the model without checking if a
-            shape containing identical geometry already exists in the catalog
-            /// </summary>
-            <param name="inputShape">
-            A reference to the ShapeItem to insert into the shape catalog, it also gets the resulting shape info BUT
-            NOTE that the geometry is not retrieved in the ShapeItem and will be NULL after the inserting!!!
-            </param>
-            <returns>
-            Return true on success.
-            </returns>
-            <example>
-            <code>
-            using System;
-            using Tekla.Structures.CatalogInternal;
+             <summary>
+             Inserts a shape including its geometry into the shape catalog of the model without checking if a
+             shape containing identical geometry already exists in the catalog
+             /// </summary>
+             <param name="inputShape">
+             A reference to the ShapeItem to insert into the shape catalog, it also gets the resulting shape info BUT
+             NOTE that the geometry is not retrieved in the ShapeItem and will be NULL after the inserting!!!
+             </param>
+             <returns>
+             Return true on success.
+             </returns>
+             <example>
+             <code>
+             using System;
+             using Tekla.Structures.CatalogInternal;
             
-            public class Example
-            {
-                   public void InsertSimpleCube()
-                   {
-                     var vertices = new[]
+             public class Example
+             {
+                    public void InsertSimpleCube()
+                    {
+                      var vertices = new[]
+                      {
+                         new Vector(  0.0,   0.0,   0.0), // 0
+                         new Vector(300.0,   0.0,   0.0), // 1
+                         new Vector(300.0, 300.0,   0.0), // 2
+                         new Vector(  0.0, 300.0,   0.0), // 3
+                         new Vector(  0.0,   0.0, 300.0), // 4
+                         new Vector(300.0,   0.0, 300.0), // 5
+                         new Vector(300.0, 300.0, 300.0), // 6
+                         new Vector(  0.0, 300.0, 300.0), // 7
+                     };
+                     var outloop = new[] { new[] { 0, 3, 2, 1 },
+                                   new[] { 0, 1, 5, 4 },
+                                   new[] { 1, 2, 6, 5 },
+                                   new[] { 2, 3, 7, 6 },
+                                   new[] { 3, 0, 4, 7 },
+                                   new[] { 4, 5, 6, 7 }};
+            
+                     var innerLoop = new Dictionary{int, int[][]}
                      {
-                        new Vector(  0.0,   0.0,   0.0), // 0
-                        new Vector(300.0,   0.0,   0.0), // 1
-                        new Vector(300.0, 300.0,   0.0), // 2
-                        new Vector(  0.0, 300.0,   0.0), // 3
-                        new Vector(  0.0,   0.0, 300.0), // 4
-                        new Vector(300.0,   0.0, 300.0), // 5
-                        new Vector(300.0, 300.0, 300.0), // 6
-                        new Vector(  0.0, 300.0, 300.0), // 7
-                    };
-                    var outloop = new[] { new[] { 0, 3, 2, 1 },
-                                  new[] { 0, 1, 5, 4 },
-                                  new[] { 1, 2, 6, 5 },
-                                  new[] { 2, 3, 7, 6 },
-                                  new[] { 3, 0, 4, 7 },
-                                  new[] { 4, 5, 6, 7 }};
+                     };
             
-                    var innerLoop = new Dictionary{int, int[][]}
-                    {
-                    };
-             
-                    var brep = new FacetedBrep(vertices, outloop, innerLoop);
-                    var shapeItem = new ShapeItem
-                    {
-                        Name = "MyNiceCubeBrep",
-                        ShapeFacetedBrep = brep,
-                        UpAxis = ShapeUpAxis.Z_Axis
-                    };
-                    var result = ShapeHandler.InsertShapeAllowGeometricDuplicates(shapeItem);
-                 }
-            }
-            </code>
-            </example>
+                     var brep = new FacetedBrep(vertices, outloop, innerLoop);
+                     var shapeItem = new ShapeItem
+                     {
+                         Name = "MyNiceCubeBrep",
+                         ShapeFacetedBrep = brep,
+                         UpAxis = ShapeUpAxis.Z_Axis
+                     };
+                     var result = ShapeHandler.InsertShapeAllowGeometricDuplicates(shapeItem);
+                  }
+             }
+             </code>
+             </example>
         </member>
         <member name="M:Tekla.Structures.CatalogInternal.ShapeHandler.GetShapeMetadata(System.String)">
-            <summary>
-            Gets the metadata of a shape
-            </summary>
-            <param name="guid">An input parameter that defines the guid of the shape whose metadata we want to get</param>
-            <returns>Returns a list of key-value pairs that contain the metadata of the shape specified by guid.</returns>
-            <example>
-            <code>
-            using System;
-            using Tekla.Structures.CatalogInternal;
+             <summary>
+             Gets the metadata of a shape
+             </summary>
+             <param name="guid">An input parameter that defines the guid of the shape whose metadata we want to get</param>
+             <returns>Returns a list of key-value pairs that contain the metadata of the shape specified by guid.</returns>
+             <example>
+             <code>
+             using System;
+             using Tekla.Structures.CatalogInternal;
             
-            public class Example
-            {
-                 var polymesh = CreateBrep();
+             public class Example
+             {
+                  var polymesh = CreateBrep();
+                  var shapeItem = new ShapeItem
+                  {
+                      Name = "TestShapeName",
+                      ShapeFacetedBrep = polymesh,
+                      UpAxis = ShapeUpAxis.Z_Axis
+                  };
+                  var result = shapeItem.Insert();
+            
+                  var testPairs1 = new List{Tuple{string, string}}
+                  {
+                      new Tuple{string, string}("TestKey", "TestValue")
+                  };
+            
+                  shapeItem.AppendMetadata(testPairs1));
+                  var MetadataFromCatalog = ShapeHandler.GetShapeMetadata(shapeItem.Guid);
+            
+                  Assert.AreEqual(MetadataFromCatalog, testPairs1);
+             }
+             </code>
+             </example>
+        </member>
+        <member name="M:Tekla.Structures.CatalogInternal.ShapeHandler.AppendMetadata(System.String,System.Collections.Generic.IList{System.Tuple{System.String,System.String}})">
+             <summary>
+             Appends metadata key-value pairs to the shape information. I
+             </summary>
+             <param name="guid">An input parameter that defines the guid of the shape whose metadata we want to get</param>
+             <param name="keyValPairs">A list of the key-value pairs that define the metatadata to be added</param>
+             <example>        
+             <code>
+             public void InsertAndAddMetadataTest()
+             {
+                 // NOTE: replace "[" and "]" with smaller than and larger than characters,
+                 // had to be done like this due to doxygen XML clashing with C# syntax 
+                 
+                 var polymesh = CreateSomeValidBrep();
                  var shapeItem = new ShapeItem
                  {
-                     Name = "TestShapeName",
+                     Name = "TestFileName",
                      ShapeFacetedBrep = polymesh,
                      UpAxis = ShapeUpAxis.Z_Axis
                  };
-                 var result = shapeItem.Insert();
                  
-                 var testPairs1 = new List{Tuple{string, string}}
-                 {
-                     new Tuple{string, string}("TestKey", "TestValue")
-                 };
-                 
-                 shapeItem.AppendMetadata(testPairs1));
-                 var MetadataFromCatalog = ShapeHandler.GetShapeMetadata(shapeItem.Guid);
-                 
-                 Assert.AreEqual(MetadataFromCatalog, testPairs1);   
-            }
-            </code>
-            </example>
+                 shapeItem.Insert();
+            
+                 var testPairs = new List [Tuple[string, string]]
+                     {
+                       new Tuple[string, string] ("TestTAG", "testval"),
+                       new Tuple[string, string] ("Volume", "1.01")
+                     };
+            
+                ShapeHandler.AppendMetadata(shapeItem.Guid, testPairs);
+             }
+             </code>
+             </example>
+             <returns>
+             True on success. Will return false and not add any metadata if even one key is empty.
+             </returns>
+        </member>
+        <member name="M:Tekla.Structures.CatalogInternal.ShapeHandler.TriggerShapeCatalogChanged">
+            <summary>
+            Triggers the shape catalog changed event.
+            </summary>
         </member>
         <member name="T:Tekla.Structures.CatalogInternal.ImportFromGeometry">
             <summary>
@@ -8478,6 +8515,11 @@
         <member name="T:Tekla.Structures.CatalogInternal.dotcatUserPropertyItem_t">
             <summary>
             Serialization structure for UserPropertyItem.
+            </summary>
+        </member>
+        <member name="F:Tekla.Structures.CatalogInternal.dotcatUserPropertyItem_t.USERPROPERTY_VALUEOPTIONS_SIZE">
+            <summary>
+            Max count of options
             </summary>
         </member>
         <member name="F:Tekla.Structures.CatalogInternal.dotcatUserPropertyItem_t.Name">

@@ -6552,6 +6552,18 @@
             </summary>
             <returns>The assembly that the assemblable belongs to.</returns>
         </member>
+        <member name="T:Tekla.Structures.Model.Internal.ContourOperation">
+            <summary>
+            ContourOperation provides methods to get contour geometry from TeklaStructures.
+            </summary>
+        </member>
+        <member name="M:Tekla.Structures.Model.Internal.ContourOperation.GetPartContour(Tekla.Structures.Identifier)">
+            <summary>
+            Get contour geometry using the PartId
+            </summary>
+            <param name="PartId">part identifier</param>
+            <returns>Polycurve instance or null if geometry could not be fetched.</returns>
+        </member>
         <member name="T:Tekla.Structures.Model.Internal.FarmiHelper">
             <summary>
             Helping farming.
@@ -9633,6 +9645,11 @@
             The delegate to use for model save.
             </summary>
         </member>
+        <member name="T:Tekla.Structures.Model.Events.ModelSaveInfoDelegate">
+            <summary>
+            The delegate to use for model save with context information.
+            </summary>
+        </member>
         <member name="T:Tekla.Structures.Model.Events.ModelSaveAsDelegate">
             <summary>
             The delegate to use for model save as.
@@ -9641,6 +9658,11 @@
         <member name="T:Tekla.Structures.Model.Events.ModelLoadDelegate">
             <summary>
             The delegate to use for model load.
+            </summary>
+        </member>
+        <member name="T:Tekla.Structures.Model.Events.ModelLoadInfoDelegate">
+            <summary>
+            The delegate to use for extended model load.
             </summary>
         </member>
         <member name="T:Tekla.Structures.Model.Events.NumberingDelegate">
@@ -9714,6 +9736,12 @@
             <summary>
             The ModelSave event is raised just after a model has been saved.
             </summary>
+            [Obsolete("Deprecated. Please use OnModelSaveInfo instead.", false)]
+        </member>
+        <member name="E:Tekla.Structures.Model.Events.ModelSaveInfo">
+            <summary>
+            The ModelSave event is raised just after a model has been saved with the model save information as a string parameter.
+            </summary>
         </member>
         <member name="E:Tekla.Structures.Model.Events.ModelSaveAs">
             <summary>
@@ -9723,6 +9751,11 @@
         <member name="E:Tekla.Structures.Model.Events.ModelLoad">
             <summary>
             The ModelLoad event is raised just after a model has been loaded.
+            </summary>
+        </member>
+        <member name="E:Tekla.Structures.Model.Events.ModelLoadInfo">
+            <summary>
+            The ModelLoadInfo event is raised just after a model has been loaded with the model load information as a string parameter.
             </summary>
         </member>
         <member name="E:Tekla.Structures.Model.Events.ModelUnloading">
@@ -9791,11 +9824,18 @@
         </member>
         <member name="M:Tekla.Structures.Model.Events.OnModelSave(System.String,System.Object[])">
             <exclude/>
+            [Obsolete("Deprecated. Please use OnModelSaveInfo instead.", false)]
+        </member>
+        <member name="M:Tekla.Structures.Model.Events.OnModelSaveInfo(System.String,System.Object[])">
+            <exclude/>
         </member>
         <member name="M:Tekla.Structures.Model.Events.OnModelSaveAs(System.String,System.Object[])">
             <exclude/>
         </member>
         <member name="M:Tekla.Structures.Model.Events.OnModelLoad(System.String,System.Object[])">
+            <exclude/>
+        </member>
+        <member name="M:Tekla.Structures.Model.Events.OnModelLoadInfo(System.String,System.Object[])">
             <exclude/>
         </member>
         <member name="M:Tekla.Structures.Model.Events.OnModelUnloading(System.String,System.Object[])">
@@ -10747,6 +10787,13 @@
             <summary> Saves current model with comment and user information. </summary>
             <param name="Comment">The comment for save operation, used only with multi-user models.</param>
             <param name="User">The user identification, used only with multi-user models.</param>
+            <returns>True on success.</returns>
+        </member>
+        <member name="M:Tekla.Structures.Model.ModelHandler.Save(System.String,System.String,System.String)">
+            <summary> Saves current model with comment and user information. </summary>
+            <param name="Comment">The comment for save operation, used only with multi-user models.</param>
+            <param name="User">The user identification, used only with multi-user models.</param>
+            <param name="Reason">The reason why this model save is being called. Used for identifying model save events.</param>
             <returns>True on success.</returns>
         </member>
         <member name="M:Tekla.Structures.Model.ModelHandler.Open(System.String,System.Boolean)">
@@ -12966,6 +13013,12 @@
             true on success, false otherwise.
             </returns>
         </member>
+        <member name="M:Tekla.Structures.Model.ReferenceModel.ValidateFilePath">
+            <summary>
+            Special characters are not supported. Checks that the current file name does not contain non-supported characters.
+            </summary>
+            <returns>True if valid.</returns>
+        </member>
         <member name="M:Tekla.Structures.Model.ReferenceModel.ToStruct(Tekla.Structures.ModelInternal.dotReferenceModel_t@)">
             <summary>
             Serialize this object to struct.
@@ -14713,21 +14766,6 @@
             reinforcements of different kind, components and screws
             </summary>
         </member>
-        <member name="M:Tekla.Structures.Model.Operations.Operation.AppendShapeMetadata(System.String,System.Collections.Generic.List{System.String})">
-            <summary>
-            Append the metadata defined in keyValStrings to shape indentified by guid
-            </summary>
-            <param name="guid">The guid of the shape</param>
-            <param name="keyValStrings">The key value pairs of strings that contain the metadata</param>
-            <returns>True if the appending operation was successful</returns>
-        </member>
-        <member name="M:Tekla.Structures.Model.Operations.Operation.GetShapeMetadata(System.String)">
-            <summary>
-            Get metadata from the shape catalog for a shape specified by its GUID
-            </summary>
-            <param name="guid">The guid of the shape</param>
-            <returns>List of tuples that contain key and value pairs containing the metadata</returns>
-        </member>
         <member name="M:Tekla.Structures.Model.Operations.Operation.DisplayPrompt(System.String)">
             <summary>
             Displays a message in the status bar.
@@ -15322,6 +15360,12 @@
             Gets or sets the contour for the contour plate.
             </summary>
         </member>
+        <member name="M:Tekla.Structures.Model.ContourPlate.GetContourPolycurve">
+            <summary>
+            Get contour as polycurve
+            </summary>
+            <returns>Polycurve instance or null</returns>
+        </member>
         <member name="M:Tekla.Structures.Model.ContourPlate.#ctor">
             <summary>
             Initializes a new instance of the <see cref="T:Tekla.Structures.Model.ContourPlate" /> class.
@@ -15701,6 +15745,12 @@
         <member name="M:Tekla.Structures.Model.PolyBeam.GetPolybeamCoordinateSystems">
             <summary> Returns a list of coordinate systems for the polybeam segments. </summary>
             <returns>A list of coordinate systems for the polybeam segments.</returns>
+        </member>
+        <member name="M:Tekla.Structures.Model.PolyBeam.GetCenterLinePolycurve">
+            <summary>
+            Get centerline as polycurve
+            </summary>
+            <returns>Polycurve instance or null</returns>
         </member>
         <member name="T:Tekla.Structures.Model.PolymeshEnumerator">
             <summary>
@@ -26241,7 +26291,7 @@
             the enum dotControlPolycurvePointType_e in Core side.
             </summary>
         </member>
-        <member name="M:Tekla.Structures.ModelInternal.PolycurveSerialization.DeserializeGeometries(System.Collections.Generic.IEnumerable{Tekla.Structures.ModelInternal.dotPolycurvePoint_t})">
+        <member name="M:Tekla.Structures.ModelInternal.PolycurveSerialization.DeserializeGeometries(System.Collections.Generic.IList{Tekla.Structures.ModelInternal.dotPolycurvePoint_t})">
             <summary>
             Deserializes the geometry list from core
             </summary>
@@ -26254,11 +26304,12 @@
             </summary>
             <returns>Serialized points with tags</returns>
         </member>
-        <member name="M:Tekla.Structures.ModelInternal.PolycurveSerialization.DeserializeOneGeometry(System.Collections.Generic.IEnumerable{Tekla.Structures.ModelInternal.dotPolycurvePoint_t})">
+        <member name="M:Tekla.Structures.ModelInternal.PolycurveSerialization.DeserializeOneGeometry(System.Collections.Generic.IList{Tekla.Structures.ModelInternal.dotPolycurvePoint_t},System.Int32)">
             <summary>
             Gets the geometry that corresponds to the points in the serialized point list
             </summary>
             <param name="geometryPoints">Points of the geometry</param>
+            <param name="index">Index where geometry starts</param>
             <returns>Geometry primitive</returns>
         </member>
         <member name="M:Tekla.Structures.ModelInternal.PolycurveSerialization.ToPolycurvePoint(Tekla.Structures.Geometry3d.Point,Tekla.Structures.ModelInternal.PolycurveSerialization.SerializedPointType)">
@@ -27215,6 +27266,11 @@
             Pours export is enabled.
             </summary>
         </member>
+        <member name="P:Tekla.Structures.ModelInternal.Operation.RemotePrintingController">
+            <summary>
+            Gets or sets the remote printing controller.
+            </summary>
+        </member>
         <member name="M:Tekla.Structures.ModelInternal.Operation.ImportExternalReferenceModel(System.String,System.String,Tekla.Structures.Geometry3d.Point,Tekla.Structures.Geometry3d.Point,Tekla.Structures.Geometry3d.Point,System.Double)">
             <summary>
             Imports external reference model.
@@ -27226,6 +27282,13 @@
             <param name="axisY">The axis Y.</param>
             <param name="scale">The scale.</param>
             <returns>True on success.</returns>
+        </member>
+        <member name="M:Tekla.Structures.ModelInternal.Operation.GetImportedExternalReferenceModels">
+            <summary>
+            Gets the paths of the imported external reference models. The paths match with the paths
+            given when model was imported using ImportExternalReferenceModel().
+            </summary>
+            <returns>The currently imported external reference models paths.</returns>
         </member>
         <member name="M:Tekla.Structures.ModelInternal.Operation.RemoveExternalReferenceModels(System.Collections.Generic.IEnumerable{System.String})">
             <summary>
@@ -27295,7 +27358,7 @@
             <param name="visibility"> The new visibility.</param>
             <returns>True if successful, otherwise false.</returns>
         </member>
-        <member name="M:Tekla.Structures.ModelInternal.Operation.StartExternalReferenceModelChangeDetection(System.String,System.String,System.Int32,System.Int32,System.Int32,System.Int32)">
+        <member name="M:Tekla.Structures.ModelInternal.Operation.StartExternalReferenceModelChangeDetection(System.String,System.String,System.Int32,System.Int32,System.Int32,System.Int32,System.String,System.String)">
             <summary>
             Starts the external reference model change detection between the given TrimBim file paths.
             NOTE: The current version needs to be imported first using ImportExternalReferenceModel()
@@ -27307,6 +27370,8 @@
             <param name="inserted">Include inserted entities.</param>
             <param name="deleted">Include deleted entities.</param>
             <param name="unchanged">Include unchanged entities.</param>
+            <param name="comparisonSetTitle">The title of the comparison set to be used. If left empty, default will be used.</param>
+            <param name="tolerancesTitle">The title of the tolerances item to be used. If left empty, default will be used.</param>
             <returns>True if successful, otherwise false.</returns>
         </member>
         <member name="M:Tekla.Structures.ModelInternal.Operation.StopExternalReferenceModelChangeDetection">
@@ -27320,6 +27385,30 @@
             Gets the external reference model selections.
             </summary>
             <returns>The external reference model selections guids.</returns>
+        </member>
+        <member name="M:Tekla.Structures.ModelInternal.Operation.LaunchExternalReferenceModelComparisonTolerancesDialog">
+            <summary>
+            Launches the comparison tolerances dialog.
+            </summary>
+            <returns>True if successful.</returns>
+        </member>
+        <member name="M:Tekla.Structures.ModelInternal.Operation.LaunchExternalReferenceModelComparisonSetsDialog">
+            <summary>
+            Launches the comparison sets dialog.
+            </summary>
+            <returns>True if successful.</returns>
+        </member>
+        <member name="M:Tekla.Structures.ModelInternal.Operation.GetExternalReferenceModelComparisonTolerances">
+            <summary>
+            Gets the available comparison tolerance items titles.
+            </summary>
+            <returns>The titles of the available tolerance items.</returns>
+        </member>
+        <member name="M:Tekla.Structures.ModelInternal.Operation.GetExternalReferenceModelComparisonSets">
+            <summary>
+            Gets the available comparison sets titles.
+            </summary>
+            <returns>The titles of the available comparsion sets.</returns>
         </member>
         <member name="M:Tekla.Structures.ModelInternal.Operation.GetExternalReferenceModelEntitiesCount(System.String)">
             <summary>
@@ -27500,6 +27589,13 @@
             <param name="userName">Current user user name</param>
             <returns>int, defines the final run state</returns>
         </member>
+        <member name="M:Tekla.Structures.ModelInternal.Operation.HandlePdfReport(System.String)">
+            <summary>
+            Handle Pdf Report.
+            </summary>
+            <param name="ReportPath">The report path.</param>
+            <returns>True if successful.</returns>
+        </member>
         <member name="M:Tekla.Structures.ModelInternal.Operation.ExportIFC(System.String,System.String,Tekla.Structures.ModelInternal.Operation.IFCExportViewTypeEnum,System.Collections.Generic.List{System.String},System.String,System.Boolean,Tekla.Structures.ModelInternal.Operation.ExportBasePoint,System.String,System.String,Tekla.Structures.ModelInternal.Operation.IFCExportFlags,System.Boolean,System.Boolean,System.String)">
             <exclude />
         </member>
@@ -27554,16 +27650,16 @@
         <member name="M:Tekla.Structures.ModelInternal.Operation.dotStartAction(System.String,System.String)">
             <exclude />
         </member>
-        <member name="M:Tekla.Structures.ModelInternal.Operation.dotSaveModel(System.String,System.String)">
+        <member name="M:Tekla.Structures.ModelInternal.Operation.dotSaveModel(System.String,System.String,System.String)">
             <exclude />
         </member>
-        <member name="M:Tekla.Structures.ModelInternal.Operation.dotSaveAsModel(System.String,System.String,System.String)">
+        <member name="M:Tekla.Structures.ModelInternal.Operation.dotSaveAsModel(System.String,System.String,System.String,System.String)">
             <exclude />
         </member>
-        <member name="M:Tekla.Structures.ModelInternal.Operation.dotAutoSaveModel(System.String,System.String)">
+        <member name="M:Tekla.Structures.ModelInternal.Operation.dotAutoSaveModel(System.String,System.String,System.String)">
             <exclude />
         </member>
-        <member name="M:Tekla.Structures.ModelInternal.Operation.dotQuitProgram(System.String,System.String)">
+        <member name="M:Tekla.Structures.ModelInternal.Operation.dotQuitProgram(System.String,System.String,System.String)">
             <exclude />
         </member>
         <member name="M:Tekla.Structures.ModelInternal.Operation.dotUndo">
@@ -28148,6 +28244,50 @@
             <param name="baseCurves">Lofted plate base curves</param>
             <returns>Validation result</returns>
         </member>
+        <member name="M:Tekla.Structures.ModelInternal.Operation.GetBoltedPartsHoleElevations(Tekla.Structures.Model.BoltGroup)">
+            <summary>
+            Gets the bolt group parts hole elevations
+            </summary>
+            <param name="boltGroup">The bolt group</param>
+            <returns>The holes elevations</returns>
+        </member>
+        <member name="M:Tekla.Structures.ModelInternal.Operation.GetSimilarNumberedObjectsCoordinateSystems(Tekla.Structures.Identifier,Tekla.Structures.Identifier,Tekla.Structures.Geometry3d.CoordinateSystem@,Tekla.Structures.Geometry3d.CoordinateSystem@)">
+            <summary>Get similar numbered objects coordinate systems</summary>
+            <param name="object1Id">The first object ID.</param>
+            <param name="object2Id">The second object ID.</param>
+            <param name="cs1">The coordinate system of the first object.</param>
+            <param name="cs2">The coordinate system of the second object.</param>
+            <returns>True if successful.</returns>
+            <remarks>The IDs must be either both assembly, or both part identifiers.</remarks>
+        </member>
+        <member name="M:Tekla.Structures.ModelInternal.Operation.AppendShapeMetadata(System.String,System.Collections.Generic.List{System.String})">
+            <summary>
+            Append the metadata defined in keyValStrings to shape indentified by guid
+            </summary>
+            <param name="guid">The guid of the shape</param>
+            <param name="keyValStrings">The key value pairs of strings that contain the metadata</param>
+            <returns>True if the appending operation was successful</returns>
+        </member>
+        <member name="M:Tekla.Structures.ModelInternal.Operation.GetShapeMetadata(System.String)">
+            <summary>
+            Get metadata from the shape catalog for a shape specified by its GUID
+            </summary>
+            <param name="guid">The guid of the shape</param>
+            <returns>List of tuples that contain key and value pairs containing the metadata</returns>
+        </member>
+        <member name="M:Tekla.Structures.ModelInternal.Operation.SetPrintingController(Tekla.Structures.ModelInternal.PrintingController)">
+            <summary>
+            Set printing controller object on the TS side.
+            </summary>
+            <param name="PrintingController">The printing controller.</param>
+            <returns>True if successful.</returns>
+        </member>
+        <member name="M:Tekla.Structures.ModelInternal.Operation.GetPrintingController">
+            <summary>
+            Get printing controller object on the TS side.
+            </summary>
+            <returns>The printing controller.</returns>
+        </member>
         <member name="T:Tekla.Structures.ModelInternal.dotAreaPolygons_t">
             <summary>
             DO NOT USE! For internal usage only!
@@ -28208,6 +28348,9 @@
             <exclude/>
         </member>
         <member name="F:Tekla.Structures.ModelInternal.dotSaveOperation_t.aID">
+            <exclude/>
+        </member>
+        <member name="F:Tekla.Structures.ModelInternal.dotSaveOperation_t.aReason">
             <exclude/>
         </member>
         <member name="T:Tekla.Structures.ModelInternal.dotUndoOperation_t">
@@ -28308,6 +28451,83 @@
         </member>
         <member name="F:Tekla.Structures.ModelInternal.dotExternalReferenceModelSelection_t.SelectedObjectGuids">
             <exclude/>
+        </member>
+        <member name="T:Tekla.Structures.ModelInternal.PrintingController">
+            <summary>
+            Printing controller.
+            </summary>
+        </member>
+        <member name="P:Tekla.Structures.ModelInternal.PrintingController.PrintReportToPdfFunc">
+            <summary>
+            Print report to pdf function.
+            </summary>
+        </member>
+        <member name="M:Tekla.Structures.ModelInternal.PrintingController.PrintReportToPdf(Tekla.Structures.ModelInternal.PrintingController.PrintReportToPdfArgs)">
+            <summary>
+            Print report to PDF.
+            </summary>
+            <param name="arguments">The print report to pdf arguments.</param>
+            <returns>The print report to pdf results.</returns>
+        </member>
+        <member name="T:Tekla.Structures.ModelInternal.PrintingController.PrintReportToPdfArgs">
+            <summary>
+            Print report to PDF arguments.
+            </summary>
+        </member>
+        <member name="P:Tekla.Structures.ModelInternal.PrintingController.PrintReportToPdfArgs.ReportPath">
+            <summary>
+            Gets or sets the report path.
+            </summary>
+        </member>
+        <member name="P:Tekla.Structures.ModelInternal.PrintingController.PrintReportToPdfArgs.Width">
+            <summary>
+            Gets or sets the width.
+            </summary>
+        </member>
+        <member name="P:Tekla.Structures.ModelInternal.PrintingController.PrintReportToPdfArgs.SheetHeight">
+            <summary>
+            Gets or sets the sheet height.
+            </summary>
+        </member>
+        <member name="P:Tekla.Structures.ModelInternal.PrintingController.PrintReportToPdfArgs.TotalHeight">
+            <summary>
+            Gets or sets the total height.
+            </summary>
+        </member>
+        <member name="P:Tekla.Structures.ModelInternal.PrintingController.PrintReportToPdfArgs.LeftMargin">
+            <summary>
+            Gets or sets the left margin.
+            </summary>
+        </member>
+        <member name="P:Tekla.Structures.ModelInternal.PrintingController.PrintReportToPdfArgs.RightMargin">
+            <summary>
+            Gets or sets the right margin.
+            </summary>
+        </member>
+        <member name="P:Tekla.Structures.ModelInternal.PrintingController.PrintReportToPdfArgs.TopMargin">
+            <summary>
+            Gets or sets the top margin.
+            </summary>
+        </member>
+        <member name="P:Tekla.Structures.ModelInternal.PrintingController.PrintReportToPdfArgs.BottomMargin">
+            <summary>
+            Gets or sets the bottom margin.
+            </summary>
+        </member>
+        <member name="P:Tekla.Structures.ModelInternal.PrintingController.PrintReportToPdfArgs.DisplayReport">
+            <summary>
+            Gets or sets a value indicating whether to display the report.
+            </summary>
+        </member>
+        <member name="T:Tekla.Structures.ModelInternal.PrintingController.PrintReportToPdfResult">
+            <summary>
+            Print report to pdf result.
+            </summary>
+        </member>
+        <member name="P:Tekla.Structures.ModelInternal.PrintingController.PrintReportToPdfResult.Success">
+            <summary>
+            Success flag.
+            </summary>
         </member>
         <member name="T:Tekla.Structures.ModelInternal.dotLoadCommonAttributes_t">
             <summary>
@@ -32036,6 +32256,14 @@
         <member name="M:Tekla.Structures.ModelInternal.CDelegateSynchronized.ExportSelectPart(Tekla.Structures.ModelInternal.dotPart_t@,System.Collections.Generic.List{Tekla.Structures.ModelInternal.dotContourPoint_t}@)">
             <exclude/>
         </member>
+        <member name="M:Tekla.Structures.ModelInternal.CDelegateSynchronized.ExportGetBoltedPartsHoleElevations(System.Int32,System.Collections.Generic.Dictionary{System.Int32,System.Tuple{System.Double,System.Double}}@)">
+            <summary>
+            DO NOT USE! For internal usage only.
+            </summary>
+            <param name="boltId">The bolt identifier.</param>
+            <param name="holeElevations">The hole elevations.</param>
+            <returns>1 if successful; otherwise 0.</returns>
+        </member>
         <member name="M:Tekla.Structures.ModelInternal.CDelegateSynchronized.ExportGetAttributeFiles(Tekla.Structures.ModelInternal.dotGetAttributeFiles_t@)">
             <summary>
             Gets all attribute files with specified suffix.
@@ -33133,6 +33361,14 @@
             <param name="pBoltPositions"></param>
             <returns></returns>
         </member>
+        <member name="M:Tekla.Structures.ModelInternal.CDelegateWrapper.ExportGetBoltedPartsHoleElevations(System.Int32,System.Collections.Generic.Dictionary{System.Int32,System.Tuple{System.Double,System.Double}}@)">
+            <summary>
+            DO NOT USE! For internal usage only!
+            </summary>
+            <param name="boltId"></param>
+            <param name="holeElevations"></param>
+            <returns></returns>
+        </member>
         <member name="M:Tekla.Structures.ModelInternal.CDelegateWrapper.ExportSelectBooleanPart(Tekla.Structures.ModelInternal.dotBooleanPart_t@)">
             <summary>
             DO NOT USE! For internal usage only!
@@ -34011,6 +34247,16 @@
             <param name="pClientId"></param>
             <returns></returns>
         </member>
+        <member name="M:Tekla.Structures.ModelInternal.CDelegateWrapper.ExportNumGetObjectsTransformation(Tekla.Structures.Internal.dotIdentifier_t@,Tekla.Structures.Internal.dotIdentifier_t@,Tekla.Structures.Internal.dotCoordinateSystem_t@,Tekla.Structures.Internal.dotCoordinateSystem_t@)">
+            <summary>
+            DO NOT USE! For internal usage only!
+            </summary>
+            <param name="object1Id">Object 1 id</param>
+            <param name="object2Id">Object 2 id</param>
+            <param name="cs1">Cs 1</param>
+            <param name="cs2">Cs 2</param>
+            <returns></returns>
+        </member>
         <member name="M:Tekla.Structures.ModelInternal.CDelegateWrapper.ExportCreateReport(Tekla.Structures.ModelInternal.dotCreateReportFromModel_t@)">
             <summary>
             DO NOT USE! For internal usage only!
@@ -34094,6 +34340,13 @@
             <param name="aExternalReferenceModel"></param>
             <returns></returns>
         </member>
+        <member name="M:Tekla.Structures.ModelInternal.CDelegateWrapper.GetImportedExternalReferenceModels(Tekla.Structures.ModelInternal.dotClientId_t@)">
+            <summary>
+            DO NOT USE! For internal usage only!
+            </summary>
+            <param name="pClientId"></param>
+            <returns></returns>
+        </member>
         <member name="M:Tekla.Structures.ModelInternal.CDelegateWrapper.RemoveExternalReferenceModel(System.String)">
             <summary>
             DO NOT USE! For internal usage only!
@@ -34154,7 +34407,7 @@
             <param name="pClienId"></param>
             <returns></returns>
         </member>
-        <member name="M:Tekla.Structures.ModelInternal.CDelegateWrapper.StartExternalReferenceModelChangeDetection(System.String,System.String,System.Int32,System.Int32,System.Int32,System.Int32)">
+        <member name="M:Tekla.Structures.ModelInternal.CDelegateWrapper.StartExternalReferenceModelChangeDetection(System.String,System.String,System.Int32,System.Int32,System.Int32,System.Int32,System.String,System.String)">
             <summary>
             DO NOT USE! For internal usage only!
             </summary>
@@ -34164,6 +34417,8 @@
             <param name="inserted"></param>
             <param name="deleted"></param>
             <param name="unchanged"></param>
+            <param name="comparisonSetTitle"></param>
+            <param name="tolerancesTitle"></param>
             <returns></returns>
         </member>
         <member name="M:Tekla.Structures.ModelInternal.CDelegateWrapper.StopExternalReferenceModelChangeDetection">
@@ -34173,6 +34428,30 @@
             <returns></returns>
         </member>
         <member name="M:Tekla.Structures.ModelInternal.CDelegateWrapper.GetExternalReferenceModelSelections(Tekla.Structures.ModelInternal.dotClientId_t@)">
+            <summary>
+            DO NOT USE! For internal usage only!
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tekla.Structures.ModelInternal.CDelegateWrapper.LaunchExternalReferenceModelComparisonTolerancesDialog">
+            <summary>
+            DO NOT USE! For internal usage only!
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tekla.Structures.ModelInternal.CDelegateWrapper.LaunchExternalReferenceModelComparisonSetsDialog">
+            <summary>
+            DO NOT USE! For internal usage only!
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tekla.Structures.ModelInternal.CDelegateWrapper.GetExternalReferenceModelComparisonTolerances(Tekla.Structures.ModelInternal.dotClientId_t@)">
+            <summary>
+            DO NOT USE! For internal usage only!
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tekla.Structures.ModelInternal.CDelegateWrapper.GetExternalReferenceModelComparisonSets(Tekla.Structures.ModelInternal.dotClientId_t@)">
             <summary>
             DO NOT USE! For internal usage only!
             </summary>
@@ -35086,6 +35365,24 @@
             <returns></returns>
         </member>
         <member name="M:Tekla.Structures.ModelInternal.CDelegateWrapper.ExportDeleteAllGraphicObjectContainers(Tekla.Structures.ModelInternal.dotGraphicObjectContainer_t@)">
+            <summary>
+            DO NOT USE! For internal usage only!
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tekla.Structures.ModelInternal.CDelegateWrapper.ExportGetPartContour(System.Int32,System.Collections.Generic.List{Tekla.Structures.ModelInternal.dotPolycurvePoint_t}@)">
+            <summary>
+            DO NOT USE! For internal usage only!
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tekla.Structures.ModelInternal.CDelegateWrapper.ExportSetPrintingController(Tekla.Structures.ModelInternal.PrintingController)">
+            <summary>
+            DO NOT USE! For internal usage only!
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tekla.Structures.ModelInternal.CDelegateWrapper.ExportGetPrintingController(Tekla.Structures.ModelInternal.PrintingController@)">
             <summary>
             DO NOT USE! For internal usage only!
             </summary>
@@ -36206,6 +36503,14 @@
             <param name="pBoltPositions"></param>
             <returns></returns>
         </member>
+        <member name="M:Tekla.Structures.ModelInternal.ICDelegate.ExportGetBoltedPartsHoleElevations(System.Int32,System.Collections.Generic.Dictionary{System.Int32,System.Tuple{System.Double,System.Double}}@)">
+            <summary>
+            DO NOT USE! For internal usage only!
+            </summary>
+            <param name="boltId"></param>
+            <param name="holeElevations"></param>
+            <returns></returns>
+        </member>
         <member name="M:Tekla.Structures.ModelInternal.ICDelegate.ExportSelectBooleanPart(Tekla.Structures.ModelInternal.dotBooleanPart_t@)">
             <summary>
             DO NOT USE! For internal usage only!
@@ -37164,6 +37469,16 @@
             <param name="pIdentifier"></param>
             <param name="pClientId"></param>
         </member>
+        <member name="M:Tekla.Structures.ModelInternal.ICDelegate.ExportNumGetObjectsTransformation(Tekla.Structures.Internal.dotIdentifier_t@,Tekla.Structures.Internal.dotIdentifier_t@,Tekla.Structures.Internal.dotCoordinateSystem_t@,Tekla.Structures.Internal.dotCoordinateSystem_t@)">
+            <summary>
+            DO NOT USE! For internal usage only!
+            </summary>
+            <param name="object1Id">Object 1 id</param>
+            <param name="object2Id">Object 2 id</param>
+            <param name="cs1">Cs 1</param>
+            <param name="cs2">Cs 2</param>
+            <returns></returns>
+        </member>
         <member name="M:Tekla.Structures.ModelInternal.ICDelegate.ExportCreateReport(Tekla.Structures.ModelInternal.dotCreateReportFromModel_t@)">
             <summary>
             DO NOT USE! For internal usage only!
@@ -37247,6 +37562,13 @@
             <param name="aExternalReferenceModel"></param>
             <returns></returns>
         </member>
+        <member name="M:Tekla.Structures.ModelInternal.ICDelegate.GetImportedExternalReferenceModels(Tekla.Structures.ModelInternal.dotClientId_t@)">
+            <summary>
+            DO NOT USE! For internal usage only!
+            </summary>
+            <param name="pClientId"></param>
+            <returns></returns>
+        </member>
         <member name="M:Tekla.Structures.ModelInternal.ICDelegate.RemoveExternalReferenceModel(System.String)">
             <summary>
             DO NOT USE! For internal usage only!
@@ -37307,7 +37629,7 @@
             <param name="pClientId"></param>
             <returns></returns>
         </member>
-        <member name="M:Tekla.Structures.ModelInternal.ICDelegate.StartExternalReferenceModelChangeDetection(System.String,System.String,System.Int32,System.Int32,System.Int32,System.Int32)">
+        <member name="M:Tekla.Structures.ModelInternal.ICDelegate.StartExternalReferenceModelChangeDetection(System.String,System.String,System.Int32,System.Int32,System.Int32,System.Int32,System.String,System.String)">
             <summary>
             DO NOT USE! For internal usage only!
             </summary>
@@ -37317,6 +37639,8 @@
             <param name="inserted"></param>
             <param name="deleted"></param>
             <param name="unchanged"></param>
+            <param name="comparisonSetTitle"></param>
+            <param name="tolerancesTitle"></param>
             <returns></returns>
         </member>
         <member name="M:Tekla.Structures.ModelInternal.ICDelegate.StopExternalReferenceModelChangeDetection">
@@ -37326,6 +37650,30 @@
             <returns></returns>
         </member>
         <member name="M:Tekla.Structures.ModelInternal.ICDelegate.GetExternalReferenceModelSelections(Tekla.Structures.ModelInternal.dotClientId_t@)">
+            <summary>
+            DO NOT USE! For internal usage only!
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tekla.Structures.ModelInternal.ICDelegate.LaunchExternalReferenceModelComparisonTolerancesDialog">
+            <summary>
+            DO NOT USE! For internal usage only!
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tekla.Structures.ModelInternal.ICDelegate.LaunchExternalReferenceModelComparisonSetsDialog">
+            <summary>
+            DO NOT USE! For internal usage only!
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tekla.Structures.ModelInternal.ICDelegate.GetExternalReferenceModelComparisonTolerances(Tekla.Structures.ModelInternal.dotClientId_t@)">
+            <summary>
+            DO NOT USE! For internal usage only!
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Tekla.Structures.ModelInternal.ICDelegate.GetExternalReferenceModelComparisonSets(Tekla.Structures.ModelInternal.dotClientId_t@)">
             <summary>
             DO NOT USE! For internal usage only!
             </summary>
@@ -37981,6 +38329,15 @@
             <exclude/>
         </member>
         <member name="M:Tekla.Structures.ModelInternal.ICDelegate.ExportMarkObjectModifiedForOrganizer(System.Int32)">
+            <exclude/>
+        </member>
+        <member name="M:Tekla.Structures.ModelInternal.ICDelegate.ExportGetPartContour(System.Int32,System.Collections.Generic.List{Tekla.Structures.ModelInternal.dotPolycurvePoint_t}@)">
+            <exclude/>
+        </member>
+        <member name="M:Tekla.Structures.ModelInternal.ICDelegate.ExportSetPrintingController(Tekla.Structures.ModelInternal.PrintingController)">
+            <exclude/>
+        </member>
+        <member name="M:Tekla.Structures.ModelInternal.ICDelegate.ExportGetPrintingController(Tekla.Structures.ModelInternal.PrintingController@)">
             <exclude/>
         </member>
         <member name="T:Tekla.Structures.ModelInternal.IEventHandler">

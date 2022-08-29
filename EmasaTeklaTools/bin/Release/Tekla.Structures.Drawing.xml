@@ -1094,16 +1094,6 @@
             <param name="drawingId">The drawing identifier.</param>
             <returns>The Drawing instance or null in case of failure.</returns>
         </member>
-        <member name="M:Tekla.Structures.DrawingInternal.Operation.AddDimensioningRuleAndModify(Tekla.Structures.Drawing.View,System.String,System.String,System.String)">
-            <summary>
-            Add rule to view dimension rules. View is modified in database.
-            </summary>
-            <param name="view"></param>
-            <param name="filter"></param>
-            <param name="operation"></param>
-            <param name="property"></param>
-            <returns></returns>
-        </member>
         <member name="M:Tekla.Structures.DrawingInternal.Operation.AddObjectsToViewAndModify(Tekla.Structures.Drawing.View,System.Collections.Generic.List{Tekla.Structures.Identifier})">
             <summary>
             Add objects to view in GA drawing. View is modified in database.
@@ -4268,11 +4258,6 @@
             </summary>
             <exclude/>
         </member>
-        <member name="F:Tekla.Structures.DrawingInternal.dotGrReinforcementSetGroupIdentifiers_t.Identifiers">
-            <summary>
-            The model identifiers.
-            </summary>
-        </member>
         <member name="F:Tekla.Structures.DrawingInternal.dotGrReinforcementSetGroupIdentifiers_t.DrawingObjectIdentifier">
             <summary>
             The drawing object identifier.
@@ -6629,7 +6614,7 @@
         <member name="M:Tekla.Structures.DrawingInternal.CDelegateSynchronized.dotGrExportReinforcementHandler(Tekla.Structures.DrawingInternal.dotGrReinforcementBase_t@)">
             <exclude/>
         </member>
-        <member name="M:Tekla.Structures.DrawingInternal.CDelegateSynchronized.dotGrExportReinforcementSetGroupGetModelIdentifiers(Tekla.Structures.DrawingInternal.dotGrReinforcementSetGroupIdentifiers_t@)">
+        <member name="M:Tekla.Structures.DrawingInternal.CDelegateSynchronized.dotGrExportReinforcementSetGroupGetModelIdentifiers(Tekla.Structures.DrawingInternal.dotGrReinforcementSetGroupIdentifiers_t@,System.Int32*@)">
             <exclude/>
         </member>
         <member name="M:Tekla.Structures.DrawingInternal.CDelegateSynchronized.dotGrExportReinforcementBaseAttributesHandler(Tekla.Structures.DrawingInternal.dotGrReinforcementBaseAttributes_t@)">
@@ -25494,34 +25479,34 @@
             <returns>True on success.</returns>
         </member>
         <member name="T:Tekla.Structures.Drawing.View">
-            <summary>
-            The View class contains methods related to views.
-            Views are views that contain other drawing objects, excluding other views.
-            Views also contain drawing representations of model objects.
-            </summary>
-            <example>
-            The following example creates and inserts a new view to the active drawing. A drawing must be open when executing the code.
-            <code>
-            using Tekla.Structures.Drawing;
-            using Tekla.Structures.Geometry3d;
+             <summary>
+             The View class contains methods related to views.
+             Views are views that contain other drawing objects, excluding other views.
+             Views also contain drawing representations of model objects.
+             </summary>
+             <example>
+             The following example creates and inserts a new view to the active drawing. A drawing must be open when executing the code.
+             <code>
+             using Tekla.Structures.Drawing;
+             using Tekla.Structures.Geometry3d;
             
-            public class Example
-            {
-                   public void Example1()
-                   {
-                       DrawingHandler MyDrawingHandler = new DrawingHandler();
-                       if(MyDrawingHandler.GetConnectionStatus())
-                       {
-                           Drawing Drawing = MyDrawingHandler.GetActiveDrawing();
-                           CoordinateSystem CoordinateSystem = new CoordinateSystem(new Point(), new Vector(1, 0, 0), new Vector(0, 1, 0));
+             public class Example
+             {
+                    public void Example1()
+                    {
+                        DrawingHandler MyDrawingHandler = new DrawingHandler();
+                        if(MyDrawingHandler.GetConnectionStatus())
+                        {
+                            Drawing Drawing = MyDrawingHandler.GetActiveDrawing();
+                            CoordinateSystem CoordinateSystem = new CoordinateSystem(new Point(), new Vector(1, 0, 0), new Vector(0, 1, 0));
             
-                           View newView = new View(Drawing.GetSheet(), CoordinateSystem, CoordinateSystem, new AABB(new Point(0, 0), new Point(1000, 1000, 1000)));
-                           newView.Insert();
-                       }
-                   }
-            }
-            </code>
-            </example>
+                            View newView = new View(Drawing.GetSheet(), CoordinateSystem, CoordinateSystem, new AABB(new Point(0, 0), new Point(1000, 1000, 1000)));
+                            newView.Insert();
+                        }
+                    }
+             }
+             </code>
+             </example>
         </member>
         <member name="T:Tekla.Structures.Drawing.View.ViewTypes">
             <summary>
@@ -25611,7 +25596,7 @@
         </member>
         <member name="P:Tekla.Structures.Drawing.View.DisplayCoordinateSystem">
             <summary>
-            The coordinate system of the display plane. 
+            The coordinate system of the display plane.
             This can be used to transform global points from the model that is to be inserted in the view.
             </summary>
         </member>
@@ -25908,17 +25893,6 @@
             </summary>
             <param name="rotationAngle">The amount of degrees to rotate the view with.</param>
         </member>
-        <member name="M:Tekla.Structures.Drawing.View.AddDimensioningRuleAndModify(System.String,System.String,System.String)">
-            <summary>
-            hackish way to add a rule to the view dimensioning rules
-            the view is modified by the method
-            something public should include full support for the list of rules in the ViewAttributes class
-            </summary>
-            <param name="filter">filter field of the rule</param>
-            <param name="operation">type of the rule</param>
-            <param name="property">attribute of the rule</param>
-            <returns>true is successful, false otherwise</returns>
-        </member>
         <member name="M:Tekla.Structures.Drawing.View.AddObjectsToViewAndModify(System.Collections.Generic.List{Tekla.Structures.Identifier})">
             <summary>
             Add objects to the view in GA drawing if view is created with object list
@@ -26086,7 +26060,7 @@
         </member>
         <member name="P:Tekla.Structures.Drawing.View.ViewAttributes.LocationBy">
             <summary>
-            Gets or sets the location by attribute. 
+            Gets or sets the location by attribute.
             Value is ViewAttributes.LocationByModelOrigin, ViewAttributes.LocationByProjectBasePoint or guid of a Basepoint.
             </summary>
         </member>
@@ -26191,12 +26165,12 @@
         </member>
         <member name="M:Tekla.Structures.Drawing.View.ViewShorteningAttributes.#ctor">
             <summary>
-            Creates a new default view shortening attributes instance. 
+            Creates a new default view shortening attributes instance.
             </summary>
         </member>
         <member name="M:Tekla.Structures.Drawing.View.ViewShorteningAttributes.#ctor(System.Boolean,System.Boolean,System.Double,System.Double,Tekla.Structures.Drawing.View.ShorteningCutPartType)">
             <summary>
-            Creates a new view shortening attributes instance with the given parameters. 
+            Creates a new view shortening attributes instance with the given parameters.
             </summary>
             <param name="CutParts">A value indicating whether cut parts are enabled.</param>
             <param name="CutSkewParts">A value indicating whether cut skewed parts are enabled.</param>

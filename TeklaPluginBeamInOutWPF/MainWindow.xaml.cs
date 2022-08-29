@@ -21,6 +21,7 @@ using System.Data;
 using System.Collections;
 using System.IO;
 using Microsoft.Win32;
+using Tekla.Structures.Model;
 
 namespace TeklaPluginInOutWPF
 {
@@ -302,7 +303,7 @@ namespace TeklaPluginInOutWPF
                     }
                     catch (Exception ex_inner)
                     {
-                        MessageBox.Show(string.Format("Beam Name: {0} | MyId: {1}\n{2}", row.Field<string>("Name"), row.Field<int>("MyId"), ex_inner.Message, "Could not recreate beam."));
+                        MessageBox.Show($"Beam Name: {row.Field<string>("Name")} | MyBeamId: {row.Field<int>("MyBeamId")} | Profile: {row.Field<string>("Profile")} | Class: {row.Field<string>("Class")}{Environment.NewLine}{ex_inner.Message}");
                         beamErrorCounter++;
                         if (beamErrorCounter > 5) break;
                     }
@@ -355,7 +356,7 @@ namespace TeklaPluginInOutWPF
                     }
                     catch (Exception ex_inner)
                     {
-                        MessageBox.Show(string.Format("Plate Name: {0} | MyId: {1}\n{2}", row.Field<string>("Name"), row.Field<int>("MyId"), ex_inner.Message, "Could not recreate contour plate."));
+                        MessageBox.Show($"Plate Name: {row.Field<string>("Name")} | MyPlateId: {row.Field<int>("MyPlateId")} | Profile: {row.Field<string>("Profile")}{Environment.NewLine}{ex_inner.Message}");
                         plateErrorCounter++;
                         if (plateErrorCounter > 5) break;
                     }

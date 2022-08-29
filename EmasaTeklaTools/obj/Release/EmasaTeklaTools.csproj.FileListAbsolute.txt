@@ -32,7 +32,6 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\bin\Release\Tekla.S
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\bin\Release\Newtonsoft.Json.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\bin\Release\Tekla.BIM.DirectManipulation.xml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\bin\Release\Tekla.BIM.Geometry.xml
-C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\obj\Release\EmasaTeklaTools.csprojAssemblyReference.cache
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\obj\Release\MainWindow.baml
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\obj\Release\MainWindow.g.cs
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\obj\Release\EmasaTeklaTools_Content.g.cs
@@ -44,3 +43,5 @@ C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\obj\Release\EmasaTe
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\obj\Release\EmasaTeklaTools.csproj.CopyComplete
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\obj\Release\EmasaTeklaTools.exe
 C:\Users\EngRafaelSMacedo\source\repos\EMASA\EmasaTeklaTools\obj\Release\EmasaTeklaTools.pdb
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\EmasaTeklaTools\obj\Release\EmasaTeklaTools.csproj.AssemblyReference.cache
+C:\Users\EngRafaelSMacedo\Source\Repos\EMASA\EmasaTeklaTools\obj\Release\EmasaTeklaTools.csproj.SuggestedBindingRedirects.cache
